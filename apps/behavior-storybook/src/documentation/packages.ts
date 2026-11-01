@@ -63,7 +63,7 @@ export const packages = [
   {
     name: "scaffolder",
     group: "Tooling",
-    summary: "A plan-first scaffolding engine: catalogs of targets, templates and add-ons, with safe upgrades.",
+    summary: "Review planned changes before applying them, and upgrade generated projects while preserving your edits.",
     code: 'import catalog from "@acme/catalog"\nimport { defineSettings } from "@buildkitgg/scaffolder"\nimport { createCli } from "@buildkitgg/scaffolder/cli"\nimport { runMain } from "citty"\n\nawait runMain(createCli({\n  name: "acme",\n  version: "1.0.0",\n  catalog,\n  settings: defineSettings({ product: "acme" })\n}))',
     api: [
       "defineCatalog: targets, templates, slots and add-ons, each with its own define helper.",
@@ -239,7 +239,7 @@ export const packages = [
   {
     name: "react-alerts",
     group: "React",
-    summary: "Persistent inline alerts with external commands and shared lifecycle behavior.",
+    summary: "Show persistent inline alerts in React. Update or dismiss them from outside your components.",
     code: 'import { createAlertManager, AlertRegion } from "@buildkitgg/react-alerts"\n\nexport const alerts = createAlertManager({ adapter: { Alert: YourAlert } })\n<AlertRegion manager={alerts} />\n\nalerts.warning({ id: "billing", title: "Update your payment method" })',
     api: [
       "add / info / success / warning / error: return a region-bound handle.",
@@ -255,7 +255,8 @@ export const packages = [
   {
     name: "shadcn-alerts-manager",
     group: "shadcn",
-    summary: "Persistent inline alerts with external commands and shared lifecycle behavior.",
+    summary:
+      "Show persistent inline alerts with shadcn components. Update or dismiss them from outside your components.",
     code: 'import { createAlertManager, AlertRegion } from "@buildkitgg/shadcn-alerts-manager"\n\nexport const alerts = createAlertManager()\n<AlertRegion manager={alerts} />\n\nalerts.warning({ id: "billing", title: "Update your payment method" })',
     api: [
       "add / info / success / warning / error: return a region-bound handle.",
@@ -271,7 +272,8 @@ export const packages = [
   {
     name: "fluentui-alerts-manager",
     group: "Fluent UI",
-    summary: "Persistent inline alerts with external commands and shared lifecycle behavior.",
+    summary:
+      "Show persistent inline alerts with Fluent UI components. Update or dismiss them from outside your components.",
     code: 'import { createAlertManager, AlertRegion } from "@buildkitgg/fluentui-alerts-manager"\n\nexport const alerts = createAlertManager()\n<AlertRegion manager={alerts} />\n\nalerts.warning({ id: "billing", title: "Update your payment method" })',
     api: [
       "add / info / success / warning / error: return a region-bound handle.",

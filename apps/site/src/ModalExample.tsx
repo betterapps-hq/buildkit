@@ -142,7 +142,7 @@ function ModalScenario({ scenario }: ModalScenarioProps) {
 export function ModalExample() {
   return (
     <article className="modal-examples" aria-labelledby="modal-example-title">
-      <h2 id="modal-example-title">Return a result from any modal</h2>
+      <h2 id="modal-example-title">Await a decision from your dialog</h2>
       <Tabs defaultValue="confirm">
         <TabsList className="modal-scenario-tabs" aria-label="Modal behavior">
           {scenarios.map((scenario) => (

@@ -12,8 +12,8 @@ export function Architecture() {
             fit together
           </h2>
           <p>
-            The core owns the behavior. Framework bindings connect it to your app, and component adapters provide the
-            UI. Changing the UI doesn’t require rewriting the underlying logic.
+            Change your UI without rewriting its underlying behavior. Start with an integration, bring your own
+            components, or use a core package directly.
           </p>
         </div>
         <figure

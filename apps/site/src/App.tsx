@@ -36,8 +36,8 @@ export function App() {
                 </span>
               </h1>
               <p className="hero-description">
-                Every app needs more than components. Buildkit packages common design patterns into framework-agnostic
-                TypeScript, with bindings for React and adapters for common component libraries.
+                TypeScript libraries for preferences, themes, dialogs, alerts, and routing. Start with a React
+                integration or use a framework-independent core with your own UI.
               </p>
               <div className="hero-actions">
                 <LinkButton size="lg" href="#packages" className="hero-primary">
