@@ -528,7 +528,10 @@ export class CliRuntime {
       current.nextSteps.push(
         ...unset
           .filter((variable) => variable.secret && variable.required)
-          .map((variable) => `Set ${variable.name} in ${this.#settings.secretsFile}: ${variable.description}`)
+          .map(
+            (variable) =>
+              `Set ${variable.name} in ${this.#settings.secretsFile}: ${variable.description}${variable.help === undefined ? "" : `. Get one at ${variable.help}`}`
+          )
       )
     }
     if (!interactive && !flags.booleans.has("yes")) {

@@ -176,6 +176,7 @@ export type Contribution = {
     required: boolean;
     description: string;
     example?: string;
+    help?: string;
 } | {
     kind: "file";
     path: string;
@@ -355,6 +356,7 @@ export interface EnvVar {
     description: string;
     // (undocumented)
     example?: string;
+    help?: string;
     // (undocumented)
     name: string;
     // (undocumented)
