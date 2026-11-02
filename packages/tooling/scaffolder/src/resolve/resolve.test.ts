@@ -426,6 +426,19 @@ describe("plan decisions", () => {
       choices: []
     })
 
+    // Where two add-ons share a short name, the command names the one meant by its id.
+    const twin = defineAddon({ ...orms[1]!, id: "@y/prisma" })
+    const twins = await planFixture(
+      files,
+      { intent: { command: "sync", addons: ["@x/prisma"] } },
+      {
+        catalog: withAddons(catalog, twin)
+      }
+    )
+    expect(twins.decisions[0]?.message).toBe(
+      "Drizzle is your orm. To replace it with Prisma, run add @x/prisma --replace drizzle."
+    )
+
     // Drizzle pulled in by another add-on goes with that add-on, so it can't be swapped on its own.
     const needsDrizzle = defineAddon({
       id: "@x/migrations",

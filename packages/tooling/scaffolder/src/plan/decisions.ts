@@ -1,6 +1,7 @@
-import { findAddon, findSlot, findTarget, findTemplate, lookupAddon, shortName } from "../manifest/catalog.js"
+import { findAddon, findSlot, findTarget, findTemplate, lookupAddon } from "../manifest/catalog.js"
 import type { CatalogManifest } from "../manifest/types.js"
 import type { ResolveIssue, Selection } from "../resolve/resolve.js"
+import { requestArgv } from "./argv.js"
 import type { DecisionChoice, Intent, PlanDecision, PlanRequest } from "./types.js"
 
 function title(catalog: CatalogManifest, id: string): string {
@@ -148,9 +149,14 @@ export function issueDecision(
       }
       // A replacement is an add. Turning an upgrade into one would drop the upgrade, so other commands say how instead.
       if (intent.command !== "add") {
+        // requestArgv keeps full ids where two add-ons share a short name, so the command always resolves.
+        const command = requestArgv(
+          { intent: { command: "add", addons: [incoming], replace: [installed], options: {} } },
+          { catalog }
+        ).join(" ")
         return {
           id,
-          message: `${lead} To replace it with ${title(catalog, incoming)}, run add ${shortName(incoming)} --replace ${shortName(installed)}.`,
+          message: `${lead} To replace it with ${title(catalog, incoming)}, run ${command}.`,
           choices: []
         }
       }
