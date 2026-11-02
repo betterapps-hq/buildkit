@@ -145,6 +145,11 @@ export interface AddonManifest<S extends z.ZodType = z.ZodType> {
   /** Add-on ids, `slot:<id>` or `provides:<name>`. */
   requires?: string[]
   conflicts?: string[]
+  /**
+   * A combination add-on, such as the glue between an auth library and an ORM: selected when every reference (an id or
+   * `provides:<name>`) is selected, and removed when one isn't. It's never asked about or added by name.
+   */
+  joins?: string[]
   /** Ordering only: contribute after these add-ons when they're selected. */
   after?: string[]
   points?: PointDefinition[]

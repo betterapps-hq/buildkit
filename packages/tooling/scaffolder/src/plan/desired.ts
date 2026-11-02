@@ -1,7 +1,14 @@
 import { findAddon, findSlot, findTarget, findTemplate, lookupAddon, slotAddons } from "../manifest/catalog.js"
 import type { CatalogManifest } from "../manifest/types.js"
 import { selectionFromAnswers } from "../resolve/answers.js"
-import { addonSupports, requireAddonId, resolveTarget, type ResolveIssue, type Selection } from "../resolve/resolve.js"
+import {
+  addonSupports,
+  refuseCombination,
+  requireAddonId,
+  resolveTarget,
+  type ResolveIssue,
+  type Selection
+} from "../resolve/resolve.js"
 import type { Lock, ProjectConfig } from "../state/schemas.js"
 import { PlanError } from "./errors.js"
 import type { Intent } from "./types.js"
@@ -101,6 +108,7 @@ export function desiredSelection(
 function addAlong(catalog: CatalogManifest, selection: Selection, names: readonly string[] | undefined) {
   for (const name of names ?? []) {
     const id = requireAddonId(catalog, name)
+    refuseCombination(catalog, id)
     selection.addons[id] ??= {}
   }
 }
@@ -145,7 +153,9 @@ function addSelection(
       adding.push(only)
       continue
     }
-    adding.push(requireAddonId(catalog, name))
+    const id = requireAddonId(catalog, name)
+    refuseCombination(catalog, id)
+    adding.push(id)
   }
   for (const id of replaced) {
     const slot = findAddon(catalog, id)?.slot

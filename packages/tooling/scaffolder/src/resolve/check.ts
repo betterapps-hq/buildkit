@@ -104,6 +104,23 @@ export function checkCatalog(
         problems.push(`${addon.id} refers to ${reference}, which isn't in the catalog.`)
       }
     }
+    if (addon.joins) {
+      if (addon.joins.length < 2) {
+        problems.push(`${addon.id} is a combination add-on, so it joins at least two add-ons.`)
+      }
+      if ((addon.requires ?? []).length > 0 || addon.options || addon.slot) {
+        problems.push(`${addon.id} is a combination add-on, so it can't have requires, options or a slot.`)
+      }
+      for (const reference of addon.joins) {
+        if (reference.startsWith("provides:")) {
+          if (!provides.has(reference.slice(9))) {
+            problems.push(`${addon.id} refers to ${reference}, and no add-on provides it.`)
+          }
+        } else if (!findAddon(catalog, reference)) {
+          problems.push(`${addon.id} refers to ${reference}, which isn't in the catalog.`)
+        }
+      }
+    }
     const schema = optionsSchema(addon)
     const properties = isRecord(schema.properties) ? schema.properties : {}
     for (const key of addon.ask ?? []) {
@@ -174,7 +191,23 @@ export function checkCatalog(
       }
     }
   }
+  // A combination add-on is added with what it joins, so nothing names it.
+  const combination = (id: string) => findAddon(catalog, id)?.joins !== undefined
+  for (const template of catalog.templates) {
+    const named = [
+      ...(template.required ?? []),
+      ...Object.keys(template.optional ?? {}),
+      ...Object.values(template.slots ?? {}).flatMap((policy) => (policy.default === undefined ? [] : [policy.default]))
+    ]
+    for (const id of named.filter(combination)) {
+      problems.push(`Template ${template.id} names ${id}, a combination add-on, which is added with what it joins.`)
+    }
+  }
   for (const preset of catalog.presets ?? []) {
+    const named = [...(preset.answers.optional ?? []), ...Object.values(preset.answers.slots ?? {})]
+    for (const id of named.filter((entry): entry is string => entry !== null && combination(entry))) {
+      problems.push(`Preset ${preset.id} names ${id}, a combination add-on, which is added with what it joins.`)
+    }
     if (!findTemplate(catalog, preset.answers.template)) {
       problems.push(`Preset ${preset.id} uses template ${preset.answers.template}, which isn't in the catalog.`)
       continue
