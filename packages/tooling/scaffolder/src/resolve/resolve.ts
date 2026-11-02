@@ -155,8 +155,8 @@ export function addonSupports(
 }
 
 /**
- * Resolves a selection: pulls in `requires`, checks slots and conflicts, adds the combination add-ons whose references
- * all match, orders add-ons, and validates options and support.
+ * Resolves a selection: pulls in `requires`, adds the combination add-ons whose references all match, checks slots,
+ * capabilities and conflicts, orders add-ons, and validates options and support.
  */
 export function resolveSelection(catalog: CatalogManifest, selection: Selection): ResolveResult {
   const nameProblem = projectNameProblem(selection.name)
@@ -194,6 +194,19 @@ export function resolveSelection(catalog: CatalogManifest, selection: Selection)
     visit(id, undefined)
   }
   const selected = [...chosen.keys()].map((id) => findAddon(catalog, id)).filter((addon) => addon !== undefined)
+  // Combination add-ons join when every reference matches, and one can join another, so this runs until nothing changes.
+  // They're part of the selection before its requirements and conflicts are checked.
+  for (let added = true; added;) {
+    added = false
+    for (const addon of catalog.addons) {
+      const joined = addon.joins && !chosen.has(addon.id) ? joinedBy(addon.joins, selected) : undefined
+      if (joined) {
+        chosen.set(addon.id, { explicit: false, by: new Set(joined) })
+        selected.push(addon)
+        added = true
+      }
+    }
+  }
   for (const addon of selected) {
     for (const requirement of addon.requires ?? []) {
       if (requirement.startsWith("slot:")) {
@@ -209,7 +222,10 @@ export function resolveSelection(catalog: CatalogManifest, selection: Selection)
         const capability = requirement.slice(9)
         if (!selected.some((other) => other.provides && Object.hasOwn(other.provides, capability))) {
           const candidates = catalog.addons
-            .filter((candidate) => candidate.provides && Object.hasOwn(candidate.provides, capability))
+            // A combination is never added by name, so it's never a choice.
+            .filter(
+              (candidate) => !candidate.joins && candidate.provides && Object.hasOwn(candidate.provides, capability)
+            )
             .filter((candidate) => addonSupports(candidate, info) === true)
             .map((candidate) => candidate.id)
           return { ok: false, issue: { kind: "choose-provider", capability, by: addon.id, candidates } }
@@ -231,18 +247,6 @@ export function resolveSelection(catalog: CatalogManifest, selection: Selection)
     for (const other of selected) {
       if (addon.conflicts?.includes(other.id)) {
         return { ok: false, issue: { kind: "conflicts", addon: addon.id, other: other.id } }
-      }
-    }
-  }
-  // Combination add-ons join when every reference matches, and one can join another, so this runs until nothing changes.
-  for (let added = true; added;) {
-    added = false
-    for (const addon of catalog.addons) {
-      const joined = addon.joins && !chosen.has(addon.id) ? joinedBy(addon.joins, selected) : undefined
-      if (joined) {
-        chosen.set(addon.id, { explicit: false, by: new Set(joined) })
-        selected.push(addon)
-        added = true
       }
     }
   }

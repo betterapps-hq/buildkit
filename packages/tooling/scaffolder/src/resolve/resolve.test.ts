@@ -613,6 +613,33 @@ describe("combination add-ons", () => {
     expect(ids.indexOf("@x/auth-i18n")).toBeGreaterThan(
       Math.max(ids.indexOf("@x/auth-sqlite"), ids.indexOf("@fixture/i18n"))
     )
+    // A combination is part of the selection its conflicts and requirements are checked against.
+    const strict = withAddons(
+      catalog,
+      { ...glue("@x/auth-ui", "Auth screens", ["@fixture/auth", "@fixture/ui-basic"]), conflicts: ["@fixture/i18n"] },
+      { ...glue("@x/adapter", "Adapter", ["@fixture/auth", "@fixture/db-sqlite"]), provides: { adapter: {} } },
+      defineAddon({
+        id: "@x/consumer",
+        version: "1.0.0",
+        title: "Consumer",
+        description: "",
+        requires: ["provides:adapter"],
+        contribute: () => []
+      })
+    )
+    const strictly = (...ids: string[]) =>
+      resolveSelection(strict, { ...base, addons: Object.fromEntries(ids.map((id) => [id, {}])) })
+    expect(strictly("@fixture/auth", "@fixture/ui-basic", "@fixture/i18n", "@fixture/db-sqlite")).toMatchObject({
+      ok: false,
+      issue: { kind: "conflicts", addon: "@x/auth-ui", other: "@fixture/i18n" }
+    })
+    expect(strictly("@fixture/auth", "@fixture/db-sqlite", "@x/consumer").ok).toBe(true)
+    // Without what it joins, the combination isn't offered as the provider, since it can't be added by name.
+    expect(strictly("@fixture/db-sqlite", "@x/consumer")).toMatchObject({
+      ok: false,
+      issue: { kind: "choose-provider", capability: "adapter", candidates: [] }
+    })
+
     // Named in a selection, a combination still needs what it joins.
     expect(resolve("@x/auth-postgres", "@fixture/db-sqlite").map((addon) => addon.id)).toEqual(["@fixture/db-sqlite"])
   })
