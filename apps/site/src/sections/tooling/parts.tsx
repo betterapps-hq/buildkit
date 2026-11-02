@@ -1,16 +1,6 @@
 import { ArrowRight, Check, Copy } from "lucide-react"
-import { useState, type ReactNode } from "react"
+import { useState } from "react"
 import { Link } from "../../components/Link"
-
-/** Copy that differs between the wide layout and the phone layout, as the two design frames have it. */
-export function Alt({ wide, narrow }: { wide: ReactNode; narrow: ReactNode }) {
-  return (
-    <>
-      <span className="tl-wide">{wide}</span>
-      {narrow !== "" && <span className="tl-narrow">{narrow}</span>}
-    </>
-  )
-}
 
 function CopyButton({ text, className }: { text: string; className?: string }) {
   const [copied, setCopied] = useState(false)

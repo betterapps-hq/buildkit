@@ -2,13 +2,13 @@ import { FileCode, GitCompare, ListChecks, Package, PenLine, RefreshCw, SquareTe
 import type { ReactNode } from "react"
 import { tokenize } from "../../components/Code"
 import { packageGuide } from "../../links"
-import { Alt, GuideLink } from "./parts"
+import { GuideLink } from "./parts"
 
 const FEATURES = [
   {
     icon: ListChecks,
     title: "Required and optional",
-    desc: "A template lists the add-ons every project gets and the ones people pick. Slots cover one-of choices, like which database."
+    desc: "A template lists the add-ons every project gets and the ones people pick. Slots offer one-of choices, like which database, and groups ask about related add-ons together."
   },
   {
     icon: Package,
@@ -29,7 +29,7 @@ type TemplateLine = {
   note?: string
 }
 
-/** A template for a CLI built on the engine. Its catalog asks each slot's `question`, then its `choose` question. */
+/** A template for a CLI built on the engine. Its catalog asks each slot's `question`, then its `choose` question. Groups ask their own. */
 const TEMPLATE: TemplateLine[] = [
   { code: 'import { defineTemplate } from "@buildkitgg/scaffolder"', wideOnly: true },
   { code: "", wideOnly: true },
@@ -39,21 +39,29 @@ const TEMPLATE: TemplateLine[] = [
   { code: '  description: "A React app with lint and tests",' },
   { code: '  target: "web",' },
   {
-    code: '  required: ["oxlint", "vitest"],',
+    code: '  required: ["vite-plus", "vitest"],',
     tone: "required",
     note: "always installed"
   },
-  { code: "  optional: {" },
-  { code: "    sentry: { default: true },", tone: "optional", note: "people pick any" },
-  { code: "    posthog: { default: false },", tone: "optional", note: "people pick any" },
+  { code: "  groups: {" },
+  { code: "    telemetry: {" },
+  { code: '      question: "Add telemetry?",', tone: "optional", note: "asked first" },
+  { code: '      choose: "Which ones?",' },
+  { code: '      pick: "many",', tone: "optional", note: 'checkboxes, "one" for radios' },
+  { code: "      addons: {" },
+  { code: "        sentry: { default: false },", tone: "optional", note: "then at least one" },
+  { code: "        posthog: { default: false },", tone: "optional", note: "then at least one" },
+  { code: "      }," },
+  { code: "    }," },
   { code: "  }," },
   { code: "  slots: {" },
   {
-    code: "    localization: { required: false },",
+    code: '    localization: { required: false, default: "lingui" },',
     tone: "slot",
     note: "one of react-intl, lingui"
   },
-  { code: "    database: { required: false },", tone: "slot", note: "one of drizzle, prisma" },
+  { code: "    database: { required: false },", tone: "slot", note: "one of drizzle, prisma, convex" },
+  { code: "    auth: { required: false },", tone: "slot", note: "one of better-auth, clerk, workos" },
   { code: "  }," },
   { code: "})" }
 ]
@@ -89,16 +97,42 @@ function TemplateCode() {
   )
 }
 
-/** An answered question in the install transcript; columns line up with spaces, as a real terminal would. */
+/** The wizard asks each slot, then each group. Answered questions stay above the one being asked. */
+const ANSWERS = [
+  { question: "Add localization?", answer: "Yes" },
+  { question: "Which library?", answer: "Lingui" },
+  { question: "Add a database?", answer: "Yes" },
+  { question: "Which ORM?", answer: "Drizzle" },
+  { question: "Add authentication?", answer: "Yes" },
+  { question: "Which provider?", answer: "Better Auth" },
+  { question: "Add telemetry?", answer: "Yes" }
+]
+
+/** The group's checkboxes, mid-answer. */
+const CHECKBOXES = [
+  { label: "Sentry", checked: true },
+  { label: "PostHog", checked: false }
+]
+
+function Bar({ children }: { children?: ReactNode }) {
+  return (
+    <span className="tl-term-line">
+      <span className="tl-t-bar">│</span>
+      {children}
+    </span>
+  )
+}
+
+const ANSWER_COLUMN = Math.max(...ANSWERS.map((line) => line.question.length)) + 2
+
+/** An answered question, with its answer on the same line to save space. */
 function Answer({ question, answer }: { question: string; answer: string }) {
   return (
     <span className="tl-term-line">
-      <Alt wide="  " narrow="" />
-      <span className="tl-glyph tl-t-mark">◇</span>
-      <span className="tl-t-label">
-        <Alt wide={`  ${question.padEnd(20)}`} narrow={` ${question.padEnd(19)}`} />
-      </span>
-      {answer}
+      <span className="tl-glyph tl-t-done">◇</span>
+      {"  "}
+      {question.padEnd(ANSWER_COLUMN)}
+      <span className="tl-t-dim">{answer}</span>
     </span>
   )
 }
@@ -112,32 +146,28 @@ function Prompt({ children }: { children: ReactNode }) {
   )
 }
 
-/** The wizard asks each slot, then the optional add-ons in one multi-select, then shows the plan for review. */
 function InstallTerminal() {
   return (
     <pre className="tl-window-body tl-term-body">
       <code>
         <Prompt>npx @acme/cli create app my-app</Prompt>
-        <span className="tl-term-line tl-wide"> </span>
-        <Answer question="Add localization?" answer="No" />
-        <Answer question="Add a database?" answer="Yes" />
-        <Answer question="Which ORM?" answer="Prisma" />
-        <Answer question="Add any of these?" answer="Sentry, PostHog" />
-        <span className="tl-term-line tl-wide"> </span>
+        <Bar />
+        {ANSWERS.map((line) => (
+          <Answer key={line.question} {...line} />
+        ))}
+        <Bar />
         <span className="tl-term-line">
-          <Alt wide="  " narrow="" />
-          <span className="tl-t-strong">Planned 23 changes.</span>
-          <span className="tl-t-dim tl-wide"> Nothing has been written yet.</span>
-        </span>
-        <span className="tl-term-line tl-t-dim tl-narrow">Nothing has been written yet.</span>
-        <span className="tl-term-line tl-wide">{"  "}Always included:</span>
-        <span className="tl-term-line tl-t-dim tl-wide">{"    "}oxlint</span>
-        <span className="tl-term-line tl-t-dim tl-wide">{"    "}vitest</span>
-        <span className="tl-term-line tl-wide">
-          {"  "}
           <span className="tl-glyph tl-t-mark">◆</span>
-          {"  "}Apply these changes? <span className="tl-t-yes">Yes</span>
+          {"  "}Which ones?
         </span>
+        {CHECKBOXES.map((box) => (
+          <Bar key={box.label}>
+            {"  "}
+            <span className={`tl-glyph ${box.checked ? "tl-t-ok" : "tl-t-dim"}`}>{box.checked ? "◼" : "◻"}</span>{" "}
+            <span className={box.checked ? undefined : "tl-t-dim"}>{box.label}</span>
+          </Bar>
+        ))}
+        <span className="tl-term-line tl-t-bar">└</span>
       </code>
     </pre>
   )
@@ -145,8 +175,8 @@ function InstallTerminal() {
 
 /** Short names work on the command line. `--replace` names the add-on a slot swap takes out. */
 const LATER = [
-  { command: "pnpm acme add lingui", result: "+ 6 files  ~ 2 updated" },
-  { command: "pnpm acme add drizzle --replace prisma", result: "Prisma to Drizzle" },
+  { command: "pnpm acme add posthog", result: "+ 3 files  ~ 2 updated" },
+  { command: "pnpm acme add prisma --replace drizzle", result: "Drizzle to Prisma" },
   { command: "pnpm acme upgrade", result: "fixes merged, edits kept" }
 ]
 

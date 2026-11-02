@@ -759,8 +759,13 @@
   color: var(--blue-soft);
 }
 
-.tl-t-label {
-  color: var(--text-2);
+.tl-t-bar {
+  color: var(--text-3);
+}
+
+.tl-glyph.tl-t-done {
+  color: var(--mint);
+  transform: scale(1.4);
 }
 
 .tl-t-dim {
@@ -1186,7 +1191,8 @@
     height: 19px;
   }
 
-  .tl-glyph.tl-t-mark {
+  .tl-glyph.tl-t-mark,
+  .tl-glyph.tl-t-done {
     transform: scale(1.2);
   }
 }
