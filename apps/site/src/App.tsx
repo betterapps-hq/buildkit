@@ -7,7 +7,6 @@ import { Examples } from "./sections/Examples"
 import { Footer } from "./sections/Footer"
 import { Header } from "./sections/Header"
 import { Hero } from "./sections/Hero"
-import { ShadcnKit } from "./sections/ShadcnKit"
 import { Tooling } from "./sections/Tooling"
 
 export function App() {
@@ -24,7 +23,6 @@ export function App() {
         <Architecture />
         <Examples />
         <Tooling />
-        <ShadcnKit />
         <Docs />
         <ClosingCta />
       </main>

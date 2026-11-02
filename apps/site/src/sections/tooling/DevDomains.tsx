@@ -5,7 +5,6 @@ import {
   Bot,
   FlaskConical,
   GitBranch,
-  GlobeLock,
   KeyRound,
   Lock,
   ShieldCheck,
@@ -17,7 +16,7 @@ import type { ReactNode } from "react"
 import { GithubIcon } from "../../components/GithubIcon"
 import { Link } from "../../components/Link"
 import { links, packageGuide } from "../../links"
-import { Command, SubsectionBar } from "./parts"
+import { Command, GuideLink } from "./parts"
 
 const KINDS = ["app", "stories", "e2e"] as const
 
@@ -99,18 +98,10 @@ const USES: { icon: typeof KeyRound; title: string; desc: string; code: ReactNod
 
 export function DevDomains() {
   return (
-    <section id="dev-domains" className="tl-sub tl-dev" aria-labelledby="dev-domains-title">
-      <SubsectionBar
-        icon={GlobeLock}
-        name="Dev domains"
-        pkg="@buildkitgg/dev-domains"
-        guide={packageGuide("dev-domains")}
-        guideLabel="Dev domains guide"
-      />
-
-      <div className="tl-dev-head" data-reveal>
+    <div className="tl-sub">
+      <div className="tl-dev-head">
         <div className="tl-dev-copy">
-          <h3 id="dev-domains-title" className="tl-heading">
+          <h3 className="tl-heading">
             A real HTTPS domain for
             <br className="tl-wide" /> every server in every worktree
           </h3>
@@ -133,10 +124,8 @@ export function DevDomains() {
       </div>
 
       <div className="tl-part">
-        <h4 className="tl-part-title" data-reveal>
-          How it works
-        </h4>
-        <div className="tl-domains" data-reveal>
+        <h4 className="tl-part-title">How it works</h4>
+        <div className="tl-domains">
           <div className="tl-domains-head" aria-hidden="true">
             <span className="tl-col tl-col-worktree">
               <GitBranch />
@@ -196,10 +185,8 @@ export function DevDomains() {
       </div>
 
       <div className="tl-part">
-        <h4 className="tl-part-title" data-reveal>
-          What a real domain fixes
-        </h4>
-        <ul className="tl-uses" data-reveal-stagger>
+        <h4 className="tl-part-title">What a real domain fixes</h4>
+        <ul className="tl-uses">
           {USES.map((use) => {
             const Icon = use.icon
             return (
@@ -215,6 +202,8 @@ export function DevDomains() {
           })}
         </ul>
       </div>
-    </section>
+
+      <GuideLink href={packageGuide("dev-domains")} label="Dev domains guide" />
+    </div>
   )
 }

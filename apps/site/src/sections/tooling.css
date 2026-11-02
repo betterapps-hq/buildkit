@@ -1,6 +1,8 @@
 /* Developer tooling */
 
+/* Clipped sideways, so the tools can slide in from past the edge without widening the page */
 .tooling {
+  overflow-x: clip;
   padding: 128px 0 136px;
   background:
     radial-gradient(55% 17.5% at 85% 8%, #3370ff24, #3370ff00),
@@ -24,14 +26,6 @@
 
 .tl-intro {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: 80px;
-}
-
-.tl-intro-heading {
-  display: flex;
-  flex: 1 1 520px;
   flex-direction: column;
   gap: 20px;
   max-width: 640px;
@@ -49,34 +43,97 @@
   max-width: 560px;
 }
 
-.tl-index {
-  display: flex;
-  flex: 0 1 480px;
-  flex-direction: column;
-  gap: 10px;
+/* The tools stack in order under a bar that sticks while you read them, marks the one in view, and jumps to any */
+
+.tl-stage {
+  margin-top: 40px;
 }
 
-.tl-tool {
+.tl-nav {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  padding: 14px 0 13px;
+  border-bottom: 1px solid var(--line);
+}
+
+/* Once the bar sticks, a band runs the full width of the screen behind it, so the tools scroll under a real bar */
+.tl-nav::before {
+  content: "";
+  position: absolute;
+  inset: 0 -100vmax -1px;
+  z-index: -1;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in oklab, var(--ink-950) 86%, transparent);
+  backdrop-filter: blur(12px);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.tl-nav[data-stuck]::before {
+  opacity: 1;
+}
+
+.tl-chips {
   display: flex;
+  gap: 8px;
+}
+
+.tl-chip {
+  display: inline-flex;
   align-items: center;
-  gap: 14px;
-  height: 100%;
-  padding: 16px 18px;
+  gap: 8px;
+  height: 34px;
+  padding: 0 14px 0 12px;
   border: 1px solid var(--line-strong);
-  border-radius: 14px;
-  background: var(--ink-900);
+  border-radius: 999px;
+  background: var(--ink-850);
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
   transition:
+    color 0.2s ease,
     border-color 0.2s ease,
     background-color 0.2s ease;
 }
 
-.tl-tool:hover {
-  border-color: #3370ff80;
-  background: var(--ink-850);
+.tl-chip svg {
+  width: 14px;
+  height: 14px;
+  color: var(--blue-soft);
 }
 
-.tl-tool-icon,
-.tl-bar-icon,
+.tl-chip:hover {
+  border-color: var(--text-4);
+  color: var(--text);
+}
+
+.tl-chip[aria-current="true"] {
+  border-color: #3370ff66;
+  background: #3370ff1f;
+  color: var(--text);
+}
+
+.tl-chip:focus-visible {
+  outline: 2px solid var(--blue-soft);
+  outline-offset: 2px;
+}
+
+.tl-tool {
+  padding-top: 64px;
+  scroll-margin-top: 62px;
+}
+
+.tl-tool + .tl-tool {
+  margin-top: 96px;
+}
+
+/* The tool's name over its heading */
+.tl-tool-name {
+  margin-bottom: 14px;
+}
+
 .tl-feature-icon,
 .tl-avatar {
   display: grid;
@@ -87,153 +144,39 @@
   color: var(--blue-soft);
 }
 
-.tl-tool-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 11px;
-}
-
-.tl-tool-icon svg {
-  width: 18px;
-  height: 18px;
-}
-
-.tl-tool-text {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-}
-
-.tl-tool-title {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 2px 10px;
-}
-
-.tl-tool-name {
-  font-size: 15.5px;
-  font-weight: 600;
-  line-height: 1.25;
-}
-
-.tl-tool-pkg {
-  font: 400 11px/1.3 var(--font-mono);
-  color: var(--text-3);
-}
-
-.tl-tool-desc {
-  font-size: 13px;
-  line-height: 1.45;
-  color: var(--text-2);
-}
-
-.tl-tool-jump {
-  width: 16px;
-  height: 16px;
-  color: var(--text-3);
-  transition:
-    transform 0.25s ease,
-    color 0.2s ease;
-}
-
-.tl-tool:hover .tl-tool-jump {
-  color: var(--blue-soft);
-  transform: translateY(3px);
-}
-
-/* Subsections */
-
 .tl-sub {
   display: flex;
   flex-direction: column;
   gap: 48px;
 }
 
-.tl-dev {
-  margin-top: 96px;
-}
-
-.tl-scaf {
-  margin-top: 209px;
-}
-
-.tl-bar {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.tl-bar-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 11px;
-}
-
-.tl-bar-icon svg {
-  width: 18px;
-  height: 18px;
-}
-
-.tl-bar-text {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
-  min-width: 0;
-}
-
-.tl-bar-name {
-  font-size: 18px;
-  font-weight: 600;
-  line-height: 1.25;
-  letter-spacing: -0.3px;
-  white-space: nowrap;
-}
-
-.tl-bar-pkg {
-  font: 400 12px/1.3 var(--font-mono);
-  color: var(--text-3);
-  white-space: nowrap;
-}
-
-.tl-bar-rule {
-  flex: 1;
-  min-width: 24px;
-  height: 1px;
-  background: var(--line-strong);
-  transform-origin: left center;
-}
-
-.tl-bar-guide {
+.tl-guide {
   display: inline-flex;
+  align-self: flex-start;
   align-items: center;
   gap: 6px;
   color: var(--blue-soft);
   font-size: 13.5px;
   font-weight: 500;
-  white-space: nowrap;
   transition: color 0.2s ease;
 }
 
-.tl-bar-guide svg {
+.tl-guide svg {
   width: 14px;
   height: 14px;
   transition: transform 0.25s ease;
 }
 
-.tl-bar-guide:hover {
+.tl-guide:hover {
   color: var(--text);
 }
 
-.tl-bar-guide:hover svg {
+.tl-guide:hover svg {
   transform: translateX(3px);
 }
 
 .tl-heading {
-  font-size: clamp(30px, 2.78vw, 40px);
+  font-size: clamp(26px, 2.2vw, 32px);
   font-weight: 600;
   line-height: 1.08;
   letter-spacing: -0.035em;
@@ -523,8 +466,8 @@
 
 .tl-uses {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  column-gap: 56px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  column-gap: 40px;
 }
 
 .tl-use {
@@ -950,24 +893,9 @@
     padding: 112px 0;
   }
 
-  .tl-intro {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 40px;
-  }
-
-  .tl-intro-heading {
-    flex: none;
-  }
-
-  .tl-index {
-    display: grid;
-    flex: none;
+  .tl-uses {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .tl-scaf {
-    margin-top: 160px;
+    column-gap: 56px;
   }
 
   .tl-scaf-body {
@@ -1048,7 +976,7 @@
     background: radial-gradient(80% 10% at 90% 4%, #3370ff24, #3370ff00), var(--ink-950);
   }
 
-  .tl-intro-heading {
+  .tl-intro {
     gap: 14px;
   }
 
@@ -1061,59 +989,38 @@
     letter-spacing: -1.2px;
   }
 
+  /* On phones the chips lose their icons, so all three fit */
+  .tl-stage {
+    margin-top: 32px;
+  }
+
+  .tl-nav {
+    padding: 10px 0 9px;
+  }
+
+  .tl-chips {
+    gap: 6px;
+  }
+
+  .tl-chip {
+    padding: 0 12px;
+  }
+
+  .tl-chip svg {
+    display: none;
+  }
+
+  .tl-tool {
+    padding-top: 40px;
+    scroll-margin-top: 52px;
+  }
+
+  .tl-tool + .tl-tool {
+    margin-top: 72px;
+  }
+
   .tl-sub {
     gap: 28px;
-  }
-
-  .tl-dev,
-  .tl-scaf {
-    margin-top: 112px;
-  }
-
-  .tl-bar {
-    gap: 10px;
-    margin-bottom: -16px;
-  }
-
-  .tl-bar-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 9px;
-  }
-
-  .tl-bar-icon svg {
-    width: 15px;
-    height: 15px;
-  }
-
-  .tl-bar-text {
-    gap: 1px;
-  }
-
-  .tl-bar-name {
-    font-size: 16px;
-    line-height: 18px;
-    letter-spacing: 0;
-  }
-
-  .tl-bar-pkg {
-    font-size: 10.5px;
-    line-height: 13px;
-  }
-
-  .tl-bar-guide-label {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-  }
-
-  .tl-bar-guide svg {
-    width: 16px;
-    height: 16px;
   }
 
   .tl-heading {

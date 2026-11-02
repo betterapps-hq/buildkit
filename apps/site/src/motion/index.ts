@@ -77,6 +77,26 @@ function domainRows() {
   })
 }
 
+/** Each tool slides in from the side as the page scrolls to it, following the scroll. */
+function toolSlides() {
+  for (const tool of gsap.utils.toArray<HTMLElement>(".tl-tool")) {
+    gsap.from(tool, {
+      x: () => Math.min(160, window.innerWidth * 0.12),
+      autoAlpha: 0,
+      ease: "none",
+      scrollTrigger: {
+        trigger: tool,
+        start: "top 92%",
+        end: "top 50%",
+        scrub: 0.6,
+        invalidateOnRefresh: true,
+        // Measured after the pinned stories above, which add their scroll length before the tools
+        refreshPriority: -2
+      }
+    })
+  }
+}
+
 /** The scaffolder's spine draws down through its steps with the scroll, lighting each node as it passes. */
 function scaffolderSpine() {
   const steps = gsap.utils.toArray<HTMLElement>(".tl-steps .tl-step")
@@ -100,24 +120,6 @@ function scaffolderSpine() {
     if (below && index < steps.length - 1) {
       timeline.from(below, { scaleY: 0, duration: below.offsetHeight / 100 })
     }
-  })
-}
-
-/** The shadcn style cards swing out of depth while they rise, dealt left to right like a deck. */
-function styleDeck() {
-  const cards = gsap.utils.toArray<HTMLElement>(".kit-style-grid > li")
-  if (cards.length === 0) {
-    return
-  }
-  gsap.set(cards, { transformPerspective: 1200 })
-  gsap.from(cards, {
-    rotateY: -25,
-    z: -200,
-    x: (_index: number, card: HTMLElement) => -card.offsetLeft * 0.5,
-    duration: 1.1,
-    ease: "expo.out",
-    stagger: 0.08,
-    scrollTrigger: { trigger: ".kit-style-grid", start: "top 85%", once: true }
   })
 }
 
@@ -198,6 +200,7 @@ export function startMotion() {
     heroIntro()
     reveals()
     domainRows()
+    toolSlides()
     ctaCharge()
     return paletteTyping()
   })
@@ -205,7 +208,6 @@ export function startMotion() {
   media.add(WIDE_MOTION, () => {
     workbenchTilt()
     scaffolderSpine()
-    styleDeck()
   })
   media.add(STAGE_MOTION, () => architectureScene())
   document.documentElement.classList.add("motion-ready")

@@ -1,18 +1,8 @@
-import {
-  Blocks,
-  FileCode,
-  GitCompare,
-  ListChecks,
-  Package,
-  PenLine,
-  RefreshCw,
-  SquareTerminal,
-  Terminal
-} from "lucide-react"
+import { FileCode, GitCompare, ListChecks, Package, PenLine, RefreshCw, SquareTerminal, Terminal } from "lucide-react"
 import type { ReactNode } from "react"
 import { tokenize } from "../../components/Code"
 import { packageGuide } from "../../links"
-import { Alt, SubsectionBar } from "./parts"
+import { Alt, GuideLink } from "./parts"
 
 const FEATURES = [
   {
@@ -227,18 +217,10 @@ const STEPS = [
 
 export function Scaffolder() {
   return (
-    <section id="scaffolder" className="tl-sub tl-scaf" aria-labelledby="scaffolder-title">
-      <SubsectionBar
-        icon={Blocks}
-        name="Scaffolder"
-        pkg="@buildkitgg/scaffolder"
-        guide={packageGuide("scaffolder")}
-        guideLabel="Scaffolder guide"
-      />
-
+    <div className="tl-sub">
       <div className="tl-scaf-body">
-        <div className="tl-scaf-copy" data-reveal>
-          <h3 id="scaffolder-title" className="tl-heading">
+        <div className="tl-scaf-copy">
+          <h3 className="tl-heading">
             Ship your stack
             <br className="tl-wide" /> as a template
           </h3>
@@ -266,10 +248,8 @@ export function Scaffolder() {
         </div>
 
         <div className="tl-flow">
-          <h4 className="tl-part-title" data-reveal>
-            How it works
-          </h4>
-          <ol className="tl-steps" data-reveal-stagger>
+          <h4 className="tl-part-title">How it works</h4>
+          <ol className="tl-steps">
             {STEPS.map((step) => {
               const Icon = step.icon
               return (
@@ -292,6 +272,8 @@ export function Scaffolder() {
           </ol>
         </div>
       </div>
-    </section>
+
+      <GuideLink href={packageGuide("scaffolder")} label="Scaffolder guide" />
+    </div>
   )
 }

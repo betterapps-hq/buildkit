@@ -1,4 +1,4 @@
-import { ArrowRight, Check, Copy, type LucideIcon } from "lucide-react"
+import { ArrowRight, Check, Copy } from "lucide-react"
 import { useState, type ReactNode } from "react"
 import { Link } from "../../components/Link"
 
@@ -47,30 +47,12 @@ export function Command({ command, copyClassName }: { command: string; copyClass
   )
 }
 
-type BarProps = {
-  icon: LucideIcon
-  name: string
-  pkg: string
-  guide: string
-  guideLabel: string
-}
-
-/** The left-aligned bar that opens each tool's subsection: icon, name over its package, a rule and the guide link. */
-export function SubsectionBar({ icon: Icon, name, pkg, guide, guideLabel }: BarProps) {
+/** The link to a tool's guide that closes its panel. */
+export function GuideLink({ href, label }: { href: string; label: string }) {
   return (
-    <div className="tl-bar" data-reveal>
-      <span className="tl-bar-icon">
-        <Icon aria-hidden="true" />
-      </span>
-      <span className="tl-bar-text">
-        <span className="tl-bar-name">{name}</span>
-        <span className="tl-bar-pkg">{pkg}</span>
-      </span>
-      <span className="tl-bar-rule" aria-hidden="true" />
-      <Link className="tl-bar-guide" href={guide}>
-        <span className="tl-bar-guide-label">{guideLabel}</span>
-        <ArrowRight aria-hidden="true" />
-      </Link>
-    </div>
+    <Link className="tl-guide" href={href}>
+      {label}
+      <ArrowRight aria-hidden="true" />
+    </Link>
   )
 }

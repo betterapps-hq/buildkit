@@ -1,66 +1,97 @@
-import { ArrowDown, Blocks, GlobeLock } from "lucide-react"
+import { Blocks, GlobeLock, Palette } from "lucide-react"
+import { useEffect, useRef, useState } from "react"
 import { DevDomains } from "./tooling/DevDomains"
 import { Scaffolder } from "./tooling/Scaffolder"
+import { ShadcnKit } from "./tooling/ShadcnKit"
 import "./tooling.css"
 
 const TOOLS = [
-  {
-    id: "dev-domains",
-    icon: GlobeLock,
-    name: "Dev domains",
-    pkg: "@buildkitgg/dev-domains",
-    desc: "Stable HTTPS domains for every server in every worktree"
-  },
-  {
-    id: "scaffolder",
-    icon: Blocks,
-    name: "Scaffolder",
-    pkg: "@buildkitgg/scaffolder",
-    desc: "Templates with required and optional add-ons, installed and changed from a CLI"
-  }
+  { id: "dev-domains", icon: GlobeLock, name: "Dev domains", Panel: DevDomains },
+  { id: "scaffolder", icon: Blocks, name: "Scaffolder", Panel: Scaffolder },
+  { id: "shadcn", icon: Palette, name: "shadcn kit", Panel: ShadcnKit }
 ]
 
+type ToolId = (typeof TOOLS)[number]["id"]
+
 export function Tooling() {
+  const [current, setCurrent] = useState<ToolId>("dev-domains")
+  const [stuck, setStuck] = useState(false)
+  const marker = useRef<HTMLDivElement>(null)
+
+  // The bar is stuck once the spot it sits in at rest has scrolled up past the top of the screen
+  useEffect(() => {
+    const element = marker.current
+    if (!element) {
+      return undefined
+    }
+    const observer = new IntersectionObserver(([entry]) => {
+      setStuck(!entry.isIntersecting && entry.boundingClientRect.top < 0)
+    })
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [])
+
+  // The bar marks the tool crossing the middle of the screen
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setCurrent(entry.target.id)
+          }
+        }
+      },
+      { rootMargin: "-45% 0px -55% 0px" }
+    )
+    for (const tool of TOOLS) {
+      const element = document.getElementById(tool.id)
+      if (element) {
+        observer.observe(element)
+      }
+    }
+    return () => observer.disconnect()
+  }, [])
+
   return (
     <section id="tooling" className="section section-ruled tooling" aria-labelledby="tooling-title">
       <div className="container">
-        <div className="tl-intro">
-          <div className="tl-intro-heading" data-reveal>
-            <p className="eyebrow">Developer tooling</p>
-            <h2 id="tooling-title" className="section-title tl-title">
-              Tools for the chores
-              <br className="tl-wide" /> that keep coming up
-            </h2>
-            <p className="section-body tl-intro-body">
-              Run development servers across worktrees, or build starter templates and project-creation wizards for your
-              platform. Use the same commands yourself or through your coding agents.
-            </p>
-          </div>
-          <ul className="tl-index tl-wide" aria-label="Tools in this section" data-reveal-stagger>
-            {TOOLS.map((tool) => {
-              const Icon = tool.icon
-              return (
-                <li key={tool.id}>
-                  <a className="tl-tool" href={`#${tool.id}`}>
-                    <span className="tl-tool-icon">
-                      <Icon aria-hidden="true" />
-                    </span>
-                    <span className="tl-tool-text">
-                      <span className="tl-tool-title">
-                        <span className="tl-tool-name">{tool.name}</span>
-                        <span className="tl-tool-pkg">{tool.pkg}</span>
-                      </span>
-                      <span className="tl-tool-desc">{tool.desc}</span>
-                    </span>
-                    <ArrowDown className="tl-tool-jump" aria-hidden="true" />
-                  </a>
-                </li>
-              )
-            })}
-          </ul>
+        <div className="tl-intro" data-reveal>
+          <p className="eyebrow">Developer tooling</p>
+          <h2 id="tooling-title" className="section-title tl-title">
+            Tooling that keeps pace
+            <br className="tl-wide" /> with your agents
+          </h2>
+          <p className="section-body tl-intro-body">
+            The faster your agents work, the more the setup around them gets in the way. Buildkit&apos;s developer tools
+            take it out of the path, across every project and every agent you run.
+          </p>
         </div>
-        <DevDomains />
-        <Scaffolder />
+        <div className="tl-stage">
+          <div ref={marker} aria-hidden="true" />
+          <nav className="tl-nav" aria-label="Tools" data-stuck={stuck || undefined}>
+            <ul className="tl-chips">
+              {TOOLS.map((tool) => {
+                const Icon = tool.icon
+                return (
+                  <li key={tool.id}>
+                    <a className="tl-chip" href={`#${tool.id}`} aria-current={tool.id === current ? "true" : undefined}>
+                      <Icon aria-hidden="true" />
+                      {tool.name}
+                    </a>
+                  </li>
+                )
+              })}
+            </ul>
+          </nav>
+          {TOOLS.map(({ id, name, Panel }) => (
+            <section key={id} id={id} className="tl-tool" aria-labelledby={`${id}-name`}>
+              <p id={`${id}-name`} className="eyebrow tl-tool-name">
+                {name}
+              </p>
+              <Panel />
+            </section>
+          ))}
+        </div>
       </div>
     </section>
   )
