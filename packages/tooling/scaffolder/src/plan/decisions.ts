@@ -1,6 +1,6 @@
-import { findAddon, findSlot, findTarget, findTemplate, lookupAddon } from "../manifest/catalog.js"
+import { findAddon, findSlot, findTarget, findTemplate, lookupAddon, shortName } from "../manifest/catalog.js"
 import type { CatalogManifest } from "../manifest/types.js"
-import type { ResolveIssue } from "../resolve/resolve.js"
+import type { ResolveIssue, Selection } from "../resolve/resolve.js"
 import type { DecisionChoice, Intent, PlanDecision, PlanRequest } from "./types.js"
 
 function title(catalog: CatalogManifest, id: string): string {
@@ -56,8 +56,16 @@ function addingTo(catalog: CatalogManifest, request: PlanRequest, id: string, re
   return withIntent(request, { command: "add", addons: [id], replace: [replace], options: {} })
 }
 
-/** Turns a resolver issue into a decision whose every choice is a complete request. */
-export function issueDecision(catalog: CatalogManifest, request: PlanRequest, issue: ResolveIssue): PlanDecision {
+/**
+ * Turns a resolver issue into a decision whose every choice is a complete request. `selection` is what the request
+ * resolved from, when it got that far.
+ */
+export function issueDecision(
+  catalog: CatalogManifest,
+  request: PlanRequest,
+  issue: ResolveIssue,
+  selection?: Selection
+): PlanDecision {
   const { intent } = request
   switch (issue.kind) {
     case "choose-mode": {
@@ -127,6 +135,25 @@ export function issueDecision(catalog: CatalogManifest, request: PlanRequest, is
       const lead = Object.hasOwn(findAddon(catalog, installed)?.provides ?? {}, issue.capability)
         ? `${title(catalog, installed)} is your ${issue.capability}.`
         : `${title(catalog, installed)} can't be used with an add-on that provides ${issue.capability}.`
+      // Only an add-on chosen in the config can be replaced. One another add-on pulled in has to go with that add-on.
+      if (selection && !Object.hasOwn(selection.addons, installed)) {
+        const needers = Object.keys(selection.addons)
+          .filter((other) => findAddon(catalog, other)?.requires?.includes(installed))
+          .map((other) => title(catalog, other))
+        return {
+          id,
+          message: `${lead} ${needers.length > 0 ? needers.join(" and ") : "Another add-on"} needs it, so it can't be replaced with ${title(catalog, incoming)}.`,
+          choices: []
+        }
+      }
+      // A replacement is an add. Turning an upgrade into one would drop the upgrade, so other commands say how instead.
+      if (intent.command !== "add") {
+        return {
+          id,
+          message: `${lead} To replace it with ${title(catalog, incoming)}, run add ${shortName(incoming)} --replace ${shortName(installed)}.`,
+          choices: []
+        }
+      }
       return {
         id,
         message: `${lead} Replace it with ${title(catalog, incoming)}?`,

@@ -419,6 +419,31 @@ describe("plan decisions", () => {
       "planned"
     )
 
+    // An upgrade stays an upgrade, so it says how to swap instead of offering it.
+    const upgrade = await planFixture(files, { intent: { command: "upgrade", addons: ["prisma"] } }, { catalog })
+    expect(upgrade.decisions[0]).toMatchObject({
+      message: "Drizzle is your orm. To replace it with Prisma, run add prisma --replace drizzle.",
+      choices: []
+    })
+
+    // Drizzle pulled in by another add-on goes with that add-on, so it can't be swapped on its own.
+    const needsDrizzle = defineAddon({
+      id: "@x/migrations",
+      version: "1.0.0",
+      title: "Migrations",
+      description: "",
+      requires: ["@x/drizzle"],
+      contribute: () => []
+    })
+    const withMigrations = withAddons(catalog, needsDrizzle)
+    const pulled = await applyFixture({}, initRequest({ optional: ["@x/migrations"] }), { catalog: withMigrations })
+    expect((await planFixture(pulled, addRequest(["prisma"]), { catalog: withMigrations })).decisions[0]).toMatchObject(
+      {
+        message: "Drizzle is your orm. Migrations needs it, so it can't be replaced with Prisma.",
+        choices: []
+      }
+    )
+
     // Asked for together, neither is installed, so there's nothing to swap.
     const both = await planFixture({}, initRequest({ optional: ["@x/drizzle", "@x/prisma"] }), { catalog })
     expect(both.decisions[0]).toMatchObject({
