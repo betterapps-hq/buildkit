@@ -127,6 +127,18 @@ Contribution kinds: `dependency`, `script`, `env`, `file` (`owned`, `seed` or `s
 `notice`. Add-ons declare `requires` (ids, `slot:<id>` or `provides:<name>`), `conflicts`, `after`, `supports()` and
 `migrations`.
 
+### Versions
+
+`versions` pins each package the targets and add-ons install: an exact version, or an npm range such as `^19.3.1`,
+`~0.45.4` or `>=1 <3`. Dist-tags such as `latest` aren't pins, so a catalog version always makes the same project.
+`range` says how an exact pin is written into `package.json`: `exact` (the default), `caret` (`^19.3.1`) or `tilde`
+(`~19.3.1`). A pin that's already a range is written as it is, and `ctx.version(name)` returns what's written.
+
+An add-on's `packages` gives the ranges it's written for, such as `{ "drizzle-orm": ">=0.45 <1" }`, and catalog CI
+checks that the lowest version each pin allows is in them. An upgrade moves a pin like any shared key: one the engine
+wrote and you haven't changed takes the new value, and one you changed is a conflict that `keep-current` answers.
+`isValidRange`, `satisfiesRange` and `lowestVersion` are exported.
+
 A keyed append can say where a new item goes with `order: { after, before }`, by the keys of other items. A CI step with
 `order: { after: ["format"] }` goes after the `format` step, or at the end when there's none. The order places an item
 when it's added and never moves one that's there.
@@ -222,20 +234,21 @@ exclude them. `printJson` and `jsonLayoutFor` in `@buildkitgg/scaffolder/edit` p
 
 ## Commands
 
-| Command                                    | What it does                                                         |
-| ------------------------------------------ | -------------------------------------------------------------------- |
-| `create [template] [folder]`               | Create a project, from a template or a package. `--adopt` adopts one |
-| `add <add-on or slot…>`                    | Add add-ons, or answer a slot question: `add database`. `--replace`  |
-| `config`, `config get`, `config set`       | Show the config, get an option, or set options                       |
-| `upgrade [--list]`                         | Move to the installed catalog version, running migrations            |
-| `sync`                                     | Bring generated files and the lock in line with the config           |
-| `check`                                    | Fail when generated files or the lock are out of date                |
-| `status [path]`, `explain <subject>`       | What the engine manages, and who contributes a path, add-on or entry |
-| `plan show <file>`                         | Show a saved plan                                                    |
-| `catalog [package] [--json]`               | Describe the questionnaire, or a template package's templates        |
-| `catalog fetch <version>`, `catalog check` | Cache an earlier catalog version, or check a package before publish  |
-| `schema`                                   | JSON Schemas for the config, the lock and plan requests              |
-| `recover`                                  | Roll back an interrupted apply                                       |
+| Command                                       | What it does                                                         |
+| --------------------------------------------- | -------------------------------------------------------------------- |
+| `create [template] [folder]`                  | Create a project, from a template or a package. `--adopt` adopts one |
+| `add <add-on or slot…>`                       | Add add-ons, or answer a slot question: `add database`. `--replace`  |
+| `config`, `config get`, `config set`          | Show the config, get an option, or set options                       |
+| `upgrade [--list]`                            | Move to the installed catalog version, running migrations            |
+| `sync`                                        | Bring generated files and the lock in line with the config           |
+| `check`                                       | Fail when generated files or the lock are out of date                |
+| `status [path]`, `explain <subject>`          | What the engine manages, and who contributes a path, add-on or entry |
+| `plan show <file>`                            | Show a saved plan                                                    |
+| `catalog [package] [--json]`                  | Describe the questionnaire, or a template package's templates        |
+| `catalog fetch <version>`, `catalog check`    | Cache an earlier catalog version, or check a package before publish  |
+| `catalog check --registry [--min-age <days>]` | Check each of the catalog's pins against npm                         |
+| `schema`                                      | JSON Schemas for the config, the lock and plan requests              |
+| `recover`                                     | Roll back an interrupted apply                                       |
 
 Every planning command takes `--dry-run`, `--json`, `--out [folder]`, `--plan <file>`, `--yes`, `--diff`,
 `--resolve <id>=keep-current|take-incoming|file:<path>` and `--conflict markers`. Without a terminal, a command plans
@@ -322,7 +335,13 @@ product, because applying it runs the package author's code.
 ## Catalog CI
 
 `checkCatalog(catalog, { matrix: true })` reports broken references, slot defaults that aren't the slot's add-ons,
-required add-ons with options that lack defaults, unregistered facets, and any pair of answers that fails to plan.
+required add-ons with options that lack defaults, unregistered facets, pins that aren't versions or ranges, add-ons
+whose `packages` a pin doesn't fit, and any pair of answers that fails to plan.
+
+`catalog check --registry` runs the installed catalog's checks, then asks npm for each pin. It fails when nothing
+published matches a pin, when the newest match is younger than `--min-age` days (default 1), and when an add-on's
+`packages` doesn't include the newest match. It's for CI and releases, not for every plan.
+`checkRegistry(catalog, store)` in `@buildkitgg/scaffolder/node` runs it from a script.
 
 `pairwiseAnswers(catalog, template, mode)` gives the answer sets it plans: a covering array, in which every pair of
 values of every two questions appears in at least one set, built greedily and the same every time. A product's smoke

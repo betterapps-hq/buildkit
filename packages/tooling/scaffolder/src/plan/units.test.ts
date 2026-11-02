@@ -3,7 +3,7 @@ import { decideKey } from "../merge/keys.js"
 import { applyStyle, countLines, hasConflictMarkers, hashText, normalizeText, textStyle } from "../ownership/text.js"
 import { fixtureCatalog } from "../testing/fixture.js"
 import { pendingMigrations } from "../upgrade/migrations.js"
-import { compareVersions, isValidVersion, satisfiesRange } from "../upgrade/semver.js"
+import { compareVersions, isValidRange, isValidVersion, lowestVersion, satisfiesRange } from "../upgrade/semver.js"
 import { requestArgv } from "./argv.js"
 import { exitCode, toEnvelope, artifactName } from "./envelope.js"
 import { errorInfo, PlanError } from "./errors.js"
@@ -215,6 +215,42 @@ describe("versions and migrations", () => {
 
   it("rejects text that isn't a range", () => {
     expect(() => satisfiesRange("1.0.0", "^one")).toThrow("isn't a version range")
+  })
+
+  it("tells ranges from text that isn't one", () => {
+    const ranges = [
+      "1.2.3",
+      "^19.3.1",
+      "~0.45",
+      "1.x",
+      ">=1 <3",
+      "1.0.0 - 2.0.0",
+      "^1 || ^2",
+      "*",
+      "1.0.0-rc.1",
+      "1.2.3+build.1"
+    ]
+    expect(ranges.filter((range) => !isValidRange(range))).toEqual([])
+    expect(["latest", "", " ", "^one", "1.0.0 ||", ">>1", "1.2.3.4"].filter(isValidRange)).toEqual([])
+  })
+
+  it.each([
+    ["^1.2.0", "1.2.0"],
+    [">=0.45 <1", "0.45.0"],
+    ["~0.45 || ^1", "0.45.0"],
+    ["^2 || 1.5.0", "1.5.0"],
+    [">1.2.3", "1.2.4"],
+    [">1.2.3-beta.1 <1.2.4", "1.2.3-beta.1.0"],
+    [">1", "2.0.0"],
+    ["1.x", "1.0.0"],
+    ["1.2.3", "1.2.3"],
+    [">=1.0.0 >=1.4.0", "1.4.0"],
+    ["<2", "0.0.0"],
+    ["*", "0.0.0"],
+    ["^1 || <0.5", "0.0.0"],
+    [">=2 <1", undefined]
+  ])("gives %s the lowest version %s", (range, expected) => {
+    expect(lowestVersion(range)).toBe(expected)
   })
 
   it("selects migrations in the upgraded range", () => {

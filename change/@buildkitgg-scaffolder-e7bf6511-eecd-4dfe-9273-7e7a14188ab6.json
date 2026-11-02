@@ -1,0 +1,7 @@
+{
+  "type": "minor",
+  "comment": "Catalogs pin packages to exact versions or npm ranges, and write exact pins as exact, caret or tilde ranges. Add-ons say which package ranges they're written for, catalog CI checks the pins fit, and `catalog check --registry` checks each pin against npm",
+  "packageName": "@buildkitgg/scaffolder",
+  "email": "ajcraswell@gmail.com",
+  "dependentChangeType": "patch"
+}

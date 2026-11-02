@@ -1,4 +1,5 @@
 import { isRecord } from "../plan/json.js"
+import { isValidVersion } from "../upgrade/semver.js"
 import type {
   AddonManifest,
   CatalogManifest,
@@ -33,6 +34,17 @@ export function findPreset(catalog: CatalogManifest, id: string): PresetManifest
 
 export function slotAddons(catalog: CatalogManifest, slot: string): AddonManifest[] {
   return catalog.addons.filter((addon) => addon.slot === slot)
+}
+
+/**
+ * The catalog's pins as it writes them into `package.json`: an exact pin in its `range` style, such as `^19.3.1` in a
+ * `caret` catalog, and a pin that's already a range as it is.
+ */
+export function writtenVersions(catalog: CatalogManifest): Record<string, string> {
+  const prefix = { exact: "", caret: "^", tilde: "~" }[catalog.range ?? "exact"]
+  return Object.fromEntries(
+    Object.entries(catalog.versions ?? {}).map(([name, pin]) => [name, isValidVersion(pin) ? `${prefix}${pin}` : pin])
+  )
 }
 
 export function findMode(target: TargetManifest, mode: string): TargetMode | undefined {
