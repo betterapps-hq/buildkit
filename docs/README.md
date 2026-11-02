@@ -34,6 +34,8 @@ Preferences packages: [core](../packages/core/preferences-core/README.md),
 Package-specific docs live in each package’s `docs/README.md`. Start with
 [dev-domains](../packages/tooling/dev-domains/docs/README.md).
 
+[API Mocker](../packages/tooling/api-mocker/README.md) registers MSW endpoints for Storybook and tests.
+
 [Scaffolder](../packages/tooling/scaffolder/README.md): the plan-first scaffolding engine behind product CLIs, with its
 [architecture guide](../packages/tooling/scaffolder/docs/README.md). Buildkit's own
 [catalog](../packages/tooling/catalog/README.md) and [`buildkit` CLI](../packages/tooling/cli/README.md) run on it.

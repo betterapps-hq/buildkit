@@ -1,0 +1,45 @@
+{
+  "name": "@buildkitgg/api-mocker",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Register mock HTTP endpoints on an MSW worker or server with optional request observation.",
+  "type": "module",
+  "license": "MIT",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist/**/*.js",
+    "dist/**/*.d.ts",
+    "README.md",
+    "docs/*.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vp test run",
+    "test:coverage": "vp test run --coverage",
+    "prepack": "pnpm build"
+  },
+  "peerDependencies": {
+    "msw": "^3.0.3"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@vitest/coverage-v8": "catalog:",
+    "msw": "3.0.3",
+    "typescript": "catalog:",
+    "vite-plus": "catalog:",
+    "vitest": "catalog:"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AndrewCraswell/buildkit.git",
+    "directory": "packages/tooling/api-mocker"
+  }
+}

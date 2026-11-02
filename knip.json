@@ -11,6 +11,9 @@
     "packages/tooling/api-tools": {
       "entry": ["src/reports.ts"]
     },
+    "packages/tooling/api-mocker": {
+      "entry": ["src/index.ts"]
+    },
     ".": {
       "entry": ["beachball.config.js"]
     },
