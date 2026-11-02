@@ -53,7 +53,8 @@ export type ResolveIssue =
   | { kind: "choose-slot"; slot: string; by?: string; candidates: string[] }
   | { kind: "choose-provider"; capability: string; by: string; candidates: string[] }
   | { kind: "slot-taken"; slot: string; installed: string; incoming: string }
-  | { kind: "conflicts"; addon: string; other: string }
+  /** `addon` declares the conflict. With `capability`, it conflicts with any add-on that provides it, as `other` does. */
+  | { kind: "conflicts"; addon: string; other: string; capability?: string }
 
 export type ResolveResult = { ok: true; value: ResolvedSelection } | { ok: false; issue: ResolveIssue }
 
@@ -201,8 +202,9 @@ export function resolveSelection(catalog: CatalogManifest, selection: Selection)
   }
   for (const addon of selected) {
     for (const other of selected) {
-      if (addon.conflicts?.includes(other.id)) {
-        return { ok: false, issue: { kind: "conflicts", addon: addon.id, other: other.id } }
+      const conflict = declaredConflict(addon, other)
+      if (conflict) {
+        return { ok: false, issue: { kind: "conflicts", addon: addon.id, other: other.id, ...conflict } }
       }
     }
   }
@@ -232,6 +234,32 @@ export function resolveSelection(catalog: CatalogManifest, selection: Selection)
     ok: true,
     value: { name: selection.name, template, target, mode, info, addons, declined: [...selection.declined].sort() }
   }
+}
+
+/**
+ * Whether `addon` declares a conflict with `other`: by its id, or by `provides:<name>` when `other` provides it. An
+ * add-on never conflicts with itself, so an ORM that conflicts with `provides:orm` can still be installed.
+ */
+function declaredConflict(addon: AddonManifest, other: AddonManifest): { capability?: string } | undefined {
+  if (addon.id === other.id) {
+    return undefined
+  }
+  for (const reference of addon.conflicts ?? []) {
+    if (reference.startsWith("provides:")) {
+      const capability = reference.slice(9)
+      if (other.provides && Object.hasOwn(other.provides, capability)) {
+        return { capability }
+      }
+    } else if (reference === other.id) {
+      return {}
+    }
+  }
+  return undefined
+}
+
+/** Whether two add-ons can't be installed together. One side declaring it is enough. */
+export function addonsConflict(left: AddonManifest, right: AddonManifest): boolean {
+  return declaredConflict(left, right) !== undefined || declaredConflict(right, left) !== undefined
 }
 
 /** Orders add-ons so each comes after what it requires or runs after. Ties sort by id; a cycle is an error. */
