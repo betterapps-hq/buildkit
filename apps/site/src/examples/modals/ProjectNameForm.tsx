@@ -4,13 +4,14 @@ import { useId, useState } from "react"
 
 // Create one manager per app and mount its ModalRenderer once
 export const modals = createModalManager()
+const { confirm } = modals
 
 export function ProjectNameForm({ savedName }: { savedName: string }) {
   const id = useId()
   const [name, setName] = useState(savedName)
 
   async function cancel() {
-    const discard = await modals.confirm({
+    const discard = await confirm({
       title: "Discard changes?",
       description: "The new name hasn't been saved.",
       confirmLabel: "Discard",

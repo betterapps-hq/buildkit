@@ -23,6 +23,15 @@ body {
   width: auto;
 }
 
+/* Stored preferences: the page's text takes the size the reader picks, and the picker keeps its own */
+[data-example="preferences"] p {
+  max-width: 32em;
+  margin: 20px 0 0;
+  color: var(--foreground);
+  font-size: var(--text-size, 16px);
+  line-height: 1.5;
+}
+
 /* Inline alerts */
 [data-example="alerts"] form {
   display: flex;

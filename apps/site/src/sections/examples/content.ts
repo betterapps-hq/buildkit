@@ -55,9 +55,9 @@ export const EXAMPLES: Example[] = [
     description:
       "Open a modal and await its typed result. Ask before discarding unsaved changes, then act on the answer.",
     hint: "Edit the name, then press Cancel",
-    files: [{ name: "ProjectNameForm.tsx", source: source("modals/ProjectNameForm.tsx"), highlight: lines(12, 22) }],
+    files: [{ name: "ProjectNameForm.tsx", source: source("modals/ProjectNameForm.tsx"), highlight: lines(13, 23) }],
     active: "ProjectNameForm.tsx",
-    wire: [{ label: "modals.confirm()", value: "not called yet", tone: "muted" }]
+    wire: [{ label: "confirm()", value: "not called yet", tone: "muted" }]
   },
   {
     id: "preferences",
@@ -70,7 +70,7 @@ export const EXAMPLES: Example[] = [
     description: "Typed defaults and overrides, saved to storage and synced across tabs and sessions.",
     hint: "Pick a size, then reload",
     control: "reload",
-    files: [{ name: "TextSizePicker.tsx", source: source("preferences/TextSizePicker.tsx"), highlight: [20, 28] }],
+    files: [{ name: "TextSizePicker.tsx", source: source("preferences/TextSizePicker.tsx"), highlight: [20, 29] }],
     active: "TextSizePicker.tsx",
     wire: [{ label: "localStorage.preferences", value: "null", tone: "keyword" }]
   },

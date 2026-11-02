@@ -9,9 +9,9 @@ const preferences = createPreferences({
   key: "preferences"
 })
 
-// Works outside React too: size the page now, and again on every change
+// Works outside React too: set the page's text size now, and again on every change
 function applyTextSize() {
-  document.documentElement.style.fontSize = `${preferences.get("textSize")}px`
+  document.documentElement.style.setProperty("--text-size", `${preferences.get("textSize")}px`)
 }
 applyTextSize()
 preferences.subscribe(applyTextSize)
@@ -19,17 +19,20 @@ preferences.subscribe(applyTextSize)
 export function TextSizePicker() {
   const [textSize, setTextSize] = usePreference(preferences, "textSize")
   return (
-    <ButtonGroup aria-label="Text size">
-      {Object.entries(TEXT_SIZES).map(([label, size]) => (
-        <Button
-          key={size}
-          variant={size === textSize ? "default" : "outline"}
-          aria-pressed={size === textSize}
-          onClick={() => setTextSize(size)}
-        >
-          {label}
-        </Button>
-      ))}
-    </ButtonGroup>
+    <>
+      <ButtonGroup aria-label="Text size">
+        {Object.entries(TEXT_SIZES).map(([label, size]) => (
+          <Button
+            key={size}
+            variant={size === textSize ? "default" : "outline"}
+            aria-pressed={size === textSize}
+            onClick={() => setTextSize(size)}
+          >
+            {label}
+          </Button>
+        ))}
+      </ButtonGroup>
+      <p>Text across the page follows the size you pick, in this tab and every other one.</p>
+    </>
   )
 }
