@@ -1,7 +1,10 @@
 {
   "name": "@buildkitgg/api-mocker",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "description": "Register mock HTTP endpoints on an MSW worker or server with optional request observation.",
   "type": "module",
   "license": "MIT",
@@ -17,6 +20,7 @@
     "dist/**/*.js",
     "dist/**/*.d.ts",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
   "scripts": {
@@ -31,14 +35,14 @@
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
     "@vitest/coverage-v8": "catalog:",
-    "msw": "3.0.3",
+    "msw": "^3.0.3",
     "typescript": "catalog:",
     "vite-plus": "catalog:",
     "vitest": "catalog:"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AndrewCraswell/buildkit.git",
+    "url": "git+https://github.com/betterapps-hq/buildkit.git",
     "directory": "packages/tooling/api-mocker"
   }
 }
