@@ -102,7 +102,7 @@ export interface EnvVar {
   required: boolean
   description: string
   example?: string
-  /** Where to get a value, an https URL. The wizard and the next steps say "Get one at <url>". */
+  /** Where to get a value, an https URL. The wizard and the next steps say `Get one at <url>`. */
   help?: string
 }
 
