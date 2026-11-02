@@ -10,15 +10,17 @@ import {
   targetInfo,
   templateModes
 } from "../manifest/catalog.js"
-import type { Answers, CatalogManifest } from "../manifest/types.js"
+import type { Answers, CatalogManifest, RangeStyle } from "../manifest/types.js"
 import { PlanError } from "../plan/errors.js"
 import { isRecord } from "../plan/json.js"
 import { render } from "../plan/render.js"
 import { defineSettings } from "../state/settings.js"
-import { compareVersions, isValidVersion } from "../upgrade/semver.js"
+import { compareVersions, isValidRange, isValidVersion, lowestVersion, satisfiesRange } from "../upgrade/semver.js"
 import { selectionFromAnswers } from "./answers.js"
 import { optionsSchema } from "./questions.js"
 import { addonSupports, resolveSelection } from "./resolve.js"
+
+const rangeStyles: readonly RangeStyle[] = ["exact", "caret", "tilde"]
 
 function duplicates(ids: readonly string[]): string[] {
   const seen = new Set<string>()
@@ -33,8 +35,8 @@ function duplicates(ids: readonly string[]): string[] {
 }
 
 /**
- * Catalog CI: checks references, slot defaults, required add-on options and facets. With `matrix`, it also plans
- * every pair of answers for each template and mode, or for the `templates` listed, and reports any that fail.
+ * Catalog CI: checks references, slot defaults, required add-on options, facets and version pins. With `matrix`, it
+ * also plans every pair of answers for each template and mode, or for the `templates` listed, and reports any that fail.
  */
 export function checkCatalog(
   catalog: CatalogManifest,
@@ -73,6 +75,15 @@ export function checkCatalog(
           problems.push(`Target ${target.id} mode ${mode.id} uses facet ${facet}, which isn't registered.`)
         }
       }
+    }
+  }
+  const versions = catalog.versions ?? {}
+  if (catalog.range !== undefined && !rangeStyles.includes(catalog.range)) {
+    problems.push(`Catalog range "${String(catalog.range)}" isn't exact, caret or tilde.`)
+  }
+  for (const [name, pin] of Object.entries(versions)) {
+    if (!isValidRange(pin)) {
+      problems.push(`The pin for ${name}, "${pin}", isn't an exact version or a version range.`)
     }
   }
   const provides = new Set(catalog.addons.flatMap((addon) => Object.keys(addon.provides ?? {})))
@@ -116,6 +127,21 @@ export function checkCatalog(
         }
       } else if (!findAddon(catalog, reference)) {
         problems.push(`${addon.id} refers to ${reference}, which isn't in the catalog.`)
+      }
+    }
+    for (const [name, range] of Object.entries(addon.packages ?? {})) {
+      const pin = versions[name]
+      if (!isValidRange(range)) {
+        problems.push(`${addon.id} is written for ${name} "${range}", which isn't a version range.`)
+      } else if (pin === undefined) {
+        problems.push(`${addon.id} is written for ${name}, which the catalog doesn't pin.`)
+      } else if (isValidRange(pin)) {
+        const lowest = lowestVersion(pin)
+        if (lowest === undefined) {
+          problems.push(`${addon.id} is written for ${name} ${range}, but the pin "${pin}" allows no version.`)
+        } else if (!satisfiesRange(lowest, range)) {
+          problems.push(`${addon.id} is written for ${name} ${range}, but the pin "${pin}" allows ${lowest}.`)
+        }
       }
     }
     const schema = optionsSchema(addon)

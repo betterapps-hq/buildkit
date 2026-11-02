@@ -27,7 +27,7 @@ const descriptions: Record<string, string> = {
   status: "Show the files the engine manages and whether you changed them",
   explain: "Explain who contributes a path, an add-on or an entry",
   plan: "Show a saved plan: plan show <file>",
-  catalog: "Describe every question as JSON, or fetch an earlier catalog version",
+  catalog: "Describe every question as JSON, fetch an earlier catalog version, or check a package or the pins",
   schema: "Print JSON Schemas for the config, the lock and plan requests",
   recover: "Roll back an interrupted apply"
 }
@@ -71,6 +71,13 @@ export function createCli(options: CliOptions): CommandDef {
     upgrade: {
       list: { type: "boolean", description: "Show what an upgrade changes, and write nothing" },
       with: alongside
+    },
+    catalog: {
+      registry: { type: "boolean", description: "With check: check each of the catalog's pins against npm" },
+      "min-age": {
+        type: "string",
+        description: "With --registry: the days a pin's newest match must be out. Default 1"
+      }
     },
     sync: { with: alongside },
     config: { with: alongside }
