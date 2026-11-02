@@ -1696,6 +1696,9 @@ importers:
       '@buildkitgg/react-alerts':
         specifier: workspace:*
         version: link:../../react/react-alerts
+      lucide-react:
+        specifier: ^1.62.0
+        version: 1.64.0(@types/react@19.3.0)(react@19.3.1)
     devDependencies:
       '@buildkitgg/shadcn-baseui-kit':
         specifier: workspace:@buildkitgg/shadcn-baseui-nova@*

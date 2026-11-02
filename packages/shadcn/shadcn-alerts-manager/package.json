@@ -21,7 +21,8 @@
     "**/*.css"
   ],
   "dependencies": {
-    "@buildkitgg/react-alerts": "workspace:*"
+    "@buildkitgg/react-alerts": "workspace:*",
+    "lucide-react": "^1.62.0"
   },
   "files": [
     "dist/**/*.js",
