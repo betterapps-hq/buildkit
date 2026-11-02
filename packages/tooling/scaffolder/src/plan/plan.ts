@@ -1,6 +1,6 @@
 import { diffLines } from "diff"
 import { jsonLayoutFor } from "../edit/layout.js"
-import { catalogVersionText, findAddon, lookupAddon, sameCatalogVersion } from "../manifest/catalog.js"
+import { catalogVersionText, findAddon, lookupAddon, sameCatalogVersion, writtenVersions } from "../manifest/catalog.js"
 import type { CatalogManifest, PackRecord, TargetContext } from "../manifest/types.js"
 import { jsonFormat, yamlFormat } from "../merge/formats.js"
 import { planSharedDocument, planSharedEnv, planSharedLines, type SharedResult } from "../merge/shared.js"
@@ -205,19 +205,24 @@ async function planInto(input: PlanInput, tree: RecordingTree, result: Plan) {
   }
   const resolution = resolveSelection(catalog, selection)
   if (!resolution.ok) {
-    result.decisions.push(issueDecision(catalog, request, resolution.issue))
+    result.decisions.push(issueDecision(catalog, request, resolution.issue, selection))
     return
   }
   const resolved = resolution.value
   result.pulled = resolved.addons
     .filter((addon) => !addon.explicit && !installed.has(addon.manifest.id))
-    .map((addon) => ({ id: addon.manifest.id, by: addon.by }))
+    .map((addon) => ({
+      id: addon.manifest.id,
+      by: addon.by,
+      ...(addon.manifest.joins ? { joins: true as const } : {})
+    }))
   if (desired.adopt) {
+    const versions = writtenVersions(catalog)
     const context: TargetContext = {
       target: resolved.info,
       project: { name: resolved.name },
-      versions: catalog.versions ?? {},
-      version: (name) => catalog.versions?.[name] ?? ""
+      versions,
+      version: (name) => versions[name] ?? ""
     }
     resolved.target.adopt?.(scratch, context)
   }

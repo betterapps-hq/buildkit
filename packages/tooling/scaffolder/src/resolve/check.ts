@@ -10,15 +10,17 @@ import {
   targetInfo,
   templateModes
 } from "../manifest/catalog.js"
-import type { Answers, CatalogManifest } from "../manifest/types.js"
+import type { Answers, CatalogManifest, RangeStyle } from "../manifest/types.js"
 import { PlanError } from "../plan/errors.js"
 import { isRecord } from "../plan/json.js"
 import { render } from "../plan/render.js"
 import { defineSettings } from "../state/settings.js"
-import { compareVersions, isValidVersion } from "../upgrade/semver.js"
+import { compareVersions, isValidRange, isValidVersion, lowestVersion, satisfiesRange } from "../upgrade/semver.js"
 import { selectionFromAnswers } from "./answers.js"
 import { optionsSchema } from "./questions.js"
 import { addonSupports, resolveSelection } from "./resolve.js"
+
+const rangeStyles: readonly RangeStyle[] = ["exact", "caret", "tilde"]
 
 function duplicates(ids: readonly string[]): string[] {
   const seen = new Set<string>()
@@ -33,8 +35,8 @@ function duplicates(ids: readonly string[]): string[] {
 }
 
 /**
- * Catalog CI: checks references, slot defaults, required add-on options and facets. With `matrix`, it also plans
- * every pair of answers for each template and mode, or for the `templates` listed, and reports any that fail.
+ * Catalog CI: checks references, slot defaults, required add-on options, facets and version pins. With `matrix`, it
+ * also plans every pair of answers for each template and mode, or for the `templates` listed, and reports any that fail.
  */
 export function checkCatalog(
   catalog: CatalogManifest,
@@ -75,6 +77,15 @@ export function checkCatalog(
       }
     }
   }
+  const versions = catalog.versions ?? {}
+  if (catalog.range !== undefined && !rangeStyles.includes(catalog.range)) {
+    problems.push(`Catalog range "${String(catalog.range)}" isn't exact, caret or tilde.`)
+  }
+  for (const [name, pin] of Object.entries(versions)) {
+    if (!isValidRange(pin)) {
+      problems.push(`The pin for ${name}, "${pin}", isn't an exact version or a version range.`)
+    }
+  }
   const provides = new Set(catalog.addons.flatMap((addon) => Object.keys(addon.provides ?? {})))
   for (const addon of catalog.addons) {
     if (!isValidVersion(addon.version)) {
@@ -83,12 +94,26 @@ export function checkCatalog(
     if (addon.slot && !findSlot(catalog, addon.slot)) {
       problems.push(`${addon.id} fills slot ${addon.slot}, which isn't defined.`)
     }
-    // The resolver reads `slot:` and `provides:` only in requires. Elsewhere they'd be accepted and do nothing.
-    for (const reference of [...(addon.conflicts ?? []), ...(addon.after ?? [])]) {
-      if (reference.startsWith("slot:") || reference.startsWith("provides:")) {
-        problems.push(`${addon.id} uses ${reference} in conflicts or after, which take add-on ids only.`)
-      } else if (!findAddon(catalog, reference)) {
-        problems.push(`${addon.id} refers to ${reference}, which isn't in the catalog.`)
+    // The resolver reads `slot:` only in requires, and `provides:` in requires and conflicts. Elsewhere they'd be
+    // accepted and do nothing.
+    for (const [field, references] of [
+      ["conflicts", addon.conflicts ?? []],
+      ["after", addon.after ?? []]
+    ] as const) {
+      for (const reference of references) {
+        if (reference.startsWith("provides:") && field === "conflicts") {
+          if (!provides.has(reference.slice(9))) {
+            problems.push(`${addon.id} refers to ${reference}, and no add-on provides it.`)
+          }
+        } else if (reference.startsWith("slot:") || reference.startsWith("provides:")) {
+          problems.push(
+            field === "conflicts"
+              ? `${addon.id} uses ${reference} in conflicts, which takes add-on ids and provides:<name>.`
+              : `${addon.id} uses ${reference} in after, which takes add-on ids only.`
+          )
+        } else if (!findAddon(catalog, reference)) {
+          problems.push(`${addon.id} refers to ${reference}, which isn't in the catalog.`)
+        }
       }
     }
     for (const reference of addon.requires ?? []) {
@@ -102,6 +127,38 @@ export function checkCatalog(
         }
       } else if (!findAddon(catalog, reference)) {
         problems.push(`${addon.id} refers to ${reference}, which isn't in the catalog.`)
+      }
+    }
+    if (addon.joins) {
+      if (addon.joins.length < 2) {
+        problems.push(`${addon.id} is a combination add-on, so it joins at least two add-ons.`)
+      }
+      if ((addon.requires ?? []).length > 0 || addon.options || addon.slot) {
+        problems.push(`${addon.id} is a combination add-on, so it can't have requires, options or a slot.`)
+      }
+      for (const reference of addon.joins) {
+        if (reference.startsWith("provides:")) {
+          if (!provides.has(reference.slice(9))) {
+            problems.push(`${addon.id} refers to ${reference}, and no add-on provides it.`)
+          }
+        } else if (!findAddon(catalog, reference)) {
+          problems.push(`${addon.id} refers to ${reference}, which isn't in the catalog.`)
+        }
+      }
+    }
+    for (const [name, range] of Object.entries(addon.packages ?? {})) {
+      const pin = versions[name]
+      if (!isValidRange(range)) {
+        problems.push(`${addon.id} is written for ${name} "${range}", which isn't a version range.`)
+      } else if (pin === undefined) {
+        problems.push(`${addon.id} is written for ${name}, which the catalog doesn't pin.`)
+      } else if (isValidRange(pin)) {
+        const lowest = lowestVersion(pin)
+        if (lowest === undefined) {
+          problems.push(`${addon.id} is written for ${name} ${range}, but the pin "${pin}" allows no version.`)
+        } else if (!satisfiesRange(lowest, range)) {
+          problems.push(`${addon.id} is written for ${name} ${range}, but the pin "${pin}" allows ${lowest}.`)
+        }
       }
     }
     const schema = optionsSchema(addon)
@@ -174,7 +231,23 @@ export function checkCatalog(
       }
     }
   }
+  // A combination add-on is added with what it joins, so nothing names it.
+  const combination = (id: string) => findAddon(catalog, id)?.joins !== undefined
+  for (const template of catalog.templates) {
+    const named = [
+      ...(template.required ?? []),
+      ...Object.keys(template.optional ?? {}),
+      ...Object.values(template.slots ?? {}).flatMap((policy) => (policy.default === undefined ? [] : [policy.default]))
+    ]
+    for (const id of named.filter(combination)) {
+      problems.push(`Template ${template.id} names ${id}, a combination add-on, which is added with what it joins.`)
+    }
+  }
   for (const preset of catalog.presets ?? []) {
+    const named = [...(preset.answers.optional ?? []), ...Object.values(preset.answers.slots ?? {})]
+    for (const id of named.filter((entry): entry is string => entry !== null && combination(entry))) {
+      problems.push(`Preset ${preset.id} names ${id}, a combination add-on, which is added with what it joins.`)
+    }
     if (!findTemplate(catalog, preset.answers.template)) {
       problems.push(`Preset ${preset.id} uses template ${preset.answers.template}, which isn't in the catalog.`)
       continue

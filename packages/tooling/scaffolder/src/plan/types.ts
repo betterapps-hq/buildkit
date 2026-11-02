@@ -126,7 +126,10 @@ export interface MigrationNote {
 
 export interface PulledAddon {
   id: string
+  /** What pulled it in through `requires`, or, for a combination add-on, what it joins. */
   by: string[]
+  /** Set for a combination add-on. */
+  joins?: true
 }
 
 export type ErrorCode =
@@ -140,6 +143,7 @@ export type ErrorCode =
   | "E_UNKNOWN_TEMPLATE"
   | "E_PACKAGE_UNAVAILABLE"
   | "E_INVALID_PACK"
+  | "E_INVALID_CATALOG"
   | "E_UNKNOWN_TARGET"
   | "E_CATALOG_MISMATCH"
   | "E_CONTRIBUTION"

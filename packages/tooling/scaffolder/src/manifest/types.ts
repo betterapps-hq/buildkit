@@ -83,6 +83,9 @@ export type Contribution =
   | { kind: "command"; run: string; when: "after-install" | "after-apply"; why: string }
   | { kind: "notice"; code: string; text: string }
 
+/** How a catalog writes a pin that's an exact version. A pin that's already a range is written as it is. */
+export type RangeStyle = "exact" | "caret" | "tilde"
+
 export interface TargetInfo {
   id: string
   family: string
@@ -103,9 +106,12 @@ export interface ResolveContext<O> {
 
 export interface ContributeContext<O> extends ResolveContext<O> {
   project: { name: string }
-  /** Catalog-pinned versions, keyed by package name. */
+  /** Catalog-pinned versions as they're written into `package.json`, keyed by package name. */
   versions: Readonly<Record<string, string>>
-  /** The pinned version of a package. A package the catalog doesn't pin is a plan error. */
+  /**
+   * The pinned version of a package as it's written, such as `^19.3.1` in a `caret` catalog. A package the catalog
+   * doesn't pin is a plan error.
+   */
   version(name: string): string
   /** Picks the integration module for the target's framework family. A missing family is a plan error. */
   runtimeModule(map: Record<string, string>): string
@@ -145,6 +151,16 @@ export interface AddonManifest<S extends z.ZodType = z.ZodType> {
   /** Add-on ids, `slot:<id>` or `provides:<name>`. */
   requires?: string[]
   conflicts?: string[]
+  /**
+   * A combination add-on, such as the glue between an auth library and an ORM: selected when every reference (an id or
+   * `provides:<name>`) is selected, and removed when one isn't. It's never asked about or added by name.
+   */
+  joins?: string[]
+  /**
+   * The ranges of packages this add-on is written for, such as `{ "drizzle-orm": ">=0.45 <1" }`. Catalog CI checks the
+   * lowest version each pin allows is in its range.
+   */
+  packages?: Record<string, string>
   /** Ordering only: contribute after these add-ons when they're selected. */
   after?: string[]
   points?: PointDefinition[]
@@ -239,8 +255,10 @@ export interface CatalogManifest {
   version: string
   /** Every facet a target may declare. Checking an unregistered facet throws. */
   facets: readonly string[]
-  /** Package versions pinned by the catalog. */
+  /** Package pins: an exact version or an npm range, such as `19.3.1`, `^19.3.1` or `~0.45.4`. */
   versions?: Record<string, string>
+  /** How exact pins are written into `package.json`. Defaults to `exact`. */
+  range?: RangeStyle
   targets: TargetManifest[]
   templates: TemplateManifest[]
   slots: SlotDefinition[]
