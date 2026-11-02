@@ -35,18 +35,44 @@ await sendMessage({ text: "Hello" })
 expect(onRequest).toHaveBeenCalledWith({ text: "Hello" })
 ```
 
-To give each endpoint its own spy, keep a helper like this in your test setup. Each call creates a separate observer on
-the same MSW server.
+### Create a spy per endpoint
+
+Define `createApiSpy` in your test utilities. Create the spy when registering each endpoint so that saving a message and
+archiving it have separate call histories. This example takes static responses and uses Vitest. In Jest, use
+`jest.fn<OnRequest>()` in the same place.
 
 ```ts
-function spyOnPost(path: string, status: number) {
-  const spy = jest.fn()
-  createApiMock(server, spy).post(path, { status })
-  return spy
-}
+import { createApiMock, type HandlerTarget, type MockOptions, type OnRequest } from "@buildkitgg/api-mocker"
+import { vi } from "vitest"
 
-const saveMessage = spyOnPost("/api/messages", 201)
-const archiveMessage = spyOnPost("/api/archive", 204)
+export function createApiSpy(target: HandlerTarget) {
+  function forMethod(method: "get" | "post" | "put" | "patch" | "delete") {
+    return (path: string, response?: MockOptions) => {
+      const spy = vi.fn<OnRequest>()
+      const endpoint = createApiMock(target, spy)[method](path, response)
+      return { endpoint, spy }
+    }
+  }
+
+  return {
+    get: forMethod("get"),
+    post: forMethod("post"),
+    put: forMethod("put"),
+    patch: forMethod("patch"),
+    delete: forMethod("delete")
+  }
+}
+```
+
+```ts
+const api = createApiSpy(server)
+const save = api.post("/api/messages", { status: 201 })
+const archive = api.post("/api/archive", { status: 204 })
+
+await sendMessage({ text: "Hello" })
+
+expect(save.spy).toHaveBeenCalledWith({ text: "Hello" })
+expect(archive.spy).not.toHaveBeenCalled()
 ```
 
 Use your test or story lifecycle to reset the shared server or worker between scenarios. The caller owns each spy and
