@@ -18,7 +18,9 @@ export default defineConfig({
       "api-reports/*.api.md",
       "**/.generated/**",
       "**/src/vendor/**",
-      "**/routeTree.gen.ts"
+      "**/routeTree.gen.ts",
+      // The site shows these files as written, wrapped to fit its code editor
+      "apps/site/src/examples/**"
     ]
   },
   lint: {

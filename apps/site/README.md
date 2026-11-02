@@ -1,33 +1,35 @@
 # Buildkit.gg
 
 React marketing page for GitHub Pages, built with Vite, the React Compiler, and TypeScript. Run
-`pnpm --filter @buildkitgg/site dev` and open the printed URL. Storybook links use the local Storybook server during
-development (`pnpm --filter @buildkitgg/behavior-storybook storybook`).
+`pnpm --filter @buildkitgg/site dev` and open the printed URL. Storybook and docs links use the local servers during
+development (`pnpm --filter @buildkitgg/behavior-storybook storybook` and `pnpm --filter @buildkitgg/docs dev`).
 
-The build reuses the Storybook package catalog and overview-ID helper. Package names, descriptions, and navigation have
-one source. No package versions or publishing states are displayed. The production build prerenders the React page to
-HTML, then hydrates it for the interactive examples, code tabs, mobile navigation, and package search. Guides and
-package links remain available without JavaScript. No external fonts, trackers, or hosted services are required.
+The design was made in Pen.dev. Each section in `src/sections` matches its desktop frame at 1440px and its phone frame
+at 390px, with its own stylesheet beside the component. `src/styles.css` holds the design tokens, base styles, and the
+shared section, button, command, and code styles.
 
-## Components and theme
+## Rendering
 
-The marketing surface uses the official [shadcn Vega style](https://ui.shadcn.com/docs/changelog/2025-12-shadcn-create)
-with Base UI primitives. Button, Input, Tabs, and Dialog are adapted from `https://ui.shadcn.com/r/styles/base-vega/`;
-their MIT notice is included in `public/shadcn-license.txt`. `components.json` records the style for future additions.
-The shared component package retains its own style; these Vega components belong to the marketing app.
+The production build prerenders the page to static HTML, then hydrates it for the interactive parts: the theme picker in
+the hero, the architecture switches, the text size control, the style picker, copy buttons, and the mobile menu. Every
+link and all copy work without JavaScript.
 
-`src/theme.css` defines the blue semantic tokens. Vite’s Tailwind integration compiles component classes and page CSS,
-including updates during development. The theme example uses `theme-core` and `react-theme`, isolated from the page
-theme and without persistence. The preferences example uses `preferences-core` and `react-preferences` for a saved
-reading text size. It connects browser storage after hydration through `connectPreferencesStorage`, with cleanup for
-StrictMode and unmounting. The isolated `buildkit-reading-demo` local storage key survives reloads and synchronizes
-across tabs; reset removes the saved override. The modal examples use `shadcn-modals-manager` with the site's Vega
-components through `baseUiComponents`. Focused tabs demonstrate boolean confirmations, typed form results, failed saves
-with retry, and nested confirmations before discarding edits. All changes stay in local demo state; the save-and-retry
-example simulates a request without contacting a server.
+Geist and Geist Mono are bundled from `@fontsource-variable`, so the page loads nothing from third-party hosts.
 
-Keep the main copy focused on common app behavior and the architecture, rather than listing the current package set.
-Package discovery belongs in the generated catalog. Demonstrations use the real packages and link to their guides.
+## Motion
+
+`src/motion` builds every GSAP timeline inside `gsap.matchMedia()`. When reduced motion is requested, the page keeps its
+final state with no scrubs, pins, or 3D. An inline script in `index.html` marks the page for motion before it paints,
+and elements marked `data-intro` fade in on their own if the motion module never starts. Mark elements that should rise
+in on scroll with `data-reveal`, or a container whose children rise in sequence with `data-reveal-stagger`. Scenes for
+single sections, such as the pinned architecture stack and the typing search palette, select that section's class names,
+so rename those classes in `src/motion` too. In development, `?static` skips motion and renders the final state.
+
+The hero and closing call to action share a WebGL background (`src/components/HeroField.tsx`), which lights a target
+element from behind. It pauses off screen, holds one frame for reduced motion, and leaves the CSS gradient in place when
+WebGL is unavailable.
+
+## Deployment
 
 The production build first bundles the browser app, then renders the same `Page` component through a temporary server
 bundle in `.generated/server`. Only `dist` is deployed; GitHub Pages needs no Node server.

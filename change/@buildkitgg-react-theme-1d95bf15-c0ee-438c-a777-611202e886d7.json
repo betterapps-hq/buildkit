@@ -1,0 +1,7 @@
+{
+  "type": "minor",
+  "comment": "Export createThemeStore, so React apps create and read a theme store from this package alone",
+  "packageName": "@buildkitgg/react-theme",
+  "email": "ajcraswell@gmail.com",
+  "dependentChangeType": "patch"
+}

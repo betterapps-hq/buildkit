@@ -1,0 +1,131 @@
+/* The examples' markup has no classes, so this lays it out the way an app's own stylesheet would. */
+
+:root {
+  --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono Variable", ui-monospace, monospace;
+  color-scheme: dark;
+}
+
+/* Transparent, so the preview panel's own background shows through */
+body {
+  margin: 0;
+  background: transparent;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  padding: 18px 24px;
+}
+
+/* Modal results: the Cancel button keeps its own width under the field */
+[data-example="modals"] [data-slot="field"] > [data-slot="button"] {
+  align-self: flex-start;
+  width: auto;
+}
+
+/* Inline alerts */
+[data-example="alerts"] form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+[data-example="alerts"] form > [data-slot="button"] {
+  align-self: flex-start;
+}
+
+/* The alert region stays mounted, and only takes space once it holds an alert */
+[data-example="alerts"] form > section:empty {
+  display: none;
+}
+
+/* Route panels */
+[data-example="routing"] [data-slot="tabs"] {
+  gap: 18px;
+}
+
+[data-example="routing"] ul {
+  display: grid;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+[data-example="routing"] li a {
+  color: var(--foreground);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+[data-example="routing"] li a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+[data-example="routing"] li p {
+  margin: 2px 0 0;
+  color: var(--muted-foreground);
+  font-size: 13px;
+}
+
+[data-example="routing"] h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* Config overrides: the invoices on top, the development panel below */
+.frame-part + .frame-part {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+
+.frame-caption {
+  margin: 0 0 12px;
+  color: var(--muted-foreground);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+[data-example="configuration"] ul {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+[data-example="configuration"] .frame-part:first-child ul {
+  gap: 10px;
+  margin-bottom: 14px;
+  font-size: 14px;
+}
+
+[data-example="configuration"] .frame-part:first-child li {
+  display: flex;
+  justify-content: space-between;
+  font-variant-numeric: tabular-nums;
+}
+
+[data-example="configuration"] .frame-part:first-child li span:first-child {
+  color: var(--muted-foreground);
+}
+
+[data-example="configuration"] .frame-part:last-child ul {
+  gap: 10px;
+}
+
+[data-example="configuration"] .frame-part:last-child li {
+  display: grid;
+  grid-template-columns: 84px auto auto auto;
+  justify-content: start;
+  align-items: center;
+  gap: 10px;
+}
+
+[data-example="configuration"] code {
+  font-family: var(--font-mono);
+  font-size: 13px;
+}

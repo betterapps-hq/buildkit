@@ -4,8 +4,18 @@
 
 ```ts
 
-import type { PreferenceKey } from '@buildkitgg/preferences-core';
-import type { PreferencesStore } from '@buildkitgg/preferences-core';
+import { createPreferences } from '@buildkitgg/preferences-core';
+import { PreferenceKey } from '@buildkitgg/preferences-core';
+import { PreferencesOptions } from '@buildkitgg/preferences-core';
+import { PreferencesStore } from '@buildkitgg/preferences-core';
+
+export { createPreferences }
+
+export { PreferenceKey }
+
+export { PreferencesOptions }
+
+export { PreferencesStore }
 
 // @public (undocumented)
 export function usePreference<T extends object, K extends PreferenceKey<T>>(store: PreferencesStore<T>, key: K): readonly [Readonly<Partial<T>>[K], (value: T[K]) => void];

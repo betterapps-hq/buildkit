@@ -1,6 +1,8 @@
+import "@fontsource-variable/geist"
+import "@fontsource-variable/geist-mono"
+import "./styles.css"
 import { createRoot, hydrateRoot } from "react-dom/client"
 import { Page } from "./Page"
-import "./styles.css"
 
 const root = document.getElementById("root")
 if (!root) {

@@ -1,0 +1,1285 @@
+/* Developer tooling */
+
+.tooling {
+  padding: 128px 0 136px;
+  background:
+    radial-gradient(55% 17.5% at 85% 8%, #3370ff24, #3370ff00),
+    radial-gradient(60% 20% at 20% 62%, #3370ff14, #3370ff00), var(--ink-950);
+}
+
+/* Copy that only one of the two layouts shows. */
+@media (min-width: 761px) {
+  .tooling .tl-narrow {
+    display: none !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .tooling .tl-wide {
+    display: none !important;
+  }
+}
+
+/* Intro */
+
+.tl-intro {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 80px;
+}
+
+.tl-intro-heading {
+  display: flex;
+  flex: 1 1 520px;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 640px;
+}
+
+.tl-intro .eyebrow {
+  line-height: 1.47;
+}
+
+.tl-title {
+  text-wrap: wrap;
+}
+
+.tl-intro-body {
+  max-width: 560px;
+}
+
+.tl-index {
+  display: flex;
+  flex: 0 1 480px;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tl-tool {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 100%;
+  padding: 16px 18px;
+  border: 1px solid var(--line-strong);
+  border-radius: 14px;
+  background: var(--ink-900);
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.tl-tool:hover {
+  border-color: #3370ff80;
+  background: var(--ink-850);
+}
+
+.tl-tool-icon,
+.tl-bar-icon,
+.tl-feature-icon,
+.tl-avatar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  border: 1px solid #3370ff55;
+  background: #3370ff24;
+  color: var(--blue-soft);
+}
+
+.tl-tool-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+}
+
+.tl-tool-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.tl-tool-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.tl-tool-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 10px;
+}
+
+.tl-tool-name {
+  font-size: 15.5px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.tl-tool-pkg {
+  font: 400 11px/1.3 var(--font-mono);
+  color: var(--text-3);
+}
+
+.tl-tool-desc {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-2);
+}
+
+.tl-tool-jump {
+  width: 16px;
+  height: 16px;
+  color: var(--text-3);
+  transition:
+    transform 0.25s ease,
+    color 0.2s ease;
+}
+
+.tl-tool:hover .tl-tool-jump {
+  color: var(--blue-soft);
+  transform: translateY(3px);
+}
+
+/* Subsections */
+
+.tl-sub {
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+.tl-dev {
+  margin-top: 96px;
+}
+
+.tl-scaf {
+  margin-top: 209px;
+}
+
+.tl-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.tl-bar-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+}
+
+.tl-bar-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.tl-bar-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+}
+
+.tl-bar-name {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.3px;
+  white-space: nowrap;
+}
+
+.tl-bar-pkg {
+  font: 400 12px/1.3 var(--font-mono);
+  color: var(--text-3);
+  white-space: nowrap;
+}
+
+.tl-bar-rule {
+  flex: 1;
+  min-width: 24px;
+  height: 1px;
+  background: var(--line-strong);
+  transform-origin: left center;
+}
+
+.tl-bar-guide {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--blue-soft);
+  font-size: 13.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: color 0.2s ease;
+}
+
+.tl-bar-guide svg {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.25s ease;
+}
+
+.tl-bar-guide:hover {
+  color: var(--text);
+}
+
+.tl-bar-guide:hover svg {
+  transform: translateX(3px);
+}
+
+.tl-heading {
+  font-size: clamp(30px, 2.78vw, 40px);
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+}
+
+.tl-body {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+
+/* A labeled part of a subsection, such as "How it works" */
+.tl-part {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.tl-part-title {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.2px;
+}
+
+/* Commands */
+
+.tl-command {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  height: 44px;
+  padding: 0 8px 0 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: #070a14;
+  font: 400 13.5px/1 var(--font-mono);
+}
+
+.tl-command-prompt {
+  color: var(--blue-soft);
+}
+
+.tl-command-text {
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  color: var(--text);
+  white-space: nowrap;
+  scrollbar-width: none;
+}
+
+.tl-copy {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: var(--ink-800);
+  color: var(--text-2);
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.tl-copy:hover {
+  background: var(--ink-700);
+  color: var(--text);
+}
+
+.tl-copy svg {
+  width: 13px;
+  height: 13px;
+}
+
+/* Dev domains */
+
+.tl-dev-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 64px;
+}
+
+.tl-dev-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 720px;
+}
+
+.tl-run {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.tl-portless {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid #3370ff55;
+  border-radius: 10px;
+  background: #3370ff12;
+  color: var(--blue-soft);
+  font-size: 13px;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.tl-portless:hover {
+  border-color: #3370ff99;
+  background: #3370ff24;
+}
+
+.tl-portless svg {
+  width: 14px;
+  height: 14px;
+}
+
+.tl-portless .tl-portless-ext {
+  width: 13px;
+  height: 13px;
+}
+
+/* Worktree domains: a table on wide screens, cards below 1340px */
+
+.tl-domains {
+  --tl-worktree-col: clamp(220px, 100vw - 1110px, 250px);
+  border: 1px solid var(--line-strong);
+  border-radius: 18px;
+  background: var(--ink-850);
+  box-shadow: 0 30px 80px #00000080;
+  overflow: hidden;
+}
+
+.tl-domains-head {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  height: 47px;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--line);
+  background: #070a14;
+}
+
+.tl-col {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-3);
+  font: 400 11.5px/1 var(--font-mono);
+  letter-spacing: 0.6px;
+}
+
+.tl-col svg {
+  width: 13px;
+  height: 13px;
+}
+
+.tl-col-worktree,
+.tl-worktree-who {
+  flex: none;
+  width: var(--tl-worktree-col);
+}
+
+.tl-col-hosts,
+.tl-hosts {
+  display: grid;
+  flex: 1;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+  min-width: 0;
+}
+
+.tl-worktree {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 18px 24px;
+}
+
+.tl-worktree + .tl-worktree {
+  border-top: 1px solid var(--line);
+}
+
+.tl-worktree-who {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.tl-avatar {
+  width: 34px;
+  height: 34px;
+  border-color: #3370ff66;
+  border-radius: 10px;
+  background: #3370ff29;
+}
+
+.tl-worktree.is-agent .tl-avatar {
+  border-color: #7ee2b04d;
+  background: #7ee2b01a;
+  color: var(--mint);
+}
+
+.tl-avatar svg {
+  width: 16px;
+  height: 16px;
+}
+
+.tl-worktree-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.tl-folder {
+  font: 400 13px/16px var(--font-mono);
+}
+
+.tl-who {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-3);
+}
+
+.tl-host {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.tl-host svg {
+  width: 12px;
+  height: 12px;
+  color: var(--mint);
+}
+
+.tl-host-name {
+  min-width: 0;
+  overflow: hidden;
+  font: 400 12.5px/1.3 var(--font-mono);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tl-host-kind {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.tl-domains-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 24px 13px;
+  border-top: 1px solid var(--line);
+  background: #070a14;
+  color: var(--text-2);
+  font-size: 13.5px;
+  line-height: 18px;
+}
+
+.tl-domains-note svg {
+  width: 14px;
+  height: 14px;
+  color: var(--blue-soft);
+}
+
+/* Uses: an unboxed two-column list split by hairlines */
+
+.tl-uses {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 56px;
+}
+
+.tl-use {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding: 22px 0 24px;
+  border-top: 1px solid var(--line);
+}
+
+.tl-use-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.2px;
+}
+
+.tl-use-title svg {
+  width: 16px;
+  height: 16px;
+  color: var(--blue-soft);
+}
+
+/* Indented to the title text, past the icon */
+.tl-use-desc,
+.tl-use-code {
+  margin-left: 26px;
+}
+
+.tl-use-desc {
+  max-width: 520px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-2);
+}
+
+.tl-use-code {
+  margin-top: 4px;
+  overflow: hidden;
+  font: 400 12px/18px var(--font-mono);
+  text-overflow: ellipsis;
+  white-space: pre;
+}
+
+/* Scaffolder */
+
+.tl-scaf-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 72px;
+}
+
+.tl-scaf-copy {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: 24px;
+  width: 440px;
+}
+
+.tl-features {
+  display: flex;
+  flex-direction: column;
+  padding-top: 8px;
+}
+
+.tl-feature {
+  display: flex;
+  gap: 16px;
+  padding: 18px 0;
+  border-top: 1px solid var(--line);
+}
+
+.tl-feature-icon {
+  width: 34px;
+  height: 34px;
+  border-color: #3370ff40;
+  border-radius: 9px;
+  background: #3370ff1a;
+}
+
+.tl-feature-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.tl-feature-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.tl-feature-title {
+  font-size: 15.5px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.tl-feature-desc {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+
+.tl-flow {
+  flex: 1;
+  min-width: 0;
+}
+
+.tl-flow > .tl-part-title {
+  margin-bottom: 20px;
+}
+
+.tl-step {
+  display: flex;
+  gap: 18px;
+}
+
+.tl-step-track {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  width: 14px;
+}
+
+.tl-spine {
+  width: 2px;
+  background: var(--line-strong);
+}
+
+.tl-spine-above {
+  height: 9px;
+  transform-origin: center top;
+}
+
+.tl-spine-below {
+  flex: 1;
+  transform-origin: center top;
+}
+
+.tl-step:first-child .tl-spine-above,
+.tl-step:last-child .tl-spine-below {
+  visibility: hidden;
+}
+
+.tl-step-node {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--blue-soft);
+  border-radius: 50%;
+  background: var(--ink-950);
+}
+
+.tl-step-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  padding-bottom: 28px;
+}
+
+.tl-step:last-child .tl-step-content {
+  padding-bottom: 0;
+}
+
+.tl-step-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 18px;
+}
+
+.tl-step-title svg {
+  width: 14px;
+  height: 14px;
+  color: var(--blue-soft);
+}
+
+.tl-window {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line-strong);
+  border-radius: 14px;
+  background: #070a14;
+  box-shadow: 0 24px 60px #00000099;
+  overflow: hidden;
+}
+
+.tl-window-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--line);
+  background: var(--ink-900);
+  color: var(--text-2);
+  font: 400 11.5px/1 var(--font-mono);
+}
+
+.tl-window-bar svg {
+  width: 13px;
+  height: 13px;
+  color: var(--text-3);
+}
+
+.tl-window-body {
+  padding: 14px 18px;
+  overflow-x: auto;
+  color: var(--text);
+  font: 400 12.5px/22px var(--font-mono);
+  scrollbar-width: none;
+}
+
+.tl-window-body code {
+  display: grid;
+  width: max-content;
+  min-width: 100%;
+}
+
+.tl-code-line {
+  display: flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 5px;
+  white-space: pre;
+}
+
+.tl-code-line.is-required {
+  background: #7ee2b01a;
+}
+
+.tl-code-line.is-optional {
+  background: #3370ff1f;
+}
+
+.tl-code-line.is-slot {
+  background: #f5c76e1a;
+}
+
+.tl-code-note {
+  margin-left: auto;
+  padding-left: 16px;
+  font: 500 11.5px/1 var(--font-sans);
+}
+
+.is-required .tl-code-note {
+  color: var(--mint);
+}
+
+.is-optional .tl-code-note {
+  color: var(--blue-soft);
+}
+
+.is-slot .tl-code-note {
+  color: var(--amber);
+}
+
+.tl-term-line {
+  display: block;
+  height: 22px;
+  white-space: pre;
+}
+
+.tl-glyph {
+  display: inline-block;
+  width: 1ch;
+  text-align: center;
+}
+
+/* Diamonds fall back to a symbol font that draws them small; scale them up without moving the columns. */
+.tl-glyph.tl-t-mark {
+  transform: scale(1.4);
+}
+
+.tl-t-prompt,
+.tl-t-mark {
+  color: var(--blue-soft);
+}
+
+.tl-t-label {
+  color: var(--text-2);
+}
+
+.tl-t-dim {
+  color: var(--text-3);
+}
+
+.tl-t-ok {
+  color: var(--mint);
+}
+
+.tl-t-strong {
+  font-weight: 600;
+}
+
+.tl-t-yes {
+  color: var(--mint);
+  font-weight: 600;
+}
+
+/* In between */
+
+@media (max-width: 1339px) {
+  .tl-domains {
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    overflow: visible;
+  }
+
+  .tl-domains-head {
+    display: none;
+  }
+
+  .tl-worktrees {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .tl-worktree,
+  .tl-worktree + .tl-worktree {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 14px 14px 6px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--ink-900);
+  }
+
+  .tl-worktree-who {
+    width: auto;
+    gap: 10px;
+  }
+
+  .tl-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+  }
+
+  .tl-avatar svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .tl-worktree-text {
+    gap: 1px;
+  }
+
+  .tl-folder {
+    font-size: 12.5px;
+    line-height: 15px;
+  }
+
+  .tl-who {
+    font-size: 11.5px;
+    line-height: 14px;
+  }
+
+  .tl-hosts {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .tl-host {
+    gap: 8px;
+    padding: 9px 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .tl-host svg {
+    width: 11px;
+    height: 11px;
+  }
+
+  .tl-host-name {
+    flex: 1;
+    font-size: 11.5px;
+  }
+
+  .tl-host-kind {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    clip: auto;
+    color: var(--text-3);
+    font: 400 10.5px/1.3 var(--font-mono);
+  }
+
+  .tl-domains-note {
+    margin-top: 10px;
+    padding: 0;
+    border: 0;
+    background: none;
+    font-size: 13px;
+  }
+
+  .tl-domains-note svg {
+    width: 13px;
+    height: 13px;
+  }
+}
+
+@media (max-width: 1199px) {
+  .tooling {
+    padding: 112px 0;
+  }
+
+  .tl-intro {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 40px;
+  }
+
+  .tl-intro-heading {
+    flex: none;
+  }
+
+  .tl-index {
+    display: grid;
+    flex: none;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tl-scaf {
+    margin-top: 160px;
+  }
+
+  .tl-scaf-body {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 48px;
+  }
+
+  .tl-scaf-copy {
+    width: auto;
+    max-width: 640px;
+  }
+}
+
+/* Tablets: the scaffolder's points sit beside its copy, and the timeline runs full width below */
+@media (min-width: 761px) and (max-width: 1199px) {
+  .tl-scaf-copy {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: auto auto 1fr;
+    gap: 24px 56px;
+    max-width: none;
+  }
+
+  .tl-scaf-copy .tl-features {
+    grid-column: 2;
+    grid-row: 1 / 4;
+    padding-top: 0;
+  }
+}
+
+/* The heading spans the head, with the copy and the command side by side below it */
+@media (min-width: 761px) and (max-width: 1099px) {
+  .tl-dev-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 18px 48px;
+  }
+
+  .tl-dev-copy {
+    display: contents;
+  }
+
+  .tl-dev-copy .tl-heading {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Three worktree cards fit side by side once the kind labels go; the names already say it */
+@media (min-width: 961px) and (max-width: 1180px) {
+  .tl-host-kind {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+  }
+}
+
+/* Two cards, as on phones, rather than a third alone on its row */
+@media (min-width: 761px) and (max-width: 960px) {
+  .tl-worktrees {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tl-worktrees > .tl-wide {
+    display: none;
+  }
+}
+
+/* Phones */
+
+@media (max-width: 760px) {
+  .tooling {
+    padding: 88px 0;
+    background: radial-gradient(80% 10% at 90% 4%, #3370ff24, #3370ff00), var(--ink-950);
+  }
+
+  .tl-intro-heading {
+    gap: 14px;
+  }
+
+  .tl-intro .eyebrow {
+    font-size: 11px;
+    letter-spacing: 1.3px;
+  }
+
+  .tl-title {
+    letter-spacing: -1.2px;
+  }
+
+  .tl-sub {
+    gap: 28px;
+  }
+
+  .tl-dev,
+  .tl-scaf {
+    margin-top: 112px;
+  }
+
+  .tl-bar {
+    gap: 10px;
+    margin-bottom: -16px;
+  }
+
+  .tl-bar-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+  }
+
+  .tl-bar-icon svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  .tl-bar-text {
+    gap: 1px;
+  }
+
+  .tl-bar-name {
+    font-size: 16px;
+    line-height: 18px;
+    letter-spacing: 0;
+  }
+
+  .tl-bar-pkg {
+    font-size: 10.5px;
+    line-height: 13px;
+  }
+
+  .tl-bar-guide-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+
+  .tl-bar-guide svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .tl-heading {
+    font-size: 26px;
+    line-height: 1.12;
+    letter-spacing: -0.9px;
+  }
+
+  .tl-body {
+    font-size: 14.5px;
+    line-height: 1.55;
+  }
+
+  .tl-dev-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 28px;
+  }
+
+  .tl-dev-copy {
+    gap: 12px;
+  }
+
+  .tl-run {
+    align-items: stretch;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .tl-command {
+    gap: 8px;
+    height: 42px;
+    padding: 0 6px 0 12px;
+    font-size: 12.5px;
+  }
+
+  .tl-copy {
+    width: 30px;
+    height: 30px;
+  }
+
+  .tl-portless {
+    align-self: flex-start;
+    height: 36px;
+    padding: 0 12px;
+    border-radius: 9px;
+  }
+
+  .tl-worktrees {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .tl-part {
+    gap: 14px;
+  }
+
+  .tl-part-title {
+    font-size: 16px;
+    letter-spacing: 0;
+  }
+
+  .tl-flow > .tl-part-title {
+    margin-bottom: 14px;
+  }
+
+  .tl-uses {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .tl-use {
+    gap: 8px;
+    padding: 14px 0 15px;
+  }
+
+  .tl-use-title {
+    font-size: 14.5px;
+    line-height: 17px;
+    letter-spacing: 0;
+  }
+
+  .tl-use-code {
+    margin-top: 0;
+    font-size: 11px;
+  }
+
+  .tl-scaf-body {
+    gap: 28px;
+  }
+
+  .tl-scaf-copy {
+    gap: 12px;
+  }
+
+  .tl-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  .tl-step-track {
+    display: none;
+  }
+
+  .tl-step-content,
+  .tl-step:last-child .tl-step-content {
+    gap: 10px;
+    padding-bottom: 0;
+  }
+
+  .tl-step-title {
+    padding-top: 6px;
+    font-size: 14px;
+    line-height: 17px;
+  }
+
+  .tl-window {
+    border-radius: 12px;
+    box-shadow: none;
+  }
+
+  .tl-window-bar {
+    gap: 7px;
+    height: 32px;
+    padding: 0 12px;
+    font-size: 11px;
+  }
+
+  .tl-window-bar svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  .tl-window-body {
+    padding: 10px 12px;
+    font-size: 11px;
+    line-height: 19px;
+  }
+
+  .tl-template-body {
+    font-size: 10.5px;
+  }
+
+  /* The template's lines keep to the window, so long notes wrap instead of running off the edge */
+  .tl-template-body code {
+    width: auto;
+  }
+
+  /* A note that doesn't fit beside its line wraps under it, flush right */
+  .tl-code-line {
+    flex-wrap: wrap;
+    height: auto;
+    min-height: 19px;
+    padding: 0 4px;
+    border-radius: 4px;
+  }
+
+  .tl-code-note {
+    padding: 2px 0 4px 12px;
+    font-size: 10.5px;
+  }
+
+  .tl-term-line {
+    height: 19px;
+  }
+
+  .tl-glyph.tl-t-mark {
+    transform: scale(1.2);
+  }
+}

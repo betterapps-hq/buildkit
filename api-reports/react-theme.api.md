@@ -4,14 +4,20 @@
 
 ```ts
 
+import { createThemeStore } from '@buildkitgg/theme-core';
 import { ResolvedTheme } from '@buildkitgg/theme-core';
 import { Theme } from '@buildkitgg/theme-core';
+import { ThemeOptions } from '@buildkitgg/theme-core';
 import { ThemeSnapshot } from '@buildkitgg/theme-core';
 import { ThemeStore } from '@buildkitgg/theme-core';
+
+export { createThemeStore }
 
 export { ResolvedTheme }
 
 export { Theme }
+
+export { ThemeOptions }
 
 export { ThemeSnapshot }
 

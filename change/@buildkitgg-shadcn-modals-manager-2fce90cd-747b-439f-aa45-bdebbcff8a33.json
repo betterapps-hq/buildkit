@@ -1,0 +1,7 @@
+{
+  "type": "patch",
+  "comment": "Accept @buildkitgg/shadcn-baseui-kit 0.4 as a peer, so installing a current style no longer warns",
+  "packageName": "@buildkitgg/shadcn-modals-manager",
+  "email": "ajcraswell@gmail.com",
+  "dependentChangeType": "patch"
+}

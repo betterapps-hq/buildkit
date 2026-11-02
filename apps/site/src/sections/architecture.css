@@ -1,0 +1,1429 @@
+.architecture {
+  /* Rails narrow a little on smaller desktops so both towers keep their width beside them. */
+  --arch-rail: clamp(150px, calc(200px - (1440px - 100vw) / 4), 200px);
+  --arch-rail-gap: 20px;
+  padding: clamp(88px, 9.44vw, 136px) 0 clamp(88px, 8.89vw, 128px);
+  background: var(--ink-950);
+}
+
+.arch-inner {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(40px, 4.44vw, 64px);
+}
+
+.architecture .arch-narrow {
+  display: none;
+}
+
+/* The design rounds 16px at 1.6 up to a 26px line */
+@media (min-width: 901px) {
+  .arch-intro p {
+    line-height: 26px;
+  }
+
+  /* Level with the heading, below its 16px eyebrow and 20px gap, however many lines the intro wraps to */
+  .arch-head {
+    align-items: flex-start;
+  }
+
+  .arch-intro {
+    margin-top: 36px;
+  }
+}
+
+/* Rails */
+
+.arch-stage {
+  position: relative;
+}
+
+.arch-stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.arch-level {
+  display: grid;
+  grid-template-columns: var(--arch-rail) minmax(0, 1fr);
+  column-gap: var(--arch-rail-gap);
+}
+
+.arch-level-body {
+  min-width: 0;
+  container-type: inline-size;
+}
+
+.arch-rail {
+  display: flex;
+  gap: 14px;
+}
+
+.arch-rail-track {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  width: 14px;
+}
+
+.arch-rail-line {
+  width: 2px;
+  height: 42px;
+  background: var(--line-strong);
+}
+
+.arch-rail-line:last-child {
+  flex: 1;
+  height: auto;
+}
+
+[data-layer="libraries"] .arch-rail-line:first-child {
+  height: 22px;
+  background: transparent;
+}
+
+[data-layer="core"] .arch-rail-line:last-child {
+  background: transparent;
+}
+
+.arch-rail-node {
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--line-strong);
+  border-radius: 50%;
+  background: var(--ink-950);
+}
+
+[data-layer="core"] .arch-rail-node {
+  border-color: var(--blue-soft);
+  background: var(--blue);
+}
+
+.arch-rail-text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding-top: 36px;
+}
+
+[data-layer="libraries"] .arch-rail-text {
+  padding-top: 16px;
+}
+
+.arch-rail-title {
+  font-size: 16px;
+  line-height: normal;
+  font-weight: 600;
+  color: var(--text);
+}
+
+[data-layer="core"] .arch-rail-title {
+  color: var(--blue-soft);
+}
+
+.arch-rail-note {
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--text-3);
+}
+
+/* Towers */
+
+.arch-towers {
+  display: grid;
+  grid-template-columns: minmax(0, 660px) minmax(280px, 1fr);
+  gap: 24px;
+}
+
+.arch-tower {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  container: arch-tower / inline-size;
+}
+
+/* A narrow helpers tower keeps its label on one line by shortening the switch */
+@container arch-tower (max-width: 360px) {
+  .arch-switch .arch-wide {
+    display: none;
+  }
+
+  .arch-switch .arch-narrow {
+    display: inline;
+  }
+}
+
+.arch-tower-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.arch-tower-label {
+  font: 400 11.5px/normal var(--font-mono);
+  letter-spacing: 0.104em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--text-2);
+}
+
+.arch-switch {
+  display: flex;
+  flex: none;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--ink-900);
+}
+
+.arch-switch-option {
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 6px;
+  color: var(--text-3);
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 500;
+  white-space: nowrap;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.arch-switch-option:hover {
+  color: var(--text-2);
+}
+
+.arch-switch-option[aria-pressed="true"] {
+  background: var(--ink-700);
+  color: var(--text);
+}
+
+/* Decks: the front plate sits 22px down, the back plate peeks out 18px to the right */
+
+.arch-deck {
+  display: grid;
+  padding: 22px 18px 0 0;
+}
+
+.arch-plate {
+  position: relative;
+  min-width: 0;
+}
+
+.arch-deck-plate {
+  grid-area: 1 / 1;
+  min-height: 132px;
+  border: 1px solid #3370ff55;
+  border-radius: 14px;
+  background: var(--ink-800);
+  box-shadow:
+    0 7px 0 #020308,
+    0 22px 40px #00000099;
+  transition:
+    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.3s ease,
+    background-color 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.arch-deck-plate[data-position="front"] {
+  z-index: 1;
+}
+
+.arch-deck-plate[data-position="back"] {
+  z-index: 0;
+  border-color: var(--line-strong);
+  background: var(--ink-850);
+  box-shadow: none;
+  opacity: 0.75;
+  transform: translate(18px, -22px);
+}
+
+.arch-plate-tag {
+  position: absolute;
+  top: 4px;
+  right: 13px;
+  font: 400 10.5px/normal var(--font-mono);
+  color: var(--text-3);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.arch-deck-plate[data-position="back"] .arch-plate-tag {
+  opacity: 1;
+}
+
+.arch-plate-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 13px;
+  transition:
+    opacity 0.3s ease,
+    visibility 0.3s;
+}
+
+.arch-deck-plate[data-position="back"] .arch-plate-body {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.arch-plate-brand {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 2px;
+  color: var(--text-2);
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 16px;
+}
+
+.arch-plate-brand svg {
+  width: auto;
+  height: 14px;
+}
+
+.arch-plate-desc {
+  font-size: 12.5px;
+  line-height: 16px;
+  color: var(--text-3);
+}
+
+/* React and core plates */
+
+.arch-plate-wrap {
+  padding-top: 20px;
+}
+
+.arch-connector {
+  display: none;
+}
+
+.arch-layer-plate {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 13px;
+  border: 1px solid var(--line-strong);
+  border-radius: 16px;
+  background: var(--ink-850);
+  box-shadow:
+    0 7px 0 #020308,
+    0 22px 40px #00000099;
+}
+
+.arch-layer-plate[data-plate="core"] {
+  border-color: #3370ff66;
+  background: #0e1838;
+}
+
+.arch-plate-label {
+  padding: 0 2px;
+  font: 400 11px/normal var(--font-mono);
+  letter-spacing: 0.091em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.arch-layer-plate[data-plate="core"] .arch-plate-label {
+  color: var(--blue-soft);
+}
+
+/* Package chips */
+
+.arch-chips {
+  --chip-bg: var(--ink-700);
+  --chip-line: var(--line-strong);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+[data-tower="helpers"] .arch-chips {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.arch-layer-plate .arch-chips {
+  --chip-bg: var(--ink-800);
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.arch-layer-plate[data-plate="core"] .arch-chips {
+  --chip-bg: #16224a;
+  --chip-line: #3370ff55;
+}
+
+.arch-chip {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 7px;
+  min-width: 0;
+  height: 64px;
+  padding: 0 11px;
+  border: 1px solid var(--chip-line);
+  border-radius: 9px;
+  background: var(--chip-bg);
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.arch-chip:hover {
+  border-color: var(--blue);
+  background: color-mix(in srgb, var(--chip-bg), var(--blue) 12%);
+}
+
+.arch-chip-icon {
+  width: 15px;
+  height: 15px;
+  color: var(--blue-soft);
+}
+
+.arch-chip-out {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 13px;
+  height: 13px;
+  color: var(--text-3);
+  transition: color 0.2s ease;
+}
+
+.arch-chip:hover .arch-chip-out {
+  color: var(--blue-soft);
+}
+
+.arch-chip-name {
+  font: 400 12px/normal var(--font-mono);
+  color: var(--text);
+  white-space: nowrap;
+}
+
+@container (max-width: 1039px) {
+  .arch-layer-plate .arch-chips {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@container (max-width: 949px) {
+  .arch-towers {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Tablets keep the towers side by side: the helpers tower takes the width its head needs, and the library chips wrap */
+@media (min-width: 761px) {
+  @container (max-width: 999px) {
+    .arch-towers {
+      grid-template-columns: minmax(0, 1fr) 304px;
+    }
+  }
+
+  @container arch-tower (max-width: 320px) {
+    .arch-switch-option {
+      padding: 0 8px;
+    }
+  }
+
+  @container arch-tower (max-width: 635px) {
+    [data-tower="components"] .arch-chips {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+}
+
+/* Both decks match the taller one when the chips wrap */
+@media (min-width: 761px) and (max-width: 1279px) {
+  .arch-deck {
+    flex: 1;
+  }
+}
+
+/* Narrow tablets put each switch under its label, so the helpers tower can narrow further */
+@media (min-width: 761px) and (max-width: 900px) {
+  .arch-towers {
+    grid-template-columns: minmax(0, 1fr) minmax(200px, 30%);
+  }
+
+  .arch-tower-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
+
+/* What the stack saves your agents, set open under the stack with its proof points beside it */
+
+.arch-value {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  align-items: start;
+  gap: 64px;
+  margin-left: calc(var(--arch-rail) + var(--arch-rail-gap));
+  padding-top: 40px;
+  border-top: 1px solid var(--line);
+}
+
+.arch-value-text {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 620px;
+}
+
+.arch-value-title {
+  font-size: 24px;
+  line-height: 1.25;
+  font-weight: 600;
+  letter-spacing: -0.028em;
+  color: var(--text);
+}
+
+.arch-value-body {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+
+.arch-proof {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 4px 0 12px;
+}
+
+.arch-proof-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.arch-proof-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--mint);
+}
+
+.arch-proof-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.arch-proof-title {
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.arch-proof-desc {
+  font-size: 12.5px;
+  line-height: 16px;
+  color: var(--text-3);
+}
+
+@media (max-width: 1080px) {
+  .arch-level {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .arch-rail {
+    display: none;
+  }
+
+  .arch-value {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 960px) {
+  .arch-value {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+}
+
+/* Phones: a vertical list of plates with connectors between the layers */
+
+@media (max-width: 760px) {
+  .architecture {
+    border-top: 1px solid var(--line);
+  }
+
+  .arch-story-app-view {
+    padding: 16px;
+  }
+
+  .architecture .eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.118em;
+  }
+
+  .architecture .arch-wide {
+    display: none;
+  }
+
+  .architecture .arch-narrow {
+    display: inline;
+  }
+
+  .arch-intro p {
+    line-height: 23px;
+  }
+
+  .arch-link {
+    display: none;
+  }
+
+  .arch-towers {
+    gap: 12px;
+  }
+
+  .arch-tower {
+    gap: 10px;
+    padding: 13px;
+    border: 1px solid #3370ff55;
+    border-radius: 14px;
+    background: var(--ink-800);
+    box-shadow: 0 6px 0 #020308;
+  }
+
+  .arch-tower-label {
+    font-size: 10.5px;
+    letter-spacing: 0.095em;
+  }
+
+  .arch-switch {
+    padding: 1px;
+    border-radius: 7px;
+  }
+
+  .arch-switch-option {
+    height: 24px;
+    padding: 0 8px;
+    border-radius: 5px;
+    font-size: 11px;
+  }
+
+  .arch-deck {
+    display: block;
+    padding: 0;
+  }
+
+  .arch-deck-plate,
+  .arch-deck-plate[data-position="front"] {
+    min-height: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    transform: none;
+    transition: none;
+  }
+
+  .arch-deck-plate[data-position="back"],
+  .arch-plate-tag,
+  .arch-plate-brand,
+  .arch-plate-desc,
+  .arch-chip-icon,
+  .arch-chip-out {
+    display: none;
+  }
+
+  .arch-plate-body {
+    padding: 0;
+  }
+
+  .arch-plate-wrap {
+    padding-top: 0;
+  }
+
+  .arch-connector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 26px;
+    color: var(--text-4);
+  }
+
+  .arch-connector svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .arch-layer-plate {
+    gap: 8px;
+    border-radius: 14px;
+    box-shadow: 0 6px 0 #020308;
+  }
+
+  .arch-plate-label {
+    padding: 0;
+    font-size: 10.5px;
+    letter-spacing: 0.095em;
+  }
+
+  .arch-chips,
+  [data-tower="helpers"] .arch-chips {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .arch-layer-plate .arch-chips {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .arch-layer-plate[data-plate="core"] .arch-chips {
+    --chip-line: var(--line-strong);
+  }
+
+  .arch-chip {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    height: 38px;
+    padding: 0 9px;
+    border-radius: 8px;
+  }
+
+  .arch-chip-name {
+    font-size: 11px;
+  }
+
+  .arch-value {
+    gap: 20px;
+    padding-top: 28px;
+  }
+
+  .arch-value-title {
+    font-size: 19px;
+    letter-spacing: -0.026em;
+  }
+
+  .arch-value-body {
+    font-size: 14px;
+    line-height: 22px;
+  }
+
+  .arch-proof {
+    gap: 14px;
+    padding: 0;
+  }
+
+  .arch-proof-item {
+    gap: 10px;
+  }
+
+  .arch-proof-icon {
+    width: 15px;
+    height: 15px;
+  }
+}
+
+/* The longest names still fit two to a row on the narrowest phones */
+@media (max-width: 374px) {
+  .arch-chip {
+    padding: 0 7px;
+  }
+}
+
+@media (max-width: 350px) {
+  .arch-layer-plate .arch-chips {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Scroll story: the stack builds from the core up while the stage is pinned. The motion module sizes and places it over
+   the viewport, and it stays hidden without motion. */
+
+.arch-story {
+  --chip-w: 196px;
+  --chip-h: 60px;
+  --col-gap: 14px;
+  --row-gap: 26px;
+  --pad: 18px;
+  --label: 24px;
+  --inset: 9px;
+  --story-w: calc(2 * var(--pad) + 3 * var(--chip-w) + 2 * var(--col-gap));
+  --story-h: calc(2 * var(--pad) + var(--label) + 2 * var(--chip-h) + var(--row-gap));
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  overflow: hidden;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* The backdrop fades in over the flat diagram, so the rails' text can lift off it into the legend */
+.arch-story::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(42% 46% at var(--glow-x, 60%) var(--glow-y, 62%), #3370ff17, #3370ff00 72%), var(--ink-950);
+  opacity: var(--veil, 1);
+}
+
+.arch-story-scene {
+  position: absolute;
+  top: 0;
+  left: 0;
+  perspective: 2200px;
+}
+
+.arch-story-tilt {
+  position: absolute;
+  top: calc(var(--story-h) / -2);
+  left: calc(var(--story-w) / -2);
+  width: var(--story-w);
+  height: var(--story-h);
+}
+
+.arch-story-zoom,
+.arch-story-turn {
+  position: absolute;
+  inset: 0;
+}
+
+.arch-story-tilt,
+.arch-story-zoom,
+.arch-story-turn {
+  transform-style: preserve-3d;
+}
+
+/* Plates are glass, so the layers below and the light rising through them stay in view */
+
+.arch-story-plate {
+  --plate-x: 0px;
+  --plate-y: 0px;
+  --lit: 0;
+  --flash: 0;
+  --tint: #0b1430b8;
+  position: absolute;
+  top: var(--plate-y);
+  left: var(--plate-x);
+  width: var(--story-w);
+  height: var(--story-h);
+  border: 1px solid color-mix(in srgb, #a9c4ff calc(var(--lit) * 55% + var(--flash) * 45%), #3370ff40);
+  border-radius: 20px;
+  background: linear-gradient(150deg, #3370ff1c, #3370ff03 55%), var(--tint);
+  box-shadow:
+    inset 0 1px 0 #ffffff0d,
+    0 0 calc(var(--lit) * 40px + var(--flash) * 90px)
+      color-mix(in srgb, #3370ff calc(var(--lit) * 28% + var(--flash) * 52%), transparent);
+}
+
+.arch-story-plate[data-plate="core"] {
+  --tint: #0d1a46c4;
+}
+
+.arch-story-plate[data-plate="shadcn"],
+.arch-story-plate[data-plate="fluentui"] {
+  --plate-x: calc(var(--pad) - var(--inset));
+  --plate-y: calc(var(--pad) + var(--label) + var(--chip-h) + var(--row-gap) - var(--inset));
+  width: calc(3 * var(--chip-w) + 2 * var(--col-gap) + 2 * var(--inset));
+  height: calc(var(--chip-h) + 2 * var(--inset) + var(--label));
+  border-radius: 16px;
+}
+
+.arch-story-plate[data-plate="shadcn"] {
+  --tint: #131317d9;
+}
+
+.arch-story-plate[data-plate="fluentui"] {
+  --tint: #0b2a4cd9;
+  visibility: hidden;
+}
+
+.arch-story-plate[data-plate="router"] {
+  --plate-x: calc(var(--pad) - var(--inset));
+  --plate-y: calc(var(--pad) - var(--inset));
+  --tint: #0d1324d1;
+  width: calc(var(--chip-w) + 2 * var(--inset));
+  height: calc(var(--label) + var(--chip-h) + 2 * var(--inset));
+  border-radius: 16px;
+}
+
+.arch-story-plate-label {
+  position: absolute;
+  top: var(--pad);
+  left: var(--pad);
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  font: 500 12px/14px var(--font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: color-mix(in srgb, var(--blue-soft) calc(var(--lit) * 100%), #6d7fae);
+}
+
+/* A component library's own mark, lit along with its name */
+.arch-story-plate-label svg {
+  flex: none;
+  width: auto;
+  height: 1.1em;
+}
+
+[data-plate="router"] .arch-story-plate-label {
+  top: var(--inset);
+  left: var(--inset);
+}
+
+[data-plate="shadcn"] .arch-story-plate-label,
+[data-plate="fluentui"] .arch-story-plate-label {
+  top: calc(var(--inset) + var(--chip-h) + 8px);
+  left: var(--inset);
+}
+
+/* Each feature keeps one cell on every plate. The component library's packages run along the front row. */
+
+.arch-story-chip[data-feature="routing"] {
+  --row: 0;
+  --col: 0;
+}
+
+.arch-story-chip[data-feature="preferences"] {
+  --row: 0;
+  --col: 1;
+}
+
+.arch-story-chip[data-feature="configuration"] {
+  --row: 0;
+  --col: 2;
+}
+
+.arch-story-chip[data-feature="theme"] {
+  --row: 1;
+  --col: 0;
+}
+
+.arch-story-chip[data-feature="alerts"] {
+  --row: 1;
+  --col: 1;
+}
+
+.arch-story-chip[data-feature="modals"] {
+  --row: 1;
+  --col: 2;
+}
+
+/* A chip lights softly when its layer lands, and brightly when the traced light reaches it */
+.arch-story-chip {
+  --lit: 0;
+  --trace: 0;
+  position: absolute;
+  top: calc(var(--pad) + var(--label) + var(--row) * (var(--chip-h) + var(--row-gap)) - var(--plate-y));
+  left: calc(var(--pad) + var(--col) * (var(--chip-w) + var(--col-gap)) - var(--plate-x));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 8px;
+  width: var(--chip-w);
+  height: var(--chip-h);
+  padding: 0 12px;
+  border: 1px solid
+    color-mix(
+      in srgb,
+      #c4d6ff calc(var(--trace) * 100%),
+      color-mix(in srgb, #8fb4ff6b calc(var(--lit) * 100%), #8fb4ff2e)
+    );
+  border-radius: 12px;
+  background: color-mix(
+    in srgb,
+    #2b5be6 calc(var(--trace) * 48%),
+    color-mix(in srgb, #16245a calc(var(--lit) * 100%), #101a3a)
+  );
+  box-shadow:
+    inset 0 1px 0 #ffffff0f,
+    0 0 calc(var(--trace) * 30px) color-mix(in srgb, #3370ff calc(var(--trace) * 80%), transparent);
+  color: color-mix(
+    in srgb,
+    #fff calc(var(--trace) * 100%),
+    color-mix(in srgb, #c3cdea calc(var(--lit) * 100%), #7d8bb3)
+  );
+}
+
+.arch-story-chip svg {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: color-mix(
+    in srgb,
+    #e6eeff calc(var(--trace) * 100%),
+    color-mix(in srgb, #8fa6e6 calc(var(--lit) * 100%), #5a6ea8)
+  );
+}
+
+.arch-story-chip-name {
+  font: 500 12px/1 var(--font-mono);
+  white-space: nowrap;
+}
+
+/* Light, leader lines and the legend sit flat over the scene, where they stay readable */
+
+.arch-story-light,
+.arch-story-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.arch-story-lines {
+  overflow: visible;
+  fill: none;
+}
+
+.arch-story-leader {
+  stroke: #8fb4ff80;
+  stroke-width: 1;
+}
+
+.arch-story-tie {
+  stroke: #8fb4ff66;
+  stroke-width: 1;
+  opacity: 0;
+}
+
+.arch-story-legend {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--legend-gap, 40px);
+  width: var(--legend-w, 200px);
+}
+
+/* Layers still to come are dim, the one being built is bright and built ones stay lit. On the rails it lifts from, an
+   entry starts at full strength. */
+.arch-story-level {
+  --shown: 0;
+  --active: 0;
+  --built: 0;
+  --flat: 0;
+  --focus: max(var(--active), var(--flat));
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 28px;
+  opacity: calc(var(--shown) * (0.3 + 0.7 * var(--focus) + 0.42 * var(--built) * (1 - var(--focus))));
+}
+
+/* Matches the rail's node, so the legend reads as the rails lifting off the page */
+.arch-story-node {
+  position: absolute;
+  top: 6px;
+  left: 2px;
+  width: 10px;
+  height: 10px;
+  border: 2px solid color-mix(in srgb, var(--blue-soft) calc(var(--built) * 100%), var(--line-strong));
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--blue) calc(var(--built) * 100%), var(--ink-950));
+  box-shadow: 0 0 calc(var(--built) * 14px) color-mix(in srgb, var(--blue) calc(var(--built) * 85%), transparent);
+}
+
+[data-level="core"] .arch-story-node {
+  border-color: var(--blue-soft);
+  background: var(--blue);
+}
+
+.arch-story-link {
+  position: absolute;
+  top: 16px;
+  left: 6px;
+  width: 2px;
+  height: calc(100% + var(--legend-gap, 40px) - 10px);
+  background: var(--line-strong);
+}
+
+.arch-story-link-fill {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, var(--blue), var(--blue-soft));
+  box-shadow: 0 0 10px #3370ffb3;
+  transform: scaleY(0);
+  transform-origin: 50% 100%;
+}
+
+.arch-story-title {
+  font-size: 16px;
+  line-height: normal;
+  font-weight: 600;
+  color: var(--text);
+}
+
+[data-level="core"] .arch-story-title {
+  color: var(--blue-soft);
+}
+
+.arch-story-note {
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--text-3);
+}
+
+.arch-story-tag {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: grid;
+  padding: 6px 10px;
+  border: 1px solid #8fb4ff47;
+  border-radius: 8px;
+  background: #0a1129eb;
+  color: var(--text);
+  font: 500 12px/1.2 var(--font-mono);
+  white-space: nowrap;
+  visibility: hidden;
+  opacity: 0;
+}
+
+.arch-story-tag > span {
+  grid-area: 1 / 1;
+}
+
+.arch-story-tag [data-kit="fluentui"],
+.arch-story-app-kit [data-kit="fluentui"],
+.arch-story-dialog[data-kit="fluentui"] {
+  visibility: hidden;
+  opacity: 0;
+}
+
+/* The app the packages build: one confirm dialog, styled by whichever component library is plugged in */
+
+.arch-story-app {
+  --charge: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--app-w, 320px);
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, #9dbcff calc(var(--charge) * 70%), #3370ff47);
+  border-radius: 14px;
+  background: #080d1c;
+  box-shadow:
+    0 30px 60px #000000a6,
+    0 14px 46px color-mix(in srgb, #3370ff calc(var(--charge) * 45%), transparent);
+  visibility: hidden;
+  opacity: 0;
+}
+
+.arch-story-app-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 34px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--line);
+  font: 400 11px/1 var(--font-mono);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.arch-story-app-kit {
+  display: grid;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--text-2);
+}
+
+.arch-story-app-kit > span {
+  grid-area: 1 / 1;
+  justify-self: end;
+}
+
+.arch-story-app-view {
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: radial-gradient(70% 90% at 50% 100%, #3370ff1f, #3370ff00), #060a16;
+}
+
+/* Each confirm as its renderer draws it in dark mode. The shadcn kit's dialog stacks title, description and footer
+   24px apart with no close button, and its footer pairs an outline cancel with the default button. */
+.arch-story-dialog {
+  display: grid;
+  grid-area: 1 / 1;
+  gap: 24px;
+  width: 100%;
+  max-width: 448px;
+  padding: 24px;
+  border-radius: 14px;
+  background: #171717;
+  box-shadow:
+    0 0 0 1px #fafafa1a,
+    0 6px 34px color-mix(in srgb, #3370ff calc(var(--charge) * 50%), transparent);
+  color: #fafafa;
+  font: 14px/20px var(--font-sans);
+}
+
+.arch-story-dialog-title {
+  line-height: 1;
+  font-weight: 500;
+}
+
+.arch-story-dialog-text {
+  color: #a1a1a1;
+}
+
+.arch-story-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.arch-story-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid #ffffff26;
+  border-radius: 8px;
+  background: #ffffff0d;
+  box-shadow: 0 1px 2px #0000000d;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.arch-story-button.is-primary {
+  border-color: transparent;
+  background: #e5e5e5;
+  box-shadow: none;
+  color: #171717;
+}
+
+/* Fluent's surface pads 24px, its body grid sets title, content and actions 8px apart, and its buttons are 32px tall
+   with a 96px minimum width */
+.arch-story-dialog[data-kit="fluentui"] {
+  gap: 8px;
+  max-width: 600px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: #292929;
+  box-shadow:
+    0 0 8px #0000003d,
+    0 32px 64px #00000047,
+    0 6px 34px color-mix(in srgb, #3370ff calc(var(--charge) * 50%), transparent);
+  color: #fff;
+  font-family:
+    "Segoe UI", "Segoe UI Web (West European)", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+}
+
+[data-kit="fluentui"] .arch-story-dialog-title {
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 600;
+}
+
+[data-kit="fluentui"] .arch-story-dialog-text {
+  min-height: 32px;
+  color: inherit;
+}
+
+[data-kit="fluentui"] .arch-story-button {
+  min-width: 96px;
+  height: 32px;
+  padding: 0 12px;
+  border-color: #666;
+  border-radius: 4px;
+  background: #292929;
+  box-shadow: none;
+  font-weight: 600;
+}
+
+[data-kit="fluentui"] .arch-story-button.is-primary {
+  border-color: transparent;
+  background: #115ea3;
+  color: #fff;
+}
+
+/* The agent's request and the one line it changes */
+
+.arch-story-swap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  width: var(--swap-w, 300px);
+}
+
+.arch-story-agent {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  height: 36px;
+  padding: 0 15px 0 11px;
+  border: 1px solid #3370ff59;
+  border-radius: 999px;
+  background: #0d1532;
+  color: var(--text);
+  font-size: 14px;
+  white-space: nowrap;
+  visibility: hidden;
+  opacity: 0;
+}
+
+.arch-story-agent svg {
+  width: 16px;
+  height: 16px;
+  color: var(--blue-soft);
+}
+
+.arch-story-diff {
+  align-self: stretch;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: #070b17;
+  font: 400 11px/1 var(--font-mono);
+  visibility: hidden;
+  opacity: 0;
+}
+
+.arch-story-diff-file {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--line);
+  color: var(--text-3);
+}
+
+.arch-story-diff-line {
+  display: flex;
+  gap: 10px;
+  padding: 8px 12px;
+  white-space: nowrap;
+}
+
+.arch-story-diff-line::before {
+  width: 7px;
+}
+
+.arch-story-diff-line[data-change="removed"] {
+  background: #ff8fa314;
+  color: #ffb4c1;
+}
+
+.arch-story-diff-line[data-change="removed"]::before {
+  content: "-";
+}
+
+.arch-story-diff-line[data-change="added"] {
+  background: #7ee2b014;
+  color: #a8f0cb;
+}
+
+.arch-story-diff-line[data-change="added"]::before {
+  content: "+";
+}
+
+/* Narrow screens caption the active layer instead of keeping the whole legend beside the stack */
+@media (max-width: 899px) {
+  .arch-story-legend {
+    display: grid;
+  }
+
+  .arch-story-level {
+    grid-area: 1 / 1;
+    gap: 5px;
+    padding-left: 0;
+    opacity: calc(var(--shown) * var(--active));
+  }
+
+  .arch-story-node,
+  .arch-story-link,
+  .arch-story-leader {
+    display: none;
+  }
+
+  .arch-story-title {
+    font-size: 17px;
+  }
+
+  .arch-story-note {
+    font-size: 14px;
+    line-height: 21px;
+  }
+}
+
+/* Phones show each package as its icon, which stays legible where names would be too small to read */
+@media (max-width: 760px) {
+  .arch-story {
+    --chip-w: 64px;
+    --chip-h: 52px;
+    --col-gap: 10px;
+    --row-gap: 22px;
+    --pad: 12px;
+    --label: 18px;
+    --inset: 7px;
+  }
+
+  .arch-story-plate {
+    border-radius: 14px;
+  }
+
+  .arch-story-plate[data-plate="shadcn"],
+  .arch-story-plate[data-plate="fluentui"],
+  .arch-story-plate[data-plate="router"] {
+    border-radius: 12px;
+  }
+
+  .arch-story-plate-label {
+    font-size: 9px;
+    line-height: 10px;
+  }
+
+  [data-plate="shadcn"] .arch-story-plate-label,
+  [data-plate="fluentui"] .arch-story-plate-label {
+    top: calc(var(--inset) + var(--chip-h) + 6px);
+  }
+
+  .arch-story-chip {
+    align-items: center;
+    padding: 0;
+    border-radius: 10px;
+  }
+
+  .arch-story-chip svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .arch-story-chip-name {
+    display: none;
+  }
+
+  .arch-story-tag {
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+
+  .arch-story-agent {
+    height: 32px;
+    font-size: 13px;
+  }
+}

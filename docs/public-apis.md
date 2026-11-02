@@ -7,9 +7,9 @@ theme packages.
 | Package           | Consumer API                                                                                                                   |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | preferences-core  | `createPreferences<T>`, `get`, `set`, `reset`, `resetAll`, snapshots, subscriptions, JSON import/export, `dispose`             |
-| react-preferences | `usePreferences(store)`, `usePreference(store, key)`                                                                           |
+| react-preferences | `createPreferences<T>` from preferences-core, `usePreferences(store)`, `usePreference(store, key)`                             |
 | theme-core        | `createThemeStore`, `setTheme`, `reset`, snapshots, subscriptions, `setSystemTheme` for environment adapters                   |
-| react-theme       | `useTheme(store)` returning selection, resolved appearance, `setTheme`, and `reset`                                            |
+| react-theme       | `createThemeStore` from theme-core, `useTheme(store)` returning selection, resolved appearance, `setTheme`, and `reset`        |
 | shadcn-theme      | `createShadcnTheme`, the theme store contract plus reference-counted `start`, and `getThemeInitScript`                         |
 | fluentui-theme    | `createFluentTheme`, the theme store contract plus tokens and reference-counted `start`, `FluentThemeProvider`, and `useTheme` |
 

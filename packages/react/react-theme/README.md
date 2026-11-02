@@ -3,8 +3,9 @@
 Provider-free React bindings for a Buildkit theme store.
 
 ```tsx
-import { useTheme } from "@buildkitgg/react-theme"
-import { theme } from "./theme"
+import { createThemeStore, useTheme } from "@buildkitgg/react-theme"
+
+const theme = createThemeStore()
 
 export function ThemeButton() {
   const { theme: preference, resolvedTheme, setTheme } = useTheme(theme)
@@ -16,9 +17,10 @@ export function ThemeButton() {
 }
 ```
 
-Create the store once outside render and pass that same instance to consumers. Non-React code calls
-`theme.setTheme("dark")`; subscribers update through `useSyncExternalStore`. No context or provider is required. The
-hook has fully inferred types and ships declarations. React 19.2+ is a peer dependency.
+`createThemeStore` comes from `@buildkitgg/theme-core`, re-exported so React apps import from one package. Create the
+store once outside render and pass that same instance to consumers. Non-React code calls `theme.setTheme("dark")`;
+subscribers update through `useSyncExternalStore`. No context or provider is required. The hook has fully inferred types
+and ships declarations. React 19.2+ is a peer dependency.
 
 This package does not start browser listeners, access local storage, or apply CSS. Connect the store at your application
 boundary. Its stable server snapshot supports hydration: use identical initial options on server and client, with a
