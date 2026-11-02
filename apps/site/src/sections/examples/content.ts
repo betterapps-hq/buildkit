@@ -129,7 +129,7 @@ export const EXAMPLES: Example[] = [
     hint: "Pick a value to override it",
     control: "refresh",
     files: [
-      { name: "config.ts", source: source("configuration/config.ts"), highlight: [...lines(6, 11), ...lines(24, 28)] },
+      { name: "config.ts", source: source("configuration/config.ts"), highlight: [...lines(7, 12), ...lines(18, 19)] },
       { name: "SettingsPanel.tsx", source: source("configuration/SettingsPanel.tsx") },
       { name: "InvoiceList.tsx", source: source("configuration/InvoiceList.tsx") }
     ],

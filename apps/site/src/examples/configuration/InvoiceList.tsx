@@ -15,6 +15,14 @@ export function InvoiceList({ invoices }: Props) {
 
   return (
     <>
+      <header>
+        <h2>Invoices</h2>
+        {csvExport && (
+          <a className={buttonVariants({ variant: "outline", size: "sm" })} href="/api/invoices.csv" download>
+            Export CSV
+          </a>
+        )}
+      </header>
       <ul>
         {invoices.slice(0, pageSize).map((invoice) => (
           <li key={invoice.id}>
@@ -23,15 +31,6 @@ export function InvoiceList({ invoices }: Props) {
           </li>
         ))}
       </ul>
-      {csvExport && (
-        <a
-          className={buttonVariants({ variant: "outline" })}
-          href="/api/invoices.csv"
-          download
-        >
-          Export CSV
-        </a>
-      )}
     </>
   )
 }

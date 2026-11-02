@@ -139,9 +139,23 @@ body {
   list-style: none;
 }
 
+/* The header is as tall as Export CSV, so the button can appear without moving the list */
+[data-example="configuration"] header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 32px;
+  margin-bottom: 12px;
+}
+
+[data-example="configuration"] h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
 [data-example="configuration"] .frame-part:first-child ul {
   gap: 10px;
-  margin-bottom: 14px;
   font-size: 14px;
 }
 
@@ -155,16 +169,23 @@ body {
   color: var(--muted-foreground);
 }
 
+/* Every row shares the panel's columns, and Reset keeps its slot even while it's hidden */
 [data-example="configuration"] .frame-part:last-child ul {
-  gap: 10px;
+  grid-template-columns: max-content minmax(84px, 128px) max-content 32px;
+  justify-content: start;
+  align-items: center;
+  gap: 10px 12px;
 }
 
 [data-example="configuration"] .frame-part:last-child li {
   display: grid;
-  grid-template-columns: 84px auto auto auto;
-  justify-content: start;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
   align-items: center;
-  gap: 10px;
+}
+
+[data-example="configuration"] [data-slot="select-trigger"] {
+  width: 100%;
 }
 
 [data-example="configuration"] code {

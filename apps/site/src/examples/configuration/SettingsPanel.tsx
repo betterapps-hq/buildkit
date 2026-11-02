@@ -1,4 +1,5 @@
-import { Badge, Button, ButtonGroup } from "@buildkitgg/shadcn-baseui-kit"
+import { Badge, Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@buildkitgg/shadcn-baseui-kit"
+import { RotateCcwIcon } from "lucide-react"
 import { LANGUAGES, PAGE_SIZES, override, reset, useSetting, type Settings } from "./config"
 
 // options only accepts that setting's values, so options={[30]} for pageSize is a type error
@@ -7,25 +8,31 @@ type SettingRowProps<K extends keyof Settings> = { name: K; options: readonly Se
 function SettingRow<K extends keyof Settings>({ name, options }: SettingRowProps<K>) {
   const { value, source } = useSetting(name)
 
+  function choose(next: Settings[K] | null) {
+    if (next !== null) {
+      override(name, next)
+    }
+  }
+
   return (
     <li>
       <code>{name}</code>
-      <ButtonGroup aria-label={name}>
-        {options.map((option) => (
-          <Button
-            key={String(option)}
-            size="sm"
-            variant={option === value ? "default" : "outline"}
-            onClick={() => override(name, option)}
-          >
-            {String(option)}
-          </Button>
-        ))}
-      </ButtonGroup>
-      <Badge variant="outline">{source}</Badge>
+      <Select value={value} onValueChange={choose}>
+        <SelectTrigger size="sm" aria-label={name}>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map((option) => (
+            <SelectItem key={String(option)} value={option}>
+              {String(option)}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <Badge variant={source === "override" ? "default" : "secondary"}>{source}</Badge>
       {source === "override" && (
-        <Button variant="ghost" size="sm" onClick={() => reset(name)}>
-          Reset
+        <Button variant="ghost" size="icon-sm" aria-label={`Reset ${name}`} onClick={() => reset(name)}>
+          <RotateCcwIcon />
         </Button>
       )}
     </li>
