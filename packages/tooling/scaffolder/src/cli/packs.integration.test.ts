@@ -450,6 +450,14 @@ describe("catalog check --registry", () => {
     )
     expect((await check(["--registry", "--min-age", "0"], registry(published))).code).toBe(0)
 
+    // A caret catalog writes ^19.3.1, so a React published today is what a new project gets.
+    const caret = { ...fixtureCatalog(), range: "caret" as const }
+    const newer = registry({ ...published, react: { "19.3.1": 30, "19.4.0": 0 } })
+    expect((await check(["--registry"], newer, caret)).envelope.error?.message).toBe(
+      '@fixture/catalog@1.0.0 has problems. react@19.4.0, the newest version "^19.3.1" allows, is less than 1 day old.'
+    )
+    expect((await check(["--registry"], newer)).code).toBe(0)
+
     // A range pin is checked by its newest match, against the add-ons written for that package.
     const v1 = fixtureCatalog()
     const ranged = {

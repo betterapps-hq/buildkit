@@ -218,7 +218,18 @@ describe("versions and migrations", () => {
   })
 
   it("tells ranges from text that isn't one", () => {
-    const ranges = ["1.2.3", "^19.3.1", "~0.45", "1.x", ">=1 <3", "1.0.0 - 2.0.0", "^1 || ^2", "*", "1.0.0-rc.1"]
+    const ranges = [
+      "1.2.3",
+      "^19.3.1",
+      "~0.45",
+      "1.x",
+      ">=1 <3",
+      "1.0.0 - 2.0.0",
+      "^1 || ^2",
+      "*",
+      "1.0.0-rc.1",
+      "1.2.3+build.1"
+    ]
     expect(ranges.filter((range) => !isValidRange(range))).toEqual([])
     expect(["latest", "", " ", "^one", "1.0.0 ||", ">>1", "1.2.3.4"].filter(isValidRange)).toEqual([])
   })
@@ -229,6 +240,7 @@ describe("versions and migrations", () => {
     ["~0.45 || ^1", "0.45.0"],
     ["^2 || 1.5.0", "1.5.0"],
     [">1.2.3", "1.2.4"],
+    [">1.2.3-beta.1 <1.2.4", "1.2.3-beta.1.0"],
     [">1", "2.0.0"],
     ["1.x", "1.0.0"],
     ["1.2.3", "1.2.3"],

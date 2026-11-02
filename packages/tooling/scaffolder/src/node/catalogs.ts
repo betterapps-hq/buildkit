@@ -4,6 +4,7 @@ import { homedir } from "node:os"
 import { basename, join } from "node:path"
 import { pathToFileURL } from "node:url"
 import { z } from "zod"
+import { writtenVersions } from "../manifest/catalog.js"
 import { isTemplatePack, type LoadedPack } from "../manifest/packs.js"
 import type { CatalogManifest } from "../manifest/types.js"
 import { PlanError } from "../plan/errors.js"
@@ -291,7 +292,7 @@ export class PackStore {
 const day = 24 * 60 * 60 * 1000
 
 /**
- * `catalog check --registry`: asks npm for each of the catalog's pins. A pin fails when nothing published matches it,
+ * `catalog check --registry`: asks npm for each of the catalog's pins, as it writes them. A pin fails when nothing published matches it,
  * when the newest match is younger than `minAge` days (default 1), and when an add-on's `packages` range doesn't
  * include the newest match. Pins that aren't ranges are left to `checkCatalog`.
  */
@@ -302,7 +303,8 @@ export async function checkRegistry(
 ): Promise<string[]> {
   const minAge = options.minAge ?? 1
   const now = options.now ?? Date.now()
-  const pins = Object.entries(catalog.versions ?? {}).filter(([, pin]) => isValidRange(pin))
+  // A `caret` catalog installs `^19.3.1` for a 19.3.1 pin, so the range it writes is what's checked.
+  const pins = Object.entries(writtenVersions(catalog)).filter(([, pin]) => isValidRange(pin))
   const problems: string[][] = []
   // npm starts a process per package, so a few run at a time.
   for (let start = 0; start < pins.length; start += 8) {
