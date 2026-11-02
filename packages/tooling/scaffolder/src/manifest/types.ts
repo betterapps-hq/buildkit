@@ -57,6 +57,8 @@ export type Contribution =
       required: boolean
       description: string
       example?: string
+      /** Where to get a value, such as the provider's dashboard. An https URL. */
+      help?: string
     }
   | { kind: "file"; path: string; content: string; ownership: Ownership }
   | {

@@ -162,7 +162,8 @@ function collect(result: Rendered, contributor: string, contributions: Contribut
           secret: contribution.secret,
           required: contribution.required,
           description: contribution.description,
-          ...(contribution.example === undefined ? {} : { example: contribution.example })
+          ...(contribution.example === undefined ? {} : { example: contribution.example }),
+          ...(contribution.help === undefined ? {} : { help: contribution.help })
         }
         if (existing && !jsonEqual(existing, variable)) {
           throw new PlanError(

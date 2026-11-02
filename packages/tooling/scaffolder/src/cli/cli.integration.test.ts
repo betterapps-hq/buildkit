@@ -359,6 +359,9 @@ describe("the wizard", () => {
     )
     expect(result.code).toBe(0)
     expect(result.asked.map((question) => question.kind).sort()).toEqual(["confirm", "password", "text"])
+    expect(result.asked.find((question) => question.kind === "password")?.message).toBe(
+      "SENTRY_DSN: Your Sentry DSN\nGet one at https://sentry.example/settings/keys"
+    )
     expect(result.notes.join("")).not.toContain(dsn)
     expect(readFileSync(join(root, "demo/.env"), "utf8")).toContain(dsn)
     const tracked = files()
@@ -367,7 +370,9 @@ describe("the wizard", () => {
       .join("\n")
     expect(tracked).not.toContain(dsn)
     const plain = await run(["create", "app", "other", "--mode", "ssr", "--with", "sentry", "--yes", "--json"])
-    expect(envelope(plain.out).nextSteps).toEqual(["Set SENTRY_DSN in .env: Your Sentry DSN"])
+    expect(envelope(plain.out).nextSteps).toEqual([
+      "Set SENTRY_DSN in .env: Your Sentry DSN. Get one at https://sentry.example/settings/keys"
+    ])
   })
 
   it("create asks for an optional value too, and a blank answer writes it empty", async () => {

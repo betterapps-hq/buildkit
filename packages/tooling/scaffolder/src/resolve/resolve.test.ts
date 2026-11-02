@@ -696,6 +696,20 @@ describe("questions and catalog CI", () => {
     expect(missing).toEqual([])
   })
 
+  it("reports env help links that aren't https", () => {
+    expect(checkCatalog(fixtureCatalog(), { matrix: true })).toEqual([])
+    const catalog = fixtureCatalog()
+    const sentry = catalog.addons.find((addon) => addon.id === "@fixture/sentry")!
+    const contribute = sentry.contribute
+    for (const help of ["http://sentry.example/keys", "the Sentry dashboard"]) {
+      sentry.contribute = (ctx) =>
+        contribute(ctx).map((contribution) => (contribution.kind === "env" ? { ...contribution, help } : contribution))
+      expect(checkCatalog(catalog, { matrix: true })).toEqual([
+        `SENTRY_DSN has the help link "${help}", which isn't an https URL.`
+      ])
+    }
+  })
+
   it("reports pins that aren't ranges, and add-ons whose packages the pins don't fit", () => {
     const written = (id: string, packages: Record<string, string>) =>
       defineAddon({ id, version: "1.0.0", title: id, description: "", packages, contribute: () => [] })
