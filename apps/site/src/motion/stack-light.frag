@@ -30,9 +30,10 @@ uniform float u_bend;
 uniform vec4 u_levels;
 // The last pillar's half size where it reaches the app, and how far up it starts and stops spreading
 uniform vec4 u_flare;
-// Per pillar, how far the light has risen and the flash where it lands
+// Per pillar, how far the light has risen, the flash where it lands, and how bright it is
 uniform vec4 u_grow;
 uniform vec4 u_land;
+uniform vec4 u_power;
 // Cards and glass plates above the core, each with its height, how much light it lets through, its layer and its
 // corner radius
 uniform vec4 u_occluders[MAX_OCCLUDERS];
@@ -205,9 +206,9 @@ void main() {
   d = vec3(d.x * cos(turn) + d.y * sin(turn), -d.x * sin(turn) + d.y * cos(turn), d.z) / u_camera.w;
 
   float dither = hash(dot(gl_FragCoord.xy, vec2(12.9898, 78.233)));
-  vec3 lower = pillar(o, d, u_levels.x, u_levels.y, u_grow.x, u_land.x, 1.3, 0.0, dither);
-  vec3 upper = pillar(o, d, u_levels.y, u_levels.z, u_grow.y, u_land.y, 5.0, 0.0, dither);
-  vec3 light = pillar(o, d, u_levels.z, u_levels.w, u_grow.z, u_land.z, 8.7, 1.0, dither);
+  vec3 lower = pillar(o, d, u_levels.x, u_levels.y, u_grow.x, u_land.x, 1.3, 0.0, dither) * u_power.x;
+  vec3 upper = pillar(o, d, u_levels.y, u_levels.z, u_grow.y, u_land.y, 5.0, 0.0, dither) * u_power.y;
+  vec3 light = pillar(o, d, u_levels.z, u_levels.w, u_grow.z, u_land.z, 8.7, 1.0, dither) * u_power.z;
   if (dot(lower + upper, vec3(1.0)) > 0.0) {
     vec2 pass = through(o, d);
     light += lower * pass.x * pass.y + upper * pass.y;

@@ -464,9 +464,9 @@ export function architectureScene() {
   // Pillars of light trace the modal path from its core package up through each layer and into the app. The rest of
   // each layer only lights up as it lands, so the light never suggests the dialog uses every package.
   const pillar: Record<"lower" | "upper" | "out", Pillar> = {
-    lower: { grow: 0, land: 0 },
-    upper: { grow: 0, land: 0 },
-    out: { grow: 0, land: 0 }
+    lower: { grow: 0, land: 0, power: 1 },
+    upper: { grow: 0, land: 0, power: 1 },
+    out: { grow: 0, land: 0, power: 1 }
   }
   const drawn = { core: { value: 0 }, framework: { value: 0 }, libraries: { value: 0 } }
   const typed = { count: 0 }
@@ -518,8 +518,9 @@ export function architectureScene() {
       arrive(from, at)
     }
   }
-  const grow = (part: Pillar, value: number, at: number, duration = 0.45) =>
-    timeline.to(part, { grow: value, duration, ease: value > 0.5 ? "power2.out" : "power2.inOut" }, at)
+  /** A pillar of light climbs steadily from one card to the next, so it keeps rising for as long as the reader scrolls. */
+  const rise = (part: Pillar, from: number, to: number) =>
+    timeline.fromTo(part, { grow: 0 }, { grow: 1, duration: to - from, ease: "none", immediateRender: false }, from)
   /** Drops a plate onto its layer from above, with a flash where it lands. */
   const land = (plate: HTMLElement, layer: number, at: number) => {
     timeline
@@ -583,14 +584,15 @@ export function architectureScene() {
     .to(parts.turn, { rotation: TURN + DRIFT.turn, duration: AT.settle - AT.core, ease: "none" }, AT.core)
     .to(parts.tilt, { rotationX: TILT + DRIFT.tilt, duration: AT.settle - AT.core, ease: "none" }, AT.core)
 
-  // Core: the base lights, and the modal's light starts at its core package, waiting for the layer above
+  // Core: the base lights, and the modal's light starts rising from its core package towards the layer above, which
+  // lands on it as it climbs
   timeline
     .to(levels.core.item, { "--active": 1, "--built": 1, duration: 0.3 }, AT.core)
     .to(parts.core, { "--lit": 1, duration: 0.4 }, AT.core)
     .to(drawn.core, { value: 1, duration: 0.45 }, AT.core + 0.1)
   build(AT.core + 0.15, chips.core)
   reach(AT.core + 0.55, parts.core, chips.core[TRACED])
-  grow(pillar.lower, 0.22, AT.core + 0.75)
+  rise(pillar.lower, AT.core + 0.55, AT.framework + 1.05)
   show(levels.core.tag, AT.core + 0.7)
   timeline.to(levels.core.tie, { opacity: 1, duration: 0.3 }, AT.core + 0.7)
 
@@ -604,9 +606,8 @@ export function architectureScene() {
   frame(() => layout.lifts.framework, AT.framework)
   land(parts.react, 1, AT.framework)
   build(AT.framework + 0.55, chips.react)
-  grow(pillar.lower, 1, AT.framework + 0.7)
   reach(AT.framework + 1.05, parts.react, chips.react[TRACED], pillar.lower)
-  grow(pillar.upper, 0.22, AT.framework + 1.3)
+  rise(pillar.upper, AT.framework + 1.05, AT.libraries + 1.05)
   show(levels.framework.tag, AT.framework + 1.1)
   timeline.to(levels.framework.tie, { opacity: 1, duration: 0.3 }, AT.framework + 1.1)
 
@@ -621,9 +622,8 @@ export function architectureScene() {
   land(parts.shadcn, 2, AT.libraries)
   land(parts.router, 2, AT.libraries + 0.14)
   build(AT.libraries + 0.6, { ...chips.router, ...chips.shadcn })
-  grow(pillar.upper, 1, AT.libraries + 0.7)
   reach(AT.libraries + 1.05, parts.shadcn, chips.shadcn[TRACED], pillar.upper)
-  grow(pillar.out, 0.14, AT.libraries + 1.3)
+  rise(pillar.out, AT.libraries + 1.05, AT.app + 0.65)
   show(levels.libraries.tag, AT.libraries + 1.1)
   timeline.to(levels.libraries.tie, { opacity: 1, duration: 0.3 }, AT.libraries + 1.1)
 
@@ -634,7 +634,6 @@ export function architectureScene() {
     { autoAlpha: 1, y: 0, scale: 1, duration: 0.45, ease: "power3.out" },
     AT.app
   )
-  grow(pillar.out, 1, AT.app + 0.3, 0.4)
   timeline
     .fromTo(
       kit(parts.app, "shadcn"),
@@ -645,8 +644,8 @@ export function architectureScene() {
     .to(parts.app, { "--charge": 1, duration: 0.3 }, AT.app + 0.65)
   arrive(pillar.out, AT.app + 0.65)
 
-  // Swap: an agent asks for Fluent UI. Only the light above React steps back while the plate is replaced, and the
-  // layers below stay lit.
+  // Swap: an agent asks for Fluent UI. Only the light above React dims while the plate is replaced, and the layers
+  // below stay lit.
   timeline
     .fromTo(parts.agent, { autoAlpha: 0, y: 10 }, { autoAlpha: 1, y: 0, duration: 0.3 }, AT.swap)
     .to(
@@ -662,9 +661,7 @@ export function architectureScene() {
       AT.swap + 0.1
     )
     .to(parts.app, { "--charge": 0.3, duration: 0.3 }, AT.swap + 0.5)
-  grow(pillar.out, 0, AT.swap + 0.5, 0.3)
-  grow(pillar.upper, 0.22, AT.swap + 0.6, 0.3)
-  timeline
+    .to([pillar.upper, pillar.out], { power: 0.15, duration: 0.4 }, AT.swap + 0.5)
     .to(
       [parts.shadcn, ...present(SWEEP.map((feature) => chips.shadcn[feature]))],
       { "--lit": 0, duration: 0.3 },
@@ -688,10 +685,10 @@ export function architectureScene() {
   )
   timeline.to(parts.fluentui, { "--lit": 1, duration: 0.4 }, AT.swap + 1.45)
   build(AT.swap + 1.45, chips.fluentui)
-  grow(pillar.upper, 1, AT.swap + 1.45, 0.35)
+  timeline.to(pillar.upper, { power: 1, duration: 0.35 }, AT.swap + 1.45)
   reach(AT.swap + 1.75, parts.fluentui, chips.fluentui[TRACED], pillar.upper)
   show(kit(levels.libraries.tag, "fluentui"), AT.swap + 1.75, 0.2)
-  grow(pillar.out, 1, AT.swap + 1.85, 0.35)
+  timeline.to(pillar.out, { power: 1, duration: 0.35 }, AT.swap + 1.85)
   hide(kit(parts.app, "shadcn"), AT.swap + 2.1, 0.25)
   show(kit(parts.app, "fluentui"), AT.swap + 2.15, 0.3)
   timeline.to(parts.app, { "--charge": 1, duration: 0.3 }, AT.swap + 2.15)

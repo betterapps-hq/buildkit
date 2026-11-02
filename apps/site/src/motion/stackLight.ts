@@ -9,8 +9,11 @@ const SWAY = 0.13
 
 export type Point = { x: number; y: number }
 
-/** A pillar of light rising from one card to the next. `grow` is how far up it has reached and `land` the flash where it arrives. */
-export type Pillar = { grow: number; land: number }
+/**
+ * A pillar of light rising from one card to the next. `grow` is how far up it has reached, `land` the flash where it
+ * arrives and `power` how bright it is.
+ */
+export type Pillar = { grow: number; land: number; power: number }
 
 /**
  * A card or glass plate above the core, in the stack's pixels from its middle, at its height on the stack. `pass` is how
@@ -112,6 +115,7 @@ function webglLight(canvas: HTMLCanvasElement): StackLight | null {
   const uFlare = uniform("u_flare")
   const uGrow = uniform("u_grow")
   const uLand = uniform("u_land")
+  const uPower = uniform("u_power")
   const uOccluders = uniform("u_occluders")
   const uOccluderInfo = uniform("u_occluderInfo")
   const uOccluderCount = uniform("u_occluderCount")
@@ -142,6 +146,7 @@ function webglLight(canvas: HTMLCanvasElement): StackLight | null {
       gl.uniform4f(uFlare, flare.width / 2, flare.height / 2, flare.from, flare.to)
       gl.uniform4f(uGrow, pillars[0].grow, pillars[1].grow, pillars[2].grow, 0)
       gl.uniform4f(uLand, pillars[0].land, pillars[1].land, pillars[2].land, 0)
+      gl.uniform4f(uPower, pillars[0].power, pillars[1].power, pillars[2].power, 0)
       gl.uniform4fv(uOccluders, occluders)
       gl.uniform4fv(uOccluderInfo, occluderInfo)
       gl.uniform1f(uOccluderCount, count)
@@ -174,7 +179,7 @@ function canvasLight(canvas: HTMLCanvasElement): StackLight | null {
       context.globalCompositeOperation = "lighter"
       const { cell, levels, flare, place } = frame
       frame.pillars.forEach((pillar, index) => {
-        if (pillar.grow <= 0) {
+        if (pillar.grow <= 0 || pillar.power <= 0) {
           return
         }
         const bottom = levels[index] ?? 0
@@ -196,6 +201,7 @@ function canvasLight(canvas: HTMLCanvasElement): StackLight | null {
         gradient.addColorStop(0.6, "rgba(51, 107, 255, 0.24)")
         gradient.addColorStop(1, "rgba(143, 92, 255, 0.14)")
         context.fillStyle = gradient
+        context.globalAlpha = Math.min(1, pillar.power)
         context.beginPath()
         corners.forEach((corner, at) =>
           at === 0 ? context.moveTo(corner.x, corner.y) : context.lineTo(corner.x, corner.y)
