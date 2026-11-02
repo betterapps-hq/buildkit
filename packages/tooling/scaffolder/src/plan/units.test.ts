@@ -233,10 +233,10 @@ describe("versions and migrations", () => {
     ["1.x", "1.0.0"],
     ["1.2.3", "1.2.3"],
     [">=1.0.0 >=1.4.0", "1.4.0"],
-    [">=2 <1 || 3.0.0", "3.0.0"],
-    ["<2", undefined],
-    ["*", undefined],
-    ["^1 || <0.5", undefined]
+    ["<2", "0.0.0"],
+    ["*", "0.0.0"],
+    ["^1 || <0.5", "0.0.0"],
+    [">=2 <1", undefined]
   ])("gives %s the lowest version %s", (range, expected) => {
     expect(lowestVersion(range)).toBe(expected)
   })

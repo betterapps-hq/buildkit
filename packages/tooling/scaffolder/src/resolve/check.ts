@@ -124,7 +124,7 @@ export function checkCatalog(
       } else if (isValidRange(pin)) {
         const lowest = lowestVersion(pin)
         if (lowest === undefined) {
-          problems.push(`${addon.id} is written for ${name} ${range}, and the pin "${pin}" has no lowest version.`)
+          problems.push(`${addon.id} is written for ${name} ${range}, but the pin "${pin}" allows no version.`)
         } else if (!satisfiesRange(lowest, range)) {
           problems.push(`${addon.id} is written for ${name} ${range}, but the pin "${pin}" allows ${lowest}.`)
         }

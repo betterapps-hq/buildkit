@@ -557,10 +557,11 @@ describe("questions and catalog CI", () => {
         written("@x/too-new", { react: ">=19.4 <20" }),
         written("@x/unpinned", { zod: "^4" }),
         written("@x/not-a-range", { react: "nineteen" }),
-        written("@x/unbounded", { pg: "^8" })
+        written("@x/unbounded", { pg: "^8" }),
+        written("@x/empty", { "@lingui/core": "^6" })
       ),
       range: "sideways" as CatalogManifest["range"],
-      versions: { ...catalog.versions, vite: "latest", pg: "<9" }
+      versions: { ...catalog.versions, vite: "latest", pg: "<9", "@lingui/core": ">=7 <6" }
     }
     expect(checkCatalog(pinned)).toEqual([
       `Catalog range "sideways" isn't exact, caret or tilde.`,
@@ -568,7 +569,8 @@ describe("questions and catalog CI", () => {
       '@x/too-new is written for react >=19.4 <20, but the pin "19.3.1" allows 19.3.1.',
       "@x/unpinned is written for zod, which the catalog doesn't pin.",
       `@x/not-a-range is written for react "nineteen", which isn't a version range.`,
-      '@x/unbounded is written for pg ^8, and the pin "<9" has no lowest version.'
+      '@x/unbounded is written for pg ^8, but the pin "<9" allows 0.0.0.',
+      '@x/empty is written for @lingui/core ^6, but the pin ">=7 <6" allows no version.'
     ])
     expect(checkCatalog({ ...catalog, range: "caret", versions: { ...catalog.versions, react: "~19.3.1" } })).toEqual(
       []
