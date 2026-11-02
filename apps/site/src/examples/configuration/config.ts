@@ -14,10 +14,10 @@ const defaults: Settings = { csvExport: false, pageSize: 25, language: "en" }
 
 export const { useSetting, override, reset, refresh } = createConfiguration({
   defaults,
-  context: { plan: "free" },
+  context: { environment: "production", orgId: "contoso" },
   provider: {
-    async load({ plan }, { signal }) {
-      const response = await fetch(`/api/settings?plan=${plan}`, { signal })
+    async load({ environment, orgId }, { signal }) {
+      const response = await fetch(`/api/orgs/${orgId}/settings?environment=${environment}`, { signal })
       return response.json()
     }
   },

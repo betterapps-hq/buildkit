@@ -11,6 +11,7 @@ const PEOPLE: Person[] = [
 export function Component() {
   const { personId } = useParams()
   const selected = PEOPLE.find((person) => person.id === personId)
+
   return (
     <>
       <ul>

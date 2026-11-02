@@ -6,6 +6,7 @@ type SettingRowProps<K extends keyof Settings> = { name: K; options: readonly Se
 
 function SettingRow<K extends keyof Settings>({ name, options }: SettingRowProps<K>) {
   const { value, source } = useSetting(name)
+
   return (
     <li>
       <code>{name}</code>

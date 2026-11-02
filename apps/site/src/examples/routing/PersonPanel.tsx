@@ -17,6 +17,7 @@ export function PersonPanel({ person }: Props) {
     // Back to the list, even when a shared link opened this panel
     closeTo: people
   })
+
   return (
     <Sheet open={panel.isOpen} onOpenChange={panel.setOpen}>
       <SheetContent>

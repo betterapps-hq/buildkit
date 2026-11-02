@@ -32,8 +32,8 @@ const routes: Route[] = [
       return { id, ...(await request.json()) }
     }
   },
-  // The free plan turns CSV export on, so that setting shows as coming from the provider
-  { method: "GET", path: /^\/api\/settings$/, respond: () => ({ csvExport: true }) }
+  // Contoso's production settings turn CSV export on, so that setting shows as coming from the provider
+  { method: "GET", path: /^\/api\/orgs\/[^/]+\/settings$/, respond: () => ({ csvExport: true }) }
 ]
 
 function wait(signal: AbortSignal) {

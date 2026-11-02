@@ -9,8 +9,10 @@ export function InvoiceList({ invoices }: Props) {
   const { value: csvExport } = useSetting("csvExport")
   const { value: pageSize } = useSetting("pageSize")
   const { value: language } = useSetting("language")
+
   const date = new Intl.DateTimeFormat(language, { dateStyle: "medium" })
   const money = new Intl.NumberFormat(language, { style: "currency", currency: "EUR" })
+
   return (
     <>
       <ul>

@@ -70,7 +70,7 @@ export const EXAMPLES: Example[] = [
     description: "Typed defaults and overrides, saved to storage and synced across tabs and sessions.",
     hint: "Pick a size, then reload",
     control: "reload",
-    files: [{ name: "TextSizePicker.tsx", source: source("preferences/TextSizePicker.tsx"), highlight: [20, 29] }],
+    files: [{ name: "TextSizePicker.tsx", source: source("preferences/TextSizePicker.tsx"), highlight: [20, 30] }],
     active: "TextSizePicker.tsx",
     wire: [{ label: "localStorage.preferences", value: "null", tone: "keyword" }]
   },
@@ -87,11 +87,7 @@ export const EXAMPLES: Example[] = [
       "Send each alert to the region it belongs in. A failed save shows beside the form, and saving again replaces it instead of stacking another.",
     hint: "Go offline, then save",
     control: "network",
-    files: [
-      { name: "ProjectSettings.tsx", source: source("alerts/ProjectSettings.tsx"), highlight: lines(19, 22) },
-      { name: "alerts.ts", source: source("alerts/alerts.ts") },
-      { name: "api.ts", source: source("alerts/api.ts") }
-    ],
+    files: [{ name: "ProjectSettings.tsx", source: source("alerts/ProjectSettings.tsx"), highlight: lines(21, 24) }],
     active: "ProjectSettings.tsx",
     wire: [{ label: 'alerts.getSnapshot("settings")', value: "[]", tone: "plain" }]
   },

@@ -1,5 +1,4 @@
-import { alerts } from "../examples/alerts/alerts"
-import { ProjectSettings } from "../examples/alerts/ProjectSettings"
+import { alerts, ProjectSettings } from "../examples/alerts/ProjectSettings"
 import { format, onCommand, report } from "./bridge"
 import { setOffline } from "./server"
 

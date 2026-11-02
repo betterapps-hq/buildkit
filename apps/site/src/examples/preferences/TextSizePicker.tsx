@@ -18,6 +18,7 @@ preferences.subscribe(applyTextSize)
 
 export function TextSizePicker() {
   const [textSize, setTextSize] = usePreference(preferences, "textSize")
+
   return (
     <>
       <ButtonGroup aria-label="Text size">

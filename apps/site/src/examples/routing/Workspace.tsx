@@ -11,6 +11,7 @@ export function Component() {
       { id: "settings", route: settings }
     ]
   })
+
   return (
     <Tabs value={tabs.activeTab} onValueChange={tabs.select}>
       <TabsList>
