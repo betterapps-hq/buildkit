@@ -1,6 +1,6 @@
 {
   "ignoreExportsUsedInFile": true,
-  "ignore": ["**/src/vendor/**"],
+  "ignore": [],
   "workspaces": {
     "apps/docs": {
       "entry": ["scripts/generate.ts", "content/.vitepress/config.ts", "content/.vitepress/theme/index.ts"]
@@ -124,53 +124,6 @@
     "packages/shadcn/shadcn-baseui-vega": {
       "entry": [".generated/index.ts"],
       "ignoreDependencies": ["@repo/shadcn-generator", "lucide-react", "next-themes"]
-    },
-    "packages/better-apps/better-apps": {
-      "entry": ["src/index.ts", "src/client.ts"]
-    },
-    "packages/better-apps/better-auth": {
-      "entry": ["src/index.ts"]
-    },
-    "packages/better-apps/clerk": {
-      "entry": ["src/index.ts"]
-    },
-    "packages/better-apps/cli": {
-      "entry": ["src/index.ts", "src/bin.ts", "test/fixtures/*.config.ts"]
-    },
-    "packages/better-apps/drizzle": {
-      "entry": ["src/index.ts"]
-    },
-    "packages/better-apps/testing": {
-      "entry": ["src/index.ts"]
-    },
-    "packages/better-apps/anchors": {
-      "entry": ["src/index.ts", "src/dom.ts", "src/react.ts"]
-    },
-    "packages/better-apps/mentions": {
-      "entry": ["src/index.ts"]
-    },
-    "packages/better-apps/comments": {
-      "entry": ["src/index.ts", "src/client.ts", "src/react.tsx"]
-    },
-    "packages/better-apps/realtime": {
-      "entry": ["src/index.ts", "src/cloudflare.ts", "src/local.ts", "src/client.ts", "test/cloudflare-workers.ts"],
-      "ignoreDependencies": ["cloudflare"]
-    },
-    "packages/better-apps/storage": {
-      "entry": ["src/index.ts", "src/cloudflare.ts", "src/local.ts", "test/cloudflare-workers.ts"],
-      "ignoreDependencies": ["cloudflare"]
-    },
-    "packages/better-apps/react": {
-      "entry": ["src/index.tsx"]
-    },
-    "packages/better-apps/tanstack-start": {
-      "entry": ["src/index.ts"]
-    },
-    "packages/better-apps/workos": {
-      "entry": ["src/index.ts"]
-    },
-    "apps/better-apps-example": {
-      "entry": ["better-apps.config.ts"]
     }
   }
 }

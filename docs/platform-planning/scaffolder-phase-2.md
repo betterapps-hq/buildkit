@@ -14,7 +14,7 @@ The staging deploy is deferred until Better Apps' deploy packages exist.
 | Decision                                                                                                                                                                                                      | What it changes                                                     |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
 | **Two packages:** `@buildkitgg/catalog` holds the manifests, and `@buildkitgg/cli` is a thin `buildkit` bin on the engine's `runCli`                                                                          | Both live in `packages/tooling/`, beside the scaffolder             |
-| **Auth first:** Better Auth, read through the Better Apps identity interface (`@better-apps/better-auth`, PR #59)                                                                                             | The auth slot has one add-on                                        |
+| **Auth first:** Better Auth, read through the Better Apps identity interface (`@better-apps/identity-better-auth`, PR #59)                                                                                    | The auth slot has one add-on                                        |
 | **Database first:** the SQL capability `@better-apps/sql` (`defineDatabase`) with Drizzle. The Better Apps Features session builds the package                                                                | The database add-on is written against the documented API and waits |
 | **Deploy:** build everything except the staging deploy. The scaffolder writes no cloud config. The Better Apps Vite plugin point and a CI step that runs `better-apps deploy` are wired, pending the packages | No Wrangler deploy, temporary or not. The deployer is Better Apps'  |
 
@@ -83,13 +83,13 @@ router's own: `pnpm build` or `pnpm dev` writes it, and the plan lists that comm
 One template, `app`. Ids drop cloud names, since they're written into `buildkit.jsonc`: `@buildkit/sql`, not
 `@buildkit/db-d1`.
 
-| Question         | Answers                                         | Default                                             |
-| ---------------- | ----------------------------------------------- | --------------------------------------------------- |
-| Mode             | `ssr`, `spa`                                    | asked                                               |
-| Add a database?  | `@buildkit/sql`                                 | no, while `@better-apps/sql` is unpublished         |
-| Add sign-in?     | `@buildkit/better-auth`, which needs a database | no, while `@better-apps/better-auth` is unpublished |
-| Optional add-ons | `@buildkit/i18n`                                | unchecked                                           |
-| Always included  | `@buildkit/ci`                                  |                                                     |
+| Question         | Answers                                         | Default                                                      |
+| ---------------- | ----------------------------------------------- | ------------------------------------------------------------ |
+| Mode             | `ssr`, `spa`                                    | asked                                                        |
+| Add a database?  | `@buildkit/sql`                                 | no, while `@better-apps/sql` is unpublished                  |
+| Add sign-in?     | `@buildkit/better-auth`, which needs a database | no, while `@better-apps/identity-better-auth` is unpublished |
+| Optional add-ons | `@buildkit/i18n`                                | unchecked                                                    |
+| Always included  | `@buildkit/ci`                                  |                                                              |
 
 The `saas` preset answers `ssr`, `sql`, `better-auth` and `i18n`. `@buildkit/better-apps-deploy` is in the catalog but
 not the template, so only `buildkit add better-apps-deploy` adds it.
@@ -181,15 +181,15 @@ version ships, a catalog release moves the pin. The template defaults both slots
 
 ## What waits on Better Apps
 
-| Item                              | Needs                                                                                                                                    |
-| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| The database add-on installing    | `@better-apps/sql` with `defineDatabase`, and a Drizzle entry: `drizzle(database, { schema })` from `@better-apps/sql/drizzle` [assumed] |
-| Local dev with a database         | The Better Apps integration's local runtime and its local migrations ([better-apps-deploy.md](better-apps-deploy.md) §4, spike #2)       |
-| The sign-in add-on installing     | `@better-apps/better-auth` (PR #59), and the database above                                                                              |
-| The Vite plugin entry             | `betterApps()` from `@better-apps/tanstack-start/vite` [assumed path; PR #59 adds the package]                                           |
-| The staging deploy                | `better-apps deploy --env staging` in `@better-apps/cli`, its CI credentials (not designed; D6), and the deploy service                  |
-| `better-apps.environments.jsonc`  | Better Apps' schema for it. Ours follows [better-apps-deploy.md](better-apps-deploy.md) §5                                               |
-| Smoke cases for database and auth | Any installable `@better-apps/sql`                                                                                                       |
+| Item                              | Needs                                                                                                                                                                                         |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The database add-on installing    | `@better-apps/sql` with `defineDatabase`, and a Drizzle entry: `drizzle(database, { schema })` from `@better-apps/sql/drizzle` [assumed]                                                      |
+| Local dev with a database         | The Better Apps integration's local runtime and its local migrations ([the Better Apps deploy plan](https://github.com/betterapps-hq/better-apps/blob/main/docs/deploy-plan.md) §4, spike #2) |
+| The sign-in add-on installing     | `@better-apps/identity-better-auth` (PR #59), and the database above                                                                                                                          |
+| The Vite plugin entry             | `betterApps()` from `@better-apps/tanstack-start/vite` [assumed path; PR #59 adds the package]                                                                                                |
+| The staging deploy                | `better-apps deploy --env staging` in `@better-apps/cli`, its CI credentials (not designed; D6), and the deploy service                                                                       |
+| `better-apps.environments.jsonc`  | Better Apps' schema for it. Ours follows [the Better Apps deploy plan](https://github.com/betterapps-hq/better-apps/blob/main/docs/deploy-plan.md) §5                                         |
+| Smoke cases for database and auth | Any installable `@better-apps/sql`                                                                                                                                                            |
 
 When they ship: confirm the assumed names, move the pins, default the slots to yes, and make the deploy add-on required
 in the template (or move its plugin entry into the target), then deploy staging.

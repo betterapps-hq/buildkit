@@ -11,8 +11,10 @@ export const betterAppsVersion = "0.1.0"
 /** Better Apps packages the catalog's add-ons use, and what each one is still waiting on. */
 export const betterAppsPackages = {
   "@better-apps/sql": "the SQL capability (`defineDatabase`), which the Better Apps Features session is building",
-  "@better-apps/better-auth": "the Better Auth identity adapter, in Better Apps PR #59",
-  "@better-apps/tanstack-start": "the TanStack Start integration and its Vite plugin, in Better Apps PR #59",
+  "@better-apps/identity-better-auth":
+    "the Better Auth identity adapter, built in betterapps-hq/better-apps but not published",
+  "@better-apps/tanstack-start":
+    "the TanStack Start integration, built in betterapps-hq/better-apps but not published, and its Vite plugin",
   "@better-apps/cli": "the `better-apps deploy` command of Better Apps' deploy service"
 } as const
 

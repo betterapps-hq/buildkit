@@ -170,7 +170,7 @@ describe("the Better Auth add-on", () => {
       expect.arrayContaining([expect.objectContaining({ name: "BETTER_AUTH_SECRET", secret: true, required: true })])
     )
     expect(written(planned, ".env.example")).toContain("BETTER_AUTH_SECRET=")
-    expect(packageJson(planned).dependencies["@better-apps/better-auth"]).toBe(betterAppsVersion)
+    expect(packageJson(planned).dependencies["@better-apps/identity-better-auth"]).toBe(betterAppsVersion)
     expect(planned.commands.map((command) => command.run)).toContain("pnpm db:generate")
   })
 })
