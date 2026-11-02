@@ -55,10 +55,36 @@ body {
 
 [data-example="routing"] ul {
   display: grid;
-  gap: 16px;
+  gap: 8px;
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+/* Each person is a row that opens their panel: the link covers the whole row, and a chevron points into it */
+[data-example="routing"] li {
+  position: relative;
+  padding: 10px 40px 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: background-color 0.15s;
+}
+
+[data-example="routing"] li:hover {
+  background: var(--muted);
+}
+
+[data-example="routing"] li::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  width: 7px;
+  height: 7px;
+  border-top: 1.5px solid var(--muted-foreground);
+  border-right: 1.5px solid var(--muted-foreground);
+  translate: 0 -50%;
+  rotate: 45deg;
 }
 
 [data-example="routing"] li a {
@@ -66,11 +92,18 @@ body {
   font-size: 14px;
   font-weight: 500;
   text-decoration: none;
+  outline: none;
 }
 
-[data-example="routing"] li a:hover {
-  text-decoration: underline;
-  text-underline-offset: 3px;
+[data-example="routing"] li a::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+[data-example="routing"] li a:focus-visible::before {
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 50%, transparent);
 }
 
 [data-example="routing"] li p {

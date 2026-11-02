@@ -109,11 +109,10 @@ export const EXAMPLES: Example[] = [
     hint: "Switch tabs, open a person, then go back",
     control: "browser",
     files: [
-      { name: "router.ts", source: source("routing/router.ts") },
+      { name: "router.tsx", source: source("routing/router.tsx") },
       { name: "Workspace.tsx", source: source("routing/Workspace.tsx") },
       { name: "People.tsx", source: source("routing/People.tsx") },
-      { name: "PersonPanel.tsx", source: source("routing/PersonPanel.tsx"), highlight: lines(15, 19) },
-      { name: "Settings.tsx", source: source("routing/Settings.tsx") }
+      { name: "PersonPanel.tsx", source: source("routing/PersonPanel.tsx"), highlight: lines(15, 19) }
     ],
     active: "PersonPanel.tsx",
     wire: [

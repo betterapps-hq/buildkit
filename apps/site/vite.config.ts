@@ -19,7 +19,7 @@ function exampleFrames(): Plugin {
     name: "buildkit:example-frames",
     enforce: "pre",
     resolveId(source, importer) {
-      if (source === "react-router" && isFile(importer, "/src/examples/routing/router.ts")) {
+      if (source === "react-router" && isFile(importer, "/src/examples/routing/router.tsx")) {
         return memoryRouter
       }
       if (

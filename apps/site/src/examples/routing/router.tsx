@@ -6,7 +6,7 @@ export const router = createBrowserRouter([
     lazy: () => import("./Workspace"),
     children: [
       { path: "/people/:personId?", lazy: () => import("./People") },
-      { path: "/settings", lazy: () => import("./Settings") }
+      { path: "/settings", element: <h2>Workspace settings</h2> }
     ]
   }
 ])

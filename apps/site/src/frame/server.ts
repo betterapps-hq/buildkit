@@ -1,14 +1,8 @@
 import type { Invoice } from "../examples/configuration/InvoiceList"
-import type { Person } from "../examples/routing/People"
 
 // The API the examples call, answered inside the frame. Requests to /api never leave the page: each answers after a
 // short delay, and going offline makes them fail the way fetch fails without a network. The frame loads this before
 // any example, since some fetch as soon as their module runs.
-
-export const PEOPLE: Person[] = [
-  { id: "1042", name: "Ada Park", role: "Product designer" },
-  { id: "1043", name: "Jamie Chen", role: "Frontend engineer" }
-]
 
 export const INVOICES: Invoice[] = [
   { id: "inv-3", issuedAt: "2026-11-01T12:00:00", total: 1240 },
@@ -38,7 +32,6 @@ const routes: Route[] = [
       return { id, ...(await request.json()) }
     }
   },
-  { method: "GET", path: /^\/api\/people$/, respond: () => PEOPLE },
   // The free plan turns CSV export on, so that setting shows as coming from the provider
   { method: "GET", path: /^\/api\/settings$/, respond: () => ({ csvExport: true }) }
 ]

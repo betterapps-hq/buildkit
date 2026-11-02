@@ -12,14 +12,7 @@ export function Component() {
     ]
   })
   return (
-    <Tabs
-      value={tabs.activeTab ?? null}
-      onValueChange={(id) => {
-        if (id === "people" || id === "settings") {
-          tabs.select(id)
-        }
-      }}
-    >
+    <Tabs value={tabs.activeTab} onValueChange={tabs.select}>
       <TabsList>
         <TabsTrigger value="people">People</TabsTrigger>
         <TabsTrigger value="settings">Settings</TabsTrigger>
