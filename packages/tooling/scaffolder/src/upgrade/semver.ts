@@ -140,6 +140,48 @@ function terms(set: string): Comparator[] {
   return text.split(/\s+/).flatMap(comparators)
 }
 
+/** Whether a string is an npm range the engine understands, such as `^1.2.0`, `~1.2` or `>=1 <3`. Dist-tags aren't. */
+export function isValidRange(range: string): boolean {
+  const sets = range.split("||")
+  if (sets.some((set) => set.trim() === "")) {
+    return false
+  }
+  try {
+    sets.forEach(terms)
+    return true
+  } catch {
+    return false
+  }
+}
+
+/**
+ * The lowest version a range allows, for a range whose every `||` set has a written lower bound: `^1.2.0` and
+ * `>=1.2.0 <2` give 1.2.0, and `~0.45 || ^1` gives 0.45.0. `<2` and `*` have none, so they give `undefined`.
+ */
+export function lowestVersion(range: string): string | undefined {
+  let lowest: string | undefined
+  for (const set of range.split("||")) {
+    const lower = terms(set)
+      .flatMap(({ operator, version }) => {
+        if (operator === ">") {
+          const [major = 0, minor = 0, patch = 0] = parse(version).core
+          return [`${major}.${minor}.${patch + 1}`]
+        }
+        return operator === ">=" || operator === "=" ? [version] : []
+      })
+      .sort(compareVersions)
+      .at(-1)
+    if (lower === undefined) {
+      return undefined
+    }
+    // A set whose bounds cross, such as `>=2 <1`, allows nothing, so it has no lowest version to offer.
+    if (satisfiesRange(lower, set) && (lowest === undefined || compareVersions(lower, lowest) < 0)) {
+      lowest = lower
+    }
+  }
+  return lowest
+}
+
 /**
  * Whether a version is in an npm range: `^1.2.0`, `~1.2`, `>=1.0.0 <3.0.0`, `1.x`, `1.0.0 - 2.0.0`, `1.2.3` or `*`,
  * joined with `||`. A prerelease is in a range only when the range names a prerelease of the same version.

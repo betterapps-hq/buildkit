@@ -33,6 +33,7 @@ export type {
   PointDefinition,
   PointKind,
   PresetManifest,
+  RangeStyle,
   ResolveContext,
   SlotDefinition,
   SlotPolicy,
@@ -93,5 +94,5 @@ export { lockFileEntrySchema, lockSchema, projectConfigSchema } from "./state/sc
 export type { Lock, LockFileEntry, ProjectConfig } from "./state/schemas.js"
 export { defineSettings, lockPath } from "./state/settings.js"
 export type { ProductSettings } from "./state/settings.js"
-export { compareVersions } from "./upgrade/semver.js"
+export { compareVersions, isValidRange, lowestVersion, satisfiesRange } from "./upgrade/semver.js"
 export { engineVersion } from "./version.js"

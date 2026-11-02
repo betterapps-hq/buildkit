@@ -75,6 +75,12 @@ export class CatalogStore {
     load(version: string, expectedIntegrity?: string): Promise<CatalogManifest | undefined>;
 }
 
+// @public
+export function checkRegistry(catalog: CatalogManifest, store: PackStore, options?: {
+    minAge?: number;
+    now?: number;
+}): Promise<string[]>;
+
 // @public (undocumented)
 export type CommandRunner = (command: string, args: string[], cwd: string) => Promise<{
     code: number;
@@ -131,6 +137,10 @@ export class PackStore {
         module: unknown;
     }>;
     load(name: string, version: string, expectedIntegrity?: string): Promise<LoadedPack>;
+    published(name: string): Promise<{
+        version: string;
+        time?: number;
+    }[]>;
     resolve(name: string, range: string): Promise<string>;
     versions(name: string): Promise<string[]>;
 }

@@ -10,7 +10,7 @@ import { PlanError } from "../plan/errors.js"
 import { isRecord } from "../plan/json.js"
 import type { ErrorCode } from "../plan/types.js"
 import type { ProductSettings } from "../state/settings.js"
-import { compareVersions, isValidVersion } from "../upgrade/semver.js"
+import { compareVersions, isValidRange, isValidVersion, satisfiesRange } from "../upgrade/semver.js"
 import { withRetries } from "./fs.js"
 
 export type CommandRunner = (command: string, args: string[], cwd: string) => Promise<{ code: number; output: string }>
@@ -188,12 +188,12 @@ export class PackStore {
     return join(this.#cacheRoot, "packs", ...name.split("/"), version)
   }
 
-  async #view(name: string, spec: string, field: string): Promise<unknown> {
+  async #view(name: string, spec: string, fields: string[]): Promise<unknown> {
     if (!packageNamePattern.test(name)) {
       throw new PlanError("E_USAGE", `${name} isn't a package name.`)
     }
     mkdirSync(this.#cacheRoot, { recursive: true })
-    const result = await this.#run("npm", ["view", spec, field, "--json"], this.#cacheRoot)
+    const result = await this.#run("npm", ["view", spec, ...fields, "--json"], this.#cacheRoot)
     if (result.code !== 0) {
       throw new PlanError(
         "E_PACKAGE_UNAVAILABLE",
@@ -217,8 +217,23 @@ export class PackStore {
     return this.#versionsOf(name, name, "versions")
   }
 
+  /** Every published version, with when it was published, as a timestamp, when npm says. */
+  async published(name: string): Promise<{ version: string; time?: number }[]> {
+    const value = await this.#view(name, name, ["versions", "time"])
+    const times = isRecord(value) && isRecord(value.time) ? value.time : {}
+    // A package with one version gives it as a string, not a list.
+    return [isRecord(value) ? value.versions : []]
+      .flat(2)
+      .filter((entry): entry is string => typeof entry === "string" && isValidVersion(entry))
+      .map((version) => {
+        const time = times[version]
+        const parsed = typeof time === "string" ? Date.parse(time) : Number.NaN
+        return Number.isNaN(parsed) ? { version } : { version, time: parsed }
+      })
+  }
+
   async #versionsOf(name: string, spec: string, field: string): Promise<string[]> {
-    const value = await this.#view(name, spec, field)
+    const value = await this.#view(name, spec, [field])
     // Some npm versions nest the list in another array.
     const list = (Array.isArray(value) ? value.flat() : [value]).filter(
       (entry): entry is string => typeof entry === "string" && isValidVersion(entry)
@@ -271,6 +286,63 @@ export class PackStore {
     this.#loaded.set(key, result)
     return result
   }
+}
+
+const day = 24 * 60 * 60 * 1000
+
+/**
+ * `catalog check --registry`: asks npm for each of the catalog's pins. A pin fails when nothing published matches it,
+ * when the newest match is younger than `minAge` days (default 1), and when an add-on's `packages` range doesn't
+ * include the newest match. Pins that aren't ranges are left to `checkCatalog`.
+ */
+export async function checkRegistry(
+  catalog: CatalogManifest,
+  store: PackStore,
+  options: { minAge?: number; now?: number } = {}
+): Promise<string[]> {
+  const minAge = options.minAge ?? 1
+  const now = options.now ?? Date.now()
+  const pins = Object.entries(catalog.versions ?? {}).filter(([, pin]) => isValidRange(pin))
+  const problems: string[][] = []
+  // npm starts a process per package, so a few run at a time.
+  for (let start = 0; start < pins.length; start += 8) {
+    problems.push(
+      ...(await Promise.all(
+        pins.slice(start, start + 8).map(async ([name, pin]) => {
+          let published: { version: string; time?: number }[]
+          try {
+            published = await store.published(name)
+          } catch (error) {
+            return [error instanceof Error ? error.message : String(error)]
+          }
+          const [newest] = published
+            .filter((entry) => satisfiesRange(entry.version, pin))
+            .sort((left, right) => compareVersions(right.version, left.version))
+          if (newest === undefined) {
+            return [`No published version of ${name} matches its pin "${pin}".`]
+          }
+          const found: string[] = []
+          if (newest.time === undefined) {
+            found.push(
+              `npm doesn't say when ${name}@${newest.version}, the newest version "${pin}" allows, was published.`
+            )
+          } else if (now - newest.time < minAge * day) {
+            found.push(
+              `${name}@${newest.version}, the newest version "${pin}" allows, is less than ${minAge} day${minAge === 1 ? "" : "s"} old.`
+            )
+          }
+          for (const addon of catalog.addons) {
+            const range = addon.packages?.[name]
+            if (range !== undefined && isValidRange(range) && !satisfiesRange(newest.version, range)) {
+              found.push(`${addon.id} is written for ${name} ${range}, but the pin "${pin}" allows ${newest.version}.`)
+            }
+          }
+          return found
+        })
+      ))
+    )
+  }
+  return problems.flat()
 }
 
 /**

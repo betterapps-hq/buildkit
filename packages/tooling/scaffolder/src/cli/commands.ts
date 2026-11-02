@@ -6,7 +6,14 @@ import { catalogVersionText, findPreset, packOf } from "../manifest/catalog.js"
 import { mergePacks, templateSource, type LoadedPack, type TemplateSource } from "../manifest/packs.js"
 import type { CatalogManifest, PackRecord } from "../manifest/types.js"
 import { recover, type ApplyHooks } from "../node/apply.js"
-import { CatalogStore, loadLocalPack, PackStore, userCacheDir, type CommandRunner } from "../node/catalogs.js"
+import {
+  CatalogStore,
+  checkRegistry,
+  loadLocalPack,
+  PackStore,
+  userCacheDir,
+  type CommandRunner
+} from "../node/catalogs.js"
 import {
   applyReviewed,
   defaultArtifactFolder,
@@ -55,7 +62,7 @@ export interface CliOptions {
   settings: ProductSettings
   catalogIntegrity?: string
   io?: Partial<CliIo>
-  /** Runs npm for `catalog fetch`. */
+  /** Runs npm for `catalog fetch`, template packages and `catalog check --registry`. */
   runCommand?: CommandRunner
   /** The per-user cache for earlier catalog versions. Defaults to the product's folder in the user's cache folder. */
   cacheDir?: string
@@ -957,7 +964,7 @@ export class CliRuntime {
   }
 
   async catalog(argv: string[]): Promise<number> {
-    const flags = parseFlags(argv, spec({}))
+    const flags = parseFlags(argv, spec({ booleans: ["registry"], strings: ["min-age"] }))
     const json = flags.booleans.has("json")
     const [action, version] = flags.positionals
     if (action === "fetch") {
@@ -982,7 +989,22 @@ export class CliRuntime {
         json
       )
     }
+    if (action !== "check" && (flags.booleans.has("registry") || flags.strings.has("min-age"))) {
+      throw new PlanError("E_USAGE", "--registry and --min-age go with catalog check.")
+    }
     if (action === "check") {
+      if (flags.booleans.has("registry")) {
+        if (version !== undefined) {
+          throw new PlanError(
+            "E_USAGE",
+            "catalog check --registry checks the catalog's own pins, so it takes no folder."
+          )
+        }
+        return this.#checkRegistry(flags.strings.get("min-age"), json)
+      }
+      if (flags.strings.has("min-age")) {
+        throw new PlanError("E_USAGE", "--min-age goes with --registry.")
+      }
       return this.#checkPack(resolve(this.io.cwd, version ?? "."), json)
     }
     const source = action === undefined ? undefined : templateSource(action)
@@ -1037,6 +1059,33 @@ export class CliRuntime {
           {
             code: "pack-checked",
             text: `${label} works with ${this.options.catalog.id}@${this.options.catalog.version}. Every option set of ${templates.join(", ")} plans.`
+          }
+        ]
+      },
+      json
+    )
+  }
+
+  /** `catalog check --registry`: the installed catalog's checks, then each of its pins against npm. */
+  async #checkRegistry(minAgeText: string | undefined, json: boolean): Promise<number> {
+    const minAge = minAgeText === undefined ? 1 : Number(minAgeText)
+    if (minAgeText?.trim() === "" || !Number.isFinite(minAge) || minAge < 0) {
+      throw new PlanError("E_USAGE", `--min-age takes a number of days, not "${minAgeText}".`)
+    }
+    const catalog = this.options.catalog
+    const label = `${catalog.id}@${catalog.version}`
+    const problems = checkCatalog(catalog)
+    problems.push(...(await checkRegistry(catalog, this.#packStore(), { minAge })))
+    if (problems.length > 0) {
+      throw new PlanError("E_INVALID_CATALOG", `${label} has problems. ${problems.join(" ")}`)
+    }
+    return this.#emit(
+      {
+        status: "unchanged",
+        notices: [
+          {
+            code: "registry-checked",
+            text: `Every pin of ${label} matches a published version at least ${minAge} day${minAge === 1 ? "" : "s"} old.`
           }
         ]
       },

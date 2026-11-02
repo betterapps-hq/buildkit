@@ -384,3 +384,112 @@ describe("template packages", () => {
     )
   })
 })
+
+describe("catalog check --registry", () => {
+  const day = 24 * 60 * 60 * 1000
+
+  /** npm's registry, as `npm view <name> versions time` reads it: each package's versions and their age in days. */
+  function registry(packages: Record<string, Record<string, number | undefined>>): { run: CommandRunner } {
+    return {
+      run: async (_command, args) => {
+        const [verb, name = "", ...fields] = args
+        const published = packages[name]
+        if (verb !== "view" || published === undefined || !fields.includes("time")) {
+          return { code: 1, output: "npm ERR! 404 Not Found" }
+        }
+        const time = Object.fromEntries(
+          Object.entries(published).flatMap(([version, age]) =>
+            age === undefined ? [] : [[version, new Date(Date.now() - age * day).toISOString()]]
+          )
+        )
+        const versions = Object.keys(published)
+        return {
+          code: 0,
+          output: `npm warn config ignored\n${JSON.stringify({ versions: versions.length === 1 ? versions[0] : versions, time })}`
+        }
+      }
+    }
+  }
+
+  const published = {
+    react: { "19.3.1": 30, "19.4.0-rc.1": 0 },
+    vite: { "8.0.0": 30 },
+    oxlint: { "1.72.0": 10 },
+    "drizzle-orm": { "0.45.4": 20, "0.45.5": 3 },
+    pg: { "8.16.0": 5 },
+    "@lingui/core": { "6.10.1": 3 },
+    storybook: { "10.1.0": 2 }
+  }
+
+  async function check(argv: string[], npm: { run: CommandRunner }, catalog = fixtureCatalog()) {
+    output = []
+    const code = await runCli(["catalog", "check", ...argv, "--json"], {
+      name: "fixture",
+      version: "0.0.0",
+      catalog,
+      settings,
+      cacheDir: join(root, "cache"),
+      runCommand: npm.run,
+      io: { stdout: (text) => output.push(text), stderr: (text) => output.push(text), isTTY: false, cwd: root }
+    })
+    return { code, envelope: envelope(output.join("")) }
+  }
+
+  it("checks each pin against what npm has published, and how long ago", async () => {
+    const passed = await check(["--registry"], registry(published))
+    expect(passed.code).toBe(0)
+    expect(passed.envelope.notices?.[0]?.text).toBe(
+      "Every pin of @fixture/catalog@1.0.0 matches a published version at least 1 day old."
+    )
+
+    const young = await check(["--registry", "--min-age", "4"], registry(published))
+    expect(young.code).toBe(2)
+    expect(young.envelope.error?.code).toBe("E_INVALID_CATALOG")
+    expect(young.envelope.error?.message).toBe(
+      '@fixture/catalog@1.0.0 has problems. @lingui/core@6.10.1, the newest version "6.10.1" allows, is less than 4 days old. storybook@10.1.0, the newest version "10.1.0" allows, is less than 4 days old.'
+    )
+    expect((await check(["--registry", "--min-age", "0"], registry(published))).code).toBe(0)
+
+    // A range pin is checked by its newest match, against the add-ons written for that package.
+    const v1 = fixtureCatalog()
+    const ranged = {
+      ...v1,
+      versions: { ...v1.versions, "drizzle-orm": "~0.45.4", pg: "^8.17.0", vite: "8.0.0" },
+      addons: v1.addons.map((addon) =>
+        addon.id === "@fixture/db-sqlite" ? { ...addon, packages: { "drizzle-orm": ">=0.45.4 <0.45.5" } } : addon
+      )
+    }
+    const unlisted = Object.fromEntries(Object.entries(published).filter(([name]) => name !== "storybook"))
+    const failed = await check(["--registry"], registry({ ...unlisted, vite: { "8.0.0": undefined } }), ranged)
+    expect(failed.envelope.error?.message).toBe(
+      [
+        "@fixture/catalog@1.0.0 has problems.",
+        'npm doesn\'t say when vite@8.0.0, the newest version "8.0.0" allows, was published.',
+        '@fixture/db-sqlite is written for drizzle-orm >=0.45.4 <0.45.5, but the pin "~0.45.4" allows 0.45.5.',
+        'No published version of pg matches its pin "^8.17.0".',
+        "Couldn't find storybook on npm: npm ERR! 404 Not Found"
+      ].join(" ")
+    )
+  })
+
+  it("takes its flags only where they apply", async () => {
+    const npm = registry(published)
+    for (const argv of [
+      ["tower", "--registry"],
+      ["--registry", "--min-age", "soon"],
+      ["--registry", "--min-age", "-1"],
+      ["--min-age", "2"]
+    ]) {
+      expect((await check(argv, npm)).envelope.error?.code).toBe("E_USAGE")
+    }
+    output = []
+    await runCli(["catalog", "--registry", "--json"], {
+      name: "fixture",
+      version: "0.0.0",
+      catalog: fixtureCatalog(),
+      settings,
+      io: { stdout: (text) => output.push(text), stderr: (text) => output.push(text), isTTY: false, cwd: root }
+    })
+    expect(envelope(output.join("")).error?.code).toBe("E_USAGE")
+  })
+})
