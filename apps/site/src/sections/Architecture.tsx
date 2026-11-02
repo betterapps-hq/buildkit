@@ -247,7 +247,10 @@ function LayerPlate({ id, title, packages }: { id: string; title: string; packag
   )
 }
 
-/** A plate in the scroll story. Its chips take the cell CSS gives their feature, so each sits above the same feature below. */
+/**
+ * A plate in the scroll story. Its chips take the cell CSS gives their feature, so each sits above the same feature
+ * below. Where the traced light reaches a plate, light pools under its package and a shockwave crosses the glass.
+ */
 function StoryPlate({
   id,
   label,
@@ -261,6 +264,12 @@ function StoryPlate({
 }) {
   return (
     <div className="arch-story-plate" data-plate={id}>
+      {packages.some((pkg) => pkg.feature === TRACED) && (
+        <span className="arch-story-plane">
+          <span className="arch-story-pool" />
+          <span className="arch-story-ripple" />
+        </span>
+      )}
       <span className="arch-story-plate-label">
         {Mark && <Mark />}
         {label}
@@ -307,6 +316,8 @@ function Story() {
           </div>
         </div>
       </div>
+      {/* Over the plates and under the app, so the light rises through the glass and backlights the app */}
+      <canvas className="arch-story-light" />
       <svg className="arch-story-lines">
         {LEVELS.map((level) => (
           <path key={level.id} className="arch-story-leader" data-level={level.id} />
@@ -367,8 +378,6 @@ function Story() {
           ))}
         </div>
       </div>
-      {/* Over the app, so the light can reach into it and land on the dialog */}
-      <canvas className="arch-story-light" />
       <div className="arch-story-swap">
         <p className="arch-story-agent">
           <Bot aria-hidden="true" />

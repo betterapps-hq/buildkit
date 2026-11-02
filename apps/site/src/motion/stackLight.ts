@@ -2,29 +2,54 @@ import fragmentSource from "./stack-light.frag?raw"
 
 const VERTEX_SOURCE = "attribute vec2 a; void main() { gl_Position = vec4(a, 0.0, 1.0); }"
 
-/** The most beams and sparks a frame can hold, matching the arrays in the shader. */
-export const MAX_BEAMS = 16
-export const MAX_SPARKS = 18
+/** The most cards and plates the light can pass under, matching the array in the shader. */
+const MAX_OCCLUDERS = 20
+/** How far the pillars sway, as a share of the card's width. */
+const SWAY = 0.13
 
 export type Point = { x: number; y: number }
 
-/** Light rising from one package to the next. `grow` is how far up it has reached and `power` how bright it is. */
-export type Beam = { from: Point; to: Point; grow: number; power: number; phase: number }
+/** A pillar of light rising from one card to the next. `grow` is how far up it has reached and `land` the flash where it arrives. */
+export type Pillar = { grow: number; land: number }
 
-/** A ripple across a plate where light reaches a package, and the glow it leaves under the package. */
-export type Spark = { at: Point; ring: number; glow: number }
+/**
+ * A card or glass plate above the core, in the stack's pixels from its middle, at its height on the stack. `pass` is how
+ * much light gets through it, from 0 for a card to 1 when it isn't there.
+ */
+export type Occluder = {
+  left: number
+  top: number
+  right: number
+  bottom: number
+  z: number
+  pass: number
+  layer: number
+  radius: number
+}
 
-/** One frame of light, in CSS pixels from the canvas's top left. */
+/** One frame of light. Canvas positions are in CSS pixels from its top left, and stack positions in the stack's pixels. */
 export type LightFrame = {
   width: number
   height: number
   time: number
-  beams: Beam[]
-  sparks: Spark[]
-  /** The plates' x and y axes on screen, so ripples lie flat on the tilted plates. */
-  axes: [number, number, number, number]
-  /** A package's radius on its plate, which ripples spread out from. */
-  size: number
+  /** Where the stack's middle sits on the canvas, the scene's perspective and the stack's scale */
+  camera: { x: number; y: number; depth: number; scale: number }
+  /** The camera's tilt and turn in radians, and how far it lifts the stack */
+  view: { tilt: number; turn: number; lift: number }
+  /** The traced card's middle and half size, the same on every layer, and its corner radius */
+  cell: { x: number; y: number; width: number; height: number; radius: number }
+  /** Each layer's height, and the top of the last pillar, inside the app */
+  levels: [number, number, number, number]
+  /** The last pillar's half size where it reaches the app, and how far up it starts and stops spreading */
+  flare: { width: number; height: number; from: number; to: number }
+  /** From the core up */
+  pillars: [Pillar, Pillar, Pillar]
+  occluders: Occluder[]
+  /** The app's box on the canvas, and how lit it is */
+  app: { left: number; top: number; right: number; bottom: number }
+  backlight: number
+  /** Projects a point on the stack to the canvas */
+  place: (x: number, y: number, z: number) => Point
 }
 
 export type StackLight = { draw: (frame: LightFrame) => void; destroy: () => void }
@@ -78,40 +103,50 @@ function webglLight(canvas: HTMLCanvasElement): StackLight | null {
   const uResolution = uniform("u_resolution")
   const uScale = uniform("u_scale")
   const uTime = uniform("u_time")
-  const uBeamCount = uniform("u_beamCount")
-  const uSparkCount = uniform("u_sparkCount")
-  const uBeams = uniform("u_beams")
-  const uBeamState = uniform("u_beamState")
-  const uSparks = uniform("u_sparks")
-  const uAxes = uniform("u_axes")
-  const uSize = uniform("u_size")
-  const beams = new Float32Array(MAX_BEAMS * 4)
-  const beamState = new Float32Array(MAX_BEAMS * 4)
-  const sparks = new Float32Array(MAX_SPARKS * 4)
+  const uCamera = uniform("u_camera")
+  const uView = uniform("u_view")
+  const uCell = uniform("u_cell")
+  const uCorner = uniform("u_corner")
+  const uBend = uniform("u_bend")
+  const uLevels = uniform("u_levels")
+  const uFlare = uniform("u_flare")
+  const uGrow = uniform("u_grow")
+  const uLand = uniform("u_land")
+  const uOccluders = uniform("u_occluders")
+  const uOccluderInfo = uniform("u_occluderInfo")
+  const uOccluderCount = uniform("u_occluderCount")
+  const uApp = uniform("u_app")
+  const uBacklight = uniform("u_backlight")
+  const occluders = new Float32Array(MAX_OCCLUDERS * 4)
+  const occluderInfo = new Float32Array(MAX_OCCLUDERS * 4)
 
   return {
     draw(frame) {
       const ratio = fit(canvas, frame, 1.25)
       gl.viewport(0, 0, canvas.width, canvas.height)
-      const beamCount = Math.min(frame.beams.length, MAX_BEAMS)
-      frame.beams.slice(0, beamCount).forEach((beam, index) => {
-        beams.set([beam.from.x, beam.from.y, beam.to.x, beam.to.y], index * 4)
-        beamState.set([beam.grow, beam.power, beam.phase, 0], index * 4)
-      })
-      const sparkCount = Math.min(frame.sparks.length, MAX_SPARKS)
-      frame.sparks.slice(0, sparkCount).forEach((spark, index) => {
-        sparks.set([spark.at.x, spark.at.y, spark.ring, spark.glow], index * 4)
+      const { camera, view, cell, levels, flare, pillars, app } = frame
+      const count = Math.min(frame.occluders.length, MAX_OCCLUDERS)
+      frame.occluders.slice(0, count).forEach((occluder, index) => {
+        occluders.set([occluder.left, occluder.top, occluder.right, occluder.bottom], index * 4)
+        occluderInfo.set([occluder.z, occluder.pass, occluder.layer, occluder.radius], index * 4)
       })
       gl.uniform2f(uResolution, canvas.width, canvas.height)
       gl.uniform1f(uScale, ratio)
       gl.uniform1f(uTime, frame.time)
-      gl.uniform1f(uBeamCount, beamCount)
-      gl.uniform1f(uSparkCount, sparkCount)
-      gl.uniform4fv(uBeams, beams)
-      gl.uniform4fv(uBeamState, beamState)
-      gl.uniform4fv(uSparks, sparks)
-      gl.uniform4f(uAxes, ...frame.axes)
-      gl.uniform1f(uSize, frame.size)
+      gl.uniform4f(uCamera, camera.x, camera.y, camera.depth, camera.scale)
+      gl.uniform3f(uView, view.tilt, view.turn, view.lift)
+      gl.uniform4f(uCell, cell.x, cell.y, cell.width / 2, cell.height / 2)
+      gl.uniform1f(uCorner, cell.radius)
+      gl.uniform1f(uBend, cell.width * SWAY)
+      gl.uniform4f(uLevels, ...levels)
+      gl.uniform4f(uFlare, flare.width / 2, flare.height / 2, flare.from, flare.to)
+      gl.uniform4f(uGrow, pillars[0].grow, pillars[1].grow, pillars[2].grow, 0)
+      gl.uniform4f(uLand, pillars[0].land, pillars[1].land, pillars[2].land, 0)
+      gl.uniform4fv(uOccluders, occluders)
+      gl.uniform4fv(uOccluderInfo, occluderInfo)
+      gl.uniform1f(uOccluderCount, count)
+      gl.uniform4f(uApp, app.left, app.top, app.right, app.bottom)
+      gl.uniform1f(uBacklight, frame.backlight)
       gl.drawArrays(gl.TRIANGLES, 0, 3)
     },
     destroy() {
@@ -120,94 +155,54 @@ function webglLight(canvas: HTMLCanvasElement): StackLight | null {
   }
 }
 
-/** Soft round light at a point, for pulses and the tips of growing beams. */
-function glint(context: CanvasRenderingContext2D, x: number, y: number, radius: number, alpha: number) {
-  const gradient = context.createRadialGradient(x, y, 0, x, y, radius)
-  gradient.addColorStop(0, `rgba(230, 240, 255, ${alpha})`)
-  gradient.addColorStop(0.35, `rgba(110, 160, 255, ${alpha * 0.5})`)
-  gradient.addColorStop(1, "rgba(51, 112, 255, 0)")
-  context.fillStyle = gradient
-  context.fillRect(x - radius, y - radius, radius * 2, radius * 2)
-}
-
-/** The same light drawn with the 2D canvas, for browsers without WebGL. */
+/**
+ * The same light drawn with the 2D canvas, for browsers without WebGL: each pillar as a band of light from the card it
+ * stands on up to where it has reached, spreading into the app at the top.
+ */
 function canvasLight(canvas: HTMLCanvasElement): StackLight | null {
   const context = canvas.getContext("2d")
   if (!context) {
     return null
   }
-  const strokes: [number, string][] = [
-    [36, "51, 112, 255, 0.06"],
-    [13, "64, 128, 255, 0.2"],
-    [4.5, "122, 170, 255, 0.55"],
-    [1.6, "230, 240, 255, 0.95"]
-  ]
 
   return {
     draw(frame) {
       const ratio = fit(canvas, frame, 1.5)
       context.setTransform(1, 0, 0, 1, 0, 0)
       context.clearRect(0, 0, canvas.width, canvas.height)
-      context.globalCompositeOperation = "lighter"
-      context.lineCap = "round"
-      const [ax, ay, bx, by] = frame.axes
-
-      for (const spark of frame.sparks) {
-        context.setTransform(ratio * ax, ratio * ay, ratio * bx, ratio * by, ratio * spark.at.x, ratio * spark.at.y)
-        if (spark.glow > 0) {
-          const radius = frame.size * 2
-          const gradient = context.createRadialGradient(0, 0, 0, 0, 0, radius)
-          gradient.addColorStop(0, `rgba(51, 112, 255, ${0.42 * spark.glow})`)
-          gradient.addColorStop(1, "rgba(51, 112, 255, 0)")
-          context.fillStyle = gradient
-          context.fillRect(-radius, -radius, radius * 2, radius * 2)
-        }
-        if (spark.ring > 0 && spark.ring < 1) {
-          context.beginPath()
-          context.arc(0, 0, frame.size * (0.6 + 2 * spark.ring), 0, Math.PI * 2)
-          // The path keeps the plate's tilt while the stroke keeps an even width on screen
-          context.setTransform(ratio, 0, 0, ratio, 0, 0)
-          context.lineWidth = 1.5 + 4 * spark.ring
-          context.strokeStyle = `rgba(143, 180, 255, ${0.9 * (1 - spark.ring) ** 2})`
-          context.stroke()
-        }
-      }
-
       context.setTransform(ratio, 0, 0, ratio, 0, 0)
-      for (const beam of frame.beams) {
-        if (beam.grow <= 0 || beam.power <= 0) {
-          continue
+      context.globalCompositeOperation = "lighter"
+      const { cell, levels, flare, place } = frame
+      frame.pillars.forEach((pillar, index) => {
+        if (pillar.grow <= 0) {
+          return
         }
-        const tip = {
-          x: beam.from.x + (beam.to.x - beam.from.x) * beam.grow,
-          y: beam.from.y + (beam.to.y - beam.from.y) * beam.grow
+        const bottom = levels[index] ?? 0
+        const head = bottom + ((levels[index + 1] ?? bottom) - bottom) * pillar.grow
+        const spread = index === 2 ? Math.min(1, Math.max(0, (pillar.grow - flare.from) / (flare.to - flare.from))) : 0
+        const top = cell.width / 2 + (flare.width / 2 - cell.width / 2) * spread
+        const corners = [
+          place(cell.x - cell.width / 2, cell.y, bottom),
+          place(cell.x + cell.width / 2, cell.y, bottom),
+          place(cell.x + top, cell.y, head),
+          place(cell.x - top, cell.y, head)
+        ]
+        const [start, , end] = corners
+        if (!start || !end) {
+          return
         }
-        for (const [width, color] of strokes) {
-          const [r, g, b, a] = color.split(", ").map(Number)
-          context.strokeStyle = `rgba(${r}, ${g}, ${b}, ${a * beam.power})`
-          context.lineWidth = width
-          context.beginPath()
-          context.moveTo(beam.from.x, beam.from.y)
-          context.lineTo(tip.x, tip.y)
-          context.stroke()
-        }
-        // Pulses travel up the beam, away from the package it starts at
-        const length = Math.hypot(tip.x - beam.from.x, tip.y - beam.from.y)
-        const spacing = 70
-        for (let along = (frame.time * 110 + beam.phase * 11) % spacing; along < length; along += spacing) {
-          const t = along / Math.max(length, 1)
-          glint(
-            context,
-            beam.from.x + (tip.x - beam.from.x) * t,
-            beam.from.y + (tip.y - beam.from.y) * t,
-            8,
-            0.55 * beam.power
-          )
-        }
-        if (beam.grow < 0.999) {
-          glint(context, tip.x, tip.y, 18, 0.9 * beam.power)
-        }
-      }
+        const gradient = context.createLinearGradient(0, start.y, 0, end.y)
+        gradient.addColorStop(0, "rgba(56, 242, 209, 0.3)")
+        gradient.addColorStop(0.6, "rgba(51, 107, 255, 0.24)")
+        gradient.addColorStop(1, "rgba(143, 92, 255, 0.14)")
+        context.fillStyle = gradient
+        context.beginPath()
+        corners.forEach((corner, at) =>
+          at === 0 ? context.moveTo(corner.x, corner.y) : context.lineTo(corner.x, corner.y)
+        )
+        context.closePath()
+        context.fill()
+      })
     },
     destroy() {
       context.setTransform(1, 0, 0, 1, 0, 0)

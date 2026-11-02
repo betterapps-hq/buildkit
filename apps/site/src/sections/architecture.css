@@ -815,6 +815,8 @@
   --plate-y: 0px;
   --lit: 0;
   --flash: 0;
+  --pool: 0;
+  --ripple: 0;
   --tint: #0b1430b8;
   position: absolute;
   top: var(--plate-y);
@@ -832,6 +834,46 @@
 
 .arch-story-plate[data-plate="core"] {
   --tint: #0d1a46c4;
+}
+
+/* Where the traced light reaches a plate: a pool of light under its package and a soft shockwave across the glass,
+   both kept inside the plate */
+.arch-story-plane {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.arch-story-pool,
+.arch-story-ripple {
+  --row: 1;
+  --col: 2;
+  position: absolute;
+  top: calc(
+    var(--pad) + var(--label) + var(--row) * (var(--chip-h) + var(--row-gap)) + var(--chip-h) / 2 - var(--plate-y)
+  );
+  left: calc(var(--pad) + var(--col) * (var(--chip-w) + var(--col-gap)) + var(--chip-w) / 2 - var(--plate-x));
+  translate: -50% -50%;
+}
+
+.arch-story-pool {
+  width: calc(var(--chip-w) * 1.8);
+  height: calc(var(--chip-h) * 2.8);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, #4f8dff5c, #4f8dff1a 55%, #4f8dff00);
+  opacity: var(--pool);
+}
+
+.arch-story-ripple {
+  width: var(--chip-w);
+  height: var(--chip-h);
+  border-radius: 14px;
+  box-shadow:
+    0 0 22px 6px #46c8ff55,
+    inset 0 0 22px 4px #8d6bff4d;
+  opacity: calc((1 - var(--ripple)) * min(var(--ripple) * 12, 1));
+  scale: calc(1 + var(--ripple) * 1.9);
 }
 
 .arch-story-plate[data-plate="shadcn"],

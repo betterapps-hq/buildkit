@@ -1,13 +1,13 @@
 import { gsap } from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
-import { createStackLight, type Beam, type Point, type Spark } from "./stackLight"
+import { createStackLight, type Occluder, type Pillar, type Point } from "./stackLight"
 
 type Feature = "theme" | "modals" | "alerts" | "routing" | "preferences" | "configuration"
 type Level = "core" | "framework" | "libraries"
-type Glow = { grow: number; power: number }
-type Ripple = { ring: number; glow: number }
 type View = { tilt: number; turn: number; lift: number }
 type Bounds = { left: number; right: number; top: number; bottom: number }
+/** A card or glass plate the light passes under, and the plate that carries it onto its layer. */
+type Cover = { plate: HTMLElement; bounds: Bounds; layer: number; pass: number; radius: number }
 
 /** Left to right across a plate, so its packages light in a sweep. */
 const SWEEP: Feature[] = ["theme", "routing", "alerts", "preferences", "modals", "configuration"]
@@ -21,12 +21,32 @@ const TURN = -32
 const DRIFT = { tilt: -4, turn: 7 }
 /** How far above its layer a plate starts before it lands, in the stack's own pixels. */
 const RISE = 320
+/** How far into the app the last pillar of light reaches, hidden behind it, in screen pixels. */
+const INTO_APP = 40
+/** How much of the app's width the last pillar spreads to where it reaches the app, and how much deeper it grows. */
+const FLARE = 0.78
+const FLARE_DEPTH = 1.4
+/** How much light gets through a glass plate. */
+const GLASS = 0.45
 
 /** Where each beat starts in story time. The pinned scroll plays all of it. */
 const AT = { core: 1, framework: 2.3, libraries: 4.1, app: 5.8, swap: 6.8, settle: 9.6, end: 10.7 }
 
 function radians(degrees: number) {
   return (degrees * Math.PI) / 180
+}
+
+/** Finds where a value starts failing `below` between two bounds, for a test that passes up to some point. */
+function search(low: number, high: number, below: (value: number) => boolean) {
+  for (let step = 0; step < 30; step++) {
+    const middle = (low + high) / 2
+    if (below(middle)) {
+      low = middle
+    } else {
+      high = middle
+    }
+  }
+  return (low + high) / 2
 }
 
 /** Finds every selector under `root`, or nothing when one is missing. */
@@ -84,10 +104,11 @@ function pressTower(tower: string, index: number) {
 
 /**
  * Pinned for four viewports, the stack rebuilds from the bottom up. The flat diagram comes apart and its rails lift
- * into a legend. Each layer lands and lights in turn while one beam traces the modal path through them: from its
- * vanilla core package, through the React binding and the component library's modal manager, into the app's dialog.
- * An agent then switches design systems. Only the light above React goes dark while the plate is replaced, the layers
- * below stay lit, and the dialog changes style. The flat diagram returns with the new library in front.
+ * into a legend. Each layer lands and lights in turn while pillars of light trace the modal path through them: from its
+ * vanilla core package, through the React binding and the component library's modal manager, into the app, which the
+ * light backlights. An agent then switches design systems. Only the light above React goes dark while the plate is
+ * replaced, the layers below stay lit, and the dialog changes style. The flat diagram returns with the new library in
+ * front.
  */
 export function architectureScene() {
   const stage = document.querySelector<HTMLElement>(".arch-stage")
@@ -158,16 +179,17 @@ export function architectureScene() {
   const prompt = parts.prompt.textContent ?? ""
   parts.prompt.textContent = ""
 
-  // The stack's own measurements, from layout: the plates' box, the gap between layers and where each feature's chip
-  // sits relative to the box's center.
+  // The stack's own measurements, from layout: the plates' box, the gap between layers, where each feature's chip sits
+  // relative to the box's center, and the cards and plates the light passes under.
   const geometry = {
     width: 0,
     height: 0,
     step: 0,
-    chip: { width: 0, height: 0 },
+    chip: { width: 0, height: 0, radius: 0 },
     cells: {} as Record<Feature, Point>,
     library: { left: 0, right: 0, top: 0, bottom: 0 } as Bounds,
-    router: { left: 0, right: 0, top: 0, bottom: 0 } as Bounds
+    router: { left: 0, right: 0, top: 0, bottom: 0 } as Bounds,
+    covers: [] as Cover[]
   }
   // Where the story sits in the viewport, recomputed whenever ScrollTrigger refreshes.
   const layout = {
@@ -184,8 +206,6 @@ export function architectureScene() {
     flip: { core: { x: 0, y: 0 }, framework: { x: 0, y: 0 }, libraries: { x: 0, y: 0 } } as Record<Level, Point>,
     leaders: { core: { x: 0, y: 0 }, framework: { x: 0, y: 0 }, libraries: { x: 0, y: 0 } } as Record<Level, Point>,
     app: { left: 0, top: 0, width: 0, height: 0 },
-    /** Where the light meets the bottom of each library's dialog. */
-    dialogs: { shadcn: { x: 0, y: 0 }, fluentui: { x: 0, y: 0 } } as Record<"shadcn" | "fluentui", Point>,
     tag: 0
   }
 
@@ -268,9 +288,33 @@ export function architectureScene() {
       }
     }
     const traced = chips.core[TRACED]
-    geometry.chip = { width: traced?.offsetWidth ?? 0, height: traced?.offsetHeight ?? 0 }
+    const radius = (element: HTMLElement | undefined) =>
+      element ? Number.parseFloat(getComputedStyle(element).borderTopLeftRadius) || 0 : 0
+    geometry.chip = { width: traced?.offsetWidth ?? 0, height: traced?.offsetHeight ?? 0, radius: radius(traced) }
     geometry.library = boundsOf(parts.shadcn, width, height)
     geometry.router = boundsOf(parts.router, width, height)
+    // Every plate above the core is glass, and every card on it blocks the light
+    const above: [HTMLElement, number][] = [
+      [parts.react, 1],
+      [parts.router, 2],
+      [parts.shadcn, 2],
+      [parts.fluentui, 2]
+    ]
+    geometry.covers = above.flatMap(([plate, layer]) => {
+      const bounds = boundsOf(plate, width, height)
+      const cards = [...plate.querySelectorAll<HTMLElement>(".arch-story-chip")].map((chip) => {
+        const left = bounds.left + chip.offsetLeft
+        const top = bounds.top + chip.offsetTop
+        return {
+          plate,
+          bounds: { left, top, right: left + chip.offsetWidth, bottom: top + chip.offsetHeight },
+          layer,
+          pass: 0,
+          radius: geometry.chip.radius
+        }
+      })
+      return [{ plate, bounds, layer, pass: GLASS, radius: radius(plate) }, ...cards]
+    })
   }
 
   const compose = () => {
@@ -363,7 +407,7 @@ export function architectureScene() {
     layout.lifts.core = open - project(view, 0, 0, 0).y
     layout.lifts.framework = (open + middle) / 2 - project(view, 0, 0, geometry.step / 2).y
 
-    // The app sits over the traced column, so the light rises straight on into its dialog
+    // The app sits over the traced column, so the light rises straight on into it
     const stackTop = layout.y + box.top
     const column = project(view, geometry.cells[TRACED].x, geometry.cells[TRACED].y, geometry.step * 2).x
     layout.app = {
@@ -374,18 +418,6 @@ export function architectureScene() {
     }
     parts.app.style.left = `${layout.app.left}px`
     parts.app.style.top = `${layout.app.top}px`
-    // When the app can't center over the column, the light still enters the dialog straight above it, clear of the
-    // rounded corners
-    for (const id of ["shadcn", "fluentui"] as const) {
-      const dialog = parts.app.querySelector<HTMLElement>(`.arch-story-dialog[data-kit="${id}"]`)
-      const at = dialog ? offsetWithin(dialog, parts.app) : { x: appWidth / 2, y: appHeight }
-      const left = layout.app.left + at.x
-      const right = left + (dialog?.offsetWidth ?? 0)
-      layout.dialogs[id] = {
-        x: gsap.utils.clamp(left + 24, Math.max(left + 24, right - 24), column),
-        y: layout.app.top + at.y + (dialog?.offsetHeight ?? 0) - 1
-      }
-    }
     parts.swap.style.left = `${caption ? margin : legendLeft}px`
     parts.swap.style.top = `${caption ? height - margin - swapHeight : margin}px`
 
@@ -429,17 +461,12 @@ export function architectureScene() {
   compose()
   ScrollTrigger.addEventListener("refreshInit", compose)
 
-  // One beam traces the modal path from its core package up through each layer and into the app's dialog. The rest of
+  // Pillars of light trace the modal path from its core package up through each layer and into the app. The rest of
   // each layer only lights up as it lands, so the light never suggests the dialog uses every package.
-  const beam = {
-    lower: { grow: 0, power: 1.3 },
-    upper: { grow: 0, power: 1.3 },
-    out: { grow: 0, power: 1.3 }
-  }
-  const rings = {
-    core: { ring: 0, glow: 0 },
-    framework: { ring: 0, glow: 0 },
-    libraries: { ring: 0, glow: 0 }
+  const pillar: Record<"lower" | "upper" | "out", Pillar> = {
+    lower: { grow: 0, land: 0 },
+    upper: { grow: 0, land: 0 },
+    out: { grow: 0, land: 0 }
   }
   const drawn = { core: { value: 0 }, framework: { value: 0 }, libraries: { value: 0 } }
   const typed = { count: 0 }
@@ -470,14 +497,28 @@ export function architectureScene() {
   /** Lights a plate's packages in a sweep as its layer settles into place. */
   const build = (at: number, plate: Partial<Record<Feature, HTMLElement>>) =>
     timeline.to(present(SWEEP.map((feature) => plate[feature])), { "--lit": 1, duration: 0.3, stagger: 0.06 }, at)
-  /** The traced light reaches a package: it brightens and sends a ripple across its plate. */
-  const reach = (at: number, chip: HTMLElement | undefined, ripple: Ripple) => {
+  /** A pillar of light arrives, flashing where it lands. */
+  const arrive = (part: Pillar, at: number) =>
+    timeline.fromTo(part, { land: 1 }, { land: 0, duration: 0.7, ease: "power2.out", immediateRender: false }, at)
+  /**
+   * The traced light reaches a package: it brightens, light pools under it and a soft shockwave crosses its plate. The
+   * pillar it came up flashes where it lands.
+   */
+  const reach = (at: number, plate: HTMLElement, chip: HTMLElement | undefined, from?: Pillar) => {
     timeline
       .to(chip ?? [], { "--trace": 1, duration: 0.3 }, at)
-      .fromTo(ripple, { ring: 0 }, { ring: 1, duration: 0.8, ease: "power1.out", immediateRender: false }, at)
-      .to(ripple, { glow: 1, duration: 0.35 }, at)
+      .fromTo(
+        plate,
+        { "--ripple": 0 },
+        { "--ripple": 1, duration: 0.8, ease: "power1.out", immediateRender: false },
+        at
+      )
+      .to(plate, { "--pool": 1, duration: 0.35 }, at)
+    if (from) {
+      arrive(from, at)
+    }
   }
-  const grow = (part: Glow, value: number, at: number, duration = 0.45) =>
+  const grow = (part: Pillar, value: number, at: number, duration = 0.45) =>
     timeline.to(part, { grow: value, duration, ease: value > 0.5 ? "power2.out" : "power2.inOut" }, at)
   /** Drops a plate onto its layer from above, with a flash where it lands. */
   const land = (plate: HTMLElement, layer: number, at: number) => {
@@ -548,8 +589,8 @@ export function architectureScene() {
     .to(parts.core, { "--lit": 1, duration: 0.4 }, AT.core)
     .to(drawn.core, { value: 1, duration: 0.45 }, AT.core + 0.1)
   build(AT.core + 0.15, chips.core)
-  reach(AT.core + 0.55, chips.core[TRACED], rings.core)
-  grow(beam.lower, 0.22, AT.core + 0.75)
+  reach(AT.core + 0.55, parts.core, chips.core[TRACED])
+  grow(pillar.lower, 0.22, AT.core + 0.75)
   show(levels.core.tag, AT.core + 0.7)
   timeline.to(levels.core.tie, { opacity: 1, duration: 0.3 }, AT.core + 0.7)
 
@@ -563,9 +604,9 @@ export function architectureScene() {
   frame(() => layout.lifts.framework, AT.framework)
   land(parts.react, 1, AT.framework)
   build(AT.framework + 0.55, chips.react)
-  grow(beam.lower, 1, AT.framework + 0.7)
-  reach(AT.framework + 1.05, chips.react[TRACED], rings.framework)
-  grow(beam.upper, 0.22, AT.framework + 1.3)
+  grow(pillar.lower, 1, AT.framework + 0.7)
+  reach(AT.framework + 1.05, parts.react, chips.react[TRACED], pillar.lower)
+  grow(pillar.upper, 0.22, AT.framework + 1.3)
   show(levels.framework.tag, AT.framework + 1.1)
   timeline.to(levels.framework.tie, { opacity: 1, duration: 0.3 }, AT.framework + 1.1)
 
@@ -580,20 +621,20 @@ export function architectureScene() {
   land(parts.shadcn, 2, AT.libraries)
   land(parts.router, 2, AT.libraries + 0.14)
   build(AT.libraries + 0.6, { ...chips.router, ...chips.shadcn })
-  grow(beam.upper, 1, AT.libraries + 0.7)
-  reach(AT.libraries + 1.05, chips.shadcn[TRACED], rings.libraries)
-  grow(beam.out, 0.14, AT.libraries + 1.3)
+  grow(pillar.upper, 1, AT.libraries + 0.7)
+  reach(AT.libraries + 1.05, parts.shadcn, chips.shadcn[TRACED], pillar.upper)
+  grow(pillar.out, 0.14, AT.libraries + 1.3)
   show(levels.libraries.tag, AT.libraries + 1.1)
   timeline.to(levels.libraries.tie, { opacity: 1, duration: 0.3 }, AT.libraries + 1.1)
 
-  // App: the light runs on into the app, and its dialog opens where it lands
+  // App: the light runs on into the app, backlighting it, and its dialog opens
   timeline.fromTo(
     parts.app,
     { autoAlpha: 0, y: 24, scale: 0.96 },
     { autoAlpha: 1, y: 0, scale: 1, duration: 0.45, ease: "power3.out" },
     AT.app
   )
-  grow(beam.out, 1, AT.app + 0.3, 0.4)
+  grow(pillar.out, 1, AT.app + 0.3, 0.4)
   timeline
     .fromTo(
       kit(parts.app, "shadcn"),
@@ -602,6 +643,7 @@ export function architectureScene() {
       AT.app + 0.6
     )
     .to(parts.app, { "--charge": 1, duration: 0.3 }, AT.app + 0.65)
+  arrive(pillar.out, AT.app + 0.65)
 
   // Swap: an agent asks for Fluent UI. Only the light above React steps back while the plate is replaced, and the
   // layers below stay lit.
@@ -620,8 +662,8 @@ export function architectureScene() {
       AT.swap + 0.1
     )
     .to(parts.app, { "--charge": 0.3, duration: 0.3 }, AT.swap + 0.5)
-  grow(beam.out, 0, AT.swap + 0.5, 0.3)
-  grow(beam.upper, 0.22, AT.swap + 0.6, 0.3)
+  grow(pillar.out, 0, AT.swap + 0.5, 0.3)
+  grow(pillar.upper, 0.22, AT.swap + 0.6, 0.3)
   timeline
     .to(
       [parts.shadcn, ...present(SWEEP.map((feature) => chips.shadcn[feature]))],
@@ -629,7 +671,7 @@ export function architectureScene() {
       AT.swap + 0.6
     )
     .to(chips.shadcn[TRACED] ?? [], { "--trace": 0, duration: 0.3 }, AT.swap + 0.6)
-    .to(rings.libraries, { glow: 0, duration: 0.3 }, AT.swap + 0.6)
+    .to(parts.shadcn, { "--pool": 0, duration: 0.3 }, AT.swap + 0.6)
     .to(
       parts.shadcn,
       { z: () => geometry.step * 2 + RISE, autoAlpha: 0, duration: 0.5, ease: "power2.in" },
@@ -646,13 +688,14 @@ export function architectureScene() {
   )
   timeline.to(parts.fluentui, { "--lit": 1, duration: 0.4 }, AT.swap + 1.45)
   build(AT.swap + 1.45, chips.fluentui)
-  grow(beam.upper, 1, AT.swap + 1.45, 0.35)
-  reach(AT.swap + 1.75, chips.fluentui[TRACED], rings.libraries)
+  grow(pillar.upper, 1, AT.swap + 1.45, 0.35)
+  reach(AT.swap + 1.75, parts.fluentui, chips.fluentui[TRACED], pillar.upper)
   show(kit(levels.libraries.tag, "fluentui"), AT.swap + 1.75, 0.2)
-  grow(beam.out, 1, AT.swap + 1.85, 0.35)
+  grow(pillar.out, 1, AT.swap + 1.85, 0.35)
   hide(kit(parts.app, "shadcn"), AT.swap + 2.1, 0.25)
   show(kit(parts.app, "fluentui"), AT.swap + 2.15, 0.3)
   timeline.to(parts.app, { "--charge": 1, duration: 0.3 }, AT.swap + 2.15)
+  arrive(pillar.out, AT.swap + 2.15)
 
   // Settle: the story fades back into the flat diagram, which now has the new library in front
   hide([parts.scene, parts.light, parts.lines, parts.tags, parts.app, parts.swap, ...links], AT.settle, 0.45)
@@ -681,7 +724,14 @@ export function architectureScene() {
     )
   }
 
-  const fluentDialog = parts.app.querySelector<HTMLElement>('.arch-story-dialog[data-kit="fluentui"]')
+  /** The cards and plates the light passes under, where they are now and how much they let through. */
+  const covers = (): Occluder[] =>
+    geometry.covers
+      .map(({ plate, bounds, layer, pass, radius }) => {
+        const shown = plate.style.visibility === "hidden" ? 0 : Number(gsap.getProperty(plate, "opacity"))
+        return { ...bounds, z: Number(gsap.getProperty(plate, "z")), pass: 1 - (1 - pass) * shown, layer, radius }
+      })
+      .filter((cover) => cover.pass < 1)
 
   /** Draws the light, leader lines and labels for the camera's current view. */
   const render = () => {
@@ -697,36 +747,41 @@ export function architectureScene() {
       turn: radians(Number(gsap.getProperty(parts.turn, "rotation"))),
       lift: Number(gsap.getProperty(parts.tilt, "y"))
     }
-    const { step } = geometry
+    const { step, chip } = geometry
     const cell = geometry.cells[TRACED]
-    const at = (layer: number) => project(view, cell.x, cell.y, step * layer)
-    // The light lands on whichever dialog the app shows
-    const swapped = fluentDialog ? Number(gsap.getProperty(fluentDialog, "opacity")) : 0
-    const { shadcn, fluentui } = layout.dialogs
-    const dialog = {
-      x: shadcn.x + (fluentui.x - shadcn.x) * swapped,
-      y: shadcn.y + (fluentui.y - shadcn.y) * swapped
-    }
-    const beams: Beam[] = [
-      { from: at(0), to: at(1), ...beam.lower, phase: 0 },
-      { from: at(1), to: at(2), ...beam.upper, phase: 1.7 },
-      { from: at(2), to: dialog, ...beam.out, phase: 3.4 }
-    ]
-    const sparks: Spark[] = LEVELS.map((level, layer) => ({ at: at(layer), ...rings[level] }))
-    const scale = layout.scale
+    const place = (x: number, y: number, z: number) => project(view, x, y, z)
+
+    // The last pillar rises until it's well inside the app, hidden behind it. Where it reaches the app's bottom edge it
+    // has spread to most of the app's width, keeping clear of its corners.
+    const { app } = layout
+    const bottom = app.top + app.height
+    const above = (y: number) => (z: number) => place(cell.x, cell.y, z).y > y
+    const top = search(step * 2, step * 2 + 2000, above(bottom - INTO_APP))
+    const reaches = search(step * 2, top, above(bottom))
+    const column = place(cell.x, cell.y, reaches).x
+    const room = Math.min(column - app.left, app.left + app.width - column) - 16
+    const across = Math.min(app.width * FLARE, room * 2)
+    const spread = search(
+      chip.width / 2,
+      chip.width * 3,
+      (x) => place(cell.x + x, cell.y, reaches).x - place(cell.x - x, cell.y, reaches).x < across
+    )
+    const full = (reaches - step * 2) / Math.max(top - step * 2, 1)
+
     light?.draw({
       width: layout.width,
       height: layout.height,
       time: gsap.ticker.time,
-      beams,
-      sparks,
-      axes: [
-        Math.cos(view.turn) * scale,
-        Math.sin(view.turn) * Math.cos(view.tilt) * scale,
-        -Math.sin(view.turn) * scale,
-        Math.cos(view.turn) * Math.cos(view.tilt) * scale
-      ],
-      size: geometry.chip.height * 0.8
+      camera: { x: layout.x, y: layout.y, depth: layout.depth, scale: layout.scale },
+      view,
+      cell: { x: cell.x, y: cell.y, width: chip.width, height: chip.height, radius: chip.radius },
+      levels: [0, step, step * 2, top],
+      flare: { width: spread * 2, height: chip.height * FLARE_DEPTH, from: full * 0.3, to: full },
+      pillars: [pillar.lower, pillar.upper, pillar.out],
+      occluders: covers(),
+      app: { left: app.left, top: app.top, right: app.left + app.width, bottom },
+      backlight: Number.parseFloat(parts.app.style.getPropertyValue("--charge")) || 0,
+      place
     })
 
     const anchors: Record<Level, Point> = {
