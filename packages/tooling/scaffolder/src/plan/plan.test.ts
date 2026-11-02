@@ -844,6 +844,56 @@ describe("upgrade", () => {
   })
 })
 
+describe("version ranges", () => {
+  const packageJson = (files: Record<string, string>): Record<string, Record<string, string>> =>
+    JSON.parse(files["package.json"] ?? "{}") as Record<string, Record<string, string>>
+
+  it("writes exact pins in the catalog's range style, and pins that are ranges as they're written", async () => {
+    const exact = packageJson(await project())
+    expect(exact.dependencies).toMatchObject({ react: "19.3.1", "drizzle-orm": "0.45.4" })
+    const v1 = fixtureCatalog()
+    for (const [range, react] of [
+      ["caret", "^19.3.1"],
+      ["tilde", "~19.3.1"],
+      ["exact", "19.3.1"]
+    ] as const) {
+      const catalog = { ...v1, range, versions: { ...v1.versions, "drizzle-orm": "~0.45.4", storybook: ">=10.1 <11" } }
+      const written = packageJson(await applyFixture({}, initRequest(), { catalog }))
+      expect(written.dependencies).toMatchObject({ react, "drizzle-orm": "~0.45.4" })
+      expect(written.devDependencies).toMatchObject({ storybook: ">=10.1 <11" })
+    }
+  })
+
+  it("an upgrade moves the pins the engine wrote, and one you changed is a conflict that keep-current keeps", async () => {
+    const files = await project()
+    const edited = {
+      ...files,
+      "package.json": (files["package.json"] ?? "").replace('"vite": "8.0.0"', '"vite": "8.1.0"')
+    }
+    const v2 = fixtureCatalog(2)
+    const catalog = { ...v2, range: "caret" as const, versions: { ...v2.versions, react: "19.4.0" } }
+    const catalogs = (version: string) => (version === "1.0.0" ? fixtureCatalog(1) : undefined)
+    const request = { intent: { command: "upgrade" as const } }
+    const conflict = await planFixture(edited, request, { catalog, catalogs })
+    expect(conflict.conflicts).toEqual([
+      expect.objectContaining({ id: "package.json#/devDependencies/vite", kind: "both-changed" })
+    ])
+    const upgraded = applyInMemory(
+      edited,
+      await planFixture(
+        edited,
+        { ...request, resolve: { "package.json#/devDependencies/vite": "keep-current" } },
+        {
+          catalog,
+          catalogs
+        }
+      )
+    )
+    expect(packageJson(upgraded).dependencies).toMatchObject({ react: "^19.4.0", "drizzle-orm": "^0.45.4" })
+    expect(packageJson(upgraded).devDependencies).toMatchObject({ vite: "8.1.0", oxlint: "^1.72.0" })
+  })
+})
+
 describe("fingerprints", () => {
   it("change when a file the plan read changes", async () => {
     const files = await project()

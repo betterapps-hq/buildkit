@@ -23,6 +23,7 @@ export interface AddonManifest<S extends z.ZodType = z.ZodType> {
     nextSteps?(ctx: ContributeContext<z.infer<S>>): string[];
     // (undocumented)
     options?: S;
+    packages?: Record<string, string>;
     // (undocumented)
     points?: PointDefinition[];
     provides?: Record<string, unknown>;
@@ -100,6 +101,7 @@ export interface CatalogManifest {
     packs?: Record<string, PackRecord>;
     // (undocumented)
     presets?: PresetManifest[];
+    range?: RangeStyle;
     // (undocumented)
     slots: SlotDefinition[];
     // (undocumented)
@@ -363,7 +365,7 @@ export interface EnvVar {
 }
 
 // @public (undocumented)
-export type ErrorCode = "E_DRIFT" | "E_LOCKED" | "E_INTERRUPTED" | "E_BASELINE_UNAVAILABLE" | "E_UNSUPPORTED" | "E_INVALID_OPTIONS" | "E_UNKNOWN_ADDON" | "E_UNKNOWN_TEMPLATE" | "E_PACKAGE_UNAVAILABLE" | "E_INVALID_PACK" | "E_UNKNOWN_TARGET" | "E_CATALOG_MISMATCH" | "E_CONTRIBUTION" | "E_UNSAFE_PATH" | "E_UNSAFE_KEY" | "E_LOCK_VERSION" | "E_INVALID_STATE" | "E_NOT_INITIALIZED" | "E_ALREADY_INITIALIZED" | "E_DESTINATION" | "E_CONFLICT_MARKERS" | "E_CYCLE" | "E_USAGE" | "E_CANCELLED" | "E_INTERNAL";
+export type ErrorCode = "E_DRIFT" | "E_LOCKED" | "E_INTERRUPTED" | "E_BASELINE_UNAVAILABLE" | "E_UNSUPPORTED" | "E_INVALID_OPTIONS" | "E_UNKNOWN_ADDON" | "E_UNKNOWN_TEMPLATE" | "E_PACKAGE_UNAVAILABLE" | "E_INVALID_PACK" | "E_INVALID_CATALOG" | "E_UNKNOWN_TARGET" | "E_CATALOG_MISMATCH" | "E_CONTRIBUTION" | "E_UNSAFE_PATH" | "E_UNSAFE_KEY" | "E_LOCK_VERSION" | "E_INVALID_STATE" | "E_NOT_INITIALIZED" | "E_ALREADY_INITIALIZED" | "E_DESTINATION" | "E_CONFLICT_MARKERS" | "E_CYCLE" | "E_USAGE" | "E_CANCELLED" | "E_INTERNAL";
 
 // @public
 export function exitCode(envelope: Pick<Envelope, "status" | "error">): number;
@@ -464,6 +466,9 @@ export type Intent = {
     command: "sync";
     addons?: string[];
 };
+
+// @public
+export function isValidRange(range: string): boolean;
 
 // @public
 export interface ItemOrder {
@@ -604,6 +609,9 @@ export const lockSchema: z.ZodObject<{
 
 // @public
 export function lookupAddon(catalog: CatalogManifest, name: string): NameLookup;
+
+// @public
+export function lowestVersion(range: string): string | undefined;
 
 // @public
 export function match<V extends string, R>(value: V, cases: {
@@ -959,6 +967,9 @@ export interface PulledAddon {
     id: string;
 }
 
+// @public
+export type RangeStyle = "exact" | "caret" | "tilde";
+
 // @public (undocumented)
 export function readConfig(path: string, text: string): ProjectConfig;
 
@@ -985,6 +996,9 @@ export interface ResolveContext<O> {
     // (undocumented)
     target: TargetInfo;
 }
+
+// @public
+export function satisfiesRange(version: string, range: string): boolean;
 
 // @public
 export function shortName(id: string): string;

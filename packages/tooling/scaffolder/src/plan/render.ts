@@ -1,3 +1,4 @@
+import { writtenVersions } from "../manifest/catalog.js"
 import type {
   CatalogManifest,
   Contribution,
@@ -52,7 +53,7 @@ export function render(catalog: CatalogManifest, resolved: ResolvedSelection, se
     nextSteps: [],
     entries: []
   }
-  const versions = catalog.versions ?? {}
+  const versions = writtenVersions(catalog)
   const version = (name: string) => {
     const pinned = versions[name]
     if (pinned === undefined) {
