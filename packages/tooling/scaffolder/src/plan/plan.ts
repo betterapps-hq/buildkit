@@ -205,7 +205,7 @@ async function planInto(input: PlanInput, tree: RecordingTree, result: Plan) {
   }
   const resolution = resolveSelection(catalog, selection)
   if (!resolution.ok) {
-    result.decisions.push(issueDecision(catalog, request, resolution.issue))
+    result.decisions.push(issueDecision(catalog, request, resolution.issue, selection))
     return
   }
   const resolved = resolution.value

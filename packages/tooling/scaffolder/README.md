@@ -124,8 +124,13 @@ export default defineCatalog({
 
 Contribution kinds: `dependency`, `script`, `env`, `file` (`owned`, `seed` or `sample`), `entry`, `json` and `yaml`
 (`set`, `merge`, or `append` with an optional `key` for keyed arrays), `lines`, `command` (listed, never run) and
-`notice`. Add-ons declare `requires` (ids, `slot:<id>` or `provides:<name>`), `conflicts`, `after`, `supports()` and
-`migrations`.
+`notice`. Add-ons declare `requires` (ids, `slot:<id>` or `provides:<name>`), `conflicts` (ids or `provides:<name>`),
+`after`, `supports()` and `migrations`.
+
+`conflicts: ["provides:orm"]` keeps out any **other** add-on that provides `orm`, so an ORM add-on can say it and still
+be installed. One side declaring a conflict is enough: a new ORM from anyone conflicts with that add-on without saying
+so. A conflict over a capability is a swap, not an error: `add prisma` on a project with Drizzle plans the decision
+"Drizzle is your orm. Replace it with Prisma?", whose choice is `add prisma --replace drizzle`.
 
 ### Versions
 

@@ -94,12 +94,26 @@ export function checkCatalog(
     if (addon.slot && !findSlot(catalog, addon.slot)) {
       problems.push(`${addon.id} fills slot ${addon.slot}, which isn't defined.`)
     }
-    // The resolver reads `slot:` and `provides:` only in requires. Elsewhere they'd be accepted and do nothing.
-    for (const reference of [...(addon.conflicts ?? []), ...(addon.after ?? [])]) {
-      if (reference.startsWith("slot:") || reference.startsWith("provides:")) {
-        problems.push(`${addon.id} uses ${reference} in conflicts or after, which take add-on ids only.`)
-      } else if (!findAddon(catalog, reference)) {
-        problems.push(`${addon.id} refers to ${reference}, which isn't in the catalog.`)
+    // The resolver reads `slot:` only in requires, and `provides:` in requires and conflicts. Elsewhere they'd be
+    // accepted and do nothing.
+    for (const [field, references] of [
+      ["conflicts", addon.conflicts ?? []],
+      ["after", addon.after ?? []]
+    ] as const) {
+      for (const reference of references) {
+        if (reference.startsWith("provides:") && field === "conflicts") {
+          if (!provides.has(reference.slice(9))) {
+            problems.push(`${addon.id} refers to ${reference}, and no add-on provides it.`)
+          }
+        } else if (reference.startsWith("slot:") || reference.startsWith("provides:")) {
+          problems.push(
+            field === "conflicts"
+              ? `${addon.id} uses ${reference} in conflicts, which takes add-on ids and provides:<name>.`
+              : `${addon.id} uses ${reference} in after, which takes add-on ids only.`
+          )
+        } else if (!findAddon(catalog, reference)) {
+          problems.push(`${addon.id} refers to ${reference}, which isn't in the catalog.`)
+        }
       }
     }
     for (const reference of addon.requires ?? []) {

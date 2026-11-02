@@ -1,6 +1,7 @@
 import { findAddon, findSlot, findTarget, findTemplate, lookupAddon } from "../manifest/catalog.js"
 import type { CatalogManifest } from "../manifest/types.js"
-import type { ResolveIssue } from "../resolve/resolve.js"
+import type { ResolveIssue, Selection } from "../resolve/resolve.js"
+import { requestArgv } from "./argv.js"
 import type { DecisionChoice, Intent, PlanDecision, PlanRequest } from "./types.js"
 
 function title(catalog: CatalogManifest, id: string): string {
@@ -56,8 +57,16 @@ function addingTo(catalog: CatalogManifest, request: PlanRequest, id: string, re
   return withIntent(request, { command: "add", addons: [id], replace: [replace], options: {} })
 }
 
-/** Turns a resolver issue into a decision whose every choice is a complete request. */
-export function issueDecision(catalog: CatalogManifest, request: PlanRequest, issue: ResolveIssue): PlanDecision {
+/**
+ * Turns a resolver issue into a decision whose every choice is a complete request. `selection` is what the request
+ * resolved from, when it got that far.
+ */
+export function issueDecision(
+  catalog: CatalogManifest,
+  request: PlanRequest,
+  issue: ResolveIssue,
+  selection?: Selection
+): PlanDecision {
   const { intent } = request
   switch (issue.kind) {
     case "choose-mode": {
@@ -110,11 +119,59 @@ export function issueDecision(catalog: CatalogManifest, request: PlanRequest, is
         ]
       }
     }
-    case "conflicts":
-      return {
-        id: `conflicts:${issue.addon}`,
-        message: `${title(catalog, issue.addon)} can't be used with ${title(catalog, issue.other)}. Remove one of them from the config.`,
-        choices: []
+    case "conflicts": {
+      const id = `conflicts:${issue.addon}`
+      // A conflict over a capability is a swap when the request names one of the two: it replaces the other.
+      const names = intent.command === "init" ? [] : (intent.addons ?? [])
+      const named = [issue.addon, issue.other].filter((addon) => names.some((name) => refersTo(catalog, name, addon)))
+      const [incoming] = named
+      const installed = incoming === issue.addon ? issue.other : issue.addon
+      if (issue.capability === undefined || incoming === undefined || named.length > 1) {
+        return {
+          id,
+          message: `${title(catalog, issue.addon)} can't be used with ${title(catalog, issue.other)}. Remove one of them from the config.`,
+          choices: []
+        }
       }
+      const lead = Object.hasOwn(findAddon(catalog, installed)?.provides ?? {}, issue.capability)
+        ? `${title(catalog, installed)} is your ${issue.capability}.`
+        : `${title(catalog, installed)} can't be used with an add-on that provides ${issue.capability}.`
+      // Only an add-on chosen in the config can be replaced, and only when nothing else requires it: an add-on that does
+      // would pull it straight back in.
+      const needers = Object.keys(selection?.addons ?? {})
+        .filter((other) => other !== installed && findAddon(catalog, other)?.requires?.includes(installed))
+        .map((other) => title(catalog, other))
+      if (selection && (needers.length > 0 || !Object.hasOwn(selection.addons, installed))) {
+        return {
+          id,
+          message: `${lead} ${needers.length > 0 ? needers.join(" and ") : "Another add-on"} needs it, so it can't be replaced with ${title(catalog, incoming)}.`,
+          choices: []
+        }
+      }
+      // A replacement is an add. Turning an upgrade into one would drop the upgrade, so other commands say how instead.
+      if (intent.command !== "add") {
+        // requestArgv keeps full ids where two add-ons share a short name, so the command always resolves.
+        const command = requestArgv(
+          { intent: { command: "add", addons: [incoming], replace: [installed], options: {} } },
+          { catalog }
+        ).join(" ")
+        return {
+          id,
+          message: `${lead} To replace it with ${title(catalog, incoming)}, run ${command}.`,
+          choices: []
+        }
+      }
+      return {
+        id,
+        message: `${lead} Replace it with ${title(catalog, incoming)}?`,
+        choices: [
+          {
+            id: "replace",
+            label: `Replace ${title(catalog, installed)}`,
+            request: addingTo(catalog, request, incoming, installed)
+          }
+        ]
+      }
+    }
   }
 }
