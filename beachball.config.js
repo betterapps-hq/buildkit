@@ -11,23 +11,7 @@ const { join } = require("node:path")
 module.exports = {
   branch: "origin/main",
   access: "public",
-  // Better Apps platform packages share inferred types, so they release together at one version. Features don't join.
   groups: [
-    {
-      name: "better-apps-platform",
-      include: [
-        "packages/better-apps/better-apps",
-        "packages/better-apps/better-auth",
-        "packages/better-apps/clerk",
-        "packages/better-apps/cli",
-        "packages/better-apps/drizzle",
-        "packages/better-apps/react",
-        "packages/better-apps/tanstack-start",
-        "packages/better-apps/testing",
-        "packages/better-apps/workos"
-      ],
-      disallowedChangeTypes: null
-    },
     // The buildkit CLI and its catalog release together, so a new app pins the CLI at the catalog's own version.
     {
       name: "buildkit-cli",

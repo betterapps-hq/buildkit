@@ -17,7 +17,6 @@ export default defineConfig({
       "pnpm-lock.yaml",
       "api-reports/*.api.md",
       "**/.generated/**",
-      "**/src/vendor/**",
       "**/routeTree.gen.ts",
       // The site shows these files as written, wrapped to fit its code editor
       "apps/site/src/examples/**"
@@ -25,12 +24,7 @@ export default defineConfig({
   },
   lint: {
     extends: [base],
-    ignorePatterns: [
-      "**/src/vendor/**",
-      "packages/tooling/catalog/templates/**",
-      "apps/better-apps-example/src/routeTree.gen.ts",
-      "apps/better-apps-example/src/db/better-apps-schema.ts"
-    ],
+    ignorePatterns: ["packages/tooling/catalog/templates/**"],
     options: { typeAware: true, typeCheck: true },
     jsPlugins: [{ name: "vite-plus", specifier: "vite-plus/oxlint-plugin" }],
     rules: {

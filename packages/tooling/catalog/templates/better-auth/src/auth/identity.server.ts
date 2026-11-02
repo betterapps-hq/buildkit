@@ -1,4 +1,4 @@
-import { betterAuthIdentity } from "@better-apps/better-auth"
+import { betterAuthIdentity } from "@better-apps/identity-better-auth"
 import { auth } from "./auth.server"
 
 /**

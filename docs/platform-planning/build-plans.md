@@ -3,7 +3,8 @@
 Designs for what we plan to build: Better Apps' deploy CLI, the services that run with it, and its collaboration and
 feature-flag features; Buildkit's packages and services; the pipelines; and AI guidance. The recommendations themselves
 are in [stack.md](stack.md); the scaffolder design is in [scaffolder-research.md](scaffolder-research.md), and the
-deploy design in [better-apps-deploy.md](better-apps-deploy.md).
+deploy design in
+[the Better Apps deploy plan](https://github.com/betterapps-hq/better-apps/blob/main/docs/deploy-plan.md).
 
 # CI/CD pipelines
 
@@ -66,7 +67,8 @@ else here has a payment plan.
 
 **Goal:** one command (locally and in CI) that builds the app and deploys it to an environment with everything it needs.
 It belongs to Better Apps, not Buildkit, and is a paid product: the `better-apps deploy` CLI plus a hosted deploy
-service. The scaffolder stays in Buildkit. Full design in [better-apps-deploy.md](better-apps-deploy.md).
+service. The scaffolder stays in Buildkit. Full design in
+[the Better Apps deploy plan](https://github.com/betterapps-hq/better-apps/blob/main/docs/deploy-plan.md).
 
 **Decided (2026-10-28):**
 
@@ -99,7 +101,8 @@ service. The scaffolder stays in Buildkit. Full design in [better-apps-deploy.md
 - **Environments** are declared in the repo in `better-apps.environments.jsonc`, which names no cloud.
 - **Ours on top:** provisioning our own services per environment (managed storage, flags, env vars and secrets). This is
   what the CI/CD pipelines call.
-- **To verify (spike, about a day):** the pass/fail gate in [better-apps-deploy.md](better-apps-deploy.md) §6 (its
+- **To verify (spike, about a day):** the pass/fail gate in
+  [the Better Apps deploy plan](https://github.com/betterapps-hq/better-apps/blob/main/docs/deploy-plan.md) §6 (its
   hosted half needs rework for customer accounts):
   - the manifest lists exactly the declarations in the server bundle;
   - `vite dev` works with no cloud config file in the project;
@@ -213,8 +216,9 @@ approval flows and the audit log. Our own tools reuse them.
   above). Presence and live documents are real-time rooms (`@better-apps/realtime`; Durable Objects on Cloudflare).
   Whether `partyserver` and `y-partyserver` implement the room adapter is open. Comments and approvals are tables in the
   app's database (D1 on Cloudflare), added through Better Apps' schema layer and scoped through `AuthContext`. How a
-  feature reaches the app's `main` database is open ([better-apps-deploy.md](better-apps-deploy.md) §8). kibo-ui's
-  Cursor is a visual starting point; it has no networking.
+  feature reaches the app's `main` database is open
+  ([the Better Apps deploy plan](https://github.com/betterapps-hq/better-apps/blob/main/docs/deploy-plan.md) §8).
+  kibo-ui's Cursor is a visual starting point; it has no networking.
 - **Attachments** build on managed storage (above).
 - **Notifications aren't ours:** in-app notifications go through Novu, and email through Resend.
 - **Wrapped for our tools:**

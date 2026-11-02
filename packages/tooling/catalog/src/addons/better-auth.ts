@@ -26,7 +26,7 @@ export const betterAuth = defineAddon({
     }
     return [
       dependency(ctx, "better-auth"),
-      ...betterAppsDependency("@better-apps/better-auth"),
+      ...betterAppsDependency("@better-apps/identity-better-auth"),
       fromTemplate(set, "src/auth/auth.server.ts"),
       fromTemplate(set, "src/auth/identity.server.ts"),
       fromTemplate(set, "src/auth/viewer.functions.ts"),

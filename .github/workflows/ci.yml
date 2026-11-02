@@ -42,15 +42,6 @@ jobs:
       - run: pnpm --filter @buildkitgg/scaffolder test:integration
       - run: pnpm exec vp run --cache --filter "@buildkitgg/cli^..." build
       - run: pnpm --filter @buildkitgg/cli test:integration
-  databases:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: betterapps-hq/pipelines/github/actions/setup@8b4311a69b28ad7423898dceda366cee6644f92c # v1.1.1
-      - name: Test the Drizzle adapter on PostgreSQL, Neon and MySQL servers
-        run:
-          pnpm exec vp run --cache --filter "@better-apps/drizzle^..." build && pnpm --filter @better-apps/drizzle
-          test:servers
   templates:
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -60,7 +51,7 @@ jobs:
       - name: Generate Buildkit apps, then install, check, lint, build and type-check each one
         run: pnpm --filter @buildkitgg/cli test:smoke
   release:
-    needs: [verify, integration, databases, templates]
+    needs: [verify, integration, templates]
     if: >-
       github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     permissions:
@@ -68,7 +59,7 @@ jobs:
       actions: write
     uses: ./.github/workflows/publish-after-ci.yml
   merge-release:
-    needs: [verify, integration, databases, templates]
+    needs: [verify, integration, templates]
     if: >-
       github.event_name == 'workflow_dispatch' && (startsWith(github.ref, 'refs/heads/codex/release-') ||
       startsWith(github.ref, 'refs/heads/codex/shadcn-update-'))
