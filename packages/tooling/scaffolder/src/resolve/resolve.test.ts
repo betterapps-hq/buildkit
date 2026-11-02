@@ -561,6 +561,36 @@ describe("questions and catalog CI", () => {
     }
   })
 
+  it("reports pins that aren't ranges, and add-ons whose packages the pins don't fit", () => {
+    const written = (id: string, packages: Record<string, string>) =>
+      defineAddon({ id, version: "1.0.0", title: id, description: "", packages, contribute: () => [] })
+    const pinned: CatalogManifest = {
+      ...withAddons(
+        catalog,
+        written("@x/fits", { react: "^19", "drizzle-orm": ">=0.45 <1", vite: "*" }),
+        written("@x/too-new", { react: ">=19.4 <20" }),
+        written("@x/unpinned", { zod: "^4" }),
+        written("@x/not-a-range", { react: "nineteen" }),
+        written("@x/unbounded", { pg: "^8" }),
+        written("@x/empty", { "@lingui/core": "^6" })
+      ),
+      range: "sideways" as CatalogManifest["range"],
+      versions: { ...catalog.versions, vite: "latest", pg: "<9", "@lingui/core": ">=7 <6" }
+    }
+    expect(checkCatalog(pinned)).toEqual([
+      `Catalog range "sideways" isn't exact, caret or tilde.`,
+      `The pin for vite, "latest", isn't an exact version or a version range.`,
+      '@x/too-new is written for react >=19.4 <20, but the pin "19.3.1" allows 19.3.1.',
+      "@x/unpinned is written for zod, which the catalog doesn't pin.",
+      `@x/not-a-range is written for react "nineteen", which isn't a version range.`,
+      '@x/unbounded is written for pg ^8, but the pin "<9" allows 0.0.0.',
+      '@x/empty is written for @lingui/core ^6, but the pin ">=7 <6" allows no version.'
+    ])
+    expect(checkCatalog({ ...catalog, range: "caret", versions: { ...catalog.versions, react: "~19.3.1" } })).toEqual(
+      []
+    )
+  })
+
   it("lists the options an add-on asks about", () => {
     const fancy = catalog.addons.find((addon) => addon.id === "@fixture/ui-fancy")
     expect(fancy && optionQuestions(fancy)).toEqual([
