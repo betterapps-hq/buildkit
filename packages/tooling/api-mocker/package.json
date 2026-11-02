@@ -17,7 +17,6 @@
     "dist/**/*.js",
     "dist/**/*.d.ts",
     "README.md",
-    "docs/*.md",
     "LICENSE"
   ],
   "scripts": {
