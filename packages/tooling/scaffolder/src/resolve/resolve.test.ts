@@ -456,6 +456,16 @@ describe("plan decisions", () => {
         choices: []
       }
     )
+    // Chosen as well, Drizzle would still be pulled back in by Migrations.
+    const chosen = await applyFixture({}, initRequest({ optional: ["@x/migrations", "@x/drizzle"] }), {
+      catalog: withMigrations
+    })
+    expect((await planFixture(chosen, addRequest(["prisma"]), { catalog: withMigrations })).decisions[0]).toMatchObject(
+      {
+        message: "Drizzle is your orm. Migrations needs it, so it can't be replaced with Prisma.",
+        choices: []
+      }
+    )
 
     // Asked for together, neither is installed, so there's nothing to swap.
     const both = await planFixture({}, initRequest({ optional: ["@x/drizzle", "@x/prisma"] }), { catalog })

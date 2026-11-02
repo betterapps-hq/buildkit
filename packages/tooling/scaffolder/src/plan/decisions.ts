@@ -136,11 +136,12 @@ export function issueDecision(
       const lead = Object.hasOwn(findAddon(catalog, installed)?.provides ?? {}, issue.capability)
         ? `${title(catalog, installed)} is your ${issue.capability}.`
         : `${title(catalog, installed)} can't be used with an add-on that provides ${issue.capability}.`
-      // Only an add-on chosen in the config can be replaced. One another add-on pulled in has to go with that add-on.
-      if (selection && !Object.hasOwn(selection.addons, installed)) {
-        const needers = Object.keys(selection.addons)
-          .filter((other) => findAddon(catalog, other)?.requires?.includes(installed))
-          .map((other) => title(catalog, other))
+      // Only an add-on chosen in the config can be replaced, and only when nothing else requires it: an add-on that does
+      // would pull it straight back in.
+      const needers = Object.keys(selection?.addons ?? {})
+        .filter((other) => other !== installed && findAddon(catalog, other)?.requires?.includes(installed))
+        .map((other) => title(catalog, other))
+      if (selection && (needers.length > 0 || !Object.hasOwn(selection.addons, installed))) {
         return {
           id,
           message: `${lead} ${needers.length > 0 ? needers.join(" and ") : "Another add-on"} needs it, so it can't be replaced with ${title(catalog, incoming)}.`,
