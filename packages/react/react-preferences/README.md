@@ -3,8 +3,9 @@
 Provider-free React hooks for `@buildkitgg/preferences-core`.
 
 ```tsx
-import { usePreference, usePreferences } from "@buildkitgg/react-preferences"
-import { preferences } from "./preferences"
+import { createPreferences, usePreference } from "@buildkitgg/react-preferences"
+
+const preferences = createPreferences<{ pageSize: number }>({ storage: "localStorage", key: "my-app" })
 
 export function PageSize() {
   const [pageSize, setPageSize] = usePreference(preferences, "pageSize")
@@ -12,6 +13,7 @@ export function PageSize() {
 }
 ```
 
+`createPreferences` comes from `@buildkitgg/preferences-core`, re-exported so React apps import from one package.
 `usePreference(store, key)` returns a readonly tuple of the typed value (`T[K] | undefined`) and its typed setter.
 `usePreferences(store)` returns the whole readonly snapshot. Both use `useSyncExternalStore`; no context or provider is
 required. Keys and values are inferred from the store. The per-key hook subscribes to the whole snapshot in this initial

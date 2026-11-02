@@ -1,9 +1,8 @@
-import { createThemeStore } from "@buildkitgg/theme-core"
 import { act, cleanup, renderHook } from "@testing-library/react"
 import { StrictMode } from "react"
 import { renderToString } from "react-dom/server"
 import { afterEach, expect, it } from "vite-plus/test"
-import { useTheme } from "./index.js"
+import { createThemeStore, useTheme } from "./index.js"
 
 afterEach(cleanup)
 

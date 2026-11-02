@@ -1,9 +1,8 @@
-import { createPreferences } from "@buildkitgg/preferences-core"
 import { act, cleanup, renderHook } from "@testing-library/react"
 import { StrictMode } from "react"
 import { renderToString } from "react-dom/server"
 import { afterEach, expect, it } from "vite-plus/test"
-import { usePreference, usePreferences } from "./index.js"
+import { createPreferences, usePreference, usePreferences } from "./index.js"
 
 afterEach(cleanup)
 it("supports external updates, typed setters, reset, and key changes without a provider", () => {

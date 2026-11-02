@@ -1,8 +1,8 @@
-import { ShadcnLocalizationProvider } from "@buildkitgg/shadcn-baseui-kit"
+import { Alert, AlertDescription, AlertTitle, Button, ShadcnLocalizationProvider } from "@buildkitgg/shadcn-baseui-kit"
 import { act, cleanup, render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, expect, it, vi } from "vite-plus/test"
-import { AlertRegion, createAlertManager } from "./index.js"
+import { AlertRegion, alertComponents, createAlertManager } from "./index.js"
 afterEach(cleanup)
 it("inherits reactive region and dismissal labels with explicit override precedence", () => {
   const manager = createAlertManager()
@@ -34,9 +34,23 @@ it("renders native alerts, actions, intents, and localized dismissal", async () 
   const user = userEvent.setup()
   await user.click(screen.getByRole("button", { name: "Retry" }))
   expect(onAction).toHaveBeenCalledOnce()
+  // The default kit dismisses from the alert's corner, with an icon in place of the label
+  expect(screen.getByRole("button", { name: "Close notice" }).textContent).toBe("")
   await user.click(screen.getByRole("button", { name: "Close notice" }))
   expect(manager.getSnapshot()).toHaveLength(1)
   expect(screen.queryByRole("button")).toBeNull()
+})
+it("keeps dismissal beside the action for registries without AlertAction", async () => {
+  const manager = createAlertManager({
+    adapter: alertComponents({ Alert, AlertTitle, AlertDescription, Button })
+  })
+  render(<AlertRegion manager={manager} dismissLabel="Close notice" />)
+  act(() => {
+    manager.warning({ title: "Review billing", action: { label: "Open billing", onClick: () => undefined } })
+  })
+  expect(screen.getByRole("button", { name: "Close notice" }).textContent).toBe("Close notice")
+  await userEvent.setup().click(screen.getByRole("button", { name: "Close notice" }))
+  expect(manager.getSnapshot()).toHaveLength(0)
 })
 it("accepts a custom adapter at the manager boundary", () => {
   function Alert() {
