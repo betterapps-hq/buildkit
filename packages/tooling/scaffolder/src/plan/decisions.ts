@@ -110,11 +110,34 @@ export function issueDecision(catalog: CatalogManifest, request: PlanRequest, is
         ]
       }
     }
-    case "conflicts":
-      return {
-        id: `conflicts:${issue.addon}`,
-        message: `${title(catalog, issue.addon)} can't be used with ${title(catalog, issue.other)}. Remove one of them from the config.`,
-        choices: []
+    case "conflicts": {
+      const id = `conflicts:${issue.addon}`
+      // A conflict over a capability is a swap when the request names one of the two: it replaces the other.
+      const names = intent.command === "init" ? [] : (intent.addons ?? [])
+      const named = [issue.addon, issue.other].filter((addon) => names.some((name) => refersTo(catalog, name, addon)))
+      const [incoming] = named
+      const installed = incoming === issue.addon ? issue.other : issue.addon
+      if (issue.capability === undefined || incoming === undefined || named.length > 1) {
+        return {
+          id,
+          message: `${title(catalog, issue.addon)} can't be used with ${title(catalog, issue.other)}. Remove one of them from the config.`,
+          choices: []
+        }
       }
+      const lead = Object.hasOwn(findAddon(catalog, installed)?.provides ?? {}, issue.capability)
+        ? `${title(catalog, installed)} is your ${issue.capability}.`
+        : `${title(catalog, installed)} can't be used with an add-on that provides ${issue.capability}.`
+      return {
+        id,
+        message: `${lead} Replace it with ${title(catalog, incoming)}?`,
+        choices: [
+          {
+            id: "replace",
+            label: `Replace ${title(catalog, installed)}`,
+            request: addingTo(catalog, request, incoming, installed)
+          }
+        ]
+      }
+    }
   }
 }

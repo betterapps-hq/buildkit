@@ -1,7 +1,14 @@
 import { findAddon, findSlot, findTarget, findTemplate, lookupAddon, slotAddons } from "../manifest/catalog.js"
 import type { CatalogManifest } from "../manifest/types.js"
 import { selectionFromAnswers } from "../resolve/answers.js"
-import { addonSupports, requireAddonId, resolveTarget, type ResolveIssue, type Selection } from "../resolve/resolve.js"
+import {
+  addonsConflict,
+  addonSupports,
+  requireAddonId,
+  resolveTarget,
+  type ResolveIssue,
+  type Selection
+} from "../resolve/resolve.js"
 import type { Lock, ProjectConfig } from "../state/schemas.js"
 import { PlanError } from "./errors.js"
 import type { Intent } from "./types.js"
@@ -148,11 +155,19 @@ function addSelection(
     adding.push(requireAddonId(catalog, name))
   }
   for (const id of replaced) {
-    const slot = findAddon(catalog, id)?.slot
-    if (!slot || !adding.some((other) => findAddon(catalog, other)?.slot === slot)) {
+    const outgoing = findAddon(catalog, id)
+    const swaps = (other: string) => {
+      const incoming = findAddon(catalog, other)
+      return (
+        outgoing !== undefined &&
+        incoming !== undefined &&
+        ((outgoing.slot !== undefined && incoming.slot === outgoing.slot) || addonsConflict(outgoing, incoming))
+      )
+    }
+    if (!adding.some(swaps)) {
       throw new PlanError(
         "E_USAGE",
-        `--replace works within a slot, and nothing you're adding shares a slot with ${id}.`
+        `--replace swaps add-ons that share a slot or conflict, and nothing you're adding shares a slot or conflicts with ${id}.`
       )
     }
     delete selection.addons[id]

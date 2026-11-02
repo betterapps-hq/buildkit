@@ -2,6 +2,7 @@ import { describe, expect, it } from "vite-plus/test"
 import { z } from "zod"
 import { defineAddon } from "../manifest/define.js"
 import type { Answers, CatalogManifest } from "../manifest/types.js"
+import { toEnvelope } from "../plan/envelope.js"
 import { PlanError } from "../plan/errors.js"
 import { addRequest, applyFixture, fixtureCatalog, initRequest, planFixture } from "../testing/fixture.js"
 import { selectionFromAnswers } from "./answers.js"
@@ -22,6 +23,36 @@ function thrown(run: () => unknown): PlanError {
   }
   throw new Error("expected a PlanError")
 }
+
+/** Two ORMs and a hosted backend: Drizzle and Convex conflict with any other ORM, and Prisma says nothing. */
+const orms = [
+  defineAddon({
+    id: "@x/drizzle",
+    version: "1.0.0",
+    title: "Drizzle",
+    description: "Typed SQL",
+    provides: { orm: { name: "drizzle" }, database: { dialect: "postgresql" } },
+    conflicts: ["provides:orm"],
+    contribute: (ctx) => [{ kind: "dependency", name: "drizzle-orm", version: ctx.version("drizzle-orm") }]
+  }),
+  defineAddon({
+    id: "@x/prisma",
+    version: "1.0.0",
+    title: "Prisma",
+    description: "A generated client",
+    provides: { orm: { name: "prisma" }, database: { dialect: "postgresql" } },
+    contribute: () => [{ kind: "dependency", name: "prisma", version: "6.19.0", dev: true }]
+  }),
+  defineAddon({
+    id: "@x/convex",
+    version: "1.0.0",
+    title: "Convex",
+    description: "A hosted backend",
+    provides: { database: { dialect: "convex" } },
+    conflicts: ["provides:orm"],
+    contribute: () => [{ kind: "dependency", name: "convex", version: "1.29.0" }]
+  })
+]
 
 function withAddons(catalog: CatalogManifest, ...addons: ReturnType<typeof defineAddon>[]): CatalogManifest {
   return { ...catalog, addons: [...catalog.addons, ...addons] }
@@ -163,6 +194,24 @@ describe("resolveSelection", () => {
       ok: false,
       issue: { kind: "conflicts", addon: "@x/no-i18n", other: "@fixture/i18n" }
     })
+  })
+
+  it("conflicts by capability both ways, and never with the add-on itself", () => {
+    const catalog = withAddons(fixtureCatalog(), ...orms)
+    const resolve = (...ids: string[]) =>
+      resolveSelection(catalog, { ...base, addons: Object.fromEntries(ids.map((id) => [id, {}])) })
+    expect(resolve("@x/drizzle", "@x/prisma")).toEqual({
+      ok: false,
+      issue: { kind: "conflicts", addon: "@x/drizzle", other: "@x/prisma", capability: "orm" }
+    })
+    // Only Convex declares it, and Prisma, which provides an ORM, still conflicts with it.
+    expect(resolve("@x/prisma", "@x/convex")).toEqual({
+      ok: false,
+      issue: { kind: "conflicts", addon: "@x/convex", other: "@x/prisma", capability: "orm" }
+    })
+    expect(resolve("@x/drizzle").ok).toBe(true)
+    expect(resolve("@x/prisma", "@fixture/i18n").ok).toBe(true)
+    expect(checkCatalog(catalog)).toEqual([])
   })
 
   it("supports() returning true allows the add-on, and a string is E_UNSUPPORTED", () => {
@@ -336,6 +385,48 @@ describe("plan decisions", () => {
     expect(auth.decisions[0]?.message).toBe("Auth needs a database. Which database?")
   })
 
+  it("swaps an add-on that conflicts by capability, through the decision's argv", async () => {
+    const catalog = withAddons(fixtureCatalog(), ...orms)
+    const files = await applyFixture({}, initRequest({ optional: ["@x/drizzle"] }), { catalog })
+    const swap = await planFixture(files, addRequest(["prisma"]), { catalog })
+    expect(swap.decisions).toEqual([
+      {
+        id: "conflicts:@x/drizzle",
+        message: "Drizzle is your orm. Replace it with Prisma?",
+        choices: [
+          {
+            id: "replace",
+            label: "Replace Drizzle",
+            request: { intent: { command: "add", addons: ["@x/prisma"], replace: ["@x/drizzle"], options: {} } }
+          }
+        ]
+      }
+    ])
+    const [choice] = toEnvelope(swap, { product: "fixture", catalog }).decisions?.[0]?.choices ?? []
+    expect(choice?.argv).toEqual(["fixture", "add", "prisma", "--replace", "drizzle"])
+    const swapped = await applyFixture(files, choice!.request, { catalog })
+    const config = swapped["fixture.jsonc"] ?? ""
+    expect([config.includes("@x/prisma"), config.includes("@x/drizzle")]).toEqual([true, false])
+    expect(JSON.parse(swapped["package.json"] ?? "{}").devDependencies).toMatchObject({ prisma: "6.19.0" })
+
+    // Convex declares the conflict, and doesn't provide an ORM itself.
+    const convex = await applyFixture({}, initRequest({ optional: ["@x/convex"] }), { catalog })
+    const fromConvex = await planFixture(convex, addRequest(["prisma"]), { catalog })
+    expect(fromConvex.decisions[0]?.message).toBe(
+      "Convex can't be used with an add-on that provides orm. Replace it with Prisma?"
+    )
+    expect((await planFixture(convex, fromConvex.decisions[0]!.choices[0]!.request, { catalog })).status).toBe(
+      "planned"
+    )
+
+    // Asked for together, neither is installed, so there's nothing to swap.
+    const both = await planFixture({}, initRequest({ optional: ["@x/drizzle", "@x/prisma"] }), { catalog })
+    expect(both.decisions[0]).toMatchObject({
+      message: "Drizzle can't be used with Prisma. Remove one of them from the config.",
+      choices: []
+    })
+  })
+
   it("validates --replace: unknown add-ons get suggestions, and the target can't change", async () => {
     const files = await applyFixture({}, initRequest())
     expect((await planFixture(files, addRequest(["db-postgres"], ["db-sqlit"]))).error).toMatchObject({
@@ -486,7 +577,7 @@ describe("questions and catalog CI", () => {
           description: "",
           slot: "nope",
           requires: ["@x/missing", "slot:nope", "provides:nope"],
-          conflicts: ["slot:database"],
+          conflicts: ["slot:database", "provides:nothing", "provides:i18n"],
           after: ["provides:i18n"],
           ask: ["missing"],
           options: z.object({ needed: z.string() }),
@@ -524,8 +615,9 @@ describe("questions and catalog CI", () => {
     }
     const problems = checkCatalog(broken)
     const missing = [
-      "uses slot:database in conflicts or after",
-      "uses provides:i18n in conflicts or after",
+      "uses slot:database in conflicts, which takes",
+      "uses provides:i18n in after, which takes add-on ids only",
+      "refers to provides:nothing, and no add-on provides it",
       "isn't a semantic version",
       "More than one add-on has the id @x/bad",
       "uses facet webgl",
