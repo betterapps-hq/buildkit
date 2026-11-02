@@ -1,9 +1,19 @@
 import { describe, expect, it } from "vite-plus/test"
 import { z } from "zod"
+import { shortName } from "../manifest/catalog.js"
 import { defineAddon } from "../manifest/define.js"
 import type { Answers, CatalogManifest } from "../manifest/types.js"
+import { toEnvelope } from "../plan/envelope.js"
 import { PlanError } from "../plan/errors.js"
-import { addRequest, applyFixture, fixtureCatalog, initRequest, planFixture } from "../testing/fixture.js"
+import { readLock } from "../state/files.js"
+import {
+  addRequest,
+  applyFixture,
+  applyInMemory,
+  fixtureCatalog,
+  initRequest,
+  planFixture
+} from "../testing/fixture.js"
 import { selectionFromAnswers } from "./answers.js"
 import { checkCatalog, pairwiseAnswers } from "./check.js"
 import { describeCatalog, optionQuestions, templateQuestions } from "./questions.js"
@@ -22,6 +32,36 @@ function thrown(run: () => unknown): PlanError {
   }
   throw new Error("expected a PlanError")
 }
+
+/** Two ORMs and a hosted backend: Drizzle and Convex conflict with any other ORM, and Prisma says nothing. */
+const orms = [
+  defineAddon({
+    id: "@x/drizzle",
+    version: "1.0.0",
+    title: "Drizzle",
+    description: "Typed SQL",
+    provides: { orm: { name: "drizzle" }, database: { dialect: "postgresql" } },
+    conflicts: ["provides:orm"],
+    contribute: (ctx) => [{ kind: "dependency", name: "drizzle-orm", version: ctx.version("drizzle-orm") }]
+  }),
+  defineAddon({
+    id: "@x/prisma",
+    version: "1.0.0",
+    title: "Prisma",
+    description: "A generated client",
+    provides: { orm: { name: "prisma" }, database: { dialect: "postgresql" } },
+    contribute: () => [{ kind: "dependency", name: "prisma", version: "6.19.0", dev: true }]
+  }),
+  defineAddon({
+    id: "@x/convex",
+    version: "1.0.0",
+    title: "Convex",
+    description: "A hosted backend",
+    provides: { database: { dialect: "convex" } },
+    conflicts: ["provides:orm"],
+    contribute: () => [{ kind: "dependency", name: "convex", version: "1.29.0" }]
+  })
+]
 
 function withAddons(catalog: CatalogManifest, ...addons: ReturnType<typeof defineAddon>[]): CatalogManifest {
   return { ...catalog, addons: [...catalog.addons, ...addons] }
@@ -163,6 +203,24 @@ describe("resolveSelection", () => {
       ok: false,
       issue: { kind: "conflicts", addon: "@x/no-i18n", other: "@fixture/i18n" }
     })
+  })
+
+  it("conflicts by capability both ways, and never with the add-on itself", () => {
+    const catalog = withAddons(fixtureCatalog(), ...orms)
+    const resolve = (...ids: string[]) =>
+      resolveSelection(catalog, { ...base, addons: Object.fromEntries(ids.map((id) => [id, {}])) })
+    expect(resolve("@x/drizzle", "@x/prisma")).toEqual({
+      ok: false,
+      issue: { kind: "conflicts", addon: "@x/drizzle", other: "@x/prisma", capability: "orm" }
+    })
+    // Only Convex declares it, and Prisma, which provides an ORM, still conflicts with it.
+    expect(resolve("@x/prisma", "@x/convex")).toEqual({
+      ok: false,
+      issue: { kind: "conflicts", addon: "@x/convex", other: "@x/prisma", capability: "orm" }
+    })
+    expect(resolve("@x/drizzle").ok).toBe(true)
+    expect(resolve("@x/prisma", "@fixture/i18n").ok).toBe(true)
+    expect(checkCatalog(catalog)).toEqual([])
   })
 
   it("supports() returning true allows the add-on, and a string is E_UNSUPPORTED", () => {
@@ -336,6 +394,96 @@ describe("plan decisions", () => {
     expect(auth.decisions[0]?.message).toBe("Auth needs a database. Which database?")
   })
 
+  it("swaps an add-on that conflicts by capability, through the decision's argv", async () => {
+    const catalog = withAddons(fixtureCatalog(), ...orms)
+    const files = await applyFixture({}, initRequest({ optional: ["@x/drizzle"] }), { catalog })
+    const swap = await planFixture(files, addRequest(["prisma"]), { catalog })
+    expect(swap.decisions).toEqual([
+      {
+        id: "conflicts:@x/drizzle",
+        message: "Drizzle is your orm. Replace it with Prisma?",
+        choices: [
+          {
+            id: "replace",
+            label: "Replace Drizzle",
+            request: { intent: { command: "add", addons: ["@x/prisma"], replace: ["@x/drizzle"], options: {} } }
+          }
+        ]
+      }
+    ])
+    const [choice] = toEnvelope(swap, { product: "fixture", catalog }).decisions?.[0]?.choices ?? []
+    expect(choice?.argv).toEqual(["fixture", "add", "prisma", "--replace", "drizzle"])
+    const swapped = await applyFixture(files, choice!.request, { catalog })
+    const config = swapped["fixture.jsonc"] ?? ""
+    expect([config.includes("@x/prisma"), config.includes("@x/drizzle")]).toEqual([true, false])
+    expect(JSON.parse(swapped["package.json"] ?? "{}").devDependencies).toMatchObject({ prisma: "6.19.0" })
+
+    // Convex declares the conflict, and doesn't provide an ORM itself.
+    const convex = await applyFixture({}, initRequest({ optional: ["@x/convex"] }), { catalog })
+    const fromConvex = await planFixture(convex, addRequest(["prisma"]), { catalog })
+    expect(fromConvex.decisions[0]?.message).toBe(
+      "Convex can't be used with an add-on that provides orm. Replace it with Prisma?"
+    )
+    expect((await planFixture(convex, fromConvex.decisions[0]!.choices[0]!.request, { catalog })).status).toBe(
+      "planned"
+    )
+
+    // An upgrade stays an upgrade, so it says how to swap instead of offering it.
+    const upgrade = await planFixture(files, { intent: { command: "upgrade", addons: ["prisma"] } }, { catalog })
+    expect(upgrade.decisions[0]).toMatchObject({
+      message: "Drizzle is your orm. To replace it with Prisma, run add prisma --replace drizzle.",
+      choices: []
+    })
+
+    // Where two add-ons share a short name, the command names the one meant by its id.
+    const twin = defineAddon({ ...orms[1]!, id: "@y/prisma" })
+    const twins = await planFixture(
+      files,
+      { intent: { command: "sync", addons: ["@x/prisma"] } },
+      {
+        catalog: withAddons(catalog, twin)
+      }
+    )
+    expect(twins.decisions[0]?.message).toBe(
+      "Drizzle is your orm. To replace it with Prisma, run add @x/prisma --replace drizzle."
+    )
+
+    // Drizzle pulled in by another add-on goes with that add-on, so it can't be swapped on its own.
+    const needsDrizzle = defineAddon({
+      id: "@x/migrations",
+      version: "1.0.0",
+      title: "Migrations",
+      description: "",
+      requires: ["@x/drizzle"],
+      contribute: () => []
+    })
+    const withMigrations = withAddons(catalog, needsDrizzle)
+    const pulled = await applyFixture({}, initRequest({ optional: ["@x/migrations"] }), { catalog: withMigrations })
+    expect((await planFixture(pulled, addRequest(["prisma"]), { catalog: withMigrations })).decisions[0]).toMatchObject(
+      {
+        message: "Drizzle is your orm. Migrations needs it, so it can't be replaced with Prisma.",
+        choices: []
+      }
+    )
+    // Chosen as well, Drizzle would still be pulled back in by Migrations.
+    const chosen = await applyFixture({}, initRequest({ optional: ["@x/migrations", "@x/drizzle"] }), {
+      catalog: withMigrations
+    })
+    expect((await planFixture(chosen, addRequest(["prisma"]), { catalog: withMigrations })).decisions[0]).toMatchObject(
+      {
+        message: "Drizzle is your orm. Migrations needs it, so it can't be replaced with Prisma.",
+        choices: []
+      }
+    )
+
+    // Asked for together, neither is installed, so there's nothing to swap.
+    const both = await planFixture({}, initRequest({ optional: ["@x/drizzle", "@x/prisma"] }), { catalog })
+    expect(both.decisions[0]).toMatchObject({
+      message: "Drizzle can't be used with Prisma. Remove one of them from the config.",
+      choices: []
+    })
+  })
+
   it("validates --replace: unknown add-ons get suggestions, and the target can't change", async () => {
     const files = await applyFixture({}, initRequest())
     expect((await planFixture(files, addRequest(["db-postgres"], ["db-sqlit"]))).error).toMatchObject({
@@ -486,7 +634,7 @@ describe("questions and catalog CI", () => {
           description: "",
           slot: "nope",
           requires: ["@x/missing", "slot:nope", "provides:nope"],
-          conflicts: ["slot:database"],
+          conflicts: ["slot:database", "provides:nothing", "provides:i18n"],
           after: ["provides:i18n"],
           ask: ["missing"],
           options: z.object({ needed: z.string() }),
@@ -524,8 +672,9 @@ describe("questions and catalog CI", () => {
     }
     const problems = checkCatalog(broken)
     const missing = [
-      "uses slot:database in conflicts or after",
-      "uses provides:i18n in conflicts or after",
+      "uses slot:database in conflicts, which takes",
+      "uses provides:i18n in after, which takes add-on ids only",
+      "refers to provides:nothing, and no add-on provides it",
       "isn't a semantic version",
       "More than one add-on has the id @x/bad",
       "uses facet webgl",
@@ -602,5 +751,152 @@ describe("questions and catalog CI", () => {
         default: "light"
       }
     ])
+  })
+})
+
+describe("combination add-ons", () => {
+  const glue = (id: string, title: string, joins: string[]) =>
+    defineAddon({
+      id,
+      version: "1.0.0",
+      title,
+      description: "",
+      joins,
+      contribute: () => [
+        { kind: "file", path: `src/glue/${shortName(id)}.ts`, content: "export {}\n", ownership: "seed" }
+      ]
+    })
+  const combinations = [
+    glue("@x/auth-sqlite", "Auth tables for SQLite", ["@fixture/auth", "@fixture/db-sqlite"]),
+    glue("@x/auth-postgres", "Auth tables for Postgres", ["@fixture/auth", "@fixture/db-postgres"]),
+    // It joins another combination, so it's selected only once that one is.
+    glue("@x/auth-i18n", "Translated auth", ["@x/auth-sqlite", "provides:i18n"])
+  ]
+  const catalog = withAddons(fixtureCatalog(), ...combinations)
+  const lockOf = (files: Record<string, string>) => readLock(".fixture/lock.json", files[".fixture/lock.json"] ?? "")
+
+  it("are selected when every reference matches, until nothing changes, after what they join", () => {
+    const resolve = (...ids: string[]) => {
+      const result = resolveSelection(catalog, { ...base, addons: Object.fromEntries(ids.map((id) => [id, {}])) })
+      if (!result.ok) {
+        throw new Error(result.issue.kind)
+      }
+      return result.value.addons.map(({ manifest, explicit, by }) => ({ id: manifest.id, explicit, by }))
+    }
+    const sqlite = resolve("@fixture/auth", "@fixture/db-sqlite")
+    expect(sqlite.find((addon) => addon.id.startsWith("@x/"))).toEqual({
+      id: "@x/auth-sqlite",
+      explicit: false,
+      by: ["@fixture/auth", "@fixture/db-sqlite"]
+    })
+    expect(sqlite.map((addon) => addon.id).filter((id) => id.startsWith("@x/"))).toEqual(["@x/auth-sqlite"])
+    const ids = resolve("@fixture/auth", "@fixture/db-sqlite", "@fixture/i18n").map((addon) => addon.id)
+    expect(ids.indexOf("@x/auth-sqlite")).toBeGreaterThan(
+      Math.max(ids.indexOf("@fixture/auth"), ids.indexOf("@fixture/db-sqlite"))
+    )
+    expect(ids.indexOf("@x/auth-i18n")).toBeGreaterThan(
+      Math.max(ids.indexOf("@x/auth-sqlite"), ids.indexOf("@fixture/i18n"))
+    )
+    // A combination is part of the selection its conflicts and requirements are checked against.
+    const strict = withAddons(
+      catalog,
+      { ...glue("@x/auth-ui", "Auth screens", ["@fixture/auth", "@fixture/ui-basic"]), conflicts: ["@fixture/i18n"] },
+      { ...glue("@x/adapter", "Adapter", ["@fixture/auth", "@fixture/db-sqlite"]), provides: { adapter: {} } },
+      defineAddon({
+        id: "@x/consumer",
+        version: "1.0.0",
+        title: "Consumer",
+        description: "",
+        requires: ["provides:adapter"],
+        contribute: () => []
+      })
+    )
+    const strictly = (...ids: string[]) =>
+      resolveSelection(strict, { ...base, addons: Object.fromEntries(ids.map((id) => [id, {}])) })
+    expect(strictly("@fixture/auth", "@fixture/ui-basic", "@fixture/i18n", "@fixture/db-sqlite")).toMatchObject({
+      ok: false,
+      issue: { kind: "conflicts", addon: "@x/auth-ui", other: "@fixture/i18n" }
+    })
+    expect(strictly("@fixture/auth", "@fixture/db-sqlite", "@x/consumer").ok).toBe(true)
+    // Without what it joins, the combination isn't offered as the provider, since it can't be added by name.
+    expect(strictly("@fixture/db-sqlite", "@x/consumer")).toMatchObject({
+      ok: false,
+      issue: { kind: "choose-provider", capability: "adapter", candidates: [] }
+    })
+
+    // Named in a selection, a combination still needs what it joins.
+    expect(resolve("@x/auth-postgres", "@fixture/db-sqlite").map((addon) => addon.id)).toEqual(["@fixture/db-sqlite"])
+  })
+
+  it("are added and removed with the selection, and the lock records what they join", async () => {
+    const files = await applyFixture({}, initRequest(), { catalog })
+    const added = await planFixture(files, addRequest(["auth"]), { catalog })
+    expect(added.pulled).toContainEqual({
+      id: "@x/auth-sqlite",
+      by: ["@fixture/auth", "@fixture/db-sqlite"],
+      joins: true
+    })
+    const withAuth = applyInMemory(files, added)
+    expect(lockOf(withAuth).addons["@x/auth-sqlite"]).toMatchObject({
+      explicit: false,
+      by: ["@fixture/auth", "@fixture/db-sqlite"]
+    })
+    expect(withAuth["fixture.jsonc"]).not.toContain("@x/auth-sqlite")
+    expect(withAuth["src/glue/auth-sqlite.ts"]).toBe("export {}\n")
+
+    const replaced = await applyFixture(withAuth, addRequest(["db-postgres"], ["db-sqlite"]), { catalog })
+    expect(Object.keys(lockOf(replaced).addons).filter((id) => id.startsWith("@x/"))).toEqual(["@x/auth-postgres"])
+    expect([replaced["src/glue/auth-sqlite.ts"], replaced["src/glue/auth-postgres.ts"]]).toEqual([
+      undefined,
+      "export {}\n"
+    ])
+
+    // A catalog upgrade that brings a combination adds it to a project that has what it joins.
+    const before = await applyFixture(await applyFixture({}, initRequest()), addRequest(["auth"]))
+    const v2 = withAddons(fixtureCatalog(2), ...combinations)
+    const catalogs = (version: string) => (version === "1.0.0" ? fixtureCatalog(1) : undefined)
+    const upgraded = await planFixture(before, { intent: { command: "upgrade" } }, { catalog: v2, catalogs })
+    expect(upgraded.pulled.map((pulled) => pulled.id)).toEqual(["@x/auth-sqlite"])
+    expect(upgraded.operations.map((operation) => operation.path)).toContain("src/glue/auth-sqlite.ts")
+  })
+
+  it("can't be asked for by name", async () => {
+    const files = await applyFixture({}, initRequest(), { catalog })
+    expect((await planFixture(files, addRequest(["auth-sqlite"]), { catalog })).error).toMatchObject({
+      code: "E_USAGE",
+      message: "Auth tables for SQLite is added with Auth and SQLite."
+    })
+    expect((await planFixture({}, initRequest({ optional: ["@x/auth-i18n"] }), { catalog })).error).toMatchObject({
+      code: "E_USAGE",
+      message: "Translated auth is added with Auth tables for SQLite and an add-on that provides i18n."
+    })
+    const sync = { intent: { command: "sync" as const, addons: ["@x/auth-postgres"] } }
+    expect((await planFixture(files, sync, { catalog })).error?.code).toBe("E_USAGE")
+  })
+
+  it("are checked: two references that exist, no requires or options, and never named", () => {
+    expect(checkCatalog(catalog, { matrix: true })).toEqual([])
+    const [app] = catalog.templates
+    const broken: CatalogManifest = {
+      ...withAddons(
+        catalog,
+        { ...glue("@x/lonely", "Lonely", ["@fixture/auth"]), requires: ["@fixture/sessions"] },
+        glue("@x/dangling", "Dangling", ["@x/missing", "provides:nothing"]),
+        { ...glue("@x/optioned", "Optioned", ["@fixture/auth", "@fixture/i18n"]), options: z.object({}) }
+      ),
+      templates: [{ ...app!, required: [...(app?.required ?? []), "@x/auth-sqlite"] }],
+      presets: [{ id: "glued", title: "Glued", answers: { template: "app", optional: ["@x/auth-postgres"] } }]
+    }
+    const problems = checkCatalog(broken)
+    const missing = [
+      "@x/lonely is a combination add-on, so it joins at least two add-ons.",
+      "@x/lonely is a combination add-on, so it can't have requires, options or a slot.",
+      "@x/optioned is a combination add-on, so it can't have requires, options or a slot.",
+      "@x/dangling refers to @x/missing, which isn't in the catalog.",
+      "@x/dangling refers to provides:nothing, and no add-on provides it.",
+      "Template app names @x/auth-sqlite, a combination add-on, which is added with what it joins.",
+      "Preset glued names @x/auth-postgres, a combination add-on, which is added with what it joins."
+    ].filter((expected) => !problems.includes(expected))
+    expect(missing).toEqual([])
   })
 })

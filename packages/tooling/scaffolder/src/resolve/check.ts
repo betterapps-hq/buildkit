@@ -94,12 +94,26 @@ export function checkCatalog(
     if (addon.slot && !findSlot(catalog, addon.slot)) {
       problems.push(`${addon.id} fills slot ${addon.slot}, which isn't defined.`)
     }
-    // The resolver reads `slot:` and `provides:` only in requires. Elsewhere they'd be accepted and do nothing.
-    for (const reference of [...(addon.conflicts ?? []), ...(addon.after ?? [])]) {
-      if (reference.startsWith("slot:") || reference.startsWith("provides:")) {
-        problems.push(`${addon.id} uses ${reference} in conflicts or after, which take add-on ids only.`)
-      } else if (!findAddon(catalog, reference)) {
-        problems.push(`${addon.id} refers to ${reference}, which isn't in the catalog.`)
+    // The resolver reads `slot:` only in requires, and `provides:` in requires and conflicts. Elsewhere they'd be
+    // accepted and do nothing.
+    for (const [field, references] of [
+      ["conflicts", addon.conflicts ?? []],
+      ["after", addon.after ?? []]
+    ] as const) {
+      for (const reference of references) {
+        if (reference.startsWith("provides:") && field === "conflicts") {
+          if (!provides.has(reference.slice(9))) {
+            problems.push(`${addon.id} refers to ${reference}, and no add-on provides it.`)
+          }
+        } else if (reference.startsWith("slot:") || reference.startsWith("provides:")) {
+          problems.push(
+            field === "conflicts"
+              ? `${addon.id} uses ${reference} in conflicts, which takes add-on ids and provides:<name>.`
+              : `${addon.id} uses ${reference} in after, which takes add-on ids only.`
+          )
+        } else if (!findAddon(catalog, reference)) {
+          problems.push(`${addon.id} refers to ${reference}, which isn't in the catalog.`)
+        }
       }
     }
     for (const reference of addon.requires ?? []) {
@@ -113,6 +127,23 @@ export function checkCatalog(
         }
       } else if (!findAddon(catalog, reference)) {
         problems.push(`${addon.id} refers to ${reference}, which isn't in the catalog.`)
+      }
+    }
+    if (addon.joins) {
+      if (addon.joins.length < 2) {
+        problems.push(`${addon.id} is a combination add-on, so it joins at least two add-ons.`)
+      }
+      if ((addon.requires ?? []).length > 0 || addon.options || addon.slot) {
+        problems.push(`${addon.id} is a combination add-on, so it can't have requires, options or a slot.`)
+      }
+      for (const reference of addon.joins) {
+        if (reference.startsWith("provides:")) {
+          if (!provides.has(reference.slice(9))) {
+            problems.push(`${addon.id} refers to ${reference}, and no add-on provides it.`)
+          }
+        } else if (!findAddon(catalog, reference)) {
+          problems.push(`${addon.id} refers to ${reference}, which isn't in the catalog.`)
+        }
       }
     }
     for (const [name, range] of Object.entries(addon.packages ?? {})) {
@@ -200,7 +231,23 @@ export function checkCatalog(
       }
     }
   }
+  // A combination add-on is added with what it joins, so nothing names it.
+  const combination = (id: string) => findAddon(catalog, id)?.joins !== undefined
+  for (const template of catalog.templates) {
+    const named = [
+      ...(template.required ?? []),
+      ...Object.keys(template.optional ?? {}),
+      ...Object.values(template.slots ?? {}).flatMap((policy) => (policy.default === undefined ? [] : [policy.default]))
+    ]
+    for (const id of named.filter(combination)) {
+      problems.push(`Template ${template.id} names ${id}, a combination add-on, which is added with what it joins.`)
+    }
+  }
   for (const preset of catalog.presets ?? []) {
+    const named = [...(preset.answers.optional ?? []), ...Object.values(preset.answers.slots ?? {})]
+    for (const id of named.filter((entry): entry is string => entry !== null && combination(entry))) {
+      problems.push(`Preset ${preset.id} names ${id}, a combination add-on, which is added with what it joins.`)
+    }
     if (!findTemplate(catalog, preset.answers.template)) {
       problems.push(`Preset ${preset.id} uses template ${preset.answers.template}, which isn't in the catalog.`)
       continue

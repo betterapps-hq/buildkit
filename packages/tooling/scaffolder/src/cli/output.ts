@@ -57,7 +57,11 @@ export function describeEnvelope(envelope: Envelope): string {
     ...section("Always included", envelope.required ?? []),
     ...section(
       "Also adds",
-      (envelope.pulled ?? []).map((pulled) => `${pulled.id}, needed by ${pulled.by.join(", ")}`)
+      (envelope.pulled ?? []).map((pulled) =>
+        pulled.joins
+          ? `${pulled.id}, with ${pulled.by.join(" and ")}`
+          : `${pulled.id}, needed by ${pulled.by.join(", ")}`
+      )
     ),
     ...section(
       "Packages",

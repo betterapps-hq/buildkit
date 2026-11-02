@@ -124,8 +124,13 @@ export default defineCatalog({
 
 Contribution kinds: `dependency`, `script`, `env`, `file` (`owned`, `seed` or `sample`), `entry`, `json` and `yaml`
 (`set`, `merge`, or `append` with an optional `key` for keyed arrays), `lines`, `command` (listed, never run) and
-`notice`. Add-ons declare `requires` (ids, `slot:<id>` or `provides:<name>`), `conflicts`, `after`, `supports()` and
-`migrations`.
+`notice`. Add-ons declare `requires` (ids, `slot:<id>` or `provides:<name>`), `conflicts` (ids or `provides:<name>`),
+`after`, `supports()` and `migrations`.
+
+`conflicts: ["provides:orm"]` keeps out any **other** add-on that provides `orm`, so an ORM add-on can say it and still
+be installed. One side declaring a conflict is enough: a new ORM from anyone conflicts with that add-on without saying
+so. A conflict over a capability is a swap, not an error: `add prisma` on a project with Drizzle plans the decision
+"Drizzle is your orm. Replace it with Prisma?", whose choice is `add prisma --replace drizzle`.
 
 ### Versions
 
@@ -157,6 +162,29 @@ const wiring = match(ctx.target.renderModel, {
 ```
 
 Entries name app modules without an extension (`./src/i18n/router`), and generated files import them as named.
+
+### Combination add-ons
+
+The glue between two choices, such as Better Auth's Drizzle adapter, is an add-on of its own with `joins`:
+
+```ts
+const betterAuthDrizzle = defineAddon({
+  id: "@acme/better-auth-drizzle",
+  version: "1.0.0",
+  title: "Better Auth tables for Drizzle",
+  description: "Better Auth's schema and its Drizzle adapter",
+  joins: ["@acme/better-auth", "@acme/drizzle"],
+  contribute: () => [{ kind: "file", path: "src/db/auth-schema.ts", content: "export {}
+", ownership: "seed" }]
+})
+```
+
+It's selected when every reference, an id or `provides:<name>`, is selected, and removed when one isn't, so `add`,
+`--replace` and `upgrade` add and remove it with the selection. It contributes after what it joins, the plan lists it as
+pulled in with what joined it, and the lock records it with `explicit: false` and `by` set to those add-ons. It's never
+asked about, and `add` refuses it by name. It can't have `requires`, `options` or a slot, and templates and presets
+can't name it. Use `ctx.selected()` for a line or two that differs, and a combination add-on when the glue has files of
+its own.
 
 ## Templates and the wizard
 

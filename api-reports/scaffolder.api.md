@@ -17,6 +17,7 @@ export interface AddonManifest<S extends z.ZodType = z.ZodType> {
     // (undocumented)
     description: string;
     id: string;
+    joins?: string[];
     // (undocumented)
     migrations?: Migration[];
     // (undocumented)
@@ -963,10 +964,10 @@ export function projectNameProblem(name: string): string | undefined;
 
 // @public (undocumented)
 export interface PulledAddon {
-    // (undocumented)
     by: string[];
     // (undocumented)
     id: string;
+    joins?: true;
 }
 
 // @public

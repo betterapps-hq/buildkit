@@ -128,7 +128,10 @@ export interface MigrationNote {
 
 export interface PulledAddon {
   id: string
+  /** What pulled it in through `requires`, or, for a combination add-on, what it joins. */
   by: string[]
+  /** Set for a combination add-on. */
+  joins?: true
 }
 
 export type ErrorCode =
