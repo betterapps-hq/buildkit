@@ -201,6 +201,10 @@ export function checkCatalog(
   return [...new Set(problems)]
 }
 
+function isHttps(url: string): boolean {
+  return URL.canParse(url) && new URL(url).protocol === "https:"
+}
+
 function planAnswers(catalog: CatalogManifest, answers: Answers, label: string): string[] {
   try {
     const selection = selectionFromAnswers(catalog, answers, answers.name ?? "catalog-check")
@@ -208,10 +212,13 @@ function planAnswers(catalog: CatalogManifest, answers: Answers, label: string):
       return []
     }
     const resolved = resolveSelection(catalog, selection.selection)
-    if (resolved.ok) {
-      render(catalog, resolved.value, defineSettings({ product: "catalog-check" }))
+    if (!resolved.ok) {
+      return []
     }
-    return []
+    const rendered = render(catalog, resolved.value, defineSettings({ product: "catalog-check" }))
+    return rendered.envVars
+      .filter((variable) => variable.help !== undefined && !isHttps(variable.help))
+      .map((variable) => `${variable.name} has the help link "${variable.help}", which isn't an https URL.`)
   } catch (error) {
     return [
       `${label} fails to plan: ${error instanceof PlanError || error instanceof Error ? error.message : String(error)}`

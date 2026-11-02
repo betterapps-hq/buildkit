@@ -330,7 +330,8 @@ export function fixtureCatalog(version: 1 | 2 = 1): CatalogManifest {
         scope: "server",
         secret: true,
         required: true,
-        description: "Your Sentry DSN"
+        description: "Your Sentry DSN",
+        help: "https://sentry.example/settings/keys"
       },
       { kind: "notice", code: "sentry", text: "Errors are sent to Sentry." }
     ]

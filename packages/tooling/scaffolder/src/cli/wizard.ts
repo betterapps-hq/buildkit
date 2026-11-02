@@ -269,7 +269,9 @@ async function askOption(prompter: Prompter, title: string, question: OptionQues
 export async function askEnv(env: EnvVar[], prompter: Prompter): Promise<Record<string, string> | Cancelled> {
   const values: Record<string, string> = {}
   for (const variable of env) {
-    const message = `${variable.name}: ${variable.description}${variable.required ? "" : " (optional, press Enter to skip)"}`
+    // A help link goes on a second line of the prompt.
+    const help = variable.help === undefined ? "" : `\nGet one at ${variable.help}`
+    const message = `${variable.name}: ${variable.description}${variable.required ? "" : " (optional, press Enter to skip)"}${help}`
     const validate = (value: string) =>
       variable.required && value.trim() === "" ? "Enter a value, or press Ctrl+C to stop." : undefined
     const answer = variable.secret
