@@ -152,6 +152,11 @@ export interface AddonManifest<S extends z.ZodType = z.ZodType> {
   requires?: string[]
   conflicts?: string[]
   /**
+   * A combination add-on, such as the glue between an auth library and an ORM: selected when every reference (an id or
+   * `provides:<name>`) is selected, and removed when one isn't. It's never asked about or added by name.
+   */
+  joins?: string[]
+  /**
    * The ranges of packages this add-on is written for, such as `{ "drizzle-orm": ">=0.45 <1" }`. Catalog CI checks the
    * lowest version each pin allows is in its range.
    */

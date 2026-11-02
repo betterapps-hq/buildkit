@@ -4,6 +4,7 @@ import { selectionFromAnswers } from "../resolve/answers.js"
 import {
   addonsConflict,
   addonSupports,
+  refuseCombination,
   requireAddonId,
   resolveTarget,
   type ResolveIssue,
@@ -108,6 +109,7 @@ export function desiredSelection(
 function addAlong(catalog: CatalogManifest, selection: Selection, names: readonly string[] | undefined) {
   for (const name of names ?? []) {
     const id = requireAddonId(catalog, name)
+    refuseCombination(catalog, id)
     selection.addons[id] ??= {}
   }
 }
@@ -152,7 +154,9 @@ function addSelection(
       adding.push(only)
       continue
     }
-    adding.push(requireAddonId(catalog, name))
+    const id = requireAddonId(catalog, name)
+    refuseCombination(catalog, id)
+    adding.push(id)
   }
   for (const id of replaced) {
     const outgoing = findAddon(catalog, id)

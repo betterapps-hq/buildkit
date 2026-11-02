@@ -10,7 +10,7 @@ import {
 } from "../manifest/catalog.js"
 import type { Answers, CatalogManifest, SlotPolicy } from "../manifest/types.js"
 import { PlanError } from "../plan/errors.js"
-import { addonSupports, requireAddonId, type ResolveIssue, type Selection } from "./resolve.js"
+import { addonSupports, refuseCombination, requireAddonId, type ResolveIssue, type Selection } from "./resolve.js"
 
 export type AnswersResult = { ok: true; selection: Selection } | { ok: false; issue: ResolveIssue }
 
@@ -107,6 +107,7 @@ export function selectionFromAnswers(catalog: CatalogManifest, answers: Answers,
   }
   const optional = Object.entries(template.optional ?? {})
   const chosen = answers.optional?.map((entry) => requireAddonId(catalog, entry))
+  chosen?.forEach((id) => refuseCombination(catalog, id))
   for (const [id, { default: preselected }] of optional) {
     if (chosen ? chosen.includes(id) : preselected) {
       addons[id] = {}

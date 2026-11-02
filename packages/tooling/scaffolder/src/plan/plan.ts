@@ -211,7 +211,11 @@ async function planInto(input: PlanInput, tree: RecordingTree, result: Plan) {
   const resolved = resolution.value
   result.pulled = resolved.addons
     .filter((addon) => !addon.explicit && !installed.has(addon.manifest.id))
-    .map((addon) => ({ id: addon.manifest.id, by: addon.by }))
+    .map((addon) => ({
+      id: addon.manifest.id,
+      by: addon.by,
+      ...(addon.manifest.joins ? { joins: true as const } : {})
+    }))
   if (desired.adopt) {
     const versions = writtenVersions(catalog)
     const context: TargetContext = {

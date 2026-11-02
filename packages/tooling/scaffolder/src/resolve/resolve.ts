@@ -32,7 +32,7 @@ export interface ResolvedAddon {
   manifest: AddonManifest
   options: Record<string, unknown>
   explicit: boolean
-  /** Add-ons that pulled this one in through `requires`. */
+  /** Add-ons that pulled this one in through `requires`, or that a combination add-on joins. */
   by: string[]
 }
 
@@ -42,7 +42,7 @@ export interface ResolvedSelection {
   target: TargetManifest
   mode: TargetMode
   info: TargetInfo
-  /** In contribution order: each add-on after everything it requires or runs after. */
+  /** In contribution order: each add-on after everything it requires, joins or runs after. */
   addons: ResolvedAddon[]
   declined: string[]
 }
@@ -85,6 +85,27 @@ export function unknownAddonError(catalog: CatalogManifest, name: string): PlanE
     {
       next: suggestions
     }
+  )
+}
+
+/**
+ * Throws `E_USAGE` for a combination add-on, which is never asked for by name: "Better Auth tables for Drizzle is added
+ * with Better Auth and Drizzle."
+ */
+export function refuseCombination(catalog: CatalogManifest, id: string): void {
+  const addon = findAddon(catalog, id)
+  if (!addon?.joins) {
+    return
+  }
+  const parts = addon.joins.map((reference) =>
+    reference.startsWith("provides:")
+      ? `an add-on that provides ${reference.slice(9)}`
+      : (findAddon(catalog, reference)?.title ?? reference)
+  )
+  const last = parts.pop() ?? ""
+  throw new PlanError(
+    "E_USAGE",
+    `${addon.title} is added with ${parts.length > 0 ? `${parts.join(", ")} and ${last}` : last}.`
   )
 }
 
@@ -134,7 +155,10 @@ export function addonSupports(
   return addon.supports({ options: parsed.value, target: info, provided: () => undefined, selected: () => false })
 }
 
-/** Resolves a selection: pulls in `requires`, checks slots and conflicts, orders add-ons, validates options and support. */
+/**
+ * Resolves a selection: pulls in `requires`, adds the combination add-ons whose references all match, checks slots,
+ * capabilities and conflicts, orders add-ons, and validates options and support.
+ */
 export function resolveSelection(catalog: CatalogManifest, selection: Selection): ResolveResult {
   const nameProblem = projectNameProblem(selection.name)
   if (nameProblem) {
@@ -146,6 +170,10 @@ export function resolveSelection(catalog: CatalogManifest, selection: Selection)
     const addon = findAddon(catalog, id)
     if (!addon) {
       throw unknownAddonError(catalog, id)
+    }
+    // A combination add-on is selected by what it joins, never by name.
+    if (addon.joins) {
+      return
     }
     const existing = chosen.get(id)
     if (existing) {
@@ -167,6 +195,19 @@ export function resolveSelection(catalog: CatalogManifest, selection: Selection)
     visit(id, undefined)
   }
   const selected = [...chosen.keys()].map((id) => findAddon(catalog, id)).filter((addon) => addon !== undefined)
+  // Combination add-ons join when every reference matches, and one can join another, so this runs until nothing changes.
+  // They're part of the selection before its requirements and conflicts are checked.
+  for (let added = true; added;) {
+    added = false
+    for (const addon of catalog.addons) {
+      const joined = addon.joins && !chosen.has(addon.id) ? joinedBy(addon.joins, selected) : undefined
+      if (joined) {
+        chosen.set(addon.id, { explicit: false, by: new Set(joined) })
+        selected.push(addon)
+        added = true
+      }
+    }
+  }
   for (const addon of selected) {
     for (const requirement of addon.requires ?? []) {
       if (requirement.startsWith("slot:")) {
@@ -182,7 +223,10 @@ export function resolveSelection(catalog: CatalogManifest, selection: Selection)
         const capability = requirement.slice(9)
         if (!selected.some((other) => other.provides && Object.hasOwn(other.provides, capability))) {
           const candidates = catalog.addons
-            .filter((candidate) => candidate.provides && Object.hasOwn(candidate.provides, capability))
+            // A combination is never added by name, so it's never a choice.
+            .filter(
+              (candidate) => !candidate.joins && candidate.provides && Object.hasOwn(candidate.provides, capability)
+            )
             .filter((candidate) => addonSupports(candidate, info) === true)
             .map((candidate) => candidate.id)
           return { ok: false, issue: { kind: "choose-provider", capability, by: addon.id, candidates } }
@@ -236,6 +280,23 @@ export function resolveSelection(catalog: CatalogManifest, selection: Selection)
   }
 }
 
+/** The add-ons that match every reference of a combination add-on, or `undefined` when one doesn't match. */
+function joinedBy(references: readonly string[], selected: readonly AddonManifest[]): string[] | undefined {
+  const joined = new Set<string>()
+  for (const reference of references) {
+    const matches = selected.filter((addon) =>
+      reference.startsWith("provides:")
+        ? addon.provides !== undefined && Object.hasOwn(addon.provides, reference.slice(9))
+        : addon.id === reference
+    )
+    if (matches.length === 0) {
+      return undefined
+    }
+    matches.forEach((addon) => joined.add(addon.id))
+  }
+  return [...joined]
+}
+
 /**
  * Whether `addon` declares a conflict with `other`: by its id, or by `provides:<name>` when `other` provides it. An
  * add-on never conflicts with itself, so an ORM that conflicts with `provides:orm` can still be installed.
@@ -262,13 +323,13 @@ export function addonsConflict(left: AddonManifest, right: AddonManifest): boole
   return declaredConflict(left, right) !== undefined || declaredConflict(right, left) !== undefined
 }
 
-/** Orders add-ons so each comes after what it requires or runs after. Ties sort by id; a cycle is an error. */
+/** Orders add-ons so each comes after what it requires, joins or runs after. Ties sort by id; a cycle is an error. */
 function orderAddons(addons: AddonManifest[]): AddonManifest[] {
   const ids = new Set(addons.map((addon) => addon.id))
   const edges = new Map<string, Set<string>>()
   for (const addon of addons) {
     const before = new Set<string>()
-    for (const requirement of addon.requires ?? []) {
+    for (const requirement of [...(addon.requires ?? []), ...(addon.joins ?? [])]) {
       if (requirement.startsWith("slot:")) {
         const slot = requirement.slice(5)
         addons.filter((other) => other.slot === slot).forEach((other) => before.add(other.id))

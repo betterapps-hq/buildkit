@@ -1,10 +1,19 @@
 import { describe, expect, it } from "vite-plus/test"
 import { z } from "zod"
+import { shortName } from "../manifest/catalog.js"
 import { defineAddon } from "../manifest/define.js"
 import type { Answers, CatalogManifest } from "../manifest/types.js"
 import { toEnvelope } from "../plan/envelope.js"
 import { PlanError } from "../plan/errors.js"
-import { addRequest, applyFixture, fixtureCatalog, initRequest, planFixture } from "../testing/fixture.js"
+import { readLock } from "../state/files.js"
+import {
+  addRequest,
+  applyFixture,
+  applyInMemory,
+  fixtureCatalog,
+  initRequest,
+  planFixture
+} from "../testing/fixture.js"
 import { selectionFromAnswers } from "./answers.js"
 import { checkCatalog, pairwiseAnswers } from "./check.js"
 import { describeCatalog, optionQuestions, templateQuestions } from "./questions.js"
@@ -728,5 +737,152 @@ describe("questions and catalog CI", () => {
         default: "light"
       }
     ])
+  })
+})
+
+describe("combination add-ons", () => {
+  const glue = (id: string, title: string, joins: string[]) =>
+    defineAddon({
+      id,
+      version: "1.0.0",
+      title,
+      description: "",
+      joins,
+      contribute: () => [
+        { kind: "file", path: `src/glue/${shortName(id)}.ts`, content: "export {}\n", ownership: "seed" }
+      ]
+    })
+  const combinations = [
+    glue("@x/auth-sqlite", "Auth tables for SQLite", ["@fixture/auth", "@fixture/db-sqlite"]),
+    glue("@x/auth-postgres", "Auth tables for Postgres", ["@fixture/auth", "@fixture/db-postgres"]),
+    // It joins another combination, so it's selected only once that one is.
+    glue("@x/auth-i18n", "Translated auth", ["@x/auth-sqlite", "provides:i18n"])
+  ]
+  const catalog = withAddons(fixtureCatalog(), ...combinations)
+  const lockOf = (files: Record<string, string>) => readLock(".fixture/lock.json", files[".fixture/lock.json"] ?? "")
+
+  it("are selected when every reference matches, until nothing changes, after what they join", () => {
+    const resolve = (...ids: string[]) => {
+      const result = resolveSelection(catalog, { ...base, addons: Object.fromEntries(ids.map((id) => [id, {}])) })
+      if (!result.ok) {
+        throw new Error(result.issue.kind)
+      }
+      return result.value.addons.map(({ manifest, explicit, by }) => ({ id: manifest.id, explicit, by }))
+    }
+    const sqlite = resolve("@fixture/auth", "@fixture/db-sqlite")
+    expect(sqlite.find((addon) => addon.id.startsWith("@x/"))).toEqual({
+      id: "@x/auth-sqlite",
+      explicit: false,
+      by: ["@fixture/auth", "@fixture/db-sqlite"]
+    })
+    expect(sqlite.map((addon) => addon.id).filter((id) => id.startsWith("@x/"))).toEqual(["@x/auth-sqlite"])
+    const ids = resolve("@fixture/auth", "@fixture/db-sqlite", "@fixture/i18n").map((addon) => addon.id)
+    expect(ids.indexOf("@x/auth-sqlite")).toBeGreaterThan(
+      Math.max(ids.indexOf("@fixture/auth"), ids.indexOf("@fixture/db-sqlite"))
+    )
+    expect(ids.indexOf("@x/auth-i18n")).toBeGreaterThan(
+      Math.max(ids.indexOf("@x/auth-sqlite"), ids.indexOf("@fixture/i18n"))
+    )
+    // A combination is part of the selection its conflicts and requirements are checked against.
+    const strict = withAddons(
+      catalog,
+      { ...glue("@x/auth-ui", "Auth screens", ["@fixture/auth", "@fixture/ui-basic"]), conflicts: ["@fixture/i18n"] },
+      { ...glue("@x/adapter", "Adapter", ["@fixture/auth", "@fixture/db-sqlite"]), provides: { adapter: {} } },
+      defineAddon({
+        id: "@x/consumer",
+        version: "1.0.0",
+        title: "Consumer",
+        description: "",
+        requires: ["provides:adapter"],
+        contribute: () => []
+      })
+    )
+    const strictly = (...ids: string[]) =>
+      resolveSelection(strict, { ...base, addons: Object.fromEntries(ids.map((id) => [id, {}])) })
+    expect(strictly("@fixture/auth", "@fixture/ui-basic", "@fixture/i18n", "@fixture/db-sqlite")).toMatchObject({
+      ok: false,
+      issue: { kind: "conflicts", addon: "@x/auth-ui", other: "@fixture/i18n" }
+    })
+    expect(strictly("@fixture/auth", "@fixture/db-sqlite", "@x/consumer").ok).toBe(true)
+    // Without what it joins, the combination isn't offered as the provider, since it can't be added by name.
+    expect(strictly("@fixture/db-sqlite", "@x/consumer")).toMatchObject({
+      ok: false,
+      issue: { kind: "choose-provider", capability: "adapter", candidates: [] }
+    })
+
+    // Named in a selection, a combination still needs what it joins.
+    expect(resolve("@x/auth-postgres", "@fixture/db-sqlite").map((addon) => addon.id)).toEqual(["@fixture/db-sqlite"])
+  })
+
+  it("are added and removed with the selection, and the lock records what they join", async () => {
+    const files = await applyFixture({}, initRequest(), { catalog })
+    const added = await planFixture(files, addRequest(["auth"]), { catalog })
+    expect(added.pulled).toContainEqual({
+      id: "@x/auth-sqlite",
+      by: ["@fixture/auth", "@fixture/db-sqlite"],
+      joins: true
+    })
+    const withAuth = applyInMemory(files, added)
+    expect(lockOf(withAuth).addons["@x/auth-sqlite"]).toMatchObject({
+      explicit: false,
+      by: ["@fixture/auth", "@fixture/db-sqlite"]
+    })
+    expect(withAuth["fixture.jsonc"]).not.toContain("@x/auth-sqlite")
+    expect(withAuth["src/glue/auth-sqlite.ts"]).toBe("export {}\n")
+
+    const replaced = await applyFixture(withAuth, addRequest(["db-postgres"], ["db-sqlite"]), { catalog })
+    expect(Object.keys(lockOf(replaced).addons).filter((id) => id.startsWith("@x/"))).toEqual(["@x/auth-postgres"])
+    expect([replaced["src/glue/auth-sqlite.ts"], replaced["src/glue/auth-postgres.ts"]]).toEqual([
+      undefined,
+      "export {}\n"
+    ])
+
+    // A catalog upgrade that brings a combination adds it to a project that has what it joins.
+    const before = await applyFixture(await applyFixture({}, initRequest()), addRequest(["auth"]))
+    const v2 = withAddons(fixtureCatalog(2), ...combinations)
+    const catalogs = (version: string) => (version === "1.0.0" ? fixtureCatalog(1) : undefined)
+    const upgraded = await planFixture(before, { intent: { command: "upgrade" } }, { catalog: v2, catalogs })
+    expect(upgraded.pulled.map((pulled) => pulled.id)).toEqual(["@x/auth-sqlite"])
+    expect(upgraded.operations.map((operation) => operation.path)).toContain("src/glue/auth-sqlite.ts")
+  })
+
+  it("can't be asked for by name", async () => {
+    const files = await applyFixture({}, initRequest(), { catalog })
+    expect((await planFixture(files, addRequest(["auth-sqlite"]), { catalog })).error).toMatchObject({
+      code: "E_USAGE",
+      message: "Auth tables for SQLite is added with Auth and SQLite."
+    })
+    expect((await planFixture({}, initRequest({ optional: ["@x/auth-i18n"] }), { catalog })).error).toMatchObject({
+      code: "E_USAGE",
+      message: "Translated auth is added with Auth tables for SQLite and an add-on that provides i18n."
+    })
+    const sync = { intent: { command: "sync" as const, addons: ["@x/auth-postgres"] } }
+    expect((await planFixture(files, sync, { catalog })).error?.code).toBe("E_USAGE")
+  })
+
+  it("are checked: two references that exist, no requires or options, and never named", () => {
+    expect(checkCatalog(catalog, { matrix: true })).toEqual([])
+    const [app] = catalog.templates
+    const broken: CatalogManifest = {
+      ...withAddons(
+        catalog,
+        { ...glue("@x/lonely", "Lonely", ["@fixture/auth"]), requires: ["@fixture/sessions"] },
+        glue("@x/dangling", "Dangling", ["@x/missing", "provides:nothing"]),
+        { ...glue("@x/optioned", "Optioned", ["@fixture/auth", "@fixture/i18n"]), options: z.object({}) }
+      ),
+      templates: [{ ...app!, required: [...(app?.required ?? []), "@x/auth-sqlite"] }],
+      presets: [{ id: "glued", title: "Glued", answers: { template: "app", optional: ["@x/auth-postgres"] } }]
+    }
+    const problems = checkCatalog(broken)
+    const missing = [
+      "@x/lonely is a combination add-on, so it joins at least two add-ons.",
+      "@x/lonely is a combination add-on, so it can't have requires, options or a slot.",
+      "@x/optioned is a combination add-on, so it can't have requires, options or a slot.",
+      "@x/dangling refers to @x/missing, which isn't in the catalog.",
+      "@x/dangling refers to provides:nothing, and no add-on provides it.",
+      "Template app names @x/auth-sqlite, a combination add-on, which is added with what it joins.",
+      "Preset glued names @x/auth-postgres, a combination add-on, which is added with what it joins."
+    ].filter((expected) => !problems.includes(expected))
+    expect(missing).toEqual([])
   })
 })
