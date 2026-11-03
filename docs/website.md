@@ -52,8 +52,8 @@ The marketing page has its own dark blue design, set in Geist and Geist Mono, wi
 reference site uses matching blue accents. The page is prerendered to static HTML, animated with GSAP, and keeps its
 final state when reduced motion is requested.
 
-The page's design lives in `buildkit.pen` at the repository root, a [Pen](https://pen.dev) file with the desktop and
-phone layouts side by side. Change the design there first, then match the page to it.
+The page's design lives in `design/buildkit.pen`, a [Pen](https://pen.dev) file with the desktop and phone layouts side
+by side. Change the design there first, then match the page to it.
 
 ## Interactive examples
 
