@@ -19,9 +19,8 @@ Start with an integration when it matches your app. Use a core directly when you
 [Routing](/routing/) groups route tabs and panels, with integrations for React Router and TanStack Router alongside
 their shared core and React bindings.
 
-[API reference](/reference/) covers the exported TypeScript surface, including subpath imports. API Extractor reads
-compiled declarations; API Documenter renders their signatures and source comments. These pages are generated during the
-documentation build. Interactive examples live in Storybook, linked from the website.
+Find exported types, function signatures, and available subpath imports in the [API reference](/reference/). Interactive
+examples live in Storybook, linked from the website.
 
 ## Public API changes
 
