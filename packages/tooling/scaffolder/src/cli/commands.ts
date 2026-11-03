@@ -3,7 +3,7 @@ import { basename, dirname, resolve } from "node:path"
 import { z } from "zod"
 import { readEnv } from "../edit/env.js"
 import { catalogVersionText, expandTemplate, findPreset, packOf } from "../manifest/catalog.js"
-import { mergePacks, templateSource, type LoadedPack, type TemplateSource } from "../manifest/packs.js"
+import { isTemplatePack, mergePacks, templateSource, type LoadedPack, type TemplateSource } from "../manifest/packs.js"
 import type { CatalogManifest, PackRecord } from "../manifest/types.js"
 import { recover, type ApplyHooks } from "../node/apply.js"
 import {
@@ -152,7 +152,9 @@ export class CliRuntime {
   /** The product catalog, with the project's template packages merged in once they're loaded. */
   #catalog: CatalogManifest
   #packs: PackStore | undefined
-  /** Says where a template package's template came from, in the plan `create` shows. */
+  /** The template and add-on packages the project's lock records, as merged into the catalog. */
+  #projectPacks: LoadedPack[] = []
+  /** Says where a template package's template, or an add-on package's add-ons, came from, in the plan. */
   readonly #sourceNotices: Plan["notices"] = []
 
   constructor(options: CliOptions) {
@@ -306,6 +308,7 @@ export class CliRuntime {
       )
     }
 
+    this.#projectPacks = loaded
     this.#catalog = mergePacks(this.options.catalog, loaded)
   }
 
@@ -387,7 +390,16 @@ export class CliRuntime {
   async #usePackage(source: TemplateSource, interactive: boolean): Promise<string | Cancelled> {
     const loaded = await this.#loadPackage(source)
     const label = `${loaded.name}@${loaded.version}`
-    const ids = loaded.pack.templates.map((template) => template.id)
+
+    if (!isTemplatePack(loaded.pack)) {
+      throw new PlanError(
+        "E_USAGE",
+        `${label} is an add-on package, not a template package. Add it to a project with ${this.#product} add ${loaded.name}.`
+      )
+    }
+
+    const { pack } = loaded
+    const ids = pack.templates.map((template) => template.id)
     let id = source.template
 
     if (id !== undefined && !ids.includes(id)) {
@@ -408,7 +420,7 @@ export class CliRuntime {
 
       const answer = await this.io.prompter.select({
         message: "Which template?",
-        options: loaded.pack.templates.map((template) => ({
+        options: pack.templates.map((template) => ({
           value: template.id,
           label: template.title,
           hint: template.description
@@ -432,6 +444,106 @@ export class CliRuntime {
       code: "template-package",
       text: `The template comes from ${label} on npm, not from ${this.#product}. Applying it runs code from its author.`
     })
+  }
+
+  #noteAddonSource(label: string): void {
+    this.#sourceNotices.push({
+      code: "addon-package",
+      text: `The add-on comes from ${label} on npm, not from ${this.#product}. Applying it runs code from its author.`
+    })
+  }
+
+  /**
+   * `add`'s names, with each add-on package replaced by its add-ons. A scoped name, or a name after `npm:`, that isn't
+   * an add-on in the catalog is a package. One the lock records is used at that version; any other is fetched at the
+   * newest version in its range and merged into the catalog, and the plan says where it came from.
+   */
+  async #addonPackages(names: readonly string[]): Promise<string[]> {
+    const ids: string[] = []
+
+    for (const name of names) {
+      let source: TemplateSource | undefined
+
+      try {
+        requireAddonId(this.#catalog, name)
+      } catch {
+        try {
+          source = templateSource(name)
+        } catch {
+          // Not a package name either, so the planner says the add-on is unknown.
+        }
+      }
+
+      if (!source) {
+        ids.push(name)
+        continue
+      }
+
+      const locked = this.#projectPacks.find((pack) => pack.name === source.package)
+
+      const loaded =
+        locked ??
+        (await this.#packStore().load(source.package, await this.#packStore().resolve(source.package, source.range)))
+
+      const label = `${loaded.name}@${loaded.version}`
+
+      if (isTemplatePack(loaded.pack)) {
+        throw new PlanError(
+          "E_USAGE",
+          `${label} is a template package, not an add-on package. Create a project from it with ${this.#product} create ${loaded.name}.`
+        )
+      }
+
+      if (!locked) {
+        this.#projectPacks = [...this.#projectPacks, loaded]
+        this.#catalog = mergePacks(this.options.catalog, this.#projectPacks)
+        this.#noteAddonSource(label)
+      }
+
+      const addons = loaded.pack.addons.map((addon) => addon.id)
+      const picked = source.template === undefined ? undefined : `${loaded.name}/${source.template}`
+
+      if (picked !== undefined && !addons.includes(picked)) {
+        throw new PlanError("E_UNKNOWN_ADDON", `${label} has no add-on named ${picked}. It has ${addons.join(", ")}.`)
+      }
+
+      if (picked === undefined && addons.length > 1) {
+        throw new PlanError(
+          "E_USAGE",
+          `${label} has more than one add-on. Pick one: ${addons.map((id) => `${loaded.name}#${id.slice(loaded.name.length + 1)}`).join(", ")}.`
+        )
+      }
+
+      ids.push(picked ?? addons[0]!)
+    }
+
+    return ids
+  }
+
+  /** Merges the packages a saved plan records that the lock doesn't yet, such as an add-on package it adds. */
+  async #loadPlannedPacks(planFile: string): Promise<void> {
+    const reviewed = readPlanFile(resolve(this.io.cwd, planFile))
+
+    const missing = Object.entries(reviewed.packs ?? {}).filter(
+      ([name]) => !this.#projectPacks.some((pack) => pack.name === name)
+    )
+
+    if (missing.length === 0) {
+      return
+    }
+
+    for (const [name, recorded] of missing) {
+      const loaded = await this.#loadRecorded(name, recorded)
+      this.#projectPacks = [...this.#projectPacks, loaded]
+
+      if (isTemplatePack(loaded.pack)) {
+        this.#noteSource(`${name}@${recorded.version}`)
+      } else {
+        this.#noteAddonSource(`${name}@${recorded.version}`)
+      }
+    }
+
+    this.#catalog = mergePacks(this.options.catalog, this.#projectPacks)
   }
 
   /** Loads the catalog version the lock records when it differs from the installed one, so old baselines render. */
@@ -1070,12 +1182,19 @@ export class CliRuntime {
       )
     }
 
+    const planFile = flags.strings.get("plan")
+
+    if (planFile !== undefined) {
+      await this.#loadPlannedPacks(planFile)
+    }
+
+    const addons = await this.#addonPackages(names)
     const replace = flags.lists.get("replace") ?? []
 
     return this.#planAndApply(
       this.#root(flags),
       {
-        intent: { command: "add", addons: names, replace, options: this.#options(flags) },
+        intent: { command: "add", addons, replace, options: this.#options(flags) },
         ...this.#requestExtras(flags)
       },
       flags
@@ -1441,15 +1560,36 @@ export class CliRuntime {
     return 0
   }
 
-  /** `catalog check [path]`: a template package in a folder, merged in, with every option set of its templates planned. */
+  /**
+   * `catalog check [path]`: a template or add-on package in a folder, merged in. Every option set of a template
+   * package's templates is planned. An add-on package's add-ons get the catalog's checks.
+   */
   async #checkPack(folder: string, json: boolean): Promise<number> {
     const loaded = await loadLocalPack(folder)
     const merged = mergePacks(this.options.catalog, [loaded])
+    const label = `${loaded.name}@${loaded.version}`
+
+    if (!isTemplatePack(loaded.pack)) {
+      const ids = loaded.pack.addons.map((addon) => addon.id)
+
+      return this.#emit(
+        {
+          status: "unchanged",
+          notices: [
+            {
+              code: "pack-checked",
+              text: `${label} works with ${this.options.catalog.id}@${this.options.catalog.version}. ${ids.join(", ")} pass the catalog's checks.`
+            }
+          ]
+        },
+        json
+      )
+    }
+
     const templates = loaded.pack.templates.map((template) => `${loaded.name}#${template.id}`)
     // A pack's gallery images are paths in its own folder.
     const files = (path: string, template: string) => !templates.includes(template) || existsSync(resolve(folder, path))
     const problems = checkCatalog(merged, { matrix: true, templates, files })
-    const label = `${loaded.name}@${loaded.version}`
 
     if (problems.length > 0) {
       throw new PlanError("E_INVALID_PACK", `${label} has problems. ${problems.join(" ")}`)

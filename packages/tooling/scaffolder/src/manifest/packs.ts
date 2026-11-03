@@ -2,7 +2,7 @@ import { PlanError } from "../plan/errors.js"
 import { isRecord, isString } from "../plan/json.js"
 import { checkCatalog, cliFlags, questionIdPattern } from "../resolve/check.js"
 import { satisfiesRange } from "../upgrade/semver.js"
-import type { CatalogManifest, PackRecord, TemplateManifest, TemplatePack } from "./types.js"
+import type { AddonPack, CatalogManifest, PackRecord, TemplateManifest, TemplatePack } from "./types.js"
 
 /** A template package named on the command line: `@scope/name`, `@scope/name@^2`, `npm:name`, `@scope/name#id`. */
 export interface TemplateSource {
@@ -69,16 +69,25 @@ export function isTemplatePack(value: unknown): value is TemplatePack {
   )
 }
 
-export interface LoadedPack extends PackRecord {
-  name: string
-  pack: TemplatePack
+/** An add-on package: `extends` and `addons`, and no templates or questions, which only template packages have. */
+export function isAddonPack(value: unknown): value is AddonPack {
+  return (
+    isRecord(value) &&
+    isRecord(value.extends) &&
+    isString(value.extends.catalog) &&
+    isString(value.extends.versions) &&
+    Array.isArray(value.addons) &&
+    value.templates === undefined &&
+    value.questions === undefined &&
+    (value.versions === undefined || isRecord(value.versions))
+  )
 }
 
-/**
- * The product catalog with template packages merged in. Each pack must extend this catalog, at a version in its
- * range, and keep to its own ids. The merged catalog then has to pass `checkCatalog`, so a pack that breaks a rule
- * stops before anything is planned.
- */
+export interface LoadedPack extends PackRecord {
+  name: string
+  pack: TemplatePack | AddonPack
+}
+
 /**
  * A pack's template as the merged catalog has it: `<package>#<id>`, extending a template of the same pack by its
  * recorded id, or one of the catalog's by its own.
@@ -87,7 +96,7 @@ function packTemplate(
   catalog: CatalogManifest,
   name: string,
   label: string,
-  pack: TemplatePack,
+  siblings: readonly TemplateManifest[],
   template: TemplateManifest
 ): TemplateManifest {
   const id = `${name}#${template.id}`
@@ -98,7 +107,7 @@ function packTemplate(
 
   const parent = template.extends
 
-  if (pack.templates.some((other) => other.id === parent)) {
+  if (siblings.some((other) => other.id === parent)) {
     return { ...template, id, extends: `${name}#${parent}` }
   }
 
@@ -112,6 +121,11 @@ function packTemplate(
   )
 }
 
+/**
+ * The product catalog with template and add-on packages merged in. Each package must extend this catalog, at a version
+ * in its range, and keep to its own ids. The merged catalog then has to pass `checkCatalog`, so a package that breaks a
+ * rule stops before anything is planned.
+ */
 export function mergePacks(catalog: CatalogManifest, packs: readonly LoadedPack[]): CatalogManifest {
   if (packs.length === 0) {
     return catalog
@@ -150,12 +164,18 @@ export function mergePacks(catalog: CatalogManifest, packs: readonly LoadedPack[
       )
     }
 
-    if (pack.templates.length === 0) {
+    const templatePack = isTemplatePack(pack) ? pack : undefined
+
+    if (templatePack?.templates.length === 0) {
       throw new PlanError("E_INVALID_PACK", `${label} has no templates.`)
     }
 
+    if (!templatePack && (pack.addons ?? []).length === 0) {
+      throw new PlanError("E_INVALID_PACK", `${label} has no add-ons.`)
+    }
+
     // A pack comes from a dynamic import, so its ids are checked as well as typed.
-    for (const template of pack.templates) {
+    for (const template of templatePack?.templates ?? []) {
       const id: unknown = template.id
 
       if (!isString(id) || !localId.test(id)) {
@@ -165,10 +185,10 @@ export function mergePacks(catalog: CatalogManifest, packs: readonly LoadedPack[
         )
       }
 
-      merged.templates.push(packTemplate(catalog, name, label, pack, template))
+      merged.templates.push(packTemplate(catalog, name, label, templatePack?.templates ?? [], template))
     }
 
-    for (const question of pack.questions ?? []) {
+    for (const question of templatePack?.questions ?? []) {
       const id: unknown = question.id
 
       if (!isString(id) || !questionIdPattern.test(id) || cliFlags.has(id)) {
@@ -193,7 +213,7 @@ export function mergePacks(catalog: CatalogManifest, packs: readonly LoadedPack[
       if (catalog.versions?.[packageName] !== undefined) {
         throw new PlanError(
           "E_INVALID_PACK",
-          `${label} pins ${packageName}, which ${catalog.id} pins. A template package can't change the catalog's versions.`
+          `${label} pins ${packageName}, which ${catalog.id} pins. A package can't change the catalog's versions.`
         )
       }
 
@@ -219,10 +239,7 @@ export function mergePacks(catalog: CatalogManifest, packs: readonly LoadedPack[
 
       // Points belong to the catalog's targets and add-ons. One from a pack could rewire the product's own files.
       if ((addon.points ?? []).length > 0) {
-        throw new PlanError(
-          "E_INVALID_PACK",
-          `${label}'s add-on ${id} defines points. A template package can't add them.`
-        )
+        throw new PlanError("E_INVALID_PACK", `${label}'s add-on ${id} defines points. A package can't add them.`)
       }
 
       merged.addons.push(addon)

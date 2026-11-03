@@ -6,7 +6,7 @@ import { pathToFileURL } from "node:url"
 import { z } from "zod"
 import type { JsonValue } from "../edit/json.js"
 import { writtenVersions } from "../manifest/catalog.js"
-import { isTemplatePack, type LoadedPack } from "../manifest/packs.js"
+import { isAddonPack, isTemplatePack, type LoadedPack } from "../manifest/packs.js"
 import type { CatalogManifest } from "../manifest/types.js"
 import { PlanError } from "../plan/errors.js"
 import { isRecord } from "../plan/json.js"
@@ -323,10 +323,10 @@ export class PackStore {
     const { integrity, module } = await this.import(name, version, expectedIntegrity)
     const pack = isRecord(module) ? module.default : undefined
 
-    if (!isTemplatePack(pack)) {
+    if (!isTemplatePack(pack) && !isAddonPack(pack)) {
       throw new PlanError(
         "E_INVALID_PACK",
-        `${key} isn't a template package: its default export needs extends, templates and, optionally, add-ons.`
+        `${key} isn't a template or add-on package: its default export needs extends, and templates or add-ons.`
       )
     }
 
@@ -520,7 +520,7 @@ function cachedIntegrity(
   return integrity
 }
 
-/** A template package in a folder on disk, as its author checks it before publishing. Build it first. */
+/** A template or add-on package in a folder on disk, as its author checks it before publishing. Build it first. */
 export async function loadLocalPack(folder: string): Promise<LoadedPack> {
   const identity = packageIdentitySchema.safeParse(readJson(join(folder, "package.json"), "E_INVALID_PACK"))
 
@@ -533,10 +533,10 @@ export async function loadLocalPack(folder: string): Promise<LoadedPack> {
   const module = await importEntry(folder, "E_INVALID_PACK")
   const pack = isRecord(module) ? module.default : undefined
 
-  if (!isTemplatePack(pack)) {
+  if (!isTemplatePack(pack) && !isAddonPack(pack)) {
     throw new PlanError(
       "E_INVALID_PACK",
-      `${manifest.name} isn't a template package: its default export needs extends, templates and, optionally, add-ons.`
+      `${manifest.name} isn't a template or add-on package: its default export needs extends, and templates or add-ons.`
     )
   }
 
