@@ -6,14 +6,18 @@ import { findConfig, loadProject, saveConfig } from "./load.js"
 import { configSchema, defineConfig } from "./schema.js"
 
 const directories: string[] = []
+
 async function directory() {
   const value = await mkdtemp(path.join(os.tmpdir(), "buildkit-config-"))
   directories.push(value)
+
   return value
 }
+
 afterEach(async () => {
   await Promise.all(directories.splice(0).map((dir) => rm(dir, { recursive: true, force: true })))
 })
+
 const input = { project: "demo", endpoints: { app: { command: ["node", "server.js"] } } }
 
 describe("configuration contracts", () => {

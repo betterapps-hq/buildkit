@@ -7,6 +7,7 @@ import { useModals } from "./useModals.js"
 export type ModalRendererProps<TSurface = ModalSurfaceOptions> = {
   manager: ModalManager<TSurface>
 }
+
 const hosts = new WeakSet<object>()
 
 export function ModalRenderer<TSurface>({ manager }: ModalRendererProps<TSurface>) {
@@ -15,7 +16,9 @@ export function ModalRenderer<TSurface>({ manager }: ModalRendererProps<TSurface
     if (hosts.has(manager)) {
       throw new Error("Mount only one modal renderer per manager")
     }
+
     hosts.add(manager)
+
     return () => {
       hosts.delete(manager)
       // StrictMode reconnects synchronously. An actual unmount settles pending callers.
@@ -28,9 +31,11 @@ export function ModalRenderer<TSurface>({ manager }: ModalRendererProps<TSurface
   }, [manager])
 
   const adapter = manager.adapter
+
   if (!adapter) {
     throw new Error("Pass an adapter to createModalManager or create the manager with a UI package")
   }
+
   const { Surface } = adapter
 
   function renderChildren(parentKey: number | null): React.ReactNode {
@@ -42,5 +47,6 @@ export function ModalRenderer<TSurface>({ manager }: ModalRendererProps<TSurface
         </Surface>
       ))
   }
+
   return renderChildren(null)
 }

@@ -14,6 +14,7 @@ const cli = fileURLToPath(new URL("./cli.js", import.meta.resolve("portless")))
 export function proxyEnvironment(project: Project): NodeJS.ProcessEnv {
   const proxy = project.config.proxy
   const caPath = path.join(stateDirectory(), "ca.pem")
+
   return {
     ...process.env,
     npm_command: undefined,
@@ -39,6 +40,7 @@ async function readState(name: string) {
     if (isErrnoException(error) && error.code === "ENOENT") {
       return undefined
     }
+
     throw error
   }
 }
@@ -46,17 +48,21 @@ async function readState(name: string) {
 /** Suffixes do not limit Portless's exact routes or its per-hostname TLS certificates. */
 export async function hasCompatibleProxy(project: Project, signal?: AbortSignal) {
   const pid = Number(await readState("proxy.pid"))
+
   if (!Number.isSafeInteger(pid) || pid <= 0 || !isProcessAlive(pid)) {
     return false
   }
+
   const proxy = project.config.proxy
   const port = Number(await readState("proxy.port"))
   const isHttps = existsSync(path.join(stateDirectory(), "proxy.tls"))
+
   if (port !== proxy.port || isHttps !== proxy.https) {
     throw new Error(
       "The shared Portless proxy has different port or TLS settings. Coordinate those settings before starting this endpoint. The proxy was left running."
     )
   }
+
   const ca = isHttps ? await readFile(path.join(stateDirectory(), "ca.pem")) : undefined
   const request = isHttps ? https.request : http.request
   const hostname = `proxy.${project.config.domain}`
@@ -74,6 +80,7 @@ export async function hasCompatibleProxy(project: Project, signal?: AbortSignal)
       },
       (response) => {
         response.resume()
+
         if (response.headers[PORTLESS_HEADER.toLowerCase()] !== "1") {
           reject(new Error("The configured port is not responding as Portless. The existing process was left running."))
         } else {
@@ -81,9 +88,11 @@ export async function hasCompatibleProxy(project: Project, signal?: AbortSignal)
         }
       }
     )
+
     req.once("error", reject)
     req.end()
   })
+
   return true
 }
 
@@ -91,6 +100,7 @@ export async function proxyCommand(project: Project, action: "setup" | "status" 
   if (action === "setup" && (await hasCompatibleProxy(project, signal))) {
     return { code: 0, stderr: "" }
   }
+
   const args =
     action === "setup"
       ? [
@@ -102,11 +112,13 @@ export async function proxyCommand(project: Project, action: "setup" | "status" 
           ...(project.config.proxy.https ? [] : ["--no-tls"])
         ]
       : [action === "status" ? "list" : "doctor"]
+
   return runProcess([process.execPath, cli, ...args], { cwd: project.root, env: proxyEnvironment(project), signal })
 }
 
 export async function ensureProxy(project: Project, signal?: AbortSignal) {
   const result = await proxyCommand(project, "setup", signal)
+
   if (result.code !== 0 || !(await hasCompatibleProxy(project, signal))) {
     throw new Error("Could not start the Portless proxy. Run dev-domains setup and resolve the reported issue.")
   }

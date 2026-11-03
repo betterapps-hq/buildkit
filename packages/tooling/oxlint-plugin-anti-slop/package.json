@@ -1,0 +1,67 @@
+{
+  "name": "@buildkitgg/oxlint-plugin-anti-slop",
+  "version": "0.0.0",
+  "description": "An Oxlint plugin that rejects low-evidence TypeScript patterns, with a recommended rule set. Vendored from anti-slop.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "keywords": [
+    "oxlint",
+    "oxlint-plugin",
+    "typescript",
+    "lint"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./recommended": {
+      "types": "./dist/recommended.d.ts",
+      "default": "./dist/recommended.js"
+    }
+  },
+  "files": [
+    "dist/**/*.js",
+    "dist/**/*.d.ts",
+    "dist/vendor/anti-slop/**/LICENSE",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "pnpm build && vp test run",
+    "test:coverage": "pnpm build && vp test run --coverage",
+    "sync:anti-slop": "node scripts/sync-anti-slop.ts",
+    "prepack": "pnpm build"
+  },
+  "dependencies": {
+    "@oxlint/plugins": "1.89.0"
+  },
+  "peerDependencies": {
+    "oxlint": "^1.89.0"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "24.19.2",
+    "@vitest/coverage-v8": "catalog:",
+    "oxlint": "1.89.0",
+    "typescript": "catalog:",
+    "vite-plus": "catalog:",
+    "vitest": "catalog:"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AndrewCraswell/buildkit.git",
+    "directory": "packages/tooling/oxlint-plugin-anti-slop"
+  },
+  "homepage": "https://github.com/AndrewCraswell/buildkit/tree/main/packages/tooling/oxlint-plugin-anti-slop#readme",
+  "bugs": {
+    "url": "https://github.com/AndrewCraswell/buildkit/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
+}

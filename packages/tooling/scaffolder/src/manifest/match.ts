@@ -15,5 +15,6 @@ export function match<V extends string, R>(value: V, cases: { readonly [K in V]:
         .join(", ")}.`
     )
   }
+
   return cases[value]()
 }

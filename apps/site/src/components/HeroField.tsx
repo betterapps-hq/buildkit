@@ -11,11 +11,14 @@ type HeroFieldProps = {
 
 function compile(gl: WebGLRenderingContext, type: number, source: string) {
   const shader = gl.createShader(type)
+
   if (!shader) {
     return null
   }
+
   gl.shaderSource(shader, source)
   gl.compileShader(shader)
+
   return gl.getShaderParameter(shader, gl.COMPILE_STATUS) ? shader : null
 }
 
@@ -29,21 +32,27 @@ export function HeroField({ target, intensity = 0.5 }: HeroFieldProps) {
   useEffect(() => {
     const canvas = canvasRef.current
     const gl = canvas?.getContext("webgl", { antialias: false, alpha: false, powerPreference: "low-power" })
+
     if (!canvas || !gl) {
       return
     }
+
     const vertex = compile(gl, gl.VERTEX_SHADER, VERTEX_SOURCE)
     const fragment = compile(gl, gl.FRAGMENT_SHADER, fragmentSource)
     const program = gl.createProgram()
+
     if (!vertex || !fragment || !program) {
       return
     }
+
     gl.attachShader(program, vertex)
     gl.attachShader(program, fragment)
     gl.linkProgram(program)
+
     if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
       return
     }
+
     gl.useProgram(program)
     gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer())
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW)
@@ -66,12 +75,15 @@ export function HeroField({ target, intensity = 0.5 }: HeroFieldProps) {
       const rect = canvas.getBoundingClientRect()
       const width = Math.max(1, Math.round(rect.width * dpr))
       const height = Math.max(1, Math.round(rect.height * dpr))
+
       if (canvas.width !== width || canvas.height !== height) {
         canvas.width = width
         canvas.height = height
         gl.viewport(0, 0, width, height)
       }
+
       const box = target.current?.getBoundingClientRect()
+
       if (box && rect.width > 0 && rect.height > 0) {
         gl.uniform4f(
           uBox,
@@ -81,6 +93,7 @@ export function HeroField({ target, intensity = 0.5 }: HeroFieldProps) {
           (rect.bottom - box.top) / rect.height
         )
       }
+
       gl.uniform2f(uResolution, width, height)
       gl.uniform1f(uTime, still.matches ? 4 : (now - start) / 1000 + 4)
       gl.uniform1f(uIntensity, intensity)
@@ -91,6 +104,7 @@ export function HeroField({ target, intensity = 0.5 }: HeroFieldProps) {
       draw(now)
       frame = visible && !still.matches ? requestAnimationFrame(loop) : 0
     }
+
     const resume = () => {
       if (!frame) {
         frame = requestAnimationFrame(loop)
@@ -99,16 +113,20 @@ export function HeroField({ target, intensity = 0.5 }: HeroFieldProps) {
 
     const observer = new IntersectionObserver(([entry]) => {
       visible = entry?.isIntersecting ?? true
+
       if (visible) {
         resume()
       }
     })
+
     observer.observe(canvas)
+
     const resize = new ResizeObserver(() => {
       if (!frame) {
         draw(performance.now())
       }
     })
+
     resize.observe(canvas)
     still.addEventListener("change", resume)
     resume()

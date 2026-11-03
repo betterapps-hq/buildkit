@@ -42,7 +42,9 @@ export function ModalRenderer(props: ModalRendererProps) {
 }
 
 export { baseUiComponents } from "./baseUiComponents.js"
+
 export { radixComponents } from "./radixComponents.js"
+
 export type {
   ModalManager,
   ModalRendererProps,
@@ -50,7 +52,9 @@ export type {
   BaseUiModalComponents,
   RadixModalComponents
 } from "./types.js"
+
 export { useModals } from "@buildkitgg/react-modals"
+
 export type {
   ModalSlotProps,
   ModalControls,

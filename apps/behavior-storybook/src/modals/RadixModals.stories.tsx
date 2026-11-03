@@ -29,6 +29,7 @@ const components: RadixModalComponents = {
   },
   Button
 }
+
 const adapter = radixComponents(components)
 
 function NameInput({ onChange, ...props }: ExampleInputProps) {
@@ -37,6 +38,7 @@ function NameInput({ onChange, ...props }: ExampleInputProps) {
 
 function RadixModalsExample({ scenario }: ModalExampleScenario) {
   const [manager] = useState(() => createModalManager({ adapter }))
+
   return (
     <ModalExamples manager={manager} Button={Button} Input={NameInput} scenario={scenario}>
       <ModalRenderer manager={manager} />
@@ -56,7 +58,9 @@ const meta = {
     }
   }
 } satisfies Meta<typeof RadixModalsExample>
+
 export default meta
+
 export const Confirmation: StoryObj<typeof meta> = modalStory("confirmation")
 export const Acknowledgment: StoryObj<typeof meta> = modalStory("alert")
 export const TypedForm: StoryObj<typeof meta> = { ...modalStory("form"), name: "Typed form" }

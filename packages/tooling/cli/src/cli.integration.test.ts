@@ -3,6 +3,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { catalog } from "@buildkitgg/catalog"
 import type { CatalogManifest, Envelope } from "@buildkitgg/scaffolder"
+import type { CliOptions } from "@buildkitgg/scaffolder/cli"
 import { afterEach, beforeEach, describe, expect, it } from "vite-plus/test"
 import { runBuildkit } from "./index.js"
 
@@ -19,16 +20,24 @@ afterEach(() => {
 async function run(argv: string[], options: { catalog?: CatalogManifest } = {}) {
   const stdout: string[] = []
   const stderr: string[] = []
-  const code = await runBuildkit(argv, {
+
+  const overrides: Partial<CliOptions> = {
     io: { stdout: (text) => stdout.push(text), stderr: (text) => stderr.push(text), isTTY: false, cwd: root },
-    cacheDir: join(root, "cache"),
-    ...(options.catalog ? { catalog: options.catalog } : {})
-  })
+    cacheDir: join(root, "cache")
+  }
+
+  if (options.catalog) {
+    overrides.catalog = options.catalog
+  }
+
+  const code = await runBuildkit(argv, overrides)
+
   return { code, out: stdout.join(""), err: stderr.join("") }
 }
 
 function envelope(out: string): Envelope {
   const value: Envelope = JSON.parse(out)
+
   return value
 }
 
@@ -140,10 +149,12 @@ describe("buildkit upgrade", () => {
   it("never overwrites a starter file you edited when the old version can't be rendered", async () => {
     const previous = previousCatalog()
     await run(create, { catalog: previous })
+
     const router = read("src/router.tsx").replace(
       "export function getRouter() {",
       "// Mine.\nexport function getRouter() {"
     )
+
     write("src/router.tsx", router)
     const upgraded = await run(["upgrade", "--cwd", "demo", "--yes", "--json"])
     const result = envelope(upgraded.out)

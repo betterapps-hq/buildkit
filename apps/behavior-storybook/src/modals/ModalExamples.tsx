@@ -1,5 +1,5 @@
 import type { ModalManager } from "@buildkitgg/react-modals"
-import { ExampleResult } from "@repo/storybook-config/examples"
+import { ExampleResult } from "@buildkitgg/storybook-config/examples"
 import { useState } from "react"
 import type { ComponentType, ReactNode } from "react"
 import { createPreviewModal, createQuantityModal } from "./createExampleModals.js"
@@ -12,6 +12,7 @@ export type ExampleButtonProps = {
   disabled?: boolean
   variant?: "default" | "outline"
 }
+
 export type ExampleInputProps = {
   id: string
   value: string
@@ -20,6 +21,7 @@ export type ExampleInputProps = {
   disabled?: boolean
   required?: boolean
 }
+
 export type ModalScenario =
   | "confirmation"
   | "alert"
@@ -31,7 +33,9 @@ export type ModalScenario =
   | "guard"
   | "external"
   | "slots"
+
 export type ModalExampleScenario = { scenario?: ModalScenario }
+
 const modalDescriptions = {
   confirmation: "Await a boolean result from a confirmation dialog. Cancel keeps the draft.",
   alert: "Wait for an acknowledgment before continuing an application workflow.",
@@ -44,12 +48,14 @@ const modalDescriptions = {
   external: "Update an open form from application code through its handle.",
   slots: "Replace the title, body and footer while keeping control of your own buttons."
 }
+
 export function modalStory(scenario: ModalScenario) {
   const sources: Partial<Record<ModalScenario, string>> = {
     confirmation:
       'const confirmed = await modals.confirm({\n  title: "Delete draft?",\n  confirmLabel: "Delete",\n  cancelLabel: "Keep draft"\n})',
     form: "const profile = await editProfile.open()\nif (profile !== null) {\n  saveProfile(profile)\n}"
   }
+
   return {
     args: { scenario },
     parameters: {
@@ -81,6 +87,7 @@ export function ModalExamples<TSurface>({
   const isProfile = ["form", "async", "guard", "external"].includes(scenario)
   let itemTitle = "Website launch"
   let itemDescription = "Draft proposal"
+
   if (isProfile) {
     itemTitle = "Ada Lovelace"
     itemDescription = "ada@example.com"
@@ -88,6 +95,7 @@ export function ModalExamples<TSurface>({
     itemTitle = "Project licenses"
     itemDescription = "3 seats selected"
   }
+
   async function onConfirm() {
     const confirmed = await manager.confirm({
       title: "Delete draft?",
@@ -95,8 +103,10 @@ export function ModalExamples<TSurface>({
       confirmLabel: "Delete",
       cancelLabel: "Keep draft"
     })
+
     setResult(String(confirmed))
   }
+
   async function onEdit() {
     const edit = createProfileModal(manager, {
       Button,
@@ -111,23 +121,28 @@ export function ModalExamples<TSurface>({
         })
       }
     })
+
     const handle = edit.open()
     const profile = await handle
     setResult(profile === null ? "Editing cancelled." : `Returned profile: ${JSON.stringify(profile)}`)
   }
+
   async function onInferredState() {
     const counter = createQuantityModal(manager, Button)
     const value = await counter.open({ count: 3 })
     setResult(value === null ? "Counter cancelled." : `Returned count: ${value.count}`)
   }
+
   async function onSlots() {
     const preview = createPreviewModal(manager, {
       Button,
       Input,
       onClose: ({ reason, result: value }) => setResult(`Closed: ${reason}; revisions: ${value?.count ?? "cancelled"}`)
     })
+
     await preview.open()
   }
+
   function onNested() {
     manager.open({
       title: "Draft details",
@@ -135,6 +150,7 @@ export function ModalExamples<TSurface>({
       body: <Button onClick={onConfirm}>Open nested confirmation</Button>
     })
   }
+
   return (
     <section>
       <div className="bk-row">

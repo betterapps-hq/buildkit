@@ -5,9 +5,13 @@ import { PackageOverview } from "./PackageOverview.js"
 function OverviewPage() {
   return <PackageOverview name="scaffolder" />
 }
+
 const meta = { title: "Tooling/scaffolder", parameters: { buildkitDocumentation: true } } satisfies Meta
+
 export default meta
+
 export const Overview: StoryObj<typeof meta> = { render: () => <OverviewPage /> }
+
 export const WritingACatalog: StoryObj<typeof meta> = {
   name: "Writing a catalog",
   render: () => (

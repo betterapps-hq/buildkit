@@ -1,4 +1,5 @@
 /** JSON helpers shared by the planner, the merges and the lock: canonical form, equality and JSON pointers. */
+/* oxlint-disable anti-slop/no-unknown-parameters, anti-slop/no-unknown-returns -- these helpers take documents parsed from JSON and YAML, before anything knows their structure */
 
 const unsafeKeys = new Set(["__proto__", "constructor", "prototype"])
 
@@ -7,8 +8,16 @@ export function isUnsafeKey(key: string): boolean {
   return unsafeKeys.has(key)
 }
 
+// oxlint-disable-next-line anti-slop/no-unsafe-dictionary-type -- an object in a parsed document holds anything, and each caller decodes the values it reads
 export function isRecord(value: unknown): value is Record<string, unknown> {
+  // oxlint-disable-next-line anti-slop/no-runtime-typeof -- this guard is how the core decodes objects in values it hasn't parsed yet
   return typeof value === "object" && value !== null && !Array.isArray(value)
+}
+
+/** True for a string, in a value the core is decoding, such as a catalog entry that's an id or an object. */
+export function isString(value: unknown): value is string {
+  // oxlint-disable-next-line anti-slop/no-runtime-typeof -- this guard is how the core decodes strings in values it hasn't parsed yet
+  return typeof value === "string"
 }
 
 /** Serializes with object keys sorted by code unit, so equal values always produce the same string. */
@@ -16,15 +25,19 @@ export function canonicalJson(value: unknown): string {
   if (value === undefined) {
     return "null"
   }
+
   if (Array.isArray(value)) {
     return `[${value.map((item) => canonicalJson(item)).join(",")}]`
   }
+
   if (isRecord(value)) {
     const keys = Object.keys(value)
       .filter((key) => value[key] !== undefined)
       .sort()
+
     return `{${keys.map((key) => `${JSON.stringify(key)}:${canonicalJson(value[key])}`).join(",")}}`
   }
+
   return JSON.stringify(value)
 }
 
@@ -37,15 +50,15 @@ function sortKeys(value: unknown): unknown {
   if (Array.isArray(value)) {
     return value.map((item) => sortKeys(item))
   }
+
   if (isRecord(value)) {
-    const sorted: Record<string, unknown> = {}
-    for (const key of Object.keys(value).sort()) {
-      if (value[key] !== undefined) {
-        sorted[key] = sortKeys(value[key])
-      }
-    }
-    return sorted
+    return Object.fromEntries(
+      Object.keys(value)
+        .sort()
+        .flatMap((key) => (value[key] === undefined ? [] : [[key, sortKeys(value[key])] as const]))
+    )
   }
+
   return value
 }
 
@@ -54,6 +67,7 @@ export function compareText(left: string, right: string): number {
   if (left === right) {
     return 0
   }
+
   return left < right ? -1 : 1
 }
 
@@ -63,22 +77,23 @@ export function jsonEqual(left: unknown, right: unknown): boolean {
 
 /** True when the value survives a JSON round trip unchanged: plain objects, arrays, strings, finite numbers, booleans and null. */
 export function isJsonValue(value: unknown): boolean {
-  if (value === null || typeof value === "string" || typeof value === "boolean") {
+  if (value === null || value === true || value === false || isString(value) || Number.isFinite(value)) {
     return true
   }
-  if (typeof value === "number") {
-    return Number.isFinite(value)
-  }
+
   if (Array.isArray(value)) {
     return value.every((item) => isJsonValue(item))
   }
+
   if (isRecord(value)) {
     const prototype: unknown = Object.getPrototypeOf(value)
+
     return (
       (prototype === Object.prototype || prototype === null) &&
       Object.entries(value).every(([key, item]) => !isUnsafeKey(key) && isJsonValue(item))
     )
   }
+
   return false
 }
 
@@ -87,9 +102,11 @@ export function parsePointer(pointer: string): string[] {
   if (pointer === "") {
     return []
   }
+
   if (!pointer.startsWith("/")) {
     throw new Error(`JSON pointer "${pointer}" must start with "/".`)
   }
+
   return pointer
     .slice(1)
     .split("/")
@@ -100,13 +117,22 @@ export function formatPointer(segments: readonly string[]): string {
   return segments.map((segment) => `/${segment.replaceAll("~", "~0").replaceAll("/", "~1")}`).join("")
 }
 
-export function readPointer(document: unknown, segments: readonly string[]): { found: boolean; value: unknown } {
+/** What a JSON pointer finds in a document: whether the value is there, and the value. */
+export interface PointerRead {
+  found: boolean
+  value: unknown
+}
+
+export function readPointer(document: unknown, segments: readonly string[]): PointerRead {
   let current: unknown = document
+
   for (const segment of segments) {
     if (!isRecord(current) || !Object.hasOwn(current, segment)) {
       return { found: false, value: undefined }
     }
+
     current = current[segment]
   }
+
   return { found: true, value: current }
 }

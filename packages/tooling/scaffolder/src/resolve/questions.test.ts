@@ -18,15 +18,17 @@ import { resolveSelection } from "./resolve.js"
 
 const settings = defineSettings({ product: "acme" })
 
-function thrown(run: () => unknown): PlanError {
+function thrown(run: () => void): PlanError {
   try {
     run()
   } catch (error) {
     if (error instanceof PlanError) {
       return error
     }
+
     throw error
   }
+
   throw new Error("expected a PlanError")
 }
 
@@ -37,13 +39,17 @@ function withTemplates(catalog: CatalogManifest, ...templates: TemplateManifest[
 /** The add-on ids a template's answers resolve to, in contribution order. */
 function resolved(catalog: CatalogManifest, answers: Answers): string[] {
   const selection = selectionFromAnswers(catalog, answers, "demo")
+
   if (!selection.ok) {
     throw new Error(`expected a selection, got ${selection.issue.kind}`)
   }
+
   const result = resolveSelection(catalog, selection.selection)
+
   if (!result.ok) {
     throw new Error(`expected a resolution, got ${result.issue.kind}`)
   }
+
   return result.value.addons.map((addon) => addon.manifest.id)
 }
 
@@ -98,6 +104,7 @@ describe("templates on questions", () => {
       extends: "vite-web",
       omit: ["telemetry", "npm:vitest"]
     })
+
     expect(expandTemplate(leaner, "lean")).toMatchObject({ required: ["npm:vite-plus"] })
     expect(expandTemplate(leaner, "lean")?.questions.map((question) => question.id)).toEqual([
       "localization",
@@ -105,16 +112,19 @@ describe("templates on questions", () => {
       "auth",
       "devtools"
     ])
+
     const cyclic = withTemplates(
       catalog,
       { id: "a", title: "A", description: "", extends: "b" },
       { id: "b", title: "B", description: "", extends: "a" }
     )
+
     expect(thrown(() => expandTemplate(cyclic, "a"))).toMatchObject({
       code: "E_INVALID_CATALOG",
       message: "Templates extend each other in a cycle: a, b, a."
     })
     expect(checkCatalog(cyclic)).toContain("Templates extend each other in a cycle: a, b, a.")
+
     const omitting = withTemplates(catalog, {
       id: "odd",
       title: "Odd",
@@ -122,6 +132,7 @@ describe("templates on questions", () => {
       extends: "saas",
       omit: ["devtools"]
     })
+
     expect(checkCatalog(omitting)).toEqual(["Template odd omits devtools, which saas doesn't have."])
   })
 
@@ -131,9 +142,11 @@ describe("templates on questions", () => {
     expect(findAddon(catalog, "npm:vite-plus")).toMatchObject({ title: "Vite+", version: "0.0.0", description: "" })
     const planned = await plan({ catalog, settings, tree: memoryTree({}), request: init() })
     expect(planned.status).toBe("planned")
+
     const manifest = JSON.parse(
       planned.operations.find((operation) => operation.path === "package.json")?.content ?? "{}"
     )
+
     // A caret catalog writes exact pins with ^, and a pin that's a range as it is.
     expect(manifest.dependencies).toMatchObject({ zod: "^4.1.0", "drizzle-orm": "~0.45.4", "better-auth": "^1.7.9" })
     expect(manifest.devDependencies).toMatchObject({ "vite-plus": "^0.1.0", vitest: "^4.0.8" })
@@ -188,6 +201,7 @@ describe("the catalog description", () => {
 
 describe("which choices are available", () => {
   const catalog = exampleCatalog()
+
   const auth = (questions: Answers["questions"]) =>
     availableChoices(catalog, { template: "vite-web", questions }, "auth").choices.map((choice) => [
       choice.id,
@@ -225,9 +239,11 @@ describe("which choices are available", () => {
         addon.id === "@acme/clerk" ? { ...addon, conflicts: ["@acme/convex"] } : addon
       )
     }
+
     expect(
       availableChoices(strict, { template: "vite-web", questions: { database: ["@acme/convex"] } }, "auth").choices[1]
     ).toMatchObject({ id: "@acme/clerk", disabled: "Can't be used with Convex" })
+
     const lonely = withTemplates(catalog, {
       id: "lonely",
       title: "Lonely",
@@ -235,6 +251,7 @@ describe("which choices are available", () => {
       target: "vite-react",
       questions: ["auth"]
     })
+
     expect(availableChoices(lonely, { template: "lonely" }, "auth")).toEqual({
       asked: true,
       choices: [
@@ -275,8 +292,10 @@ describe("which choices are available", () => {
           : template
       )
     }
+
     const asked = (questions: Answers["questions"]) =>
       availableChoices(seeded, { template: "vite-web", questions }, "seed").asked
+
     expect(asked({ database: [] })).toBe(false)
     expect(asked({ database: ["@acme/prisma"] })).toBe(true)
     // A question that isn't asked has no answer, so it isn't declined.
@@ -314,6 +333,7 @@ describe("answers to a selection", () => {
       { template: "vite-web", questions: { devtools: ["npm:storybook"], telemetry: ["@acme/sentry"] } },
       "demo"
     )
+
     expect(selection.ok && selection.selection.declined).toEqual([
       "@acme/posthog",
       "npm:@playwright/test",
@@ -334,6 +354,7 @@ describe("answers to a selection", () => {
         { use: "auth", required: true, default: "@acme/better-auth" }
       ]
     })
+
     expect(selectionFromAnswers(open, { template: "open" }, "demo")).toEqual({
       ok: false,
       issue: {
@@ -361,6 +382,7 @@ describe("answers to a selection", () => {
 
 describe("issues and decisions", () => {
   const catalog = exampleCatalog()
+
   const resolve = (...ids: string[]) =>
     resolveSelection(catalog, {
       name: "demo",
@@ -407,6 +429,7 @@ describe("issues and decisions", () => {
         { use: "auth", required: true, default: "@acme/better-auth" }
       ]
     })
+
     const tree = () => memoryTree({})
     const choosing = await plan({ catalog: open, settings, tree: tree(), request: init({ template: "open" }) })
     expect(choosing.decisions[0]).toMatchObject({ id: "question:database", message: "Which database?" })
@@ -430,7 +453,9 @@ describe("issues and decisions", () => {
         }
       }
     })
+
     expect(provider.decisions[0]?.message).toBe("Better Auth needs a database. Which one?")
+
     for (const choice of provider.decisions[0]?.choices ?? []) {
       expect(choice.request.intent).toMatchObject({ answers: { questions: { database: [choice.id] } } })
       expect((await plan({ catalog, settings, tree: tree(), request: choice.request })).status).toBe("planned")
@@ -440,17 +465,20 @@ describe("issues and decisions", () => {
   it("names a swap after the question that offers both", async () => {
     const files = await plan({ catalog, settings, tree: memoryTree({}), request: init() })
     const tree: Record<string, string> = {}
+
     for (const operation of files.operations) {
       if (operation.content !== undefined) {
         tree[operation.path] = operation.content
       }
     }
+
     const swap = await plan({
       catalog,
       settings,
       tree: memoryTree(tree),
       request: { intent: { command: "add", addons: ["prisma"], replace: [], options: {} } }
     })
+
     expect(swap.decisions[0]?.message).toBe("Drizzle is your database. Replace it with Prisma?")
   })
 })
@@ -502,7 +530,9 @@ describe("catalog checks for questions", () => {
         }
       ]
     }
+
     const problems = checkCatalog(broken)
+
     const missing = [
       "npm:vitest is a bare add-on, so the catalog needs a pin for vitest.",
       "Template mixed names @acme/better-auth-drizzle, a combination add-on, which is added with what it joins.",
@@ -515,6 +545,7 @@ describe("catalog checks for questions", () => {
       'Template mixed has the docs link "http://acme.dev", which isn\'t an https URL.',
       "Template picky gives question telemetry a default that doesn't match its pick, many."
     ].filter((expected) => !problems.includes(expected))
+
     expect(missing).toEqual([])
   })
 })
@@ -522,8 +553,10 @@ describe("catalog checks for questions", () => {
 describe("gallery images", () => {
   it("are https URLs or paths in the package, which a files check confirms", () => {
     const catalog = exampleCatalog()
+
     const imaged = (image: string): CatalogManifest =>
       withTemplates(catalog, { id: "shot", title: "Shot", description: "", target: "vite-react", gallery: { image } })
+
     expect(checkCatalog(imaged("https://acme.dev/shot.png"))).toEqual([])
     expect(checkCatalog(imaged("gallery/shot.png"))).toEqual([])
     expect(checkCatalog(imaged("http://acme.dev/shot.png"))).toEqual([
@@ -552,6 +585,7 @@ describe("the wizard on questions", () => {
       description: "Sessions you own",
       contribute: () => []
     })
+
     const catalog: CatalogManifest = {
       ...exampleCatalog(),
       addons: [...exampleCatalog().addons, lucia],
@@ -559,6 +593,7 @@ describe("the wizard on questions", () => {
         question.id === "auth" ? { ...question, choices: [...question.choices, "@acme/lucia"] } : question
       )
     }
+
     const { prompter, asked } = scriptedPrompter([
       true,
       "@acme/lingui",
@@ -571,12 +606,14 @@ describe("the wizard on questions", () => {
       ["npm:storybook"],
       "en"
     ])
+
     const answers = await runWizard({
       catalog,
       partial: { ...emptyAnswers(), template: "vite-web", name: "demo" },
       prompter,
       askName: false
     })
+
     expect(asked.map((question) => [question.kind, question.message])).toEqual([
       ["confirm", "Add localization?"],
       ["select", "Which library?"],
@@ -619,12 +656,14 @@ describe("the wizard on questions", () => {
 
   it("asks a required question without the yes or no, and stops when it's cancelled", async () => {
     const { prompter, asked } = scriptedPrompter([true, "@acme/lingui", cancelled])
+
     const answer = await runWizard({
       catalog,
       partial: { ...emptyAnswers(), template: "saas", name: "demo" },
       prompter,
       askName: false
     })
+
     expect(answer).toBe(cancelled)
     expect(asked.map((question) => question.message)).toEqual(["Add localization?", "Which library?", "Which one?"])
     expect(asked[2]?.initial).toBe("@acme/drizzle")

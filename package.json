@@ -1,6 +1,7 @@
 {
   "name": "buildkit",
   "private": true,
+  "type": "module",
   "license": "MIT",
   "packageManager": "pnpm@12.10.1",
   "engines": {

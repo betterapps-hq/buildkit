@@ -28,6 +28,11 @@ The unified package documentation and component workshop lives in `apps/behavior
 Preferences packages: [core](../packages/core/preferences-core/README.md),
 [React](../packages/react/react-preferences/README.md).
 
+[TypeScript utilities](../packages/core/typescript-utils/README.md): es-toolkit, ts-extras, ts-pattern, type-fest and
+tiny-invariant behind one import, with ts-reset. Shared configs: [Oxlint](../packages/tooling/oxlint-config/README.md),
+with the [anti-slop plugin](../packages/tooling/oxlint-plugin-anti-slop/README.md) as its own package, and
+[Storybook](../packages/tooling/storybook-config/README.md).
+
 Package-specific docs live in each package’s `docs/README.md`. Start with
 [dev-domains](../packages/tooling/dev-domains/docs/README.md).
 

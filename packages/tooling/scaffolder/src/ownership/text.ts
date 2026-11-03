@@ -11,6 +11,7 @@ export interface TextStyle {
 export function normalizeText(text: string): string {
   const withoutBom = text.startsWith(bom) ? text.slice(bom.length) : text
   const trimmed = withoutBom.replace(/\r\n?/g, "\n").replace(/\n+$/, "")
+
   return trimmed === "" ? "" : `${trimmed}\n`
 }
 
@@ -19,11 +20,13 @@ export function textStyle(existing: string | undefined): TextStyle {
   if (existing === undefined) {
     return { eol: "\n", bom: false }
   }
+
   return { eol: existing.includes("\r\n") ? "\r\n" : "\n", bom: existing.startsWith(bom) }
 }
 
 export function applyStyle(normalized: string, style: TextStyle): string {
   const withEol = style.eol === "\r\n" ? normalized.replaceAll("\n", "\r\n") : normalized
+
   return style.bom ? `${bom}${withEol}` : withEol
 }
 
@@ -34,11 +37,13 @@ export async function hashText(text: string): Promise<string> {
 
 export async function sha256(value: string): Promise<string> {
   const digest = await globalThis.crypto.subtle.digest("SHA-256", new TextEncoder().encode(value))
+
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("")
 }
 
 export function countLines(text: string): number {
   const normalized = normalizeText(text)
+
   return normalized === "" ? 0 : normalized.split("\n").length - 1
 }
 

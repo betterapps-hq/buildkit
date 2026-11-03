@@ -8,11 +8,13 @@ function show() {
 }
 
 alerts.subscribe(show, "settings")
+
 onCommand((command) => {
   if (command === "online" || command === "offline") {
     setOffline(command === "offline")
   }
 })
+
 show()
 
 export function Example() {

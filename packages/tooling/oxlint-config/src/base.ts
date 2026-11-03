@@ -1,8 +1,15 @@
-// The shared lint rules, extended by the root vite.config.ts.
-import type { OxlintConfig } from "vite-plus/lint"
+// The shared lint rules: what every Buildkit package lints with, extended by the root vite.config.ts.
+import { createRequire } from "node:module"
+import antiSlop from "@buildkitgg/oxlint-plugin-anti-slop"
+import type { OxlintConfig } from "oxlint"
 
-export default {
+// Oxlint resolves a plugin name from the app's config, where this package's dependencies may not be visible, so the
+// plugin is registered by its resolved path.
+const antiSlopPath = createRequire(import.meta.url).resolve("@buildkitgg/oxlint-plugin-anti-slop")
+
+const base: OxlintConfig = {
   plugins: ["eslint", "typescript", "react", "vitest", "jsx-a11y", "import", "oxc", "unicorn", "promise", "react-perf"],
+  jsPlugins: [{ name: "anti-slop", specifier: antiSlopPath }],
   categories: {
     correctness: "error"
   },
@@ -20,6 +27,8 @@ export default {
     "*.md"
   ],
   rules: {
+    ...Object.fromEntries(Object.keys(antiSlop.rules).map((rule) => [`anti-slop/${rule}`, "error"])),
+    "oxc/no-accumulating-spread": "error",
     "typescript/no-explicit-any": "error",
     "typescript/no-inferrable-types": "error",
     "typescript/no-non-null-assertion": "off",
@@ -163,4 +172,9 @@ export default {
     "jsx-a11y/scope": "error",
     "jsx-a11y/tabindex-no-positive": "error"
   }
-} satisfies OxlintConfig
+}
+
+export default base
+
+// What `require` returns, so a config compiled to CommonJS gets these rules rather than this module's namespace.
+export { base as "module.exports" }

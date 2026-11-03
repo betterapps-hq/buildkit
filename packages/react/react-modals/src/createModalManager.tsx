@@ -26,20 +26,24 @@ type InstanceControls<TResult, TData extends object, TState extends object, TPat
 }
 
 function mergeState<T extends object>(current: T, patch: Partial<T>): T {
-  if (Reflect.ownKeys(patch).every((key) => Object.is(Reflect.get(current, key), Reflect.get(patch, key)))) {
+  // SAFETY: a patch holds only keys of the state it patches.
+  const keys = Reflect.ownKeys(patch) as (keyof T)[]
+
+  if (keys.every((key) => Object.is(current[key], patch[key]))) {
     return current
   }
+
   return Object.freeze({ ...current, ...patch })
 }
 
 function isStateFactory<TData extends object>(value: TData | (() => TData)): value is () => TData {
-  return typeof value === "function"
+  return value instanceof Function
 }
 
 function isUpdateFunction<TState extends object, TPatch>(
   patch: ModalStateUpdate<TState, TPatch>
 ): patch is (current: Readonly<TState>) => TPatch {
-  return typeof patch === "function"
+  return patch instanceof Function
 }
 
 /** Shared React orchestration. UI adapters supply surfaces, never a second manager implementation. */
@@ -71,12 +75,15 @@ export function createModalManager<TSurface = ModalSurfaceOptions>(
   ) {
     validateName(initial)
     let state: Readonly<TState> = Object.freeze(initial)
+
     const returnFocus =
       typeof document !== "undefined" && document.activeElement instanceof HTMLElement
         ? document.activeElement
         : undefined
+
     let controls: InstanceControls<TResult, TData, TState, TPatch> | undefined
     const { beforeDismiss } = modalOptions
+
     const handle = store.open({
       ...modalOptions,
       beforeDismiss: beforeDismiss ? () => beforeDismiss(getData(state)) : undefined,
@@ -91,22 +98,29 @@ export function createModalManager<TSurface = ModalSurfaceOptions>(
           update(patch) {
             coreControls.update((content) => {
               const changes = isUpdateFunction(patch) ? patch(state) : patch
+
               if (!coreControls.isActive()) {
                 return content
               }
+
               const next = merge(state, changes)
               validateName(next)
+
               if (Object.is(next, state)) {
                 return content
               }
+
               state = Object.freeze(next)
+
               return { ...createView(state, controls!), returnFocus }
             })
           }
         }
+
         return { ...createView(state, controls), returnFocus }
       }
     })
+
     // Expose the typed updater rather than the core content replacement function.
     return Object.assign(
       handle.then((value) => value),
@@ -121,6 +135,7 @@ export function createModalManager<TSurface = ModalSurfaceOptions>(
     completionResult: TResult
   ): StandardModalHandle<TResult, StandardModalOptions<TSurface, TResult>> {
     type Options = StandardModalOptions<TSurface, TResult>
+
     return openState<Options, Partial<Omit<Options, "id">>, Options, TResult>(
       { ...initial },
       { id: initial.id, defaultResult },
@@ -134,6 +149,7 @@ export function createModalManager<TSurface = ModalSurfaceOptions>(
         dismissible: state.dismissible,
         renderSlots(activity) {
           const props = { data: state, controls, isPending: activity.isPending, error: activity.error }
+
           return {
             title: renderSlot(state.title, props),
             body: renderSlot(state.body, props),
@@ -182,9 +198,11 @@ export function createModalManager<TSurface = ModalSurfaceOptions>(
       ...presentation
     }: CreateModalOptions<TData, TResult, TSurface>) {
       const defaults = isStateFactory(initialState) ? initialState : Object.freeze({ ...initialState })
+
       return {
         open(overrides, instanceOptions) {
           const initial = isStateFactory(defaults) ? defaults() : defaults
+
           return openState<ModalState<TData, TSurface, TResult>, ModalUpdate<TData, TSurface, TResult>, TData, TResult>(
             { ...presentation, data: Object.freeze({ ...initial, ...overrides }) },
             { id: instanceOptions?.id ?? id, defaultResult, beforeDismiss },
@@ -199,6 +217,7 @@ export function createModalManager<TSurface = ModalSurfaceOptions>(
               id: controls.id,
               renderSlots(activity) {
                 const props = { data, controls, isPending: activity.isPending, error: activity.error }
+
                 return {
                   title: renderSlot(title, props),
                   body: renderSlot(body, props),
@@ -211,5 +230,6 @@ export function createModalManager<TSurface = ModalSurfaceOptions>(
       }
     }
   }
+
   return manager
 }

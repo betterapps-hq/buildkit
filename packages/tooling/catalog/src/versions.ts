@@ -1,7 +1,7 @@
 import { catalogVersion } from "./version.js"
 
 /** Pins for every package the generated apps depend on. Every version was on npm for at least a day on 2026-10-29. */
-export const versions: Record<string, string> = {
+export const versions = {
   // The CLI and the catalog release together, so an app pins the CLI at the catalog's own version.
   "@buildkitgg/cli": catalogVersion,
   "@tanstack/react-router": "1.170.46",
@@ -21,4 +21,4 @@ export const versions: Record<string, string> = {
   "@lingui/react": "6.10.1",
   "@lingui/cli": "6.10.1",
   "@lingui/vite-plugin": "6.10.1"
-}
+} satisfies Record<string, string>

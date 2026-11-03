@@ -9,9 +9,11 @@ import { runProcess, withSignals } from "./process.js"
 import { proxyEnvironment } from "./proxy.js"
 
 const dirs: string[] = []
+
 afterEach(async () => {
   await Promise.all(dirs.splice(0).map((dir) => rm(dir, { recursive: true, force: true })))
 })
+
 it("constructs strict framework commands with argument boundaries intact", async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), "buildkit-command-"))
   dirs.push(root)
@@ -19,11 +21,13 @@ it("constructs strict framework commands with argument boundaries intact", async
     path.join(root, "package.json"),
     JSON.stringify({ scripts: { dev: "vite", recursive: "dev-domains run app" } })
   )
+
   for (const framework of ["vite", "next", "storybook"] as const) {
     const config = configSchema.parse({
       project: "demo",
       endpoints: { app: { script: "dev", framework, env: { APP_URL: "{origin}" } } }
     })
+
     const endpoint = resolveEndpoints({ config, root, worktree: null, file: undefined })[0]!
     const command = await serverCommand(endpoint.endpoint, "npm", root, endpoint.variables, 4555)
     expect(command.slice(0, 4)).toEqual(["npm", "run", "dev", "--"])
@@ -40,22 +44,27 @@ it("constructs strict framework commands with argument boundaries intact", async
       "does not exist"
     )
   }
+
   const endpoint = configSchema.parse({
     project: "demo",
     endpoints: { app: { command: ["node", "a file.js", "--port={port}"] } }
   }).endpoints.app!
+
   expect(await serverCommand(endpoint, "npm", root, {}, 4555)).toEqual(["node", "a file.js", "--port=4555"])
 })
+
 it.each(["npm", "pnpm", "yarn", "bun"] as const)(
   "uses %s script argument rules without shell concatenation",
   async (manager) => {
     const root = await mkdtemp(path.join(os.tmpdir(), "buildkit-command-"))
     dirs.push(root)
     await writeFile(path.join(root, "package.json"), JSON.stringify({ scripts: { "dev app": "vite" } }))
+
     const endpoint = configSchema.parse({
       project: "demo",
       endpoints: { app: { script: "dev app", framework: "vite" } }
     }).endpoints.app!
+
     expect(await serverCommand(endpoint, manager, root, {}, 4567)).toEqual([
       manager,
       "run",
@@ -69,6 +78,7 @@ it.each(["npm", "pnpm", "yarn", "bun"] as const)(
     ])
   }
 )
+
 it("isolates proxy options from inherited public-sharing settings", () => {
   const config = configSchema.parse({
     project: "demo",
@@ -76,6 +86,7 @@ it("isolates proxy options from inherited public-sharing settings", () => {
     proxy: { domains: ["localhost", "local.example.com"], https: false, port: 8080, syncHosts: false },
     endpoints: { app: { command: ["node"] } }
   })
+
   expect(proxyEnvironment({ config, root: ".", worktree: null, file: undefined })).toMatchObject({
     PORTLESS_TLD: "localhost,local.example.com",
     PORTLESS_HTTPS: "0",
@@ -83,11 +94,13 @@ it("isolates proxy options from inherited public-sharing settings", () => {
     PORTLESS_SYNC_HOSTS: "0"
   })
 })
+
 it("preserves exit codes, spawn errors, bounded diagnostics, and cancellation", async () => {
   const result = await runProcess(
     [process.execPath, "-e", "process.stderr.write('x'.repeat(10000)); process.exit(7)"],
     { cwd: process.cwd(), quiet: true }
   )
+
   expect(result.code).toBe(7)
   expect(result.stderr.length).toBe(8192)
   await expect(runProcess([], { cwd: "." })).rejects.toThrow("command")
@@ -95,12 +108,14 @@ it("preserves exit codes, spawn errors, bounded diagnostics, and cancellation", 
     "Cannot start"
   )
   const controller = new AbortController()
+
   const running = runProcess([process.execPath, "-e", "setInterval(()=>{},1000)"], {
     cwd: ".",
     quiet: true,
     signal: controller.signal,
     onSpawn: () => controller.abort()
   })
+
   expect((await running).code).not.toBe(0)
   await expect(runProcess([process.execPath], { cwd: ".", signal: controller.signal })).rejects.toThrow(Error)
   const before = process.listenerCount("SIGINT")

@@ -1,7 +1,11 @@
 "use client"
+
 export { createAlertManager } from "./createAlertManager.js"
+
 export { AlertRegion, type AlertRegionProps } from "./AlertRegion.js"
+
 export { useAlerts } from "./useAlerts.js"
+
 export type {
   AlertManager,
   AlertManagerOptions,
