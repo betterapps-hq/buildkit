@@ -35,7 +35,14 @@ export interface Envelope {
   notices?: Plan["notices"]
   nextSteps?: string[]
   artifacts?: string
+  /** The setup steps `create` ran after applying, and the one that failed. */
+  setup?: SetupReport
   error?: PlanErrorInfo
+}
+
+export interface SetupReport {
+  ran: string[]
+  failed?: { label: string; run: string; output: string }
 }
 
 function nonEmpty<T>(key: string, values: T[] | undefined): Record<string, T[]> {
@@ -122,11 +129,12 @@ export function artifactName(id: string): string {
   return id.replace(/[^A-Za-z0-9._-]+/g, "_").slice(0, 120)
 }
 
-/** 0 planned, applied or unchanged; 1 needs a decision; 3 conflict; 4 drift; 5 locked or interrupted; 130 cancelled; 2 otherwise. */
-export function exitCode(envelope: Pick<Envelope, "status" | "error">): number {
+/** 0 planned, applied or unchanged; 1 needs a decision; 3 conflict; 4 drift; 5 locked or interrupted; 6 applied, setup failed; 130 cancelled; 2 otherwise. */
+export function exitCode(envelope: Pick<Envelope, "status" | "error" | "setup">): number {
   switch (envelope.status) {
-    case "planned":
     case "applied":
+      return envelope.setup?.failed ? 6 : 0
+    case "planned":
     case "unchanged":
       return 0
     case "needs-decision":

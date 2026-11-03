@@ -35,9 +35,12 @@ export function scriptedPrompter(script: ScriptedAnswer[]): {
   prompter: Prompter
   asked: AskedQuestion[]
   notes: string[]
+  /** The title of every task run, in order, the failed one included. */
+  tasks: string[]
 } {
   const asked: AskedQuestion[] = []
   const notes: string[] = []
+  const tasks: string[] = []
   const next = (question: AskedQuestion) => {
     asked.push(question)
     const answer = script.shift()
@@ -59,6 +62,7 @@ export function scriptedPrompter(script: ScriptedAnswer[]): {
   return {
     asked,
     notes,
+    tasks,
     prompter: {
       select: async (question) =>
         ofType(
@@ -93,6 +97,14 @@ export function scriptedPrompter(script: ScriptedAnswer[]): {
       password: async (question) => ofType({ kind: "password", message: question.message }, isString),
       note: (message) => {
         notes.push(message)
+      },
+      tasks: async (list) => {
+        for (const task of list) {
+          tasks.push(task.title)
+          if (!(await task.run())) {
+            return
+          }
+        }
       }
     }
   }

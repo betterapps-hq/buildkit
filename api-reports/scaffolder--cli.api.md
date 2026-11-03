@@ -25,6 +25,7 @@ export const clackPrompter: Prompter;
 export interface CliIo {
     // (undocumented)
     cwd: string;
+    env: Record<string, string | undefined>;
     isTTY: boolean;
     // (undocumented)
     prompter: Prompter;
@@ -54,6 +55,7 @@ export interface CliOptions {
     name: string;
     // Warning: (ae-forgotten-export) The symbol "CommandRunner" needs to be exported by the entry point cli.d.ts
     runCommand?: CommandRunner;
+    runSetup?: SetupRunner;
     // Warning: (ae-forgotten-export) The symbol "ProductSettings" needs to be exported by the entry point cli.d.ts
     //
     // (undocumented)
@@ -190,6 +192,7 @@ export interface Prompter {
         options: SelectOption[];
         initialValue?: string;
     }): Promise<string | Cancelled>;
+    tasks?(tasks: PromptTask[]): Promise<void>;
     // (undocumented)
     text(question: {
         message: string;
@@ -197,6 +200,14 @@ export interface Prompter {
         initialValue?: string;
         validate?: (value: string) => string | undefined;
     }): Promise<string | Cancelled>;
+}
+
+// @public
+export interface PromptTask {
+    // (undocumented)
+    run: () => Promise<boolean>;
+    // (undocumented)
+    title: string;
 }
 
 // @public
@@ -220,6 +231,7 @@ export interface ScaffoldOptions {
     // (undocumented)
     io?: Partial<CliIo>;
     runCommand?: CommandRunner;
+    runSetup?: SetupRunner;
     // (undocumented)
     version: string;
 }
@@ -234,6 +246,12 @@ export interface SelectOption {
     // (undocumented)
     value: string;
 }
+
+// @public
+export type SetupRunner = (command: string, cwd: string) => Promise<{
+    code: number;
+    output: string;
+}>;
 
 // (No @packageDocumentation comment for this package)
 

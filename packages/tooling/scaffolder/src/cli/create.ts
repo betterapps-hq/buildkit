@@ -87,6 +87,10 @@ export function createCli(options: CliOptions): CommandDef {
       },
       set: { type: "string", description: "Set an option: <add-on>.<option>=<value>. Repeatable" },
       adopt: { type: "boolean", description: "Bring an existing project in. Your files stay yours" },
+      setup: {
+        type: "boolean",
+        description: "Run the setup steps, such as the install, without asking. Use --no-setup to skip them"
+      },
       ...questionArgs
     },
     add: {

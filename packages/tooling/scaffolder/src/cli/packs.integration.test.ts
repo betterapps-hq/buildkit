@@ -21,7 +21,10 @@ afterEach(() => {
 })
 
 /** A template package's index.js: one or more templates for the fixture catalog, and an add-on whose file has the version. */
-function packSource(version: string, options: { range?: string; templates?: string[] } = {}): string {
+function packSource(version: string, options: { range?: string; templates?: string[]; setup?: boolean } = {}): string {
+  const setup = options.setup
+    ? `, { kind: "command", run: "node build-turrets.js", when: "after-install", why: "Build the turrets", setup: true }`
+    : ""
   const templates = (options.templates ?? ["tower"]).map((id) => ({
     id,
     title: id[0]!.toUpperCase() + id.slice(1),
@@ -39,7 +42,7 @@ function packSource(version: string, options: { range?: string; templates?: stri
     version: ${JSON.stringify(version)},
     title: "Turrets",
     description: "Turret logic",
-    contribute: () => [{ kind: "file", path: "src/turrets.ts", content: ${JSON.stringify(`export const turrets = "${version}"\n`)}, ownership: "seed" }]
+    contribute: () => [{ kind: "file", path: "src/turrets.ts", content: ${JSON.stringify(`export const turrets = "${version}"\n`)}, ownership: "seed" }${setup}]
   }]
 }
 `
@@ -88,11 +91,17 @@ function fakeNpm(published: Record<string, string>): { run: CommandRunner; calls
 async function run(argv: string[], npm: { run: CommandRunner }, script: ScriptedAnswer[] = []) {
   output = []
   const scripted = scriptedPrompter(script)
+  const setupRuns: string[] = []
   const code = await runCli(argv, {
     name: "fixture",
     version: "0.0.0",
     catalog: fixtureCatalog(),
-    settings,
+    // Only a package's own setup commands are offered, and none of them runs.
+    settings: { ...settings, setup: { install: false, git: false } },
+    runSetup: async (command) => {
+      setupRuns.push(command)
+      return { code: 0, output: "" }
+    },
     cacheDir: join(root, "cache"),
     runCommand: npm.run,
     io: {
@@ -100,16 +109,47 @@ async function run(argv: string[], npm: { run: CommandRunner }, script: Scripted
       stderr: (text) => output.push(text),
       isTTY: script.length > 0,
       cwd: root,
-      prompter: scripted.prompter
+      prompter: scripted.prompter,
+      env: {}
     }
   })
-  return { code, out: output.join(""), asked: scripted.asked }
+  return { code, out: output.join(""), asked: scripted.asked, notes: scripted.notes, setupRuns }
 }
 
 const envelope = (out: string): Envelope => JSON.parse(out) as Envelope
 const lock = () => JSON.parse(readFileSync(join(root, "demo/.fixture/lock.json"), "utf8"))
 
 describe("template packages", () => {
+  it("offers a package's setup commands only after the plan that names its author is confirmed", async () => {
+    const npm = fakeNpm({ "1.0.0": packSource("1.0.0", { setup: true }) })
+    const answer: ScriptedAnswer = (question) => {
+      if (question.kind === "confirm") {
+        return question.message === "Apply these changes?" ? true : question.initial === true
+      }
+      return question.kind === "multiselect" ? (question.initial as string[]) : String(question.initial ?? "")
+    }
+    const created = await run(
+      ["create", "@acme/tower", "demo"],
+      npm,
+      Array.from({ length: 8 }, () => answer)
+    )
+    expect(created.code).toBe(0)
+    const messages = created.asked.map((question) => question.message)
+    expect(messages.slice(-2)).toEqual(["Apply these changes?", "Run setup now?"])
+    expect(created.notes[0]).toContain("Applying it runs code from its author.")
+    expect(created.setupRuns).toEqual(["node build-turrets.js"])
+    // Declining the plan runs nothing.
+    const decline: ScriptedAnswer = (question) =>
+      question.message === "Apply these changes?" ? false : String(question.initial ?? "")
+    const declined = await run(
+      ["create", "@acme/tower", "other"],
+      npm,
+      Array.from({ length: 3 }, () => decline)
+    )
+    expect(declined.code).toBe(130)
+    expect(declined.setupRuns).toEqual([])
+  })
+
   it("creates a project from a package, keeps using that version, and upgrades it", async () => {
     const npm = fakeNpm({ "1.0.0": packSource("1.0.0") })
     const created = await run(["create", "@acme/tower", "demo", "--yes", "--json"], npm)

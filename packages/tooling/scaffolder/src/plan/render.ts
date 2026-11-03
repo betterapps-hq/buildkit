@@ -252,13 +252,22 @@ function collect(result: Rendered, contributor: string, contributions: Contribut
         result.lines.set(contribution.path, desired)
         break
       }
-      case "command":
-        if (
-          !result.commands.some((command) => command.run === contribution.run && command.when === contribution.when)
-        ) {
-          result.commands.push({ run: contribution.run, when: contribution.when, why: contribution.why })
+      case "command": {
+        const same = result.commands.find(
+          (command) => command.run === contribution.run && command.when === contribution.when
+        )
+        if (!same) {
+          result.commands.push({
+            run: contribution.run,
+            when: contribution.when,
+            why: contribution.why,
+            ...(contribution.setup ? { setup: true as const } : {})
+          })
+        } else if (contribution.setup) {
+          same.setup = true
         }
         break
+      }
       case "notice":
         result.notices.push({ code: contribution.code, text: contribution.text })
         break

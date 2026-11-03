@@ -17,7 +17,9 @@ function headline(envelope: Envelope): string {
     case "planned":
       return `Planned ${changes}. Nothing has been written yet.`
     case "applied":
-      return `Applied ${changes}.`
+      return envelope.setup?.failed
+        ? `Applied ${changes}. Setup stopped: ${envelope.setup.failed.label} failed.`
+        : `Applied ${changes}.`
     case "unchanged":
       return "Everything is up to date. Nothing to change."
     case "needs-decision":
@@ -124,6 +126,19 @@ export function describeEnvelope(envelope: Envelope): string {
       "Notes",
       (envelope.notices ?? []).map((notice) => notice.text)
     ),
+    ...section("Setup", [
+      ...(envelope.setup?.ran ?? []).map((label) => `Done: ${label}`),
+      ...(envelope.setup?.failed
+        ? [
+            `Failed: ${envelope.setup.failed.label} (${envelope.setup.failed.run})`,
+            ...envelope.setup.failed.output
+              .trimEnd()
+              .split(/\r?\n/)
+              .filter((line) => line.trim() !== "")
+              .map((line) => `  ${line}`)
+          ]
+        : [])
+    ]),
     ...section("Next steps", [...(envelope.nextSteps ?? []), ...(envelope.error?.next ?? [])]),
     ...(envelope.artifacts ? ["", `Plan files: ${envelope.artifacts}`] : [])
   )
