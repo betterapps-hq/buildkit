@@ -284,7 +284,7 @@ function generateDocumentation() {
   )
   write(
     resolve(documentation, "shadcn-style-packages.stories.tsx"),
-    `// Generated from the upstream style catalog.\nimport type { Meta, StoryObj } from "@storybook/react-vite"\nimport { PackageOverview } from "./PackageOverview.js"\nconst meta = { title: "shadcn/Styles", component: PackageOverview, args: {name: "shadcn-baseui-nova"}, parameters: {buildkitDocumentation: true, layout: "fullscreen", controls: {disable: true}} } satisfies Meta<typeof PackageOverview>\nexport default meta\ntype Story = StoryObj<typeof meta>\n${variants(
+    `// Generated from the upstream style catalog.\nimport type { Meta, StoryObj } from "@storybook/react-vite"\nimport { PackageOverview } from "./PackageOverview.js"\n\nconst meta = { title: "shadcn/Styles", component: PackageOverview, args: {name: "shadcn-baseui-nova"}, parameters: {buildkitDocumentation: true, layout: "fullscreen", controls: {disable: true}} } satisfies Meta<typeof PackageOverview>\n\nexport default meta\n\ntype Story = StoryObj<typeof meta>\n\n${variants(
       data
     )
       .map(
