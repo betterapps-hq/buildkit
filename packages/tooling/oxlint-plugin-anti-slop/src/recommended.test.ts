@@ -3,8 +3,8 @@ import { createRequire } from "node:module"
 import { dirname, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vite-plus/test"
-import antiSlop from "./anti-slop.ts"
-import plugin from "./vendor/anti-slop/index.ts"
+import plugin from "./index.ts"
+import antiSlop from "./recommended.ts"
 
 const fixture = fileURLToPath(new URL("../test/fixture/", import.meta.url))
 const require = createRequire(import.meta.url)
@@ -43,6 +43,12 @@ describe("anti-slop rule set", () => {
         "anti-slop(no-unknown-parameters)",
         "oxc(no-accumulating-spread)"
       ])
+    )
+  })
+
+  it("works as a plugin on its own, loaded by package name", () => {
+    expect(reportedRules("plugin.config.ts")).toEqual(
+      new Set(["anti-slop(no-array-filter-map)", "anti-slop(no-runtime-typeof)"])
     )
   })
 })

@@ -1,7 +1,7 @@
 {
   "name": "@buildkitgg/oxlint-config",
   "version": "0.0.0",
-  "description": "Shared Oxlint configuration: the Buildkit base rules and the anti-slop rule set.",
+  "description": "Shared Oxlint configuration: the Buildkit base rules, and the anti-slop rule set from @buildkitgg/oxlint-plugin-anti-slop.",
   "license": "MIT",
   "type": "module",
   "sideEffects": false,
@@ -18,20 +18,16 @@
   "files": [
     "dist/**/*.js",
     "dist/**/*.d.ts",
-    "dist/vendor/anti-slop/**/LICENSE",
     "README.md",
     "LICENSE",
     "CHANGELOG.md"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "test": "pnpm build && vp test run",
-    "test:coverage": "pnpm build && vp test run --coverage",
-    "sync:anti-slop": "node scripts/sync-anti-slop.ts",
     "prepack": "pnpm build"
   },
   "dependencies": {
-    "@oxlint/plugins": "1.89.0"
+    "@buildkitgg/oxlint-plugin-anti-slop": "workspace:*"
   },
   "peerDependencies": {
     "oxlint": "^1.89.0"
@@ -39,11 +35,8 @@
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
     "@types/node": "24.19.2",
-    "@vitest/coverage-v8": "catalog:",
     "oxlint": "1.89.0",
-    "typescript": "catalog:",
-    "vite-plus": "catalog:",
-    "vitest": "catalog:"
+    "typescript": "catalog:"
   },
   "repository": {
     "type": "git",

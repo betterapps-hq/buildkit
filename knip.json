@@ -129,8 +129,11 @@
       "entry": [".generated/index.ts"],
       "ignoreDependencies": ["@repo/shadcn-generator", "lucide-react", "next-themes"]
     },
+    "packages/tooling/oxlint-plugin-anti-slop": {
+      "entry": ["src/index.ts", "src/recommended.ts", "test/fixture/*.ts"]
+    },
     "packages/tooling/oxlint-config": {
-      "entry": ["src/anti-slop.ts", "test/fixture/*.ts"]
+      "entry": ["src/anti-slop.ts"]
     }
   }
 }

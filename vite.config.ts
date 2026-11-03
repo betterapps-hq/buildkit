@@ -34,7 +34,7 @@ export default defineConfig({
       "packages/tooling/catalog/templates/**",
       "**/src/vendor/**",
       // Code the anti-slop tests expect to be reported
-      "packages/tooling/oxlint-config/test/fixture/slop.ts"
+      "packages/tooling/oxlint-plugin-anti-slop/test/fixture/slop.ts"
     ],
     options: { typeAware: true, typeCheck: true },
     jsPlugins: [{ name: "vite-plus", specifier: "vite-plus/oxlint-plugin" }],

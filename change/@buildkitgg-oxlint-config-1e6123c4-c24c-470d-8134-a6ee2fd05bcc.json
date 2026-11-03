@@ -1,6 +1,6 @@
 {
   "type": "minor",
-  "comment": "feat(oxlint-config): publish the shared Oxlint config with the anti-slop rule set",
+  "comment": "feat(oxlint-config): publish the shared Oxlint config, with the anti-slop rule set from @buildkitgg/oxlint-plugin-anti-slop",
   "packageName": "@buildkitgg/oxlint-config",
   "email": "ajcraswell@gmail.com",
   "dependentChangeType": "patch"

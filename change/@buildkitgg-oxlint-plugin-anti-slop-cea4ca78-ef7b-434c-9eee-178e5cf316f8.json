@@ -1,0 +1,7 @@
+{
+  "type": "minor",
+  "comment": "feat(oxlint-plugin-anti-slop): add the anti-slop Oxlint plugin and its recommended rule set",
+  "packageName": "@buildkitgg/oxlint-plugin-anti-slop",
+  "email": "ajcraswell@gmail.com",
+  "dependentChangeType": "patch"
+}

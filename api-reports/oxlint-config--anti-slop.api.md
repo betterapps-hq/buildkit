@@ -4,11 +4,9 @@
 
 ```ts
 
-import type { OxlintConfig } from 'oxlint';
+import { default as default_2 } from '@buildkitgg/oxlint-plugin-anti-slop/recommended';
 
-// @public
-const antiSlop: OxlintConfig;
-export default antiSlop;
+export default default_2;
 
 // (No @packageDocumentation comment for this package)
 

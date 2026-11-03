@@ -30,7 +30,7 @@ Preferences packages: [core](../packages/core/preferences-core/README.md),
 
 [TypeScript utilities](../packages/core/typescript-utils/README.md): es-toolkit, ts-extras, ts-pattern, type-fest and
 tiny-invariant behind one import, with ts-reset. Shared configs: [Oxlint](../packages/tooling/oxlint-config/README.md),
-including the anti-slop rule set and its [vendored plugin](../packages/tooling/oxlint-config/docs/anti-slop.md), and
+with the [anti-slop plugin](../packages/tooling/oxlint-plugin-anti-slop/README.md) as its own package, and
 [Storybook](../packages/tooling/storybook-config/README.md).
 
 Package-specific docs live in each package’s `docs/README.md`. Start with
