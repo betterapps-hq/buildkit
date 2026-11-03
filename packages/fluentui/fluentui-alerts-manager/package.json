@@ -51,12 +51,12 @@
   "types": "./dist/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AndrewCraswell/buildkit.git",
+    "url": "git+https://github.com/betterapps-hq/buildkit.git",
     "directory": "packages/fluentui/fluentui-alerts-manager"
   },
-  "homepage": "https://github.com/AndrewCraswell/buildkit/tree/main/packages/fluentui/fluentui-alerts-manager#readme",
+  "homepage": "https://github.com/betterapps-hq/buildkit/tree/main/packages/fluentui/fluentui-alerts-manager#readme",
   "bugs": {
-    "url": "https://github.com/AndrewCraswell/buildkit/issues"
+    "url": "https://github.com/betterapps-hq/buildkit/issues"
   },
   "publishConfig": {
     "access": "public",

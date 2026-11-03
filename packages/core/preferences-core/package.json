@@ -40,12 +40,12 @@
   "types": "./dist/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AndrewCraswell/buildkit.git",
+    "url": "git+https://github.com/betterapps-hq/buildkit.git",
     "directory": "packages/core/preferences-core"
   },
-  "homepage": "https://github.com/AndrewCraswell/buildkit/tree/main/packages/core/preferences-core#readme",
+  "homepage": "https://github.com/betterapps-hq/buildkit/tree/main/packages/core/preferences-core#readme",
   "bugs": {
-    "url": "https://github.com/AndrewCraswell/buildkit/issues"
+    "url": "https://github.com/betterapps-hq/buildkit/issues"
   },
   "publishConfig": {
     "access": "public",

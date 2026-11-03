@@ -37,11 +37,11 @@ snapshots are empty.
 
 Keep the returned handle to update that instance; there is no update-by-ID method.
 
-See [update examples](https://github.com/AndrewCraswell/buildkit/blob/main/docs/modal-updates.md),
-[lifecycle and architecture](https://github.com/AndrewCraswell/buildkit/blob/main/docs/modals.md) and
+See [update examples](https://github.com/betterapps-hq/buildkit/blob/main/docs/modal-updates.md),
+[lifecycle and architecture](https://github.com/betterapps-hq/buildkit/blob/main/docs/modals.md) and
 [package guide](docs/README.md).
 
 Pass `onClose({ id, result, reason })` to `open()` to observe settlement once after snapshot notification. Reasons
 distinguish completion, dismissal, parent closure, close-all, clear and disposal. Observers cannot veto closure.
 Observer failures are aggregated after all observers run; results stay settled. See
-[close event semantics](https://github.com/AndrewCraswell/buildkit/blob/main/docs/modal-updates.md#close-telemetry).
+[close event semantics](https://github.com/betterapps-hq/buildkit/blob/main/docs/modal-updates.md#close-telemetry).

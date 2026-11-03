@@ -1,4 +1,4 @@
 # fluentui-alerts-manager documentation
 
 - [Usage and lifecycle](../README.md)
-- [Architecture, migration, and native toast APIs](https://github.com/AndrewCraswell/buildkit/blob/main/docs/alerts.md)
+- [Architecture, migration, and native toast APIs](https://github.com/betterapps-hq/buildkit/blob/main/docs/alerts.md)

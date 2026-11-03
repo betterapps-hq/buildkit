@@ -35,4 +35,4 @@ Snapshots and entry containers are frozen. Generic payloads and React elements a
 entries, preserving previous snapshots. Treat payloads as immutable. Server snapshots are empty to avoid leaking request
 data; create stores per request, not as server singletons.
 
-See [alert architecture and native toast guidance](https://github.com/AndrewCraswell/buildkit/blob/main/docs/alerts.md).
+See [alert architecture and native toast guidance](https://github.com/betterapps-hq/buildkit/blob/main/docs/alerts.md).

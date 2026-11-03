@@ -62,12 +62,12 @@
   "types": "./dist/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AndrewCraswell/buildkit.git",
+    "url": "git+https://github.com/betterapps-hq/buildkit.git",
     "directory": "packages/shadcn/shadcn-modals-manager"
   },
-  "homepage": "https://github.com/AndrewCraswell/buildkit/tree/main/packages/shadcn/shadcn-modals-manager#readme",
+  "homepage": "https://github.com/betterapps-hq/buildkit/tree/main/packages/shadcn/shadcn-modals-manager#readme",
   "bugs": {
-    "url": "https://github.com/AndrewCraswell/buildkit/issues"
+    "url": "https://github.com/betterapps-hq/buildkit/issues"
   },
   "publishConfig": {
     "access": "public",

@@ -39,7 +39,7 @@ export const CreateAnApp: StoryObj<typeof meta> = {
         <code>pnpm add -D @buildkitgg/cli@latest</code>, then run <code>upgrade</code>, which merges template fixes into
         your code.
       </p>
-      <a href="https://github.com/AndrewCraswell/buildkit/tree/main/packages/tooling/cli#readme">Full command list ↗</a>
+      <a href="https://github.com/betterapps-hq/buildkit/tree/main/packages/tooling/cli#readme">Full command list ↗</a>
     </Documentation>
   )
 }
@@ -90,7 +90,7 @@ export const WhatCreateAsks: StoryObj<typeof meta> = {
         The template and add-ons are <code>@buildkitgg/catalog</code>, which the CLI installs for you. Import it only to
         plan Buildkit apps from your own tools, or to publish templates that extend it.
       </p>
-      <a href="https://github.com/AndrewCraswell/buildkit/tree/main/packages/tooling/catalog#readme">
+      <a href="https://github.com/betterapps-hq/buildkit/tree/main/packages/tooling/catalog#readme">
         The catalog’s extension points and starter files ↗
       </a>
     </Documentation>

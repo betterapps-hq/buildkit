@@ -16,7 +16,7 @@ export function PackageOverview({ name, children }: { name: (typeof packages)[nu
           Open example <span aria-hidden="true">↗</span>
         </StoryLink>
         <a
-          href={`https://github.com/AndrewCraswell/buildkit/tree/main/packages/${{ Core: "core", React: "react", shadcn: "shadcn", "Fluent UI": "fluentui", Tooling: "tooling" }[entry.group]}/${entry.name}`}
+          href={`https://github.com/betterapps-hq/buildkit/tree/main/packages/${{ Core: "core", React: "react", shadcn: "shadcn", "Fluent UI": "fluentui", Tooling: "tooling" }[entry.group]}/${entry.name}`}
         >
           Source & README
         </a>
