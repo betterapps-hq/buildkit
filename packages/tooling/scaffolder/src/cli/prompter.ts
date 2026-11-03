@@ -13,6 +13,12 @@ export interface SelectOption {
   disabled?: boolean
 }
 
+/** A step the CLI runs with a spinner. `run` resolves false when it failed. */
+export interface PromptTask {
+  title: string
+  run: () => Promise<boolean>
+}
+
 /** The prompts the wizard uses. Tests pass a scripted prompter; the CLI uses clack. */
 export interface Prompter {
   select(question: { message: string; options: SelectOption[]; initialValue?: string }): Promise<string | Cancelled>
@@ -32,6 +38,8 @@ export interface Prompter {
   }): Promise<string | Cancelled>
   password(question: { message: string; validate?: (value: string) => string | undefined }): Promise<string | Cancelled>
   note(message: string, title: string): void
+  /** Runs the tasks one at a time, each with a spinner, and stops at the first that fails. Without it, they run quietly. */
+  tasks?(tasks: PromptTask[]): Promise<void>
 }
 
 function unwrap<T extends string | boolean | string[]>(value: T | symbol): T | Cancelled {
@@ -112,5 +120,20 @@ export const clackPrompter: Prompter = {
   },
   note(message, title) {
     prompts.note(message, title)
+  },
+  // clack's own tasks() stops every spinner as a success, so a failed step is shown with the spinner's error instead.
+  async tasks(tasks) {
+    for (const task of tasks) {
+      const spinner = prompts.spinner()
+      spinner.start(task.title)
+
+      if (!(await task.run())) {
+        spinner.error(`${task.title} failed`)
+
+        return
+      }
+
+      spinner.stop(task.title)
+    }
   }
 }

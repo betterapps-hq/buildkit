@@ -84,7 +84,15 @@ export type Contribution =
     }
   | { kind: "yaml"; path: string; pointer: string; op: JsonOp; value: unknown; key?: string; order?: ItemOrder }
   | { kind: "lines"; path: string; lines: string[] }
-  | { kind: "command"; run: string; when: "after-install" | "after-apply"; why: string }
+  | {
+      kind: "command"
+      run: string
+      when: "after-install" | "after-apply"
+      /** Labels the setup step, or says why in the next steps. */
+      why: string
+      /** `create` offers to run it once the project is applied, as a setup step. */
+      setup?: boolean
+    }
   | { kind: "notice"; code: string; text: string }
 
 /** How a catalog writes a pin that's an exact version. A pin that's already a range is written as it is. */

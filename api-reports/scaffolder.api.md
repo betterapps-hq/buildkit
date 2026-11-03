@@ -150,6 +150,7 @@ export interface ChoiceDescription {
 export interface CommandHint {
     // (undocumented)
     run: string;
+    setup?: true;
     // (undocumented)
     when: "after-apply" | "after-install";
     // (undocumented)
@@ -236,6 +237,7 @@ export type Contribution = {
     run: string;
     when: "after-install" | "after-apply";
     why: string;
+    setup?: boolean;
 } | {
     kind: "notice";
     code: string;
@@ -366,6 +368,7 @@ export interface Envelope {
     pulled?: Plan["pulled"];
     // (undocumented)
     required?: string[];
+    setup?: SetupReport;
     // (undocumented)
     status: EnvelopeStatus;
     // (undocumented)
@@ -396,7 +399,7 @@ export interface EnvVar {
 export type ErrorCode = "E_DRIFT" | "E_LOCKED" | "E_INTERRUPTED" | "E_BASELINE_UNAVAILABLE" | "E_UNSUPPORTED" | "E_INVALID_OPTIONS" | "E_UNKNOWN_ADDON" | "E_UNKNOWN_TEMPLATE" | "E_PACKAGE_UNAVAILABLE" | "E_INVALID_PACK" | "E_INVALID_CATALOG" | "E_UNKNOWN_TARGET" | "E_CATALOG_MISMATCH" | "E_CONTRIBUTION" | "E_UNSAFE_PATH" | "E_UNSAFE_KEY" | "E_LOCK_VERSION" | "E_INVALID_STATE" | "E_NOT_INITIALIZED" | "E_ALREADY_INITIALIZED" | "E_DESTINATION" | "E_CONFLICT_MARKERS" | "E_CYCLE" | "E_USAGE" | "E_CANCELLED" | "E_INTERNAL";
 
 // @public
-export function exitCode(envelope: Pick<Envelope, "status" | "error">): number;
+export function exitCode(envelope: Pick<Envelope, "status" | "error" | "setup">): number;
 
 // @public
 export interface ExpandedChoice {
@@ -1042,6 +1045,7 @@ export interface ProductSettings {
     schemaUrl?: string;
     secretsFile: string;
     seedBases?: "regenerate" | "stored";
+    setup?: SetupSettings;
     stateDir: string;
 }
 
@@ -1155,6 +1159,25 @@ export interface ResolveContext<O> {
 
 // @public
 export function satisfiesRange(version: string, range: string): boolean;
+
+// @public (undocumented)
+export interface SetupReport {
+    // (undocumented)
+    failed?: {
+        label: string;
+        run: string;
+        output: string;
+    };
+    // (undocumented)
+    ran: string[];
+}
+
+// @public (undocumented)
+export interface SetupSettings {
+    git?: boolean;
+    install?: boolean;
+    packageManager?: "pnpm" | "npm" | "yarn" | "bun";
+}
 
 // @public
 export function shortName(id: string): string;

@@ -293,14 +293,28 @@ function collect(result: Rendered, contributor: string, contributions: Contribut
         break
       }
 
-      case "command":
-        if (
-          !result.commands.some((command) => command.run === contribution.run && command.when === contribution.when)
-        ) {
-          result.commands.push({ run: contribution.run, when: contribution.when, why: contribution.why })
+      case "command": {
+        const same = result.commands.find(
+          (command) => command.run === contribution.run && command.when === contribution.when
+        )
+
+        if (same) {
+          if (contribution.setup) {
+            same.setup = true
+          }
+        } else {
+          const hint: CommandHint = { run: contribution.run, when: contribution.when, why: contribution.why }
+
+          if (contribution.setup) {
+            hint.setup = true
+          }
+
+          result.commands.push(hint)
         }
 
         break
+      }
+
       case "notice":
         result.notices.push({ code: contribution.code, text: contribution.text })
         break
