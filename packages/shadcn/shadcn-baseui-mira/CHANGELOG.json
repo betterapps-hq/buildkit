@@ -2,6 +2,21 @@
   "name": "@buildkitgg/shadcn-baseui-mira",
   "entries": [
     {
+      "date": "Tue, 03 Nov 2026 12:25:23 GMT",
+      "version": "0.4.5",
+      "tag": "@buildkitgg/shadcn-baseui-mira_v0.4.5",
+      "comments": {
+        "patch": [
+          {
+            "author": "41898282+github-actions[bot]@users.noreply.github.com",
+            "package": "@buildkitgg/shadcn-baseui-mira",
+            "commit": "6aff04563584f3ee606eaf7e2e03810eb85f4183",
+            "comment": "Regenerate the component catalog from upstream and update supported dependencies."
+          }
+        ]
+      }
+    },
+    {
       "date": "Tue, 03 Nov 2026 11:33:32 GMT",
       "version": "0.4.4",
       "tag": "@buildkitgg/shadcn-baseui-mira_v0.4.4",
