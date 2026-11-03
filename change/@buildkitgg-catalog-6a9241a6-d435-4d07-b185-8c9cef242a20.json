@@ -1,0 +1,7 @@
+{
+  "type": "minor",
+  "comment": "Remove the better-apps-deploy add-on",
+  "packageName": "@buildkitgg/catalog",
+  "email": "ajcraswell@gmail.com",
+  "dependentChangeType": "patch"
+}

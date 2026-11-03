@@ -45,22 +45,20 @@ Every app also gets lint, format, build and type-check scripts, a `.gitattribute
 
 The wizard asks for the mode (`ssr` or `spa`), then "Add a database?" (`sql`), then "Add sign-in?" (`better-auth`, which
 needs a database), then the optional `i18n`. Both questions default to no, and `i18n` starts unchecked. `ci` is always
-included, and `better-apps-deploy` is added only with `buildkit add`. The `saas` preset answers `ssr` with `sql`,
-`better-auth` and `i18n`.
+included. The `saas` preset answers `ssr` with `sql`, `better-auth` and `i18n`.
 
-| Add-on                         | What it writes                                                                                                                                                                                                          |
-| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `@buildkit/ci`                 | `.github/workflows/ci.yml`: `buildkit check`, lint, format, build and type-check on every push and pull request. Steps are keyed by `id`, so add-ons add their own                                                      |
-| `@buildkit/sql`                | `src/db/db.server.ts`, which declares the `main` database with `defineDatabase` from `@better-apps/sql` and queries it with Drizzle; `src/db/schema.ts`; `drizzle.config.ts`, writing migrations to `migrations/main`   |
-| `@buildkit/better-auth`        | Better Auth in `src/auth/auth.server.ts` on the `main` database, its tables in `src/db/auth-schema.ts`, the `/api/auth/$` route, a browser client, `getViewer()` read through Better Apps' identity, and a sign-in page |
-| `@buildkit/i18n`               | Lingui as app code in `src/i18n/`: request middleware on `ssr`, browser detection on `spa`, a router wrapper, localized URLs through the router's rewrite, `<html lang dir>`, catalogs in `src/locales`                 |
-| `@buildkit/better-apps-deploy` | The Better Apps Vite plugin in the `framework` band, `better-apps.environments.jsonc`, and a workflow that runs `better-apps deploy --env staging` on every push to `main`                                              |
+| Add-on                  | What it writes                                                                                                                                                                                                          |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@buildkit/ci`          | `.github/workflows/ci.yml`: `buildkit check`, lint, format, build and type-check on every push and pull request. Steps are keyed by `id`, so add-ons add their own                                                      |
+| `@buildkit/sql`         | `src/db/db.server.ts`, which declares the `main` database with `defineDatabase` from `@better-apps/sql` and queries it with Drizzle; `src/db/schema.ts`; `drizzle.config.ts`, writing migrations to `migrations/main`   |
+| `@buildkit/better-auth` | Better Auth in `src/auth/auth.server.ts` on the `main` database, its tables in `src/db/auth-schema.ts`, the `/api/auth/$` route, a browser client, `getViewer()` read through Better Apps' identity, and a sign-in page |
+| `@buildkit/i18n`        | Lingui as app code in `src/i18n/`: request middleware on `ssr`, browser detection on `spa`, a router wrapper, localized URLs through the router's rewrite, `<html lang dir>`, catalogs in `src/locales`                 |
 
 ## Better Apps packages
 
-The database, sign-in and deploy add-ons use Better Apps packages that aren't on npm yet. The catalog pins them at
-`0.1.0`, the first version Better Apps' platform packages are planned to release together, and every plan that adds one
-carries an `unpublished-package` notice. Until they publish, an app that uses them can't install.
+The database and sign-in add-ons use Better Apps packages that aren't on npm yet. The catalog pins them at `0.1.0`, the
+first version Better Apps' platform packages are planned to release together, and every plan that adds one carries an
+`unpublished-package` notice. Until they publish, an app that uses them can't install.
 
 ## Starter files
 

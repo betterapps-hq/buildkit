@@ -1,5 +1,4 @@
 import { defineCatalog, definePreset, defineSlot, defineTemplate } from "@buildkitgg/scaffolder"
-import { betterAppsDeploy } from "./addons/better-apps-deploy.js"
 import { betterAuth } from "./addons/better-auth.js"
 import { ci } from "./addons/ci.js"
 import { i18n } from "./addons/i18n.js"
@@ -33,7 +32,7 @@ export const catalog = defineCatalog({
       slots: { database: { required: false }, auth: { required: false } }
     })
   ],
-  addons: [ci, sql, betterAuth, i18n, betterAppsDeploy],
+  addons: [ci, sql, betterAuth, i18n],
   presets: [
     definePreset({
       id: "saas",

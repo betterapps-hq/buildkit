@@ -7,20 +7,19 @@ and the `buildkit` CLI on `@buildkitgg/scaffolder`. Phase 0 built the engine
 
 **Status (2026-10-29):** merged in #67, with the engine changes it needed in #68 (`@buildkitgg/scaffolder` 0.4.0, on
 npm). `@buildkitgg/catalog` and `@buildkitgg/cli` 0.1.0 wait for their first publish by hand, as every new package does.
-The staging deploy is deferred until Better Apps' deploy packages exist.
 
 ## Owner decisions (2026-10-29)
 
-| Decision                                                                                                                                                                                                      | What it changes                                                     |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| **Two packages:** `@buildkitgg/catalog` holds the manifests, and `@buildkitgg/cli` is a thin `buildkit` bin on the engine's `runCli`                                                                          | Both live in `packages/tooling/`, beside the scaffolder             |
-| **Auth first:** Better Auth, read through the Better Apps identity interface (`@better-apps/identity-better-auth`, PR #59)                                                                                    | The auth slot has one add-on                                        |
-| **Database first:** the SQL capability `@better-apps/sql` (`defineDatabase`) with Drizzle. The Better Apps Features session builds the package                                                                | The database add-on is written against the documented API and waits |
-| **Deploy:** build everything except the staging deploy. The scaffolder writes no cloud config. The Better Apps Vite plugin point and a CI step that runs `better-apps deploy` are wired, pending the packages | No Wrangler deploy, temporary or not. The deployer is Better Apps'  |
+| Decision                                                                                                                                       | What it changes                                                     |
+| ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| **Two packages:** `@buildkitgg/catalog` holds the manifests, and `@buildkitgg/cli` is a thin `buildkit` bin on the engine's `runCli`           | Both live in `packages/tooling/`, beside the scaffolder             |
+| **Auth first:** Better Auth, read through the Better Apps identity interface (`@better-apps/identity-better-auth`, PR #59)                     | The auth slot has one add-on                                        |
+| **Database first:** the SQL capability `@better-apps/sql` (`defineDatabase`) with Drizzle. The Better Apps Features session builds the package | The database add-on is written against the documented API and waits |
+| **No deploy add-on:** the catalog writes no cloud config and no deploy workflow                                                                | Deployment is built on Void (decided 2026-11-02)                    |
 
 ## Done when
 
-A Buildkit app inits, adds auth and i18n, and upgrades. The research's "deploys to staging" waits for Better Apps.
+A Buildkit app inits, adds auth and i18n, and upgrades.
 
 - `checkCatalog(catalog, { matrix: true })` passes in catalog CI.
 - `buildkit init`, `add auth`, `add i18n` and `upgrade` from an earlier catalog version pass through `runCli` against a
@@ -59,15 +58,15 @@ A Buildkit app inits, adds auth and i18n, and upgrades. The research's "deploys 
 - No cloud: no Wrangler config, no bindings, and no cloud names in app code or `buildkit.jsonc`. A test checks every
   generated file.
 
-| Point                      | Kind   | Generated file | Wired into                       | Contributed by                                  |
-| -------------------------- | ------ | -------------- | -------------------------------- | ----------------------------------------------- |
-| `vite.plugins`             | list   | `config.ts`    | `vite.config.ts`                 | i18n (`pre`), Better Apps deploys (`framework`) |
-| `server.requestMiddleware` | chain  | `server.ts`    | `src/start.ts`, after CSRF       | i18n on `ssr`                                   |
-| `app.providers`            | nest   | `client.ts`    | `src/app/providers.tsx`          | nothing yet                                     |
-| `app.bootstrap`            | list   | `client.ts`    | `src/client.tsx`, before hydrate | i18n on `spa`                                   |
-| `router.wrappers`          | wrap   | `client.ts`    | `getRouter()`                    | i18n                                            |
-| `router.rewrite`           | single | `client.ts`    | `createRouter({ rewrite })`      | i18n with `localizedUrls`                       |
-| `html.attributes`          | single | `client.ts`    | the root shell's `<html>`        | i18n                                            |
+| Point                      | Kind   | Generated file | Wired into                       | Contributed by            |
+| -------------------------- | ------ | -------------- | -------------------------------- | ------------------------- |
+| `vite.plugins`             | list   | `config.ts`    | `vite.config.ts`                 | i18n (`pre`)              |
+| `server.requestMiddleware` | chain  | `server.ts`    | `src/start.ts`, after CSRF       | i18n on `ssr`             |
+| `app.providers`            | nest   | `client.ts`    | `src/app/providers.tsx`          | nothing yet               |
+| `app.bootstrap`            | list   | `client.ts`    | `src/client.tsx`, before hydrate | i18n on `spa`             |
+| `router.wrappers`          | wrap   | `client.ts`    | `getRouter()`                    | i18n                      |
+| `router.rewrite`           | single | `client.ts`    | `createRouter({ rewrite })`      | i18n with `localizedUrls` |
+| `html.attributes`          | single | `client.ts`    | the root shell's `<html>`        | i18n                      |
 
 Generated files are under `src/generated/buildkit/`. Every point is rendered at `init`, so `add` changes only generated
 files, `package.json`, `tsconfig.json` and new files.
@@ -91,8 +90,7 @@ One template, `app`. Ids drop cloud names, since they're written into `buildkit.
 | Optional add-ons | `@buildkit/i18n`                                | unchecked                                                    |
 | Always included  | `@buildkit/ci`                                  |                                                              |
 
-The `saas` preset answers `ssr`, `sql`, `better-auth` and `i18n`. `@buildkit/better-apps-deploy` is in the catalog but
-not the template, so only `buildkit add better-apps-deploy` adds it.
+The `saas` preset answers `ssr`, `sql`, `better-auth` and `i18n`.
 
 **`@buildkit/ci`** writes `.github/workflows/ci.yml` as keyed YAML: one `verify` job whose steps are keyed by `id`
 (checkout, pnpm, Node 24, install, `buildkit check`, lint, format check, build, type-check). Add-ons append their own.
@@ -143,11 +141,6 @@ Scripts `i18n:extract` (`lingui extract --clean`) and `i18n:check` (`lingui chec
 "Check translations" CI step when CI is installed. On `ssr`, a visitor whose cookie or language asks for French at `/`
 is redirected to `/fr`, because the rewrite gives the page its canonical address.
 
-**`@buildkit/better-apps-deploy`** (requires `@buildkit/ci`) adds the `betterApps()` Vite plugin in the `framework`
-band, `better-apps.environments.jsonc` (seed: preview per PR, staging, production, and a resource policy for each
-capability the app uses), and `.github/workflows/deploy.yml`, which runs `pnpm exec better-apps deploy --env staging` on
-every push to `main`.
-
 ## What the generated app depends on
 
 All pinned exactly, each on npm for at least a day on 2026-10-29: `react` and `react-dom` 19.3.1,
@@ -167,8 +160,8 @@ version ships, a catalog release moves the pin. The template defaults both slots
   questionnaire's order; the target's CSRF order, plugin bands and SPA output path; points wired at `init`; no cloud in
   any generated file; the CLI pin; the CI steps and formatter ignores; each add-on's files, entries, env vars and
   notices; auth needing a database; i18n on both modes, without localized URLs, and with an unsafe tag; adding i18n
-  without changing a seed; the deploy add-on's plugin band, workflow and environments; and an upgrade that three-way
-  merges a template fix into an edited `src/router.tsx` from the recorded catalog version.
+  without changing a seed; and an upgrade that three-way merges a template fix into an edited `src/router.tsx` from the
+  recorded catalog version.
 - **CLI** (`src/cli.integration.test.ts`, `runBuildkit` against a temp folder): `init`, then `check`, `sync` and
   `explain`; `catalog --json`; `add auth` asking for a database, then the decision's own argv; `add i18n` keeping an
   edited seed and your `package.json` keys; `upgrade --list` and `upgrade` from a catalog version built in the test; and
@@ -186,13 +179,9 @@ version ships, a catalog release moves the pin. The template defaults both slots
 | The database add-on installing    | `@better-apps/sql` with `defineDatabase`, and a Drizzle entry: `drizzle(database, { schema })` from `@better-apps/sql/drizzle` [assumed]                                                      |
 | Local dev with a database         | The Better Apps integration's local runtime and its local migrations ([the Better Apps deploy plan](https://github.com/betterapps-hq/better-apps/blob/main/docs/deploy-plan.md) §4, spike #2) |
 | The sign-in add-on installing     | `@better-apps/identity-better-auth` (PR #59), and the database above                                                                                                                          |
-| The Vite plugin entry             | `betterApps()` from `@better-apps/tanstack-start/vite` [assumed path; PR #59 adds the package]                                                                                                |
-| The staging deploy                | `better-apps deploy --env staging` in `@better-apps/cli`, its CI credentials (not designed; D6), and the deploy service                                                                       |
-| `better-apps.environments.jsonc`  | Better Apps' schema for it. Ours follows [the Better Apps deploy plan](https://github.com/betterapps-hq/better-apps/blob/main/docs/deploy-plan.md) §5                                         |
 | Smoke cases for database and auth | Any installable `@better-apps/sql`                                                                                                                                                            |
 
-When they ship: confirm the assumed names, move the pins, default the slots to yes, and make the deploy add-on required
-in the template (or move its plugin entry into the target), then deploy staging.
+When they ship: confirm the assumed names, move the pins, and default the slots to yes.
 
 ## Engine follow-ups
 
@@ -238,8 +227,6 @@ The phase found seven gaps in the engine. All but one are fixed.
   `navigator.languages`, so an SPA ignores none of them.
 - **The `lint.extends` point and the `i18n` lint rule wait** for `@buildkitgg/oxlint-config` to publish.
 - **No `$schema` in `buildkit.jsonc`** until a schema is hosted; `buildkit schema` prints it.
-- **The deploy wiring is an add-on the template doesn't offer yet,** so the wizard never offers an app that can't
-  install.
 
 ## Libraries
 

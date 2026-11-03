@@ -264,35 +264,6 @@ describe("the localization add-on", () => {
   })
 })
 
-describe("the Better Apps deploys add-on", () => {
-  it("wires the Better Apps Vite plugin before Start and deploys staging with better-apps deploy", async () => {
-    const project = applied({}, await init({ slots: { database: "@buildkit/sql" } }))
-    const planned = await planProject(project, addRequest(["better-apps-deploy"]))
-    expect(planned.status).toBe("planned")
-    const config = written(planned, generated.config)
-    expect(config).toContain('import { betterApps } from "@better-apps/tanstack-start/vite"')
-    expect(config).toContain('framework: [vitePluginsById["@buildkit/better-apps-deploy/better-apps"]]')
-    const deploy = written(planned, ".github/workflows/deploy.yml")
-    expect(deploy).toContain("run: pnpm exec better-apps deploy --env staging")
-    // A commit deploys once CI passed on it, and the job checks out that commit.
-    expect(deploy).toContain("workflow_run:")
-    expect(deploy).toContain("github.event.workflow_run.conclusion == 'success'")
-    expect(deploy).toContain("ref: ${{ github.event.workflow_run.head_sha }}")
-    expect(deploy).not.toContain("push:")
-    // The deploy slot is the job's, so a skipped run never takes a place in its queue, and a commit main has moved past
-    // deploys nothing.
-    expect(deploy).not.toMatch(/^concurrency:/m)
-    expect(deploy).toMatch(/^ {4}concurrency:/m)
-    expect(deploy).toContain('gh api "repos/$GITHUB_REPOSITORY/commits/main"')
-    expect(deploy.match(/if: steps\.newest\.outputs\.newest == 'true'/g)).toHaveLength(5)
-    // Every passing run waits its turn, so an older commit's can't replace the newest's.
-    expect(deploy).toContain("queue: max")
-    const environments = written(planned, "better-apps.environments.jsonc")
-    expect(environments).toContain('"sql": "per-pr"')
-    expect(environments).not.toMatch(/cloudflare|wrangler/i)
-  })
-})
-
 describe("upgrade", () => {
   it("merges a template fix into a starter file you edited, from the recorded catalog version", async () => {
     const previous = previousCatalog()

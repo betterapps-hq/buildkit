@@ -12,10 +12,7 @@ export const betterAppsVersion = "0.1.0"
 export const betterAppsPackages = {
   "@better-apps/sql": "the SQL capability (`defineDatabase`), which the Better Apps Features session is building",
   "@better-apps/identity-better-auth":
-    "the Better Auth identity adapter, built in betterapps-hq/better-apps but not published",
-  "@better-apps/tanstack-start":
-    "the TanStack Start integration, built in betterapps-hq/better-apps but not published, and its Vite plugin",
-  "@better-apps/cli": "the `better-apps deploy` command of Better Apps' deploy service"
+    "the Better Auth identity adapter, built in betterapps-hq/better-apps but not published"
 } as const
 
 export type BetterAppsPackage = keyof typeof betterAppsPackages

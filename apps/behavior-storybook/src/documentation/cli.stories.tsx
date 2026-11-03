@@ -51,8 +51,7 @@ const addons = [
     "The main database with Drizzle, its schema and drizzle.config.ts. Run pnpm db:generate to write migrations"
   ],
   ["better-auth", "Add sign-in?", "Better Auth on the main database, its routes and a sign-in page"],
-  ["i18n", "Optional add-on", "Lingui catalogs, localized URLs and the html lang and dir attributes"],
-  ["better-apps-deploy", "buildkit add only", "The Better Apps Vite plugin and a staging deploy workflow"]
+  ["i18n", "Optional add-on", "Lingui catalogs, localized URLs and the html lang and dir attributes"]
 ] as const
 export const WhatCreateAsks: StoryObj<typeof meta> = {
   name: "What create asks",
