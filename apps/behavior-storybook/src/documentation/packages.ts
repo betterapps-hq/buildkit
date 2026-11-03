@@ -49,7 +49,7 @@ export const packages = [
     name: "cli",
     group: "Tooling",
     summary: "The buildkit CLI: create, extend and upgrade Buildkit apps.",
-    code: "npx @buildkitgg/cli create app my-app\n\n# Inside the app\npnpm buildkit add i18n\npnpm buildkit add database\npnpm buildkit upgrade\npnpm buildkit check",
+    code: "npx @buildkitgg/cli create app my-app\n\n# Inside the app\npnpm buildkit add i18n\npnpm buildkit upgrade\npnpm buildkit check",
     api: [
       "create [template] [folder]: in a terminal, ask the questions, show the plan, and write after one confirmation. --yes skips the prompts.",
       "add / config set: add an add-on, answer a question later, or change an option.",
