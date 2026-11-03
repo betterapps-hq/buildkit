@@ -1,7 +1,0 @@
-{
-  "type": "none",
-  "comment": "Write the repository URL in the git+ form npm expects",
-  "packageName": "@buildkitgg/catalog",
-  "email": "ajcraswell@gmail.com",
-  "dependentChangeType": "none"
-}

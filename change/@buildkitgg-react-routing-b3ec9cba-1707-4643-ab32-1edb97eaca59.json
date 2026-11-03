@@ -1,7 +1,0 @@
-{
-  "type": "minor",
-  "comment": "feat(react-routing): publish to npm",
-  "packageName": "@buildkitgg/react-routing",
-  "email": "ajcraswell@gmail.com",
-  "dependentChangeType": "patch"
-}

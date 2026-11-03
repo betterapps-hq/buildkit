@@ -1,7 +1,0 @@
-{
-  "type": "patch",
-  "comment": "fix: pass the anti-slop lint rules",
-  "packageName": "@buildkitgg/modal-core",
-  "email": "ajcraswell@gmail.com",
-  "dependentChangeType": "patch"
-}

@@ -2,6 +2,67 @@
   "name": "@buildkitgg/scaffolder",
   "entries": [
     {
+      "date": "Tue, 03 Nov 2026 11:33:32 GMT",
+      "version": "0.9.0",
+      "tag": "@buildkitgg/scaffolder_v0.9.0",
+      "comments": {
+        "patch": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/scaffolder",
+            "commit": "ea1f7de730e5e115af10b0a06ebacce395e77339",
+            "comment": "Keep the command when publishing: npm dropped a bin path that started with ./"
+          },
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/scaffolder",
+            "commit": "f068bd0f1e7f36bc301a369e722e79ac9360b6e2",
+            "comment": "fix: pass the anti-slop lint rules"
+          }
+        ],
+        "none": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/scaffolder",
+            "commit": "82b35a41ef7ccbc4f8da11ff844cc681cdc04699",
+            "comment": "Point repository, bugs and homepage at betterapps-hq/buildkit"
+          },
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/scaffolder",
+            "commit": "cb28c32943eb51eb486131148d0e2ef49bc148c7",
+            "comment": "chore: depend on @buildkitgg/typescript-config"
+          }
+        ],
+        "minor": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/scaffolder",
+            "commit": "8d23def1ad85c71c841e39b1d7cc1a693e539569",
+            "comment": "Template packages can extend the catalog's templates and their own, ask the catalog's questions, and bring questions and pins of their own. create takes a package's question flags once the package is loaded."
+          },
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/scaffolder",
+            "commit": "5d2f3f188ac382a0a8401c176d4e67fad6f8e29f",
+            "comment": "Add-on packages: defineAddonPack({ extends, addons, versions }) publishes add-ons for a catalog, add installs one by its package name, the lock records it in packs, and later commands and upgrade load it as they load template packages."
+          },
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/scaffolder",
+            "commit": "5423109cfcc9987beebec6535f36fc5fd5049cf6",
+            "comment": "Breaking: init, create's name before 0.6, is removed. The README has a Migrating from slots section for catalogs moving to questions."
+          },
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/scaffolder",
+            "commit": "e2f78e6ab426165dca5bf2271a9f0e85d0c105ed",
+            "comment": "create offers setup steps once the project is applied: the add-ons' commands with setup: true, the install and a git repository with a first commit. --setup runs them without asking, --no-setup skips them, a failing step exits 6, and settings.setup picks the package manager and turns the install or git step off."
+          }
+        ]
+      }
+    },
+    {
       "date": "Tue, 03 Nov 2026 02:41:57 GMT",
       "version": "0.8.0",
       "tag": "@buildkitgg/scaffolder_v0.8.0",

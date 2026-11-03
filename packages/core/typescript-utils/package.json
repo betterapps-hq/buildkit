@@ -1,6 +1,6 @@
 {
   "name": "@buildkitgg/typescript-utils",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "A curated set of TypeScript utilities: es-toolkit, ts-extras, ts-pattern, type-fest, tiny-invariant and ts-reset behind one import.",
   "license": "MIT",
   "type": "module",

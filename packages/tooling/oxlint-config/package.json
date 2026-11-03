@@ -1,6 +1,6 @@
 {
   "name": "@buildkitgg/oxlint-config",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Shared Oxlint configuration: the Buildkit base rules, including the anti-slop plugin.",
   "license": "MIT",
   "type": "module",

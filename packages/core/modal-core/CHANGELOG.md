@@ -1,8 +1,16 @@
 # Change Log - @buildkitgg/modal-core
 
-<!-- This log was last generated on Fri, 23 Oct 2026 00:34:48 GMT and should not be manually modified. -->
+<!-- This log was last generated on Tue, 03 Nov 2026 11:33:33 GMT and should not be manually modified. -->
 
 <!-- Start content -->
+
+## 0.2.1
+
+Tue, 03 Nov 2026 11:33:33 GMT
+
+### Patches
+
+- fix: pass the anti-slop lint rules (ajcraswell@gmail.com)
 
 ## 0.2.0
 

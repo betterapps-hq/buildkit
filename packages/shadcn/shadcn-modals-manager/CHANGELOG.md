@@ -1,8 +1,18 @@
 # Change Log - @buildkitgg/shadcn-modals-manager
 
-<!-- This log was last generated on Tue, 03 Nov 2026 01:39:16 GMT and should not be manually modified. -->
+<!-- This log was last generated on Tue, 03 Nov 2026 11:33:32 GMT and should not be manually modified. -->
 
 <!-- Start content -->
+
+## 1.1.3
+
+Tue, 03 Nov 2026 11:33:32 GMT
+
+### Patches
+
+- fix: pass the anti-slop lint rules (ajcraswell@gmail.com)
+- Bump @buildkitgg/react-modals to v1.0.1
+- Bump @buildkitgg/fluentui-modals-manager to v1.0.3
 
 ## 1.1.2
 

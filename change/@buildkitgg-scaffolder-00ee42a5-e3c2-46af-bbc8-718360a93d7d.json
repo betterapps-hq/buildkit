@@ -1,7 +1,0 @@
-{
-  "type": "patch",
-  "comment": "Keep the command when publishing: npm dropped a bin path that started with ./",
-  "packageName": "@buildkitgg/scaffolder",
-  "email": "ajcraswell@gmail.com",
-  "dependentChangeType": "patch"
-}

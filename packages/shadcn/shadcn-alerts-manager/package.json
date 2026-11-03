@@ -39,7 +39,7 @@
     "test": "vp test run",
     "build": "tsc -p tsconfig.build.json"
   },
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "devDependencies": {
     "@buildkitgg/typescript-config": "workspace:*",

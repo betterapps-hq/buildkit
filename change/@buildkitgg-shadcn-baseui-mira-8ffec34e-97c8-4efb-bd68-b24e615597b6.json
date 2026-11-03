@@ -1,7 +1,0 @@
-{
-  "type": "none",
-  "comment": "Build in two cached steps, generating sources and then compiling them",
-  "packageName": "@buildkitgg/shadcn-baseui-mira",
-  "email": "ajcraswell@gmail.com",
-  "dependentChangeType": "none"
-}
