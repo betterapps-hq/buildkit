@@ -118,6 +118,13 @@ export const i18n = defineAddon({
   title: "Localization",
   description: "Lingui, wired into the app as code you own: locale detection, catalogs and localized URLs.",
   provides: { i18n: { library: "lingui" } },
+  // The Lingui majors its config, macros and Vite plugin are written for. Catalog CI checks the pins fit.
+  packages: {
+    "@lingui/core": ">=6.10 <7",
+    "@lingui/react": ">=6.10 <7",
+    "@lingui/cli": ">=6.10 <7",
+    "@lingui/vite-plugin": ">=6.10 <7"
+  },
   after: ["@buildkit/ci"],
   options,
   ask: ["locales"],
