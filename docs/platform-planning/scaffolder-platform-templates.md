@@ -1123,7 +1123,7 @@ matrix select. Tests: the wizard's message, the next step.
 Done on 2026-11-03: B1 to B5 in [#107](https://github.com/betterapps-hq/buildkit/pull/107), B6 to B9 in
 [#117](https://github.com/betterapps-hq/buildkit/pull/117), B10 in
 [#116](https://github.com/betterapps-hq/buildkit/pull/116) and B11 in
-[#B11](https://github.com/betterapps-hq/buildkit/pull/B11).
+[#131](https://github.com/betterapps-hq/buildkit/pull/131).
 
 **B1. Types and helpers.** `manifest/types.ts`: everything in [The API](#the-api), the removals, and `Choice`,
 `Condition`, `QuestionDefinition`, `QuestionUse`, `Gallery`. `manifest/define.ts`: `defineQuestion`, and remove
