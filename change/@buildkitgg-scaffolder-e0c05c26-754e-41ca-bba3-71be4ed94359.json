@@ -1,0 +1,7 @@
+{
+  "type": "minor",
+  "comment": "checkCatalog checks gallery images: an https URL, or a path inside the package that the new files option confirms. catalog check confirms a template package's images are in its folder.",
+  "packageName": "@buildkitgg/scaffolder",
+  "email": "ajcraswell@gmail.com",
+  "dependentChangeType": "patch"
+}

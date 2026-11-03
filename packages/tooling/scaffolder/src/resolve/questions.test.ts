@@ -13,7 +13,7 @@ import { exampleCatalog } from "../testing/example.js"
 import { scriptedPrompter } from "../testing/prompter.js"
 import { selectionFromAnswers } from "./answers.js"
 import { checkCatalog } from "./check.js"
-import { availableChoices, describeTemplate, templateQuestions } from "./questions.js"
+import { availableChoices, describeCatalog, describeTemplate, templateQuestions } from "./questions.js"
 import { resolveSelection } from "./resolve.js"
 
 const settings = defineSettings({ product: "acme" })
@@ -137,6 +137,52 @@ describe("templates on questions", () => {
     // A caret catalog writes exact pins with ^, and a pin that's a range as it is.
     expect(manifest.dependencies).toMatchObject({ zod: "^4.1.0", "drizzle-orm": "~0.45.4", "better-auth": "^1.7.9" })
     expect(manifest.devDependencies).toMatchObject({ "vite-plus": "^0.1.0", vitest: "^4.0.8" })
+  })
+})
+
+describe("the catalog description", () => {
+  it("describes templates, their questions per mode, and the add-ons' rules, for other doors", () => {
+    const description = describeCatalog(exampleCatalog())
+    expect(description.catalog).toEqual({ id: "@acme/catalog", version: "2.0.0" })
+    const [web, saas] = description.templates
+    expect(web).toMatchObject({
+      id: "vite-web",
+      title: "Web app",
+      modes: [{ id: "spa", title: "Single-page" }],
+      required: [
+        { id: "npm:vite-plus", label: "Vite+" },
+        { id: "npm:vitest", label: "Vitest" }
+      ],
+      gallery: { tags: ["react", "vite"], image: "gallery/vite-web.png", stack: ["Vite+", "Vitest", "Lingui"] }
+    })
+    expect(web?.extends).toBeUndefined()
+    expect(saas?.extends).toBe("vite-web")
+    expect(saas?.questionsByMode.spa?.find((question) => question.id === "telemetry")).toEqual({
+      id: "telemetry",
+      title: "Telemetry",
+      question: "Add telemetry?",
+      choose: "Which ones?",
+      pick: "many",
+      required: false,
+      default: ["@acme/posthog"],
+      choices: [
+        { id: "@acme/sentry", label: "Sentry", hint: "Errors and performance" },
+        { id: "@acme/posthog", label: "PostHog", hint: "Product analytics" }
+      ]
+    })
+    const addon = (id: string) => description.addons.find((candidate) => candidate.id === id)
+    expect(addon("@acme/drizzle")).toMatchObject({
+      provides: ["orm", "database"],
+      requires: [],
+      conflicts: ["provides:orm"]
+    })
+    expect(addon("@acme/better-auth")).toMatchObject({ requires: ["provides:orm"], conflicts: ["provides:auth"] })
+    expect(addon("@acme/better-auth-drizzle")?.joins).toEqual(["@acme/better-auth", "@acme/drizzle"])
+    expect(addon("@acme/drizzle")?.joins).toBeUndefined()
+    expect(addon("npm:zod")).toMatchObject({ title: "zod", version: "0.0.0", provides: [] })
+    expect(description.presets.map((preset) => preset.id)).toEqual(["saas-prisma"])
+    // The description is plain data: structuredClone throws on functions.
+    expect(structuredClone(description)).toEqual(description)
   })
 })
 
@@ -470,6 +516,27 @@ describe("catalog checks for questions", () => {
       "Template picky gives question telemetry a default that doesn't match its pick, many."
     ].filter((expected) => !problems.includes(expected))
     expect(missing).toEqual([])
+  })
+})
+
+describe("gallery images", () => {
+  it("are https URLs or paths in the package, which a files check confirms", () => {
+    const catalog = exampleCatalog()
+    const imaged = (image: string): CatalogManifest =>
+      withTemplates(catalog, { id: "shot", title: "Shot", description: "", target: "vite-react", gallery: { image } })
+    expect(checkCatalog(imaged("https://acme.dev/shot.png"))).toEqual([])
+    expect(checkCatalog(imaged("gallery/shot.png"))).toEqual([])
+    expect(checkCatalog(imaged("http://acme.dev/shot.png"))).toEqual([
+      `Template shot has the gallery image "http://acme.dev/shot.png", which isn't an https URL or a path in the package.`
+    ])
+    expect(checkCatalog(imaged("../shot.png"))).toEqual([
+      `Template shot has the gallery image "../shot.png", which isn't a path inside the package.`
+    ])
+    const files = (path: string, template: string) => template !== "shot" || path === "gallery/here.png"
+    expect(checkCatalog(imaged("gallery/here.png"), { files })).toEqual([])
+    expect(checkCatalog(imaged("gallery/gone.png"), { files })).toEqual([
+      `Template shot has the gallery image "gallery/gone.png", which isn't in the package.`
+    ])
   })
 })
 
