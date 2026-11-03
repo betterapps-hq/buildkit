@@ -11,7 +11,7 @@ export const projectConfigSchema = z.looseObject({
   target: targetRef,
   /** Explicitly chosen add-ons and their options, keyed by id. Add-ons pulled in by `requires` aren't listed. */
   addons: z.record(z.string(), z.record(z.string(), z.unknown())),
-  /** Questions answered "no": `slot:<id>` or an add-on id. */
+  /** Questions answered "no" (`question:<id>`), and the add-on ids a `many` question offered and its answer left out. */
   declined: z.array(z.string()).optional()
 })
 export type ProjectConfig = z.infer<typeof projectConfigSchema>

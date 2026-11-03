@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vite-plus/test"
 import { decideKey } from "../merge/keys.js"
 import { applyStyle, countLines, hasConflictMarkers, hashText, normalizeText, textStyle } from "../ownership/text.js"
+import { exampleCatalog } from "../testing/example.js"
 import { fixtureCatalog } from "../testing/fixture.js"
 import { pendingMigrations } from "../upgrade/migrations.js"
 import { compareVersions, isValidRange, isValidVersion, lowestVersion, satisfiesRange } from "../upgrade/semver.js"
@@ -305,7 +306,7 @@ describe("envelope", () => {
 
   it("writes each choice against the catalog version it plans with", () => {
     const request = {
-      intent: { command: "init" as const, answers: { template: "app", name: "demo", optional: [] } },
+      intent: { command: "init" as const, answers: { template: "app", name: "demo", questions: { devtools: [] } } },
       catalogVersion: "2.0.0"
     }
     const envelope = toEnvelope(
@@ -321,8 +322,7 @@ describe("envelope", () => {
       "create",
       "app",
       "demo",
-      "--without",
-      "storybook",
+      "--no-devtools",
       "--catalog-version",
       "2.0.0"
     ])
@@ -399,8 +399,8 @@ describe("envelope", () => {
             template: "app",
             name: "demo",
             mode: "ssr",
-            slots: { database: null, ui: "@x/ui" },
-            optional: ["@x/i18n"],
+            questions: { database: [], ui: ["@x/ui"], telemetry: ["@x/sentry", "@x/posthog"] },
+            extra: ["@x/i18n"],
             options: { "@x/i18n": { locales: ["en"] } },
             adopt: true
           }
@@ -415,6 +415,8 @@ describe("envelope", () => {
       "--no-database",
       "--ui",
       "ui",
+      "--telemetry",
+      "sentry,posthog",
       "--with",
       "i18n",
       "--set",
@@ -440,38 +442,28 @@ describe("envelope", () => {
     const fixture = fixtureCatalog()
     const i18n = fixture.addons.find((addon) => addon.id === "@fixture/i18n")!
     const catalog = { ...fixture, addons: [...fixture.addons, { ...i18n, id: "@other/i18n" }] }
-    const answers = { template: "app", name: "demo", optional: ["@fixture/i18n", "@fixture/storybook"] }
+    const answers = {
+      template: "app",
+      name: "demo",
+      questions: { localization: ["@fixture/i18n"], devtools: ["@fixture/storybook"] }
+    }
     expect(requestArgv({ intent: { command: "init", answers } }, { catalog })).toEqual([
       "create",
       "app",
       "demo",
-      "--with",
-      "@fixture/i18n"
+      "--localization",
+      "@fixture/i18n",
+      "--devtools",
+      "storybook"
     ])
   })
 
-  it("writes an init against the defaults of the catalog version it plans with", () => {
+  it("names a bare add-on by its package name", () => {
     const request = {
-      intent: { command: "init" as const, answers: { template: "app", name: "demo", optional: [] } },
-      catalogVersion: "2.0.0"
+      intent: { command: "add" as const, addons: ["npm:zod", "npm:@playwright/test"], replace: [], options: {} }
     }
-    // The installed catalog is 1.0.0, so its defaults aren't the request's.
-    expect(requestArgv(request, { catalog: fixtureCatalog() })).toEqual([
-      "create",
-      "app",
-      "demo",
-      "--catalog-version",
-      "2.0.0"
-    ])
-    expect(requestArgv(request, { catalog: fixtureCatalog(2) })).toEqual([
-      "create",
-      "app",
-      "demo",
-      "--without",
-      "storybook",
-      "--catalog-version",
-      "2.0.0"
-    ])
+    expect(requestArgv(request)).toEqual(["add", "zod", "@playwright/test"])
+    expect(requestArgv(request, { catalog: exampleCatalog() })).toEqual(["add", "zod", "@playwright/test"])
   })
 
   it("writes an init for a preset as --preset plus what differs from it", () => {
@@ -481,8 +473,7 @@ describe("envelope", () => {
       answers: {
         template: "app",
         mode: "ssr",
-        slots: { database: "@x/db-postgres" },
-        optional: ["@x/i18n"],
+        questions: { database: ["@x/db-postgres"], localization: ["@x/i18n"] },
         options: { "@x/i18n": { locales: ["en"] } }
       }
     }
@@ -501,8 +492,8 @@ describe("envelope", () => {
             answers: {
               ...answers,
               mode: "spa",
-              slots: { database: "@x/db-postgres", ui: "@x/ui-fancy" },
-              optional: ["@x/storybook"],
+              questions: { database: ["@x/db-postgres"], ui: ["@x/ui-fancy"], localization: [] },
+              extra: ["@x/storybook"],
               options: { "@x/i18n": { locales: ["en", "fr"] } }
             }
           }
@@ -518,10 +509,9 @@ describe("envelope", () => {
       "spa",
       "--ui",
       "ui-fancy",
+      "--no-localization",
       "--with",
       "storybook",
-      "--without",
-      "i18n",
       "--set",
       'i18n.locales=["en","fr"]'
     ])
@@ -530,12 +520,11 @@ describe("envelope", () => {
       requestArgv({ intent: { command: "init", answers: { template: "bare", name: "demo" } } }, { preset })
     ).toEqual(["create", "bare", "demo"])
     // So is one that answers a question the request leaves to the template's default.
-    const { mode, slots, optional, options, ...rest } = answers
+    const { mode, questions, options, ...rest } = answers
     for (const partial of [
-      { ...rest, slots, optional, options },
-      { ...rest, mode, optional, options },
-      { ...rest, mode, slots, options },
-      { ...rest, mode, slots, optional }
+      { ...rest, questions, options },
+      { ...rest, mode, questions: { database: questions.database }, options },
+      { ...rest, mode, questions }
     ]) {
       expect(requestArgv({ intent: { command: "init", answers: partial } }, { preset }).slice(0, 2)).toEqual([
         "create",
@@ -543,7 +532,10 @@ describe("envelope", () => {
       ])
     }
     // A preset can name its add-ons by short name, and without the catalog they're compared by short name.
-    const short = { ...preset, answers: { ...preset.answers, slots: { database: "db-postgres" }, optional: ["i18n"] } }
+    const short = {
+      ...preset,
+      answers: { ...preset.answers, questions: { database: ["db-postgres"], localization: ["i18n"] } }
+    }
     expect(requestArgv({ intent: { command: "init", answers } }, { preset: short })).toEqual([
       "create",
       "--preset",

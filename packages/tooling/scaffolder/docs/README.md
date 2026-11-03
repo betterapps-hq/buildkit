@@ -6,7 +6,7 @@ planning docs (`scaffolder-research.md` and `scaffolder-phase-0.md`).
 | Module          | Responsibility                                                                                   |
 | --------------- | ------------------------------------------------------------------------------------------------ |
 | `src/manifest`  | Manifest types, `define*` helpers and catalog lookups, including short add-on names              |
-| `src/resolve`   | Answers to a selection, `requires`, slots, conflicts, ordering, options, `supports()`, questions |
+| `src/resolve`   | Questions and their availability, answers to a selection, `requires`, conflicts, ordering        |
 | `src/plan`      | The pure `plan()`, rendering contributions, decisions, argv, the envelope, fingerprints          |
 | `src/ownership` | The write rule per file class, and text normalization and hashing                                |
 | `src/merge`     | Three-way merges: shared files by key, and seeds by line                                         |
@@ -39,5 +39,6 @@ and macOS with `pnpm --filter @buildkitgg/scaffolder test:integration`, because 
 case-insensitive file systems change the path checks.
 
 Most tests use the fixture catalog in `src/testing/fixture.ts`: a target with two modes, a template with a required
-add-on, optional add-ons, an optional database slot with a default and a required UI slot, an add-on that requires
-another, and a version 2 with migrations for upgrade tests.
+add-on, an optional database question with a default, a required UI question and optional questions, an add-on that
+requires another, and a version 2 with migrations for upgrade tests. `src/testing/example.ts` is a platform's catalog,
+with a template that extends another, shared questions, combination and bare add-ons, for the acceptance cases.

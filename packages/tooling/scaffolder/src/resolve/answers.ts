@@ -1,30 +1,19 @@
-import {
-  findAddon,
-  findMode,
-  findSlot,
-  findTarget,
-  findTemplate,
-  slotAddons,
-  targetInfo,
-  templateModes
-} from "../manifest/catalog.js"
-import type { Answers, CatalogManifest, SlotPolicy } from "../manifest/types.js"
+import { findMode, findTarget, targetInfo } from "../manifest/catalog.js"
+import type { Answers, CatalogManifest } from "../manifest/types.js"
 import { PlanError } from "../plan/errors.js"
-import { addonSupports, refuseCombination, requireAddonId, type ResolveIssue, type Selection } from "./resolve.js"
+import { requireTemplate, walkQuestions } from "./questions.js"
+import { refuseCombination, requireAddonId, type ResolveIssue, type Selection } from "./resolve.js"
 
 export type AnswersResult = { ok: true; selection: Selection } | { ok: false; issue: ResolveIssue }
 
 /**
- * Turns a template's answers into a selection. Required add-ons are always included. An unanswered question takes its
- * default; only a question with no default and more than one choice comes back as an issue.
+ * Turns a template's answers into a selection. Required add-ons are always included. Each asked question that isn't
+ * answered takes its default; a required one with no default and more than one available choice comes back as a
+ * `choose` issue. A question that isn't asked has no answer. "No" to a question is declined as `question:<id>`, and the
+ * choices a `many` question offered and its answer left out are declined by id.
  */
 export function selectionFromAnswers(catalog: CatalogManifest, answers: Answers, name: string): AnswersResult {
-  const template = findTemplate(catalog, answers.template)
-  if (!template) {
-    throw new PlanError("E_UNKNOWN_TEMPLATE", `There's no template named "${answers.template}".`, {
-      next: catalog.templates.map((candidate) => candidate.id)
-    })
-  }
+  const template = requireTemplate(catalog, answers.template)
   const target = findTarget(catalog, template.target)
   if (!target) {
     throw new PlanError(
@@ -32,7 +21,7 @@ export function selectionFromAnswers(catalog: CatalogManifest, answers: Answers,
       `Template ${template.id} uses target "${template.target}", which isn't in the catalog.`
     )
   }
-  const modes = templateModes(catalog, template)
+  const { modes } = template
   if (answers.mode !== undefined && !modes.includes(answers.mode)) {
     throw new PlanError("E_USAGE", `${template.title} has no mode "${answers.mode}". Use ${modes.join(" or ")}.`)
   }
@@ -44,79 +33,46 @@ export function selectionFromAnswers(catalog: CatalogManifest, answers: Answers,
   if (!mode) {
     throw new PlanError("E_UNKNOWN_TARGET", `${target.title} has no mode "${modeId}".`)
   }
-  const info = targetInfo(catalog, target, mode)
+  for (const question of Object.keys(answers.questions ?? {})) {
+    if (!template.questions.some((candidate) => candidate.id === question)) {
+      throw new PlanError("E_USAGE", `${template.title} has no question "${question}".`)
+    }
+  }
   const addons: Record<string, Record<string, unknown>> = {}
   const declined: string[] = []
-  for (const id of template.required ?? []) {
+  for (const id of template.required) {
     addons[id] = {}
   }
-  const slotPolicies: [string, SlotPolicy][] = Object.entries(template.slots ?? {})
-  for (const slot of Object.keys(answers.slots ?? {})) {
-    if (!template.slots?.[slot]) {
-      if (!findSlot(catalog, slot)) {
-        throw new PlanError("E_USAGE", `There's no question named "${slot}".`)
+  for (const step of walkQuestions(catalog, template, targetInfo(catalog, target, mode), answers)) {
+    const { question } = step
+    if (step.choose) {
+      return {
+        ok: false,
+        issue: { kind: "choose", template: template.id, question: question.id, candidates: step.choose }
       }
-      slotPolicies.push([slot, { required: false }])
     }
-  }
-  for (const [slot, policy] of slotPolicies) {
-    const answer = answers.slots?.[slot]
-    if (answer === null) {
-      if (policy.required) {
-        throw new PlanError(
-          "E_USAGE",
-          `${template.title} needs a ${findSlot(catalog, slot)?.title.toLowerCase() ?? slot}, so "no" isn't an answer.`
-        )
-      }
-      declined.push(`slot:${slot}`)
-      continue
+    if (question.required && step.holds && step.choices.length === 0 && !step.explicit) {
+      throw new PlanError(
+        "E_UNSUPPORTED",
+        `No choice for ${question.title.toLowerCase()} supports ${target.title} (${mode.title}).`
+      )
     }
-    if (answer !== undefined) {
-      const id = requireAddonId(catalog, answer)
-      if (findAddon(catalog, id)?.slot !== slot) {
-        throw new PlanError(
-          "E_USAGE",
-          `${id} isn't a choice for ${slot}. Choose ${slotAddons(catalog, slot)
-            .map((addon) => addon.id)
-            .join(", ")}.`
-        )
-      }
+    for (const id of step.answer) {
       addons[id] = {}
+    }
+    if (!step.explicit && !step.asked) {
       continue
     }
-    if (policy.default !== undefined) {
-      addons[policy.default] = {}
-      continue
-    }
-    if (!policy.required) {
-      declined.push(`slot:${slot}`)
-      continue
-    }
-    const candidates = slotAddons(catalog, slot)
-      .filter((addon) => addonSupports(addon, info) === true)
-      .map((addon) => addon.id)
-    const [only] = candidates
-    if (only !== undefined && candidates.length === 1) {
-      addons[only] = {}
-      continue
-    }
-    if (candidates.length === 0) {
-      throw new PlanError("E_UNSUPPORTED", `No ${slot} add-on supports ${target.title} (${mode.title}).`)
-    }
-    return { ok: false, issue: { kind: "choose-slot", slot, candidates } }
-  }
-  const optional = Object.entries(template.optional ?? {})
-  const chosen = answers.optional?.map((entry) => requireAddonId(catalog, entry))
-  chosen?.forEach((id) => refuseCombination(catalog, id))
-  for (const [id, { default: preselected }] of optional) {
-    if (chosen ? chosen.includes(id) : preselected) {
-      addons[id] = {}
-    } else {
-      declined.push(id)
+    if (step.answer.length === 0) {
+      declined.push(`question:${question.id}`)
+    } else if (question.pick === "many") {
+      declined.push(...question.choices.map((choice) => choice.id).filter((id) => !step.answer.includes(id)))
     }
   }
-  for (const id of chosen ?? []) {
-    addons[id] = {}
+  for (const entry of answers.extra ?? []) {
+    const id = requireAddonId(catalog, entry)
+    refuseCombination(catalog, id)
+    addons[id] ??= {}
   }
   for (const [key, options] of Object.entries(answers.options ?? {})) {
     const id = requireAddonId(catalog, key)
