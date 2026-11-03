@@ -1205,7 +1205,7 @@ add-on provides `database` and conflicts with `provides:database`; Better Auth r
 each choice, help links on `BETTER_AUTH_SECRET`, `pnpm db:generate` as a setup step, gallery metadata, `packages` on the
 add-ons that wrap a library. Pins stay exact, as phase 2 decided. Tests: the catalog's matrix and smoke tests.
 
-Done on 2026-11-03 in [#E1](https://github.com/betterapps-hq/buildkit/pull/E1). #109 had removed the database and
+Done on 2026-11-03 in [#139](https://github.com/betterapps-hq/buildkit/pull/139). #109 had removed the database and
 sign-in add-ons and B1 to B5 had moved `i18n` to a question, so what was left: a hint on the localization choice, Lingui
 ranges in the i18n add-on's `packages`, gallery tags and links on `app`, and `pnpm install` and `pnpm build` as setup
 steps, with `setup.packageManager: "pnpm"` in Buildkit's settings because apps pin pnpm.
