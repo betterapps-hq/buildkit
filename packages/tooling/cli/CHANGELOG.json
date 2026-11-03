@@ -2,6 +2,21 @@
   "name": "@buildkitgg/cli",
   "entries": [
     {
+      "date": "Tue, 03 Nov 2026 11:50:50 GMT",
+      "version": "0.5.0",
+      "tag": "@buildkitgg/cli_v0.5.0",
+      "comments": {
+        "minor": [
+          {
+            "author": "beachball",
+            "package": "@buildkitgg/cli",
+            "comment": "Bump @buildkitgg/catalog to v0.5.0",
+            "commit": "not available"
+          }
+        ]
+      }
+    },
+    {
       "date": "Tue, 03 Nov 2026 11:33:32 GMT",
       "version": "0.4.1",
       "tag": "@buildkitgg/cli_v0.4.1",
