@@ -9,6 +9,7 @@ import { plan } from "../plan/plan.js"
 import { memoryTree } from "../plan/tree.js"
 import { pairwiseAnswers } from "../resolve/check.js"
 import { describeCatalog } from "../resolve/questions.js"
+import { exampleCatalog } from "../testing/example.js"
 import { fixtureCatalog, settings } from "../testing/fixture.js"
 import { scriptedPrompter, type ScriptedAnswer } from "../testing/prompter.js"
 import type { CliOptions } from "./commands.js"
@@ -457,6 +458,69 @@ describe("the wizard", () => {
     ])
     const human = await run(["catalog"])
     expect(human.out).toContain("App (app): A web app")
+  })
+})
+
+describe("question flags", () => {
+  const plannedRequest = (folder: string) => JSON.parse(readFileSync(join(root, folder, "plan.json"), "utf8"))
+
+  it("answer questions, and requestArgv writes the same request back", async () => {
+    const catalog = exampleCatalog()
+    const flags = ["--database", "prisma", "--telemetry", "sentry,posthog", "--no-localization", "--with", "storybook"]
+    const first = await run(["create", "saas", "demo", ...flags, "--dry-run", "--out", "first"], { catalog })
+    expect(first.code).toBe(0)
+    const { request, fingerprint } = plannedRequest("first")
+    expect(request.intent.answers).toEqual({
+      template: "saas",
+      name: "demo",
+      questions: {
+        database: ["@acme/prisma"],
+        telemetry: ["@acme/sentry", "@acme/posthog"],
+        localization: []
+      },
+      extra: ["npm:storybook"]
+    })
+    const argv = requestArgv(request, { catalog })
+    expect(argv).toEqual(["create", "saas", "demo", ...flags])
+    expect((await run([...argv, "--dry-run", "--out", "again"], { catalog })).code).toBe(0)
+    expect(plannedRequest("again").fingerprint).toBe(fingerprint)
+  })
+
+  it("--with and --without start from the question's default", async () => {
+    const catalog = exampleCatalog()
+    await run(["create", "saas", "demo", "--with", "sentry", "--without", "lingui", "--dry-run", "--out", "plan"], {
+      catalog
+    })
+    expect(plannedRequest("plan").request.intent.answers.questions).toEqual({
+      telemetry: ["@acme/posthog", "@acme/sentry"],
+      localization: []
+    })
+  })
+
+  it("refuses no to a required question, two answers to a one question, and a choice it doesn't offer", async () => {
+    const catalog = exampleCatalog()
+    for (const flags of [["--no-database"], ["--database", "prisma,drizzle"], ["--auth", "sentry"]]) {
+      const result = await run(["create", "saas", "demo", ...flags, "--json"], { catalog })
+      expect(result.code).toBe(2)
+      expect(envelope(result.out).error?.code).toBe("E_USAGE")
+    }
+  })
+
+  it("add <question> asks the template's question, and answers it with its flag", async () => {
+    const catalog = exampleCatalog()
+    expect((await run(["create", "vite-web", "demo", "--no-database", "--no-auth", "--yes"], { catalog })).code).toBe(0)
+    const asked = await run(["add", "database", "--cwd", "demo", "--json"], { catalog })
+    expect(envelope(asked.out).decisions?.[0]).toMatchObject({ id: "question:database", message: "Which database?" })
+    expect(envelope(asked.out).decisions?.[0]?.choices.map((choice) => choice.argv)).toEqual([
+      ["fixture", "add", "drizzle"],
+      ["fixture", "add", "prisma"],
+      ["fixture", "add", "convex"]
+    ])
+    const answered = await run(["add", "database", "--database", "convex", "--cwd", "demo", "--yes", "--json"], {
+      catalog
+    })
+    expect(envelope(answered.out).status).toBe("applied")
+    expect(readFileSync(join(root, "demo/fixture.jsonc"), "utf8")).toContain("@acme/convex")
   })
 })
 
