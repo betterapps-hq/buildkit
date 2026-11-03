@@ -15,6 +15,9 @@ import { defaultJsonLayout, printJson, relayoutJson, type JsonLayout } from "./l
 
 export type JsonPath = (string | number)[]
 
+/** A value JSON text can hold. */
+export type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue }
+
 export type JsonParseResult =
   | { ok: true; value: unknown }
   | { ok: false; reason: "invalid"; message: string }
@@ -28,21 +31,27 @@ export function parseJsonc(text: string): JsonParseResult {
   if (text.trim() === "") {
     return { ok: true, value: undefined }
   }
+
   const errors: ParseError[] = []
   const tree = parseTree(text, errors, { allowTrailingComma: true, disallowComments: false })
   const [first] = errors
+
   if (first || !tree) {
     return { ok: false, reason: "invalid", message: first ? describeError(text, first) : "The file isn't JSON." }
   }
+
   const unsafe = findUnsafeKey(tree, [])
+
   if (unsafe) {
     return { ok: false, reason: "unsafe-key", pointer: formatPointer(unsafe) }
   }
+
   return { ok: true, value: nodeValue(tree) }
 }
 
 function describeError(text: string, error: ParseError): string {
   const line = text.slice(0, error.offset).split("\n").length
+
   return `${printParseErrorCode(error.error)} on line ${line}`
 }
 
@@ -50,39 +59,55 @@ function findUnsafeKey(node: Node, path: string[]): string[] | undefined {
   if (node.type === "object") {
     for (const property of node.children ?? []) {
       const [keyNode, valueNode] = property.children ?? []
-      const key = typeof keyNode?.value === "string" ? keyNode.value : ""
+      const key = propertyKey(keyNode) ?? ""
+
       if (isUnsafeKey(key)) {
         return [...path, key]
       }
+
       const nested = valueNode ? findUnsafeKey(valueNode, [...path, key]) : undefined
+
       if (nested) {
         return nested
       }
     }
   }
+
   if (node.type === "array") {
     for (const [index, child] of (node.children ?? []).entries()) {
       const nested = findUnsafeKey(child, [...path, String(index)])
+
       if (nested) {
         return nested
       }
     }
   }
+
   return undefined
 }
 
-function nodeValue(node: Node): unknown {
+/** A property's key, read from its key node, which jsonc-parser always gives the type `string`. */
+function propertyKey(keyNode: Node | undefined): string | undefined {
+  return keyNode?.type === "string" ? String(keyNode.value) : undefined
+}
+
+function nodeValue(node: Node): JsonValue {
   switch (node.type) {
     case "object": {
-      const result: Record<string, unknown> = {}
+      const result: Record<string, JsonValue> = {}
+
       for (const property of node.children ?? []) {
         const [keyNode, valueNode] = property.children ?? []
-        if (typeof keyNode?.value === "string" && valueNode) {
-          result[keyNode.value] = nodeValue(valueNode)
+        const key = propertyKey(keyNode)
+
+        if (key !== undefined && valueNode) {
+          result[key] = nodeValue(valueNode)
         }
       }
+
       return result
     }
+
     case "array":
       return (node.children ?? []).map((child) => nodeValue(child))
     default:
@@ -94,10 +119,13 @@ function nodeValue(node: Node): unknown {
 export function jsonFormatting(text: string | undefined): FormattingOptions {
   const eol = text?.includes("\r\n") ? "\r\n" : "\n"
   const indented = text?.split(/\r?\n/).find((line) => /^[\t ]+["}\]]/.test(line))
+
   if (indented?.startsWith("\t")) {
     return { insertSpaces: false, tabSize: 1, eol }
   }
+
   const spaces = indented ? (/^ +/.exec(indented)?.[0].length ?? 2) : 2
+
   return { insertSpaces: true, tabSize: spaces, eol }
 }
 
@@ -110,6 +138,7 @@ function indentUnit(formatting: FormattingOptions): string {
 function edit(
   text: string,
   path: JsonPath,
+  // oxlint-disable-next-line anti-slop/no-unknown-parameters -- the editor writes any JSON value its caller gives
   value: unknown,
   relayoutAt: JsonPath,
   layout: JsonLayout,
@@ -117,6 +146,7 @@ function edit(
 ): string {
   const formattingOptions = jsonFormatting(text)
   const edits = modify(text, path, value, { formattingOptions, isArrayInsertion })
+
   return relayoutJson(
     applyEdits(text, edits),
     relayoutAt,
@@ -131,12 +161,14 @@ function edit(
 function rewritten(edits: Edit[]): { start: number; end: number } | undefined {
   let shift = 0
   let range: { start: number; end: number } | undefined
+
   for (const edit of [...edits].sort((left, right) => left.offset - right.offset)) {
     const start = edit.offset + shift
     const end = start + edit.content.length
     range = { start: Math.min(range?.start ?? start, start), end: Math.max(range?.end ?? end, end) }
     shift += edit.content.length - edit.length
   }
+
   return range
 }
 
@@ -144,6 +176,7 @@ function rewritten(edits: Edit[]): { start: number; end: number } | undefined {
  * Sets a value, creating missing parent objects. Comments and formatting elsewhere are kept, and the value is laid out
  * as the project's formatter prints it (see `JsonLayout`).
  */
+// oxlint-disable-next-line anti-slop/no-unknown-parameters -- the editor writes any JSON value its caller gives
 export function setJson(text: string, path: JsonPath, value: unknown, layout = defaultJsonLayout): string {
   return edit(text, path, value, path, layout)
 }
@@ -161,28 +194,38 @@ export function removeJson(text: string, path: JsonPath, layout = defaultJsonLay
   const eol = formatting.eol ?? "\n"
   const tree = parseTree(text, [], { allowTrailingComma: true })
   const parent = tree ? findNodeAtLocation(tree, parentPath) : undefined
+
+  // oxlint-disable-next-line anti-slop/no-runtime-typeof -- a typed path segment is a key or an index, and typeof tells which
   if (typeof last === "number" && parent?.type === "array") {
     const items = parent.children ?? []
     const item = items[last]
+
     if (!item) {
       return text
     }
+
     let cut = text
+
     for (const [start, end] of itemRanges(text, parent, last).sort((left, right) => right[0] - left[0])) {
       cut = `${cut.slice(0, start)}${cut.slice(end)}`
     }
+
     return relayoutJson(cut, parentPath, layout, unit, eol)
   }
+
   const edits = modify(text, path, undefined, { formattingOptions: formatting })
   const removed = relayoutJson(applyEdits(text, edits), undefined, layout, unit, eol, rewritten(edits))
   const removedTree = parseTree(removed, [], { allowTrailingComma: true })
   const object = removedTree ? findNodeAtLocation(removedTree, parentPath) : undefined
+
   if (object?.type === "object" && (object.children ?? []).length === 0 && object.length > 2) {
     const inside = removed.slice(object.offset + 1, object.offset + object.length - 1)
+
     if (inside.trim() === "") {
       return `${removed.slice(0, object.offset)}{}${removed.slice(object.offset + object.length)}`
     }
   }
+
   return removed
 }
 
@@ -194,20 +237,24 @@ const skippedTokens = new Set([12, 13, 14, 15])
 function commaAfter(text: string, offset: number): number {
   const scanner = createScanner(text, false)
   scanner.setPosition(offset)
+
   for (let token: number = scanner.scan(); skippedTokens.has(token) || token === commaToken; token = scanner.scan()) {
     if (token === commaToken) {
       return scanner.getTokenOffset()
     }
   }
+
   return -1
 }
 
 /** The end of the whitespace from `offset`, or its start when `back`. */
 function pastWhitespace(text: string, offset: number, back = false): number {
   let at = offset
+
   while (back ? /\s/.test(text[at - 1] ?? "") : /\s/.test(text[at] ?? "")) {
     at += back ? -1 : 1
   }
+
   return at
 }
 
@@ -219,26 +266,34 @@ function pastWhitespace(text: string, offset: number, back = false): number {
 function itemRanges(text: string, array: Node, index: number): [number, number][] {
   const items = array.children ?? []
   const item = items[index]
+
   if (!item) {
     return []
   }
+
   const end = item.offset + item.length
   const after = commaAfter(text, end)
   const previous = items[index - 1]
+
   if (items[index + 1] && after !== -1) {
     return [
       [item.offset, end],
       [after, pastWhitespace(text, after + 1)]
     ]
   }
+
   const ranges: [number, number][] = [[pastWhitespace(text, item.offset, true), end]]
+
   if (after !== -1) {
     ranges.push([after, after + 1])
   }
+
   const before = previous ? commaAfter(text, previous.offset + previous.length) : -1
+
   if (before !== -1) {
     ranges.push([before, before + 1])
   }
+
   return ranges
 }
 
@@ -246,6 +301,7 @@ export function insertJsonArrayItem(
   text: string,
   path: JsonPath,
   index: number,
+  // oxlint-disable-next-line anti-slop/no-unknown-parameters -- the editor writes any JSON value its caller gives
   value: unknown,
   layout = defaultJsonLayout
 ): string {
@@ -256,6 +312,7 @@ export function replaceJsonArrayItem(
   text: string,
   path: JsonPath,
   index: number,
+  // oxlint-disable-next-line anti-slop/no-unknown-parameters -- the editor writes any JSON value its caller gives
   value: unknown,
   layout = defaultJsonLayout
 ): string {
@@ -263,6 +320,7 @@ export function replaceJsonArrayItem(
 }
 
 /** A new JSON file: two-space indentation, laid out as the project's formatter prints it, and a final newline. */
+// oxlint-disable-next-line anti-slop/no-unknown-parameters -- prints any value, as JSON.stringify does
 export function stringifyJson(value: unknown, layout = defaultJsonLayout): string {
   return `${printJson(value, { layout })}\n`
 }

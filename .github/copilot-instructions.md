@@ -30,9 +30,9 @@ Git hooks (Vite+, in `.vite-hooks/`): **pre-commit** runs `vp staged`, which lin
 ## Workspace layout
 
 - `apps/` — documentation, examples, and test applications.
-- `packages/` — reusable `@buildkitgg/*` libraries and private shared configs.
-- **Reusable shared config** (extend these; don't redefine per package): `@repo/oxlint-config`,
-  `@repo/storybook-config`, `@repo/typescript-config`.
+- `packages/` — reusable `@buildkitgg/*` libraries and shared configs.
+- **Reusable shared config** (extend these; don't redefine per package): `@buildkitgg/oxlint-config`,
+  `@buildkitgg/storybook-config`, `@repo/typescript-config`.
 
 ## Conventions
 
@@ -65,7 +65,7 @@ needs a human discussion**, not a silent add.
 ## Gotchas
 
 - Hosted on **GitHub** — use GitHub for PRs and issues.
-- oxlint rules live in the shared `@repo/oxlint-config` base; add new rules there so every package benefits.
+- oxlint rules live in the shared `@buildkitgg/oxlint-config` base; add new rules there so every package benefits.
 
 ## Principles for development
 

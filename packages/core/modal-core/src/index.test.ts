@@ -118,9 +118,11 @@ describe("modal lifecycle", () => {
   it("keeps settlement and notifications consistent when a subscriber throws", async () => {
     const store = createModalStore<string>()
     const handle = store.open({ defaultResult: 0, createContent: () => "a" })
+
     const unsubscribe = store.subscribe(() => {
       throw new Error("consumer")
     })
+
     const listener = vi.fn<() => void>()
     store.subscribe(listener)
     expect(() => handle.close(3)).toThrow(AggregateError)
@@ -135,6 +137,7 @@ describe("modal lifecycle", () => {
     const handle = store.open({ defaultResult: 0, createContent: () => "original" })
     handle.update(() => {
       handle.dismiss()
+
       return "ignored"
     })
     expect(store.getSnapshot()[0].content).toBe("original")
@@ -147,12 +150,14 @@ it("runs one submission at a time, exposes failures, and closes with a successfu
   const handle = store.open<string | null>({ defaultResult: null, createContent: () => "Editor" })
   const failure = new Error("Save failed")
   let rejectSave: (error: Error) => void = () => undefined
+
   const saving = handle.submit(
     () =>
       new Promise<string>((_, reject) => {
         rejectSave = reject
       })
   )
+
   expect(store.getSnapshot()[0].isPending).toBe(true)
   const duplicate = vi.fn<() => string>(() => "duplicate")
   expect(await handle.submit(duplicate)).toBe(false)
@@ -172,12 +177,14 @@ it("runs one submission at a time, exposes failures, and closes with a successfu
 it("routes cancellation through one guard and rejects approvals for stale content", async () => {
   const store = createModalStore<string>()
   let approve: (value: boolean) => void = () => undefined
+
   const guard = vi.fn<() => Promise<boolean>>(
     () =>
       new Promise<boolean>((resolve) => {
         approve = resolve
       })
   )
+
   const handle = store.open({ defaultResult: false, createContent: () => "Original", beforeDismiss: guard })
   const dismissal = store.getSnapshot()[0].dismiss()
   expect(await handle.dismiss()).toBe(false)
@@ -200,6 +207,7 @@ it("routes cancellation through one guard and rejects approvals for stale conten
 it("keeps a modal open when a guard throws and allows explicit completion", async () => {
   const store = createModalStore<null>()
   const error = new Error("Could not confirm cancellation")
+
   const handle = store.open({
     defaultResult: false,
     createContent: () => null,
@@ -207,6 +215,7 @@ it("keeps a modal open when a guard throws and allows explicit completion", asyn
       throw error
     }
   })
+
   expect(await handle.dismiss()).toBe(false)
   expect(store.getSnapshot()[0]).toMatchObject({ isPending: false, error })
   handle.close(true)
@@ -218,12 +227,14 @@ it("ignores late work after teardown, even when the user ID is reused", async ()
   const store = createModalStore<string>()
   let finish: (value: string) => void = () => undefined
   const handle = store.open({ id: "editor", defaultResult: "cancelled", createContent: () => "Original" })
+
   const submitting = handle.submit(
     () =>
       new Promise<string>((resolve) => {
         finish = resolve
       })
   )
+
   store.clear()
   const replacement = store.open({ id: "editor", defaultResult: "replacement", createContent: () => "New" })
   finish("Late result")

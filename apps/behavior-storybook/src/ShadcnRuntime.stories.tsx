@@ -25,6 +25,7 @@ import "@buildkitgg/shadcn-baseui-kit/styles.css"
 function RuntimeExample() {
   const [isRtl, setIsRtl] = useState(false)
   const direction = isRtl ? "rtl" : "ltr"
+
   return (
     <ShadcnLocalizationProvider
       direction={direction}
@@ -66,10 +67,15 @@ function RuntimeExample() {
     </ShadcnLocalizationProvider>
   )
 }
+
 const meta = { title: "shadcn/Runtime", component: RuntimeExample } satisfies Meta<typeof RuntimeExample>
+
 export default meta
+
 type Story = StoryObj<typeof meta>
+
 export const LocalizationAndDirection: Story = {}
+
 export const Mobile: Story = {
   render: () => (
     <iframe

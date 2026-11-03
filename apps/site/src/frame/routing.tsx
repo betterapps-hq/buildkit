@@ -12,9 +12,11 @@ function activeTab() {
   if (people.isActive()) {
     return "people"
   }
+
   if (settings.isActive()) {
     return "settings"
   }
+
   return undefined
 }
 
@@ -33,14 +35,17 @@ function show() {
 router.subscribe((state) => {
   if (state.location.key !== key) {
     key = state.location.key
+
     if (state.historyAction === "PUSH") {
       index += 1
       length = index + 1
     } else if (state.historyAction === "POP") {
       index += step
     }
+
     step = 0
   }
+
   show()
 })
 
@@ -53,6 +58,7 @@ onCommand((command) => {
     router.navigate(1)
   }
 })
+
 show()
 
 export function Example() {

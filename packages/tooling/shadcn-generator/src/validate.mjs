@@ -7,8 +7,10 @@ import { resolve } from "node:path"
 import { root, variants, readJson, writeJson, write, pnpm, pnpmCommand } from "./shared.mjs"
 
 const matrix = variants()
+
 function declarations(directory) {
   const dist = resolve(directory, "dist")
+
   return Object.fromEntries(
     readdirSync(dist, { recursive: true })
       .filter((name) => name.endsWith(".d.ts"))
@@ -16,7 +18,9 @@ function declarations(directory) {
       .map((name) => [name.replaceAll("\\", "/"), readFileSync(resolve(dist, name), "utf8")])
   )
 }
+
 const reference = declarations(matrix.find((item) => item.style === "nova").directory)
+
 for (const { style, directory } of matrix) {
   assert.deepEqual(declarations(directory), reference, `${style} declarations differ from Nova`)
   assert.equal(
@@ -31,10 +35,12 @@ for (const { style, directory } of matrix) {
   const css = readFileSync(resolve(directory, "dist/styles.css"), "utf8")
   assert.ok(css.length > 10000, `${style} stylesheet is empty`)
 }
+
 process.stdout.write(`All ${matrix.length} styles have identical declarations.`)
 
 const workspace = resolve(root, "dist/style-consumers")
 const tarballs = resolve(workspace, "tarballs")
+
 const packageFolders = [
   ...matrix.map((item) => item.directory),
   "packages/shadcn/shadcn-runtime",
@@ -45,7 +51,9 @@ const packageFolders = [
   "packages/react/react-alerts",
   "packages/shadcn/shadcn-alerts-manager"
 ].map((path) => resolve(root, path))
+
 const packages = new Map()
+
 for (const directory of packageFolders) {
   const pkg = readJson(resolve(directory, "package.json"))
   const archive = resolve(tarballs, pkg.name.replace("@", "").replace("/", "-") + ".tgz")
@@ -53,18 +61,24 @@ for (const directory of packageFolders) {
   pnpm(["--config.ignore-scripts=true", "pack", "--out", archive], directory, { stdio: "pipe" })
   packages.set(pkg.name, { pkg, archive, bytes: readFileSync(archive) })
 }
+
 const server = createServer((request, response) => {
   const name = decodeURIComponent(new URL(request.url, origin).pathname.slice(1))
   const item = packages.get(name.replace(/\/-\/archive\.tgz$/, ""))
+
   if (!item) {
     response.writeHead(404)
     response.end()
+
     return
   }
+
   if (name.endsWith("/-/archive.tgz")) {
     response.end(item.bytes)
+
     return
   }
+
   // Read the package manifest from the tarball, where workspace ranges have been rewritten by pnpm.
   response.setHeader("Content-Type", "application/json")
   response.end(
@@ -83,13 +97,18 @@ const server = createServer((request, response) => {
     })
   )
 })
+
 // tar is available on the supported Node CI operating systems, including Windows.
 const { execFileSync } = await import("node:child_process")
+
 for (const item of packages.values()) {
   item.packed = JSON.parse(execFileSync("tar", ["-xOf", item.archive, "package/package.json"], { encoding: "utf8" }))
 }
+
 await new Promise((resolveListen) => server.listen(0, "127.0.0.1", resolveListen))
+
 const origin = `http://127.0.0.1:${server.address().port}`
+
 async function command(args, cwd) {
   await new Promise((resolveDone, reject) => {
     const [executable, commandArgs] = pnpmCommand(args)
@@ -98,12 +117,15 @@ async function command(args, cwd) {
     child.on("exit", (code) => (code === 0 ? resolveDone() : reject(new Error(`${args.join(" ")} failed: ${code}`))))
   })
 }
+
 try {
   for (const { style, directory } of matrix) {
     const fixture = resolve(workspace, style)
+
     if (!/^[a-z]+$/.test(style) || !fixture.startsWith(workspace)) {
       throw new Error("Invalid fixture directory")
     }
+
     rmSync(fixture, { recursive: true, force: true })
     const selected = readJson(resolve(directory, "package.json"))
     write(resolve(fixture, "pnpm-workspace.yaml"), "packages: []\nnodeLinker: isolated\n")
@@ -164,9 +186,11 @@ try {
     assert.ok(combined.includes(".light"), `${style}: light island variables missing`)
     assert.ok(combined.includes("rtl"), `${style}: RTL utilities missing`)
     assert.doesNotMatch(combined, /@(source|theme|utility)\s/)
+
     const consumerSource = readFileSync(resolve(fixture, "src.tsx"), "utf8")
       .replace('import "@buildkitgg/shadcn-baseui-kit/styles.css"', 'import "./combined.css"')
       .replace(/import "@buildkitgg\/shadcn-(?:modals|alerts)-manager\/styles.css"\n/g, "")
+
     write(resolve(fixture, "src.tsx"), consumerSource)
     await command(["exec", "vite", "build"], fixture)
     // Vite must never bundle a second implementation through a manager dependency.

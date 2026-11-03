@@ -8,6 +8,8 @@ import { PlanError } from "./errors.js"
 import { render } from "./render.js"
 import type { VirtualTree } from "./tree.js"
 
+type PathExplanation = Extract<Explanation, { kind: "path" }>
+
 export type Explanation =
   | {
       kind: "path"
@@ -26,6 +28,7 @@ export type Explanation =
       by: string[]
       requires: string[]
       requiredBy: string[]
+      // oxlint-disable-next-line anti-slop/no-unsafe-dictionary-type -- the add-on's parsed options, which its own schema types
       options: Record<string, unknown>
     }
   | { kind: "entry"; id: string; point: string; contributor: string; band: string; after: string[]; before: string[] }
@@ -41,9 +44,11 @@ export function explain(input: {
   const { catalog, tree, settings, subject } = input
   const configState = tree.read(settings.configFile)
   const lockState = tree.read(lockPath(settings))
+
   if (configState.kind !== "file") {
     throw new PlanError("E_NOT_INITIALIZED", "This folder isn't a project yet, so there's nothing to explain.")
   }
+
   const config = readConfig(settings.configFile, configState.content)
   const lock = lockState.kind === "file" ? readLock(lockPath(settings), lockState.content) : undefined
   const resolution = resolveSelection(catalog, lock ? selectionFromLock(lock) : selectionFromConfig(config))
@@ -53,26 +58,42 @@ export function explain(input: {
   const document = rendered?.documents.get(subject)
   const lines = rendered?.lines.get(subject)
   const env = rendered?.env.get(subject)
+
   if (recorded || file || document || lines || env) {
     const keyed = document?.desired.keys ?? lines ?? env
     const recordedKeys = recorded?.class === "shared" ? recorded.keys : {}
+
     const keys = keyed
-      ? [...keyed].map(([key, desired]) => ({
-          key,
-          contributors: desired.contributors,
-          ...(recordedKeys[key] ? { provenance: recordedKeys[key].provenance } : {})
-        }))
+      ? [...keyed].map(([key, desired]) => {
+          const explained: NonNullable<PathExplanation["keys"]>[number] = { key, contributors: desired.contributors }
+          const provenance = recordedKeys[key]?.provenance
+
+          if (provenance) {
+            explained.provenance = provenance
+          }
+
+          return explained
+        })
       : undefined
+
     const contributors = file?.contributors ?? [...new Set(keys?.flatMap((key) => key.contributors) ?? [])].sort()
-    return {
+
+    const explanation: PathExplanation = {
       kind: "path",
       path: subject,
       class: file?.ownership ?? recorded?.class ?? "shared",
-      contributors,
-      ...(keys ? { keys } : {})
+      contributors
     }
+
+    if (keys) {
+      explanation.keys = keys
+    }
+
+    return explanation
   }
+
   const entry = rendered?.entries.find((candidate) => `${candidate.contributor}/${candidate.id}` === subject)
+
   if (entry) {
     return {
       kind: "entry",
@@ -84,17 +105,22 @@ export function explain(input: {
       before: entry.order?.before ?? []
     }
   }
+
   const lookup = lookupAddon(catalog, subject)
+
   if ("id" in lookup) {
     const addon = findAddon(catalog, lookup.id)
+
     const resolved = resolution.ok
       ? resolution.value.addons.find((candidate) => candidate.manifest.id === lookup.id)
       : undefined
+
     const requiredBy = resolution.ok
       ? resolution.value.addons
           .filter((candidate) => candidate.manifest.requires?.includes(lookup.id))
           .map((candidate) => candidate.manifest.id)
       : []
+
     return {
       kind: "addon",
       id: lookup.id,
@@ -108,5 +134,6 @@ export function explain(input: {
       options: resolved?.options ?? {}
     }
   }
+
   return { kind: "unknown", subject, suggestions: lookup.suggestions }
 }

@@ -1,6 +1,7 @@
 import type { AlertAdapter, AlertIntent, AlertRendererProps } from "@buildkitgg/react-alerts"
 import { CircleAlertIcon, CircleCheckIcon, InfoIcon, TriangleAlertIcon, XIcon, type LucideIcon } from "lucide-react"
 import type { ComponentType, HTMLAttributes, ReactNode } from "react"
+
 export type AlertComponents = {
   Alert: ComponentType<HTMLAttributes<HTMLDivElement> & { variant?: "default" | "destructive" }>
   AlertTitle: ComponentType<{ children?: ReactNode }>
@@ -16,12 +17,14 @@ export type AlertComponents = {
     "aria-label"?: string
   }>
 }
+
 const ICONS: Record<AlertIntent, LucideIcon> = {
   info: InfoIcon,
   success: CircleCheckIcon,
   warning: TriangleAlertIcon,
   error: CircleAlertIcon
 }
+
 /**
  * The color each intent tints its alert with: the icon, the border and a wash over the card. Info stays neutral. Set
  * `--alert-success` or `--alert-warning` to match your theme; errors use the kit's destructive color.
@@ -32,6 +35,7 @@ const TONES: Record<AlertIntent, string | null> = {
   warning: "var(--alert-warning, oklch(0.769 0.188 70.08))",
   error: "var(--destructive)"
 }
+
 /** Structural component contract works with Base UI and Radix shadcn registry components. */
 export function alertComponents({
   Alert,
@@ -43,11 +47,13 @@ export function alertComponents({
   function RenderAlert({ entry, dismiss, dismissLabel }: AlertRendererProps) {
     const Icon = ICONS[entry.intent]
     const tone = TONES[entry.intent]
+
     const action = entry.action && (
       <Button type="button" variant="outline" size="sm" onClick={entry.action.onClick}>
         {entry.action.label}
       </Button>
     )
+
     const dismissal = entry.dismissible && (
       <Button
         type="button"
@@ -59,7 +65,9 @@ export function alertComponents({
         {AlertAction ? <XIcon aria-hidden="true" /> : dismissLabel}
       </Button>
     )
+
     const inline = action || (!AlertAction && dismissal)
+
     return (
       <Alert
         role={entry.intent === "error" || entry.intent === "warning" ? "alert" : "status"}
@@ -91,5 +99,6 @@ export function alertComponents({
       </Alert>
     )
   }
+
   return { Alert: RenderAlert }
 }

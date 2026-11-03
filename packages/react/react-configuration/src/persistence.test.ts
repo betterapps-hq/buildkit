@@ -5,14 +5,17 @@ afterEach(() => {
   localStorage.clear()
   sessionStorage.clear()
 })
+
 it("hydrates only valid overrides, follows storage events, and resets persistence", async () => {
   localStorage.setItem("config-test", JSON.stringify({ enabled: true, count: "invalid" }))
+
   const client = createConfiguration({
     defaults: { enabled: false, count: 1 },
     context: {},
     overrides: { storage: "localStorage", key: "config-test" },
     provider: { load: () => ({ count: 5 }) }
   })
+
   expect(client.get("enabled")).toBe(true)
   expect(client.get("count")).toBe(1)
   expect(client.getServerSnapshot().values.enabled).toBe(false)
@@ -30,12 +33,14 @@ it("hydrates only valid overrides, follows storage events, and resets persistenc
   expect(client.get("count")).toBe(5)
   client.dispose()
 })
+
 it("keeps session overrides and independent memory clients isolated", () => {
   const session = createConfiguration({
     defaults: { enabled: false },
     context: {},
     overrides: { storage: "sessionStorage", key: "session-config" }
   })
+
   const memory = createConfiguration({ defaults: { enabled: false }, context: {}, overrides: true })
   session.override("enabled", true)
   expect(memory.get("enabled")).toBe(false)

@@ -8,5 +8,6 @@ export type UseThemeResult = ThemeSnapshot & Pick<ThemeStore, "setTheme" | "rese
 
 export function useTheme(store: ThemeStore): UseThemeResult {
   const snapshot = useSyncExternalStore(store.subscribe, store.getSnapshot, store.getServerSnapshot)
+
   return { ...snapshot, setTheme: store.setTheme, reset: store.reset }
 }

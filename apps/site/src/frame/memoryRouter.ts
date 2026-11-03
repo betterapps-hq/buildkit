@@ -9,5 +9,6 @@ export * from "react-router"
 
 export function createBrowserRouter(...[routes, options]: Parameters<typeof createMemoryRouter>) {
   const path = new URLSearchParams(window.location.search).get("path") ?? "/people"
+
   return createMemoryRouter(routes, { ...options, initialEntries: [path] })
 }

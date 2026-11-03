@@ -22,11 +22,15 @@ function isExampleId(id: string | null): id is ExampleId {
 
 const id = new URLSearchParams(window.location.search).get("example")
 const root = document.getElementById("root")
+
 if (!root || !isExampleId(id)) {
   throw new Error(`Unknown example: ${id}`)
 }
+
 document.documentElement.dataset.example = id
+
 const { Example } = await EXAMPLES[id]()
+
 createRoot(root).render(
   <StrictMode>
     <Example />

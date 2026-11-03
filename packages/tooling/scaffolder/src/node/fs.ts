@@ -12,11 +12,14 @@ import {
 } from "node:fs"
 import { basename, dirname, join } from "node:path"
 import { setTimeout as delay } from "node:timers/promises"
+import { z } from "zod"
 
 const retryCodes = new Set(["EPERM", "EACCES", "EBUSY"])
+const codedError = z.object({ code: z.string() })
 
-export function errorCode(error: unknown): string | undefined {
-  return error instanceof Error && "code" in error && typeof error.code === "string" ? error.code : undefined
+/** The code of a Node error, such as `ENOENT`. */
+export function errorCode(cause: unknown): string | undefined {
+  return cause instanceof Error ? codedError.safeParse(cause).data?.code : undefined
 }
 
 /** Exact hash of a file's bytes, for the journal. `absent` when the file doesn't exist. */
@@ -34,9 +37,11 @@ export async function withRetries<T>(operation: () => T, attempts = 16): Promise
       return operation()
     } catch (error) {
       const code = errorCode(error)
+
       if (attempt >= attempts - 1 || code === undefined || !retryCodes.has(code)) {
         throw error
       }
+
       await delay(Math.min(10 * 2 ** attempt, 500))
     }
   }
@@ -60,20 +65,24 @@ export function ensureParent(path: string): string[] {
 export function ensureFolder(path: string): string[] {
   const created: string[] = []
   let folder = path
+
   while (statSync(folder, { throwIfNoEntry: false }) === undefined) {
     created.unshift(folder)
     folder = dirname(folder)
   }
+
   for (const entry of created) {
     mkdirSync(entry)
   }
+
   return created
 }
 
 /** Writes through a temp file in the same folder, then renames it into place. */
 export async function writeAtomic(path: string, content: string, mode?: number): Promise<void> {
   const temp = tempPath(path)
-  writeFileSync(temp, content, { flag: "wx", ...(mode === undefined ? {} : { mode }) })
+  writeFileSync(temp, content, mode === undefined ? { flag: "wx" } : { flag: "wx", mode })
+
   try {
     await withRetries(() => renameSync(temp, path))
   } catch (error) {
@@ -90,18 +99,23 @@ export async function writeAtomic(path: string, content: string, mode?: number):
 export async function createExclusive(path: string, content: string): Promise<void> {
   const temp = tempPath(path)
   writeFileSync(temp, content, { flag: "wx" })
+
   try {
     linkSync(temp, path)
   } catch (error) {
     const code = errorCode(error)
+
     if (code === "EEXIST") {
       unlinkSync(temp)
       throw error
     }
+
     unlinkSync(temp)
     writeFileSync(path, content, { flag: "wx" })
+
     return
   }
+
   await withRetries(() => unlinkSync(temp))
 }
 
@@ -112,6 +126,7 @@ export async function removeFile(path: string): Promise<void> {
 /** Removes folders this run created, innermost first, while they're empty. */
 export function removeEmptyFolders(folders: readonly string[]): string[] {
   const removed: string[] = []
+
   for (const folder of [...folders].reverse()) {
     try {
       if (readdirSync(folder).length === 0) {
@@ -122,5 +137,6 @@ export function removeEmptyFolders(folders: readonly string[]): string[] {
       // Already gone, or not empty: leave it.
     }
   }
+
   return removed
 }

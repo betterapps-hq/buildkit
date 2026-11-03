@@ -16,10 +16,12 @@ const location = {
   cwd: { type: "string", description: "Project directory", default: "." },
   config: { type: "string", description: "Explicit config file (relative to cwd)" }
 } as const
+
 const selection = {
   ...location,
   endpoint: { type: "positional", description: "Endpoint name", required: false }
 } as const
+
 export const run = defineCommand({
   meta: { description: "Run a detected or configured server through Portless" },
   args: selection,
@@ -91,9 +93,11 @@ export const commands = {
     async run({ args }) {
       const project = await loadProject(args.cwd, args.config)
       const endpoints = resolveEndpoints(project).filter((entry) => entry.endpoint.tunnel)
+
       if (!endpoints.length) {
         throw new Error("No webhook tunnels configured. Run init or add an endpoint.tunnel configuration.")
       }
+
       const name = await chooseEndpoint(endpoints, args.endpoint)
       process.exitCode = await withSignals((signal) =>
         runTunnel(

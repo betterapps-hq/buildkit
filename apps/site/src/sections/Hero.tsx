@@ -54,6 +54,7 @@ function Swatch({ value }: { value: ThemeChoice }) {
       </span>
     </span>
   )
+
   return (
     <span className="swatch">
       {value === "system" ? (
@@ -148,6 +149,7 @@ function ThemeDemo() {
               {OPTIONS.map((option) => {
                 const Icon = option.icon
                 const selected = option.value === choice
+
                 return (
                   <label key={option.value} className={selected ? "theme-option is-selected" : "theme-option"}>
                     <input

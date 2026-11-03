@@ -59,6 +59,7 @@ export function createPreviewModal<TSurface>(
     body: {
       component: function Preview({ data, controls }) {
         const [note, setNote] = useState("")
+
         return (
           <div className="modal-example-form">
             <label htmlFor={`${controls.id}-note`}>Preview note</label>
@@ -73,6 +74,7 @@ export function createPreviewModal<TSurface>(
         const updatedTitle = <strong>Updated preview</strong>
         const reviewedBody = <p>Reviewed {data.count} revisions.</p>
         const publishFooter = <Button onClick={() => controls.close(data)}>Publish draft</Button>
+
         return (
           <div className="actions">
             <Button

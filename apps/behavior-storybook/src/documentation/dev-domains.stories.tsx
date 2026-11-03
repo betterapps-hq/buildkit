@@ -5,9 +5,13 @@ import { PackageOverview } from "./PackageOverview.js"
 function OverviewPage() {
   return <PackageOverview name="dev-domains" />
 }
+
 const meta = { title: "Tooling/dev-domains", parameters: { buildkitDocumentation: true } } satisfies Meta
+
 export default meta
+
 export const Overview: StoryObj<typeof meta> = { render: () => <OverviewPage /> }
+
 export const Setup: StoryObj<typeof meta> = {
   render: () => (
     <Documentation
@@ -42,6 +46,7 @@ export const Setup: StoryObj<typeof meta> = {
     </Documentation>
   )
 }
+
 export const WorktreeUrls: StoryObj<typeof meta> = {
   name: "Worktree URLs",
   render: () => (
@@ -88,6 +93,7 @@ export const WorktreeUrls: StoryObj<typeof meta> = {
     </Documentation>
   )
 }
+
 export const Playwright: StoryObj<typeof meta> = {
   render: () => (
     <Documentation

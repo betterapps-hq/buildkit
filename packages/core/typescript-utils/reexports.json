@@ -1,0 +1,3689 @@
+[
+  {
+    "name": "AbortError",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/error/AbortError.ts",
+    "docs": "https://es-toolkit.dev/reference/error/AbortError.html"
+  },
+  {
+    "name": "DebounceOptions",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "type",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/function/debounce.ts",
+    "docs": "https://es-toolkit.dev/reference/function/DebounceOptions.html"
+  },
+  {
+    "name": "DebouncedFunction",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "type",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/function/debounce.ts",
+    "docs": "https://es-toolkit.dev/reference/function/DebouncedFunction.html"
+  },
+  {
+    "name": "MemoizeCache",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "type",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/function/memoize.ts",
+    "docs": "https://es-toolkit.dev/reference/function/MemoizeCache.html"
+  },
+  {
+    "name": "Mutex",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/promise/mutex.ts",
+    "docs": "https://es-toolkit.dev/reference/promise/Mutex.html"
+  },
+  {
+    "name": "Queue",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/util/queue.ts",
+    "docs": "https://es-toolkit.dev/reference/util/Queue.html"
+  },
+  {
+    "name": "Semaphore",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/promise/semaphore.ts",
+    "docs": "https://es-toolkit.dev/reference/promise/Semaphore.html"
+  },
+  {
+    "name": "ThrottleOptions",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "type",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/function/throttle.ts",
+    "docs": "https://es-toolkit.dev/reference/function/ThrottleOptions.html"
+  },
+  {
+    "name": "ThrottledFunction",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "type",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/function/throttle.ts",
+    "docs": "https://es-toolkit.dev/reference/function/ThrottledFunction.html"
+  },
+  {
+    "name": "TimeoutError",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/error/TimeoutError.ts",
+    "docs": "https://es-toolkit.dev/reference/error/TimeoutError.html"
+  },
+  {
+    "name": "after",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/function/after.ts",
+    "docs": "https://es-toolkit.dev/reference/function/after.html"
+  },
+  {
+    "name": "allKeyed",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/promise/allKeyed.ts",
+    "docs": "https://es-toolkit.dev/reference/promise/allKeyed.html"
+  },
+  {
+    "name": "ary",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/function/ary.ts",
+    "docs": "https://es-toolkit.dev/reference/function/ary.html"
+  },
+  {
+    "name": "asyncNoop",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/function/asyncNoop.ts",
+    "docs": "https://es-toolkit.dev/reference/function/asyncNoop.html"
+  },
+  {
+    "name": "at",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/at.ts",
+    "docs": "https://es-toolkit.dev/reference/array/at.html"
+  },
+  {
+    "name": "attempt",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/util/attempt.ts",
+    "docs": "https://es-toolkit.dev/reference/util/attempt.html"
+  },
+  {
+    "name": "attemptAsync",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/util/attemptAsync.ts",
+    "docs": "https://es-toolkit.dev/reference/util/attemptAsync.html"
+  },
+  {
+    "name": "before",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/function/before.ts",
+    "docs": "https://es-toolkit.dev/reference/function/before.html"
+  },
+  {
+    "name": "camelCase",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/string/camelCase.ts",
+    "docs": "https://es-toolkit.dev/reference/string/camelCase.html"
+  },
+  {
+    "name": "capitalize",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/string/capitalize.ts",
+    "docs": "https://es-toolkit.dev/reference/string/capitalize.html"
+  },
+  {
+    "name": "cartesianProduct",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/cartesianProduct.ts",
+    "docs": "https://es-toolkit.dev/reference/array/cartesianProduct.html"
+  },
+  {
+    "name": "chunk",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/chunk.ts",
+    "docs": "https://es-toolkit.dev/reference/array/chunk.html"
+  },
+  {
+    "name": "chunkBy",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/chunkBy.ts",
+    "docs": "https://es-toolkit.dev/reference/array/chunkBy.html"
+  },
+  {
+    "name": "clamp",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/math/clamp.ts",
+    "docs": "https://es-toolkit.dev/reference/math/clamp.html"
+  },
+  {
+    "name": "clone",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/object/clone.ts",
+    "docs": "https://es-toolkit.dev/reference/object/clone.html"
+  },
+  {
+    "name": "cloneDeep",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/object/cloneDeep.ts",
+    "docs": "https://es-toolkit.dev/reference/object/cloneDeep.html"
+  },
+  {
+    "name": "cloneDeepWith",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/object/cloneDeepWith.ts",
+    "docs": "https://es-toolkit.dev/reference/object/cloneDeepWith.html"
+  },
+  {
+    "name": "combinations",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/combinations.ts",
+    "docs": "https://es-toolkit.dev/reference/array/combinations.html"
+  },
+  {
+    "name": "compact",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/compact.ts",
+    "docs": "https://es-toolkit.dev/reference/array/compact.html"
+  },
+  {
+    "name": "constantCase",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/string/constantCase.ts",
+    "docs": "https://es-toolkit.dev/reference/string/constantCase.html"
+  },
+  {
+    "name": "countBy",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/countBy.ts",
+    "docs": "https://es-toolkit.dev/reference/array/countBy.html"
+  },
+  {
+    "name": "curry",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/function/curry.ts",
+    "docs": "https://es-toolkit.dev/reference/function/curry.html"
+  },
+  {
+    "name": "curryRight",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/function/curryRight.ts",
+    "docs": "https://es-toolkit.dev/reference/function/curryRight.html"
+  },
+  {
+    "name": "debounce",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/function/debounce.ts",
+    "docs": "https://es-toolkit.dev/reference/function/debounce.html"
+  },
+  {
+    "name": "deburr",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/string/deburr.ts",
+    "docs": "https://es-toolkit.dev/reference/string/deburr.html"
+  },
+  {
+    "name": "dedent",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/string/dedent.ts",
+    "docs": "https://es-toolkit.dev/reference/string/dedent.html"
+  },
+  {
+    "name": "deepFreeze",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/object/deepFreeze.ts",
+    "docs": "https://es-toolkit.dev/reference/object/deepFreeze.html"
+  },
+  {
+    "name": "defer",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/util/defer.ts",
+    "docs": "https://es-toolkit.dev/reference/util/defer.html"
+  },
+  {
+    "name": "deferAsync",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/util/deferAsync.ts",
+    "docs": "https://es-toolkit.dev/reference/util/deferAsync.html"
+  },
+  {
+    "name": "delay",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/promise/delay.ts",
+    "docs": "https://es-toolkit.dev/reference/promise/delay.html"
+  },
+  {
+    "name": "difference",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/difference.ts",
+    "docs": "https://es-toolkit.dev/reference/array/difference.html"
+  },
+  {
+    "name": "differenceBy",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/differenceBy.ts",
+    "docs": "https://es-toolkit.dev/reference/array/differenceBy.html"
+  },
+  {
+    "name": "differenceWith",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/differenceWith.ts",
+    "docs": "https://es-toolkit.dev/reference/array/differenceWith.html"
+  },
+  {
+    "name": "drop",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/drop.ts",
+    "docs": "https://es-toolkit.dev/reference/array/drop.html"
+  },
+  {
+    "name": "dropRight",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/dropRight.ts",
+    "docs": "https://es-toolkit.dev/reference/array/dropRight.html"
+  },
+  {
+    "name": "dropRightWhile",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/dropRightWhile.ts",
+    "docs": "https://es-toolkit.dev/reference/array/dropRightWhile.html"
+  },
+  {
+    "name": "dropWhile",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/dropWhile.ts",
+    "docs": "https://es-toolkit.dev/reference/array/dropWhile.html"
+  },
+  {
+    "name": "escape",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/string/escape.ts",
+    "docs": "https://es-toolkit.dev/reference/string/escape.html"
+  },
+  {
+    "name": "escapeRegExp",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/string/escapeRegExp.ts",
+    "docs": "https://es-toolkit.dev/reference/string/escapeRegExp.html"
+  },
+  {
+    "name": "fill",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/fill.ts",
+    "docs": "https://es-toolkit.dev/reference/array/fill.html"
+  },
+  {
+    "name": "filterAsync",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/filterAsync.ts",
+    "docs": "https://es-toolkit.dev/reference/array/filterAsync.html"
+  },
+  {
+    "name": "findKey",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/object/findKey.ts",
+    "docs": "https://es-toolkit.dev/reference/object/findKey.html"
+  },
+  {
+    "name": "flatMap",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/flatMap.ts",
+    "docs": "https://es-toolkit.dev/reference/array/flatMap.html"
+  },
+  {
+    "name": "flatMapAsync",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/flatMapAsync.ts",
+    "docs": "https://es-toolkit.dev/reference/array/flatMapAsync.html"
+  },
+  {
+    "name": "flatMapDeep",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/flatMapDeep.ts",
+    "docs": "https://es-toolkit.dev/reference/array/flatMapDeep.html"
+  },
+  {
+    "name": "flatten",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/flatten.ts",
+    "docs": "https://es-toolkit.dev/reference/array/flatten.html"
+  },
+  {
+    "name": "flattenDeep",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/flattenDeep.ts",
+    "docs": "https://es-toolkit.dev/reference/array/flattenDeep.html"
+  },
+  {
+    "name": "flattenObject",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/object/flattenObject.ts",
+    "docs": "https://es-toolkit.dev/reference/object/flattenObject.html"
+  },
+  {
+    "name": "flow",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/function/flow.ts",
+    "docs": "https://es-toolkit.dev/reference/function/flow.html"
+  },
+  {
+    "name": "flowRight",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/function/flowRight.ts",
+    "docs": "https://es-toolkit.dev/reference/function/flowRight.html"
+  },
+  {
+    "name": "forEachAsync",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/forEachAsync.ts",
+    "docs": "https://es-toolkit.dev/reference/array/forEachAsync.html"
+  },
+  {
+    "name": "forEachRight",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/forEachRight.ts",
+    "docs": "https://es-toolkit.dev/reference/array/forEachRight.html"
+  },
+  {
+    "name": "groupBy",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/groupBy.ts",
+    "docs": "https://es-toolkit.dev/reference/array/groupBy.html"
+  },
+  {
+    "name": "head",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/head.ts",
+    "docs": "https://es-toolkit.dev/reference/array/head.html"
+  },
+  {
+    "name": "identity",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/function/identity.ts",
+    "docs": "https://es-toolkit.dev/reference/function/identity.html"
+  },
+  {
+    "name": "inRange",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/math/inRange.ts",
+    "docs": "https://es-toolkit.dev/reference/math/inRange.html"
+  },
+  {
+    "name": "initial",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/initial.ts",
+    "docs": "https://es-toolkit.dev/reference/array/initial.html"
+  },
+  {
+    "name": "intersection",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/intersection.ts",
+    "docs": "https://es-toolkit.dev/reference/array/intersection.html"
+  },
+  {
+    "name": "intersectionBy",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/intersectionBy.ts",
+    "docs": "https://es-toolkit.dev/reference/array/intersectionBy.html"
+  },
+  {
+    "name": "intersectionWith",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/intersectionWith.ts",
+    "docs": "https://es-toolkit.dev/reference/array/intersectionWith.html"
+  },
+  {
+    "name": "inverseLerp",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/math/inverseLerp.ts",
+    "docs": "https://es-toolkit.dev/reference/math/inverseLerp.html"
+  },
+  {
+    "name": "invert",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/object/invert.ts",
+    "docs": "https://es-toolkit.dev/reference/object/invert.html"
+  },
+  {
+    "name": "isArrayBuffer",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/predicate/isArrayBuffer.ts",
+    "docs": "https://es-toolkit.dev/reference/predicate/isArrayBuffer.html"
+  },
+  {
+    "name": "isBlob",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/predicate/isBlob.ts",
+    "docs": "https://es-toolkit.dev/reference/predicate/isBlob.html"
+  },
+  {
+    "name": "isBoolean",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/predicate/isBoolean.ts",
+    "docs": "https://es-toolkit.dev/reference/predicate/isBoolean.html"
+  },
+  {
+    "name": "isBrowser",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/predicate/isBrowser.ts",
+    "docs": "https://es-toolkit.dev/reference/predicate/isBrowser.html"
+  },
+  {
+    "name": "isBuffer",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/predicate/isBuffer.ts",
+    "docs": "https://es-toolkit.dev/reference/predicate/isBuffer.html"
+  },
+  {
+    "name": "isDate",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/predicate/isDate.ts",
+    "docs": "https://es-toolkit.dev/reference/predicate/isDate.html"
+  },
+  {
+    "name": "isEmptyObject",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/predicate/isEmptyObject.ts",
+    "docs": "https://es-toolkit.dev/reference/predicate/isEmptyObject.html"
+  },
+  {
+    "name": "isEqual",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/predicate/isEqual.ts",
+    "docs": "https://es-toolkit.dev/reference/predicate/isEqual.html"
+  },
+  {
+    "name": "isEqualWith",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/predicate/isEqualWith.ts",
+    "docs": "https://es-toolkit.dev/reference/predicate/isEqualWith.html"
+  },
+  {
+    "name": "isError",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/predicate/isError.ts",
+    "docs": "https://es-toolkit.dev/reference/predicate/isError.html"
+  },
+  {
+    "name": "isFile",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/predicate/isFile.ts",
+    "docs": "https://es-toolkit.dev/reference/predicate/isFile.html"
+  },
+  {
+    "name": "isFunction",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/predicate/isFunction.ts",
+    "docs": "https://es-toolkit.dev/reference/predicate/isFunction.html"
+  },
+  {
+    "name": "isIterable",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/predicate/isIterable.ts",
+    "docs": "https://es-toolkit.dev/reference/predicate/isIterable.html"
+  },
+  {
+    "name": "isJSON",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/predicate/isJSON.ts",
+    "docs": "https://es-toolkit.dev/reference/predicate/isJSON.html"
+  },
+  {
+    "name": "isJSONArray",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/predicate/isJSONValue.ts",
+    "docs": "https://es-toolkit.dev/reference/predicate/isJSONArray.html"
+  },
+  {
+    "name": "isJSONObject",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/predicate/isJSONValue.ts",
+    "docs": "https://es-toolkit.dev/reference/predicate/isJSONObject.html"
+  },
+  {
+    "name": "isJSONValue",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/predicate/isJSONValue.ts",
+    "docs": "https://es-toolkit.dev/reference/predicate/isJSONValue.html"
+  },
+  {
+    "name": "isLength",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/predicate/isLength.ts",
+    "docs": "https://es-toolkit.dev/reference/predicate/isLength.html"
+  },
+  {
+    "name": "isMap",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/predicate/isMap.ts",
+    "docs": "https://es-toolkit.dev/reference/predicate/isMap.html"
+  },
+  {
+    "name": "isNil",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/predicate/isNil.ts",
+    "docs": "https://es-toolkit.dev/reference/predicate/isNil.html"
+  },
+  {
+    "name": "isNode",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/predicate/isNode.ts",
+    "docs": "https://es-toolkit.dev/reference/predicate/isNode.html"
+  },
+  {
+    "name": "isNotNil",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/predicate/isNotNil.ts",
+    "docs": "https://es-toolkit.dev/reference/predicate/isNotNil.html"
+  },
+  {
+    "name": "isNull",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/predicate/isNull.ts",
+    "docs": "https://es-toolkit.dev/reference/predicate/isNull.html"
+  },
+  {
+    "name": "isNumber",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/predicate/isNumber.ts",
+    "docs": "https://es-toolkit.dev/reference/predicate/isNumber.html"
+  },
+  {
+    "name": "isPlainObject",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/predicate/isPlainObject.ts",
+    "docs": "https://es-toolkit.dev/reference/predicate/isPlainObject.html"
+  },
+  {
+    "name": "isPrimitive",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/predicate/isPrimitive.ts",
+    "docs": "https://es-toolkit.dev/reference/predicate/isPrimitive.html"
+  },
+  {
+    "name": "isPromise",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/predicate/isPromise.ts",
+    "docs": "https://es-toolkit.dev/reference/predicate/isPromise.html"
+  },
+  {
+    "name": "isRegExp",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/predicate/isRegExp.ts",
+    "docs": "https://es-toolkit.dev/reference/predicate/isRegExp.html"
+  },
+  {
+    "name": "isSet",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/predicate/isSet.ts",
+    "docs": "https://es-toolkit.dev/reference/predicate/isSet.html"
+  },
+  {
+    "name": "isString",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/predicate/isString.ts",
+    "docs": "https://es-toolkit.dev/reference/predicate/isString.html"
+  },
+  {
+    "name": "isSubset",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/isSubset.ts",
+    "docs": "https://es-toolkit.dev/reference/array/isSubset.html"
+  },
+  {
+    "name": "isSubsetWith",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/isSubsetWith.ts",
+    "docs": "https://es-toolkit.dev/reference/array/isSubsetWith.html"
+  },
+  {
+    "name": "isSymbol",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/predicate/isSymbol.ts",
+    "docs": "https://es-toolkit.dev/reference/predicate/isSymbol.html"
+  },
+  {
+    "name": "isTypedArray",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/predicate/isTypedArray.ts",
+    "docs": "https://es-toolkit.dev/reference/predicate/isTypedArray.html"
+  },
+  {
+    "name": "isUndefined",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/predicate/isUndefined.ts",
+    "docs": "https://es-toolkit.dev/reference/predicate/isUndefined.html"
+  },
+  {
+    "name": "isWeakMap",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/predicate/isWeakMap.ts",
+    "docs": "https://es-toolkit.dev/reference/predicate/isWeakMap.html"
+  },
+  {
+    "name": "isWeakSet",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/predicate/isWeakSet.ts",
+    "docs": "https://es-toolkit.dev/reference/predicate/isWeakSet.html"
+  },
+  {
+    "name": "kebabCase",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/string/kebabCase.ts",
+    "docs": "https://es-toolkit.dev/reference/string/kebabCase.html"
+  },
+  {
+    "name": "keyBy",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/keyBy.ts",
+    "docs": "https://es-toolkit.dev/reference/array/keyBy.html"
+  },
+  {
+    "name": "last",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/last.ts",
+    "docs": "https://es-toolkit.dev/reference/array/last.html"
+  },
+  {
+    "name": "lerp",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/math/lerp.ts",
+    "docs": "https://es-toolkit.dev/reference/math/lerp.html"
+  },
+  {
+    "name": "limitAsync",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/promise/limitAsync.ts",
+    "docs": "https://es-toolkit.dev/reference/promise/limitAsync.html"
+  },
+  {
+    "name": "lowerCase",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/string/lowerCase.ts",
+    "docs": "https://es-toolkit.dev/reference/string/lowerCase.html"
+  },
+  {
+    "name": "lowerFirst",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/string/lowerFirst.ts",
+    "docs": "https://es-toolkit.dev/reference/string/lowerFirst.html"
+  },
+  {
+    "name": "mapAsync",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/mapAsync.ts",
+    "docs": "https://es-toolkit.dev/reference/array/mapAsync.html"
+  },
+  {
+    "name": "mapKeys",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/object/mapKeys.ts",
+    "docs": "https://es-toolkit.dev/reference/object/mapKeys.html"
+  },
+  {
+    "name": "mapKeysAsync",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/object/mapKeysAsync.ts",
+    "docs": "https://es-toolkit.dev/reference/object/mapKeysAsync.html"
+  },
+  {
+    "name": "mapValues",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/object/mapValues.ts",
+    "docs": "https://es-toolkit.dev/reference/object/mapValues.html"
+  },
+  {
+    "name": "mapValuesAsync",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/object/mapValuesAsync.ts",
+    "docs": "https://es-toolkit.dev/reference/object/mapValuesAsync.html"
+  },
+  {
+    "name": "maxBy",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/maxBy.ts",
+    "docs": "https://es-toolkit.dev/reference/array/maxBy.html"
+  },
+  {
+    "name": "mean",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/math/mean.ts",
+    "docs": "https://es-toolkit.dev/reference/math/mean.html"
+  },
+  {
+    "name": "meanBy",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/math/meanBy.ts",
+    "docs": "https://es-toolkit.dev/reference/math/meanBy.html"
+  },
+  {
+    "name": "median",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/math/median.ts",
+    "docs": "https://es-toolkit.dev/reference/math/median.html"
+  },
+  {
+    "name": "medianBy",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/math/medianBy.ts",
+    "docs": "https://es-toolkit.dev/reference/math/medianBy.html"
+  },
+  {
+    "name": "memoize",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/function/memoize.ts",
+    "docs": "https://es-toolkit.dev/reference/function/memoize.html"
+  },
+  {
+    "name": "merge",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/object/merge.ts",
+    "docs": "https://es-toolkit.dev/reference/object/merge.html"
+  },
+  {
+    "name": "mergeWith",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/object/mergeWith.ts",
+    "docs": "https://es-toolkit.dev/reference/object/mergeWith.html"
+  },
+  {
+    "name": "minBy",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/minBy.ts",
+    "docs": "https://es-toolkit.dev/reference/array/minBy.html"
+  },
+  {
+    "name": "negate",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/function/negate.ts",
+    "docs": "https://es-toolkit.dev/reference/function/negate.html"
+  },
+  {
+    "name": "noop",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/function/noop.ts",
+    "docs": "https://es-toolkit.dev/reference/function/noop.html"
+  },
+  {
+    "name": "omit",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/object/omit.ts",
+    "docs": "https://es-toolkit.dev/reference/object/omit.html"
+  },
+  {
+    "name": "omitBy",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/object/omitBy.ts",
+    "docs": "https://es-toolkit.dev/reference/object/omitBy.html"
+  },
+  {
+    "name": "once",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/function/once.ts",
+    "docs": "https://es-toolkit.dev/reference/function/once.html"
+  },
+  {
+    "name": "orderBy",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/orderBy.ts",
+    "docs": "https://es-toolkit.dev/reference/array/orderBy.html"
+  },
+  {
+    "name": "pad",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/string/pad.ts",
+    "docs": "https://es-toolkit.dev/reference/string/pad.html"
+  },
+  {
+    "name": "partial",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/function/partial.ts",
+    "docs": "https://es-toolkit.dev/reference/function/partial.html"
+  },
+  {
+    "name": "partialRight",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/function/partialRight.ts",
+    "docs": "https://es-toolkit.dev/reference/function/partialRight.html"
+  },
+  {
+    "name": "partition",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/partition.ts",
+    "docs": "https://es-toolkit.dev/reference/array/partition.html"
+  },
+  {
+    "name": "pascalCase",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/string/pascalCase.ts",
+    "docs": "https://es-toolkit.dev/reference/string/pascalCase.html"
+  },
+  {
+    "name": "percentile",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/math/percentile.ts",
+    "docs": "https://es-toolkit.dev/reference/math/percentile.html"
+  },
+  {
+    "name": "pick",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/object/pick.ts",
+    "docs": "https://es-toolkit.dev/reference/object/pick.html"
+  },
+  {
+    "name": "pickBy",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/object/pickBy.ts",
+    "docs": "https://es-toolkit.dev/reference/object/pickBy.html"
+  },
+  {
+    "name": "pull",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/pull.ts",
+    "docs": "https://es-toolkit.dev/reference/array/pull.html"
+  },
+  {
+    "name": "pullAt",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/pullAt.ts",
+    "docs": "https://es-toolkit.dev/reference/array/pullAt.html"
+  },
+  {
+    "name": "random",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/math/random.ts",
+    "docs": "https://es-toolkit.dev/reference/math/random.html"
+  },
+  {
+    "name": "randomInt",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/math/randomInt.ts",
+    "docs": "https://es-toolkit.dev/reference/math/randomInt.html"
+  },
+  {
+    "name": "range",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/math/range.ts",
+    "docs": "https://es-toolkit.dev/reference/math/range.html"
+  },
+  {
+    "name": "rangeRight",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/math/rangeRight.ts",
+    "docs": "https://es-toolkit.dev/reference/math/rangeRight.html"
+  },
+  {
+    "name": "reduceAsync",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/reduceAsync.ts",
+    "docs": "https://es-toolkit.dev/reference/array/reduceAsync.html"
+  },
+  {
+    "name": "remove",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/remove.ts",
+    "docs": "https://es-toolkit.dev/reference/array/remove.html"
+  },
+  {
+    "name": "rest",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/function/rest.ts",
+    "docs": "https://es-toolkit.dev/reference/function/rest.html"
+  },
+  {
+    "name": "retry",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/function/retry.ts",
+    "docs": "https://es-toolkit.dev/reference/function/retry.html"
+  },
+  {
+    "name": "reverseString",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/string/reverseString.ts",
+    "docs": "https://es-toolkit.dev/reference/string/reverseString.html"
+  },
+  {
+    "name": "round",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/math/round.ts",
+    "docs": "https://es-toolkit.dev/reference/math/round.html"
+  },
+  {
+    "name": "sample",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/sample.ts",
+    "docs": "https://es-toolkit.dev/reference/array/sample.html"
+  },
+  {
+    "name": "sampleSize",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/sampleSize.ts",
+    "docs": "https://es-toolkit.dev/reference/array/sampleSize.html"
+  },
+  {
+    "name": "sentenceCase",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/string/sentenceCase.ts",
+    "docs": "https://es-toolkit.dev/reference/string/sentenceCase.html"
+  },
+  {
+    "name": "serialize",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/util/serialize/serialize.ts",
+    "docs": "https://es-toolkit.dev/reference/util/serialize.html"
+  },
+  {
+    "name": "shuffle",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/shuffle.ts",
+    "docs": "https://es-toolkit.dev/reference/array/shuffle.html"
+  },
+  {
+    "name": "snakeCase",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/string/snakeCase.ts",
+    "docs": "https://es-toolkit.dev/reference/string/snakeCase.html"
+  },
+  {
+    "name": "sortBy",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/sortBy.ts",
+    "docs": "https://es-toolkit.dev/reference/array/sortBy.html"
+  },
+  {
+    "name": "sortKeys",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/object/sortKeys.ts",
+    "docs": "https://es-toolkit.dev/reference/object/sortKeys.html"
+  },
+  {
+    "name": "spread",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/function/spread.ts",
+    "docs": "https://es-toolkit.dev/reference/function/spread.html"
+  },
+  {
+    "name": "startCase",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/string/startCase.ts",
+    "docs": "https://es-toolkit.dev/reference/string/startCase.html"
+  },
+  {
+    "name": "sum",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/math/sum.ts",
+    "docs": "https://es-toolkit.dev/reference/math/sum.html"
+  },
+  {
+    "name": "sumBy",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/math/sumBy.ts",
+    "docs": "https://es-toolkit.dev/reference/math/sumBy.html"
+  },
+  {
+    "name": "tail",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/tail.ts",
+    "docs": "https://es-toolkit.dev/reference/array/tail.html"
+  },
+  {
+    "name": "take",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/take.ts",
+    "docs": "https://es-toolkit.dev/reference/array/take.html"
+  },
+  {
+    "name": "takeRight",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/takeRight.ts",
+    "docs": "https://es-toolkit.dev/reference/array/takeRight.html"
+  },
+  {
+    "name": "takeRightWhile",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/takeRightWhile.ts",
+    "docs": "https://es-toolkit.dev/reference/array/takeRightWhile.html"
+  },
+  {
+    "name": "takeWhile",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/takeWhile.ts",
+    "docs": "https://es-toolkit.dev/reference/array/takeWhile.html"
+  },
+  {
+    "name": "throttle",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/function/throttle.ts",
+    "docs": "https://es-toolkit.dev/reference/function/throttle.html"
+  },
+  {
+    "name": "timeout",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/promise/timeout.ts",
+    "docs": "https://es-toolkit.dev/reference/promise/timeout.html"
+  },
+  {
+    "name": "toCamelCaseKeys",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/object/toCamelCaseKeys.ts",
+    "docs": "https://es-toolkit.dev/reference/object/toCamelCaseKeys.html"
+  },
+  {
+    "name": "toConstantCaseKeys",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/object/toConstantCaseKeys.ts",
+    "docs": "https://es-toolkit.dev/reference/object/toConstantCaseKeys.html"
+  },
+  {
+    "name": "toFilled",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/toFilled.ts",
+    "docs": "https://es-toolkit.dev/reference/array/toFilled.html"
+  },
+  {
+    "name": "toKebabCaseKeys",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/object/toKebabCaseKeys.ts",
+    "docs": "https://es-toolkit.dev/reference/object/toKebabCaseKeys.html"
+  },
+  {
+    "name": "toMerged",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/object/toMerged.ts",
+    "docs": "https://es-toolkit.dev/reference/object/toMerged.html"
+  },
+  {
+    "name": "toPascalCaseKeys",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/object/toPascalCaseKeys.ts",
+    "docs": "https://es-toolkit.dev/reference/object/toPascalCaseKeys.html"
+  },
+  {
+    "name": "toSnakeCaseKeys",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/object/toSnakeCaseKeys.ts",
+    "docs": "https://es-toolkit.dev/reference/object/toSnakeCaseKeys.html"
+  },
+  {
+    "name": "trim",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/string/trim.ts",
+    "docs": "https://es-toolkit.dev/reference/string/trim.html"
+  },
+  {
+    "name": "trimEnd",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/string/trimEnd.ts",
+    "docs": "https://es-toolkit.dev/reference/string/trimEnd.html"
+  },
+  {
+    "name": "trimStart",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/string/trimStart.ts",
+    "docs": "https://es-toolkit.dev/reference/string/trimStart.html"
+  },
+  {
+    "name": "unary",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/function/unary.ts",
+    "docs": "https://es-toolkit.dev/reference/function/unary.html"
+  },
+  {
+    "name": "unescape",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/string/unescape.ts",
+    "docs": "https://es-toolkit.dev/reference/string/unescape.html"
+  },
+  {
+    "name": "union",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/union.ts",
+    "docs": "https://es-toolkit.dev/reference/array/union.html"
+  },
+  {
+    "name": "unionBy",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/unionBy.ts",
+    "docs": "https://es-toolkit.dev/reference/array/unionBy.html"
+  },
+  {
+    "name": "unionWith",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/unionWith.ts",
+    "docs": "https://es-toolkit.dev/reference/array/unionWith.html"
+  },
+  {
+    "name": "uniq",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/uniq.ts",
+    "docs": "https://es-toolkit.dev/reference/array/uniq.html"
+  },
+  {
+    "name": "uniqBy",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/uniqBy.ts",
+    "docs": "https://es-toolkit.dev/reference/array/uniqBy.html"
+  },
+  {
+    "name": "uniqWith",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/uniqWith.ts",
+    "docs": "https://es-toolkit.dev/reference/array/uniqWith.html"
+  },
+  {
+    "name": "unzip",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/unzip.ts",
+    "docs": "https://es-toolkit.dev/reference/array/unzip.html"
+  },
+  {
+    "name": "unzipWith",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/unzipWith.ts",
+    "docs": "https://es-toolkit.dev/reference/array/unzipWith.html"
+  },
+  {
+    "name": "upperCase",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/string/upperCase.ts",
+    "docs": "https://es-toolkit.dev/reference/string/upperCase.html"
+  },
+  {
+    "name": "upperFirst",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/string/upperFirst.ts",
+    "docs": "https://es-toolkit.dev/reference/string/upperFirst.html"
+  },
+  {
+    "name": "windowed",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/windowed.ts",
+    "docs": "https://es-toolkit.dev/reference/array/windowed.html"
+  },
+  {
+    "name": "withTimeout",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/promise/withTimeout.ts",
+    "docs": "https://es-toolkit.dev/reference/promise/withTimeout.html"
+  },
+  {
+    "name": "without",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/without.ts",
+    "docs": "https://es-toolkit.dev/reference/array/without.html"
+  },
+  {
+    "name": "words",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/string/words.ts",
+    "docs": "https://es-toolkit.dev/reference/string/words.html"
+  },
+  {
+    "name": "xor",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/xor.ts",
+    "docs": "https://es-toolkit.dev/reference/array/xor.html"
+  },
+  {
+    "name": "xorBy",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/xorBy.ts",
+    "docs": "https://es-toolkit.dev/reference/array/xorBy.html"
+  },
+  {
+    "name": "xorWith",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/xorWith.ts",
+    "docs": "https://es-toolkit.dev/reference/array/xorWith.html"
+  },
+  {
+    "name": "zip",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/zip.ts",
+    "docs": "https://es-toolkit.dev/reference/array/zip.html"
+  },
+  {
+    "name": "zipObject",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/zipObject.ts",
+    "docs": "https://es-toolkit.dev/reference/array/zipObject.html"
+  },
+  {
+    "name": "zipWith",
+    "from": "es-toolkit",
+    "version": "1.53.1",
+    "kind": "value",
+    "source": "https://github.com/toss/es-toolkit/blob/v1.53.1/src/array/zipWith.ts",
+    "docs": "https://es-toolkit.dev/reference/array/zipWith.html"
+  },
+  {
+    "name": "arrayAt",
+    "from": "ts-extras",
+    "version": "1.3.0",
+    "kind": "value",
+    "source": "https://github.com/sindresorhus/ts-extras/blob/v1.3.0/source/array-at.ts"
+  },
+  {
+    "name": "arrayConcat",
+    "from": "ts-extras",
+    "version": "1.3.0",
+    "kind": "value",
+    "source": "https://github.com/sindresorhus/ts-extras/blob/v1.3.0/source/array-concat.ts"
+  },
+  {
+    "name": "arrayFirst",
+    "from": "ts-extras",
+    "version": "1.3.0",
+    "kind": "value",
+    "source": "https://github.com/sindresorhus/ts-extras/blob/v1.3.0/source/array-first.ts"
+  },
+  {
+    "name": "arrayIncludes",
+    "from": "ts-extras",
+    "version": "1.3.0",
+    "kind": "value",
+    "source": "https://github.com/sindresorhus/ts-extras/blob/v1.3.0/source/array-includes.ts"
+  },
+  {
+    "name": "arrayJoin",
+    "from": "ts-extras",
+    "version": "1.3.0",
+    "kind": "value",
+    "source": "https://github.com/sindresorhus/ts-extras/blob/v1.3.0/source/array-join.ts"
+  },
+  {
+    "name": "arrayLast",
+    "from": "ts-extras",
+    "version": "1.3.0",
+    "kind": "value",
+    "source": "https://github.com/sindresorhus/ts-extras/blob/v1.3.0/source/array-last.ts"
+  },
+  {
+    "name": "asWritable",
+    "from": "ts-extras",
+    "version": "1.3.0",
+    "kind": "value",
+    "source": "https://github.com/sindresorhus/ts-extras/blob/v1.3.0/source/as-writable.ts"
+  },
+  {
+    "name": "assertDefined",
+    "from": "ts-extras",
+    "version": "1.3.0",
+    "kind": "value",
+    "source": "https://github.com/sindresorhus/ts-extras/blob/v1.3.0/source/assert-defined.ts"
+  },
+  {
+    "name": "assertError",
+    "from": "ts-extras",
+    "version": "1.3.0",
+    "kind": "value",
+    "source": "https://github.com/sindresorhus/ts-extras/blob/v1.3.0/source/assert-error.ts"
+  },
+  {
+    "name": "assertNever",
+    "from": "ts-extras",
+    "version": "1.3.0",
+    "kind": "value",
+    "source": "https://github.com/sindresorhus/ts-extras/blob/v1.3.0/source/assert-never.ts"
+  },
+  {
+    "name": "assertPresent",
+    "from": "ts-extras",
+    "version": "1.3.0",
+    "kind": "value",
+    "source": "https://github.com/sindresorhus/ts-extras/blob/v1.3.0/source/assert-present.ts"
+  },
+  {
+    "name": "isDefined",
+    "from": "ts-extras",
+    "version": "1.3.0",
+    "kind": "value",
+    "source": "https://github.com/sindresorhus/ts-extras/blob/v1.3.0/source/is-defined.ts"
+  },
+  {
+    "name": "isEmpty",
+    "from": "ts-extras",
+    "version": "1.3.0",
+    "kind": "value",
+    "source": "https://github.com/sindresorhus/ts-extras/blob/v1.3.0/source/is-empty.ts"
+  },
+  {
+    "name": "isEqualType",
+    "from": "ts-extras",
+    "version": "1.3.0",
+    "kind": "value",
+    "source": "https://github.com/sindresorhus/ts-extras/blob/v1.3.0/source/is-equal-type.ts"
+  },
+  {
+    "name": "isFinite",
+    "from": "ts-extras",
+    "version": "1.3.0",
+    "kind": "value",
+    "source": "https://github.com/sindresorhus/ts-extras/blob/v1.3.0/source/is-finite.ts"
+  },
+  {
+    "name": "isInfinite",
+    "from": "ts-extras",
+    "version": "1.3.0",
+    "kind": "value",
+    "source": "https://github.com/sindresorhus/ts-extras/blob/v1.3.0/source/is-infinite.ts"
+  },
+  {
+    "name": "isInteger",
+    "from": "ts-extras",
+    "version": "1.3.0",
+    "kind": "value",
+    "source": "https://github.com/sindresorhus/ts-extras/blob/v1.3.0/source/is-integer.ts"
+  },
+  {
+    "name": "isPresent",
+    "from": "ts-extras",
+    "version": "1.3.0",
+    "kind": "value",
+    "source": "https://github.com/sindresorhus/ts-extras/blob/v1.3.0/source/is-present.ts"
+  },
+  {
+    "name": "isPropertyDefined",
+    "from": "ts-extras",
+    "version": "1.3.0",
+    "kind": "value",
+    "source": "https://github.com/sindresorhus/ts-extras/blob/v1.3.0/source/is-property-defined.ts"
+  },
+  {
+    "name": "isPropertyPresent",
+    "from": "ts-extras",
+    "version": "1.3.0",
+    "kind": "value",
+    "source": "https://github.com/sindresorhus/ts-extras/blob/v1.3.0/source/is-property-present.ts"
+  },
+  {
+    "name": "isSafeInteger",
+    "from": "ts-extras",
+    "version": "1.3.0",
+    "kind": "value",
+    "source": "https://github.com/sindresorhus/ts-extras/blob/v1.3.0/source/is-safe-integer.ts"
+  },
+  {
+    "name": "keyIn",
+    "from": "ts-extras",
+    "version": "1.3.0",
+    "kind": "value",
+    "source": "https://github.com/sindresorhus/ts-extras/blob/v1.3.0/source/key-in.ts"
+  },
+  {
+    "name": "not",
+    "from": "ts-extras",
+    "version": "1.3.0",
+    "kind": "value",
+    "source": "https://github.com/sindresorhus/ts-extras/blob/v1.3.0/source/not.ts"
+  },
+  {
+    "name": "objectAssign",
+    "from": "ts-extras",
+    "version": "1.3.0",
+    "kind": "value",
+    "source": "https://github.com/sindresorhus/ts-extras/blob/v1.3.0/source/object-assign.ts"
+  },
+  {
+    "name": "objectEntries",
+    "from": "ts-extras",
+    "version": "1.3.0",
+    "kind": "value",
+    "source": "https://github.com/sindresorhus/ts-extras/blob/v1.3.0/source/object-entries.ts"
+  },
+  {
+    "name": "objectFromEntries",
+    "from": "ts-extras",
+    "version": "1.3.0",
+    "kind": "value",
+    "source": "https://github.com/sindresorhus/ts-extras/blob/v1.3.0/source/object-from-entries.ts"
+  },
+  {
+    "name": "objectHasIn",
+    "from": "ts-extras",
+    "version": "1.3.0",
+    "kind": "value",
+    "source": "https://github.com/sindresorhus/ts-extras/blob/v1.3.0/source/object-has-in.ts"
+  },
+  {
+    "name": "objectHasOwn",
+    "from": "ts-extras",
+    "version": "1.3.0",
+    "kind": "value",
+    "source": "https://github.com/sindresorhus/ts-extras/blob/v1.3.0/source/object-has-own.ts"
+  },
+  {
+    "name": "objectKeys",
+    "from": "ts-extras",
+    "version": "1.3.0",
+    "kind": "value",
+    "source": "https://github.com/sindresorhus/ts-extras/blob/v1.3.0/source/object-keys.ts"
+  },
+  {
+    "name": "objectMapValues",
+    "from": "ts-extras",
+    "version": "1.3.0",
+    "kind": "value",
+    "source": "https://github.com/sindresorhus/ts-extras/blob/v1.3.0/source/object-map-values.ts"
+  },
+  {
+    "name": "objectUpdate",
+    "from": "ts-extras",
+    "version": "1.3.0",
+    "kind": "value",
+    "source": "https://github.com/sindresorhus/ts-extras/blob/v1.3.0/source/object-update.ts"
+  },
+  {
+    "name": "objectValues",
+    "from": "ts-extras",
+    "version": "1.3.0",
+    "kind": "value",
+    "source": "https://github.com/sindresorhus/ts-extras/blob/v1.3.0/source/object-values.ts"
+  },
+  {
+    "name": "safeCastTo",
+    "from": "ts-extras",
+    "version": "1.3.0",
+    "kind": "value",
+    "source": "https://github.com/sindresorhus/ts-extras/blob/v1.3.0/source/safe-cast-to.ts"
+  },
+  {
+    "name": "setHas",
+    "from": "ts-extras",
+    "version": "1.3.0",
+    "kind": "value",
+    "source": "https://github.com/sindresorhus/ts-extras/blob/v1.3.0/source/set-has.ts"
+  },
+  {
+    "name": "stringSplit",
+    "from": "ts-extras",
+    "version": "1.3.0",
+    "kind": "value",
+    "source": "https://github.com/sindresorhus/ts-extras/blob/v1.3.0/source/string-split.ts"
+  },
+  {
+    "name": "NonExhaustiveError",
+    "from": "ts-pattern",
+    "version": "5.9.2",
+    "kind": "value",
+    "source": "https://github.com/gvergnaud/ts-pattern/blob/v5.9.2/src/errors.ts"
+  },
+  {
+    "name": "P",
+    "from": "ts-pattern",
+    "version": "5.9.2",
+    "kind": "value",
+    "source": "https://github.com/gvergnaud/ts-pattern/blob/v5.9.2/src/patterns.ts"
+  },
+  {
+    "name": "isMatching",
+    "from": "ts-pattern",
+    "version": "5.9.2",
+    "kind": "value",
+    "source": "https://github.com/gvergnaud/ts-pattern/blob/v5.9.2/src/is-matching.ts"
+  },
+  {
+    "name": "match",
+    "from": "ts-pattern",
+    "version": "5.9.2",
+    "kind": "value",
+    "source": "https://github.com/gvergnaud/ts-pattern/blob/v5.9.2/src/match.ts"
+  },
+  {
+    "name": "Absolute",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/absolute.d.ts"
+  },
+  {
+    "name": "AbstractClass",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/basic.d.ts"
+  },
+  {
+    "name": "AbstractConstructor",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/basic.d.ts"
+  },
+  {
+    "name": "AllExtend",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/all-extend.d.ts"
+  },
+  {
+    "name": "AllExtendOptions",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/all-extend.d.ts"
+  },
+  {
+    "name": "AllUnionFields",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/all-union-fields.d.ts"
+  },
+  {
+    "name": "Alphanumeric",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/characters.d.ts"
+  },
+  {
+    "name": "And",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/and.d.ts"
+  },
+  {
+    "name": "AndAll",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/and-all.d.ts"
+  },
+  {
+    "name": "ArrayElement",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/array-element.d.ts"
+  },
+  {
+    "name": "ArrayIndices",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/array-indices.d.ts"
+  },
+  {
+    "name": "ArrayLength",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/array-length.d.ts"
+  },
+  {
+    "name": "ArrayReverse",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/array-reverse.d.ts"
+  },
+  {
+    "name": "ArraySlice",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/array-slice.d.ts"
+  },
+  {
+    "name": "ArraySplice",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/array-splice.d.ts"
+  },
+  {
+    "name": "ArrayTail",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/array-tail.d.ts"
+  },
+  {
+    "name": "ArrayValues",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/array-values.d.ts"
+  },
+  {
+    "name": "Arrayable",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/arrayable.d.ts"
+  },
+  {
+    "name": "AsyncReturnType",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/async-return-type.d.ts"
+  },
+  {
+    "name": "Asyncify",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/asyncify.d.ts"
+  },
+  {
+    "name": "CamelCase",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/camel-case.d.ts"
+  },
+  {
+    "name": "CamelCaseOptions",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/camel-case.d.ts"
+  },
+  {
+    "name": "CamelCasedProperties",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/camel-cased-properties.d.ts"
+  },
+  {
+    "name": "CamelCasedPropertiesDeep",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/camel-cased-properties-deep.d.ts"
+  },
+  {
+    "name": "Class",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/basic.d.ts"
+  },
+  {
+    "name": "ConditionalExcept",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/conditional-except.d.ts"
+  },
+  {
+    "name": "ConditionalKeys",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/conditional-keys.d.ts"
+  },
+  {
+    "name": "ConditionalPick",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/conditional-pick.d.ts"
+  },
+  {
+    "name": "ConditionalPickDeep",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/conditional-pick-deep.d.ts"
+  },
+  {
+    "name": "ConditionalPickDeepOptions",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/conditional-pick-deep.d.ts"
+  },
+  {
+    "name": "ConditionalSimplify",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/conditional-simplify.d.ts"
+  },
+  {
+    "name": "ConditionalSimplifyDeep",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/conditional-simplify-deep.d.ts"
+  },
+  {
+    "name": "Constructor",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/basic.d.ts"
+  },
+  {
+    "name": "DelimiterCase",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/delimiter-case.d.ts"
+  },
+  {
+    "name": "DelimiterCasedProperties",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/delimiter-cased-properties.d.ts"
+  },
+  {
+    "name": "DelimiterCasedPropertiesDeep",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/delimiter-cased-properties-deep.d.ts"
+  },
+  {
+    "name": "DigitCharacter",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/characters.d.ts"
+  },
+  {
+    "name": "DistributedOmit",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/distributed-omit.d.ts"
+  },
+  {
+    "name": "DistributedPick",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/distributed-pick.d.ts"
+  },
+  {
+    "name": "EmptyObject",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/empty-object.d.ts"
+  },
+  {
+    "name": "Entries",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/entries.d.ts"
+  },
+  {
+    "name": "Entry",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/entry.d.ts"
+  },
+  {
+    "name": "Exact",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/exact.d.ts"
+  },
+  {
+    "name": "Except",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/except.d.ts"
+  },
+  {
+    "name": "ExceptOptions",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/except.d.ts"
+  },
+  {
+    "name": "ExcludeExactly",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/exclude-exactly.d.ts"
+  },
+  {
+    "name": "ExcludeRestElement",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/exclude-rest-element.d.ts"
+  },
+  {
+    "name": "ExcludeStrict",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/exclude-strict.d.ts"
+  },
+  {
+    "name": "ExclusifyUnion",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/exclusify-union.d.ts"
+  },
+  {
+    "name": "ExtendsStrict",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/extends-strict.d.ts"
+  },
+  {
+    "name": "ExtendsStrictOptions",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/extends-strict.d.ts"
+  },
+  {
+    "name": "ExtractExactly",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/extract-exactly.d.ts"
+  },
+  {
+    "name": "ExtractRestElement",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/extract-rest-element.d.ts"
+  },
+  {
+    "name": "ExtractStrict",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/extract-strict.d.ts"
+  },
+  {
+    "name": "FindGlobalInstanceType",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/find-global-type.d.ts"
+  },
+  {
+    "name": "FindGlobalType",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/find-global-type.d.ts"
+  },
+  {
+    "name": "Finite",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/numeric.d.ts"
+  },
+  {
+    "name": "FixedLengthArray",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/fixed-length-array.d.ts"
+  },
+  {
+    "name": "Float",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/numeric.d.ts"
+  },
+  {
+    "name": "Get",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/get.d.ts"
+  },
+  {
+    "name": "GetOptions",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/get.d.ts"
+  },
+  {
+    "name": "GetTagMetadata",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/tagged.d.ts"
+  },
+  {
+    "name": "GlobalThis",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/global-this.d.ts"
+  },
+  {
+    "name": "GreaterThan",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/greater-than.d.ts"
+  },
+  {
+    "name": "GreaterThanOrEqual",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/greater-than-or-equal.d.ts"
+  },
+  {
+    "name": "HasOptionalKeys",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/has-optional-keys.d.ts"
+  },
+  {
+    "name": "HasReadonlyKeys",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/has-readonly-keys.d.ts"
+  },
+  {
+    "name": "HasRequiredKeys",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/has-required-keys.d.ts"
+  },
+  {
+    "name": "HasWritableKeys",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/has-writable-keys.d.ts"
+  },
+  {
+    "name": "If",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/if.d.ts"
+  },
+  {
+    "name": "IfAny",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/if-any.d.ts"
+  },
+  {
+    "name": "IfEmptyObject",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/if-empty-object.d.ts"
+  },
+  {
+    "name": "IfNever",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/if-never.d.ts"
+  },
+  {
+    "name": "IfNull",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/if-null.d.ts"
+  },
+  {
+    "name": "IfUnknown",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/if-unknown.d.ts"
+  },
+  {
+    "name": "Includes",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/includes.d.ts"
+  },
+  {
+    "name": "IntClosedRange",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/int-closed-range.d.ts"
+  },
+  {
+    "name": "IntRange",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/int-range.d.ts"
+  },
+  {
+    "name": "Integer",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/numeric.d.ts"
+  },
+  {
+    "name": "InvariantOf",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/invariant-of.d.ts"
+  },
+  {
+    "name": "IsAny",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/is-any.d.ts"
+  },
+  {
+    "name": "IsBooleanLiteral",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/is-boolean-literal.d.ts"
+  },
+  {
+    "name": "IsEmptyObject",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/empty-object.d.ts"
+  },
+  {
+    "name": "IsEqual",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/is-equal.d.ts"
+  },
+  {
+    "name": "IsFloat",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/is-float.d.ts"
+  },
+  {
+    "name": "IsInteger",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/is-integer.d.ts"
+  },
+  {
+    "name": "IsLiteral",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/is-literal.d.ts"
+  },
+  {
+    "name": "IsLowercase",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/is-lowercase.d.ts"
+  },
+  {
+    "name": "IsNegative",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/numeric.d.ts"
+  },
+  {
+    "name": "IsNever",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/is-never.d.ts"
+  },
+  {
+    "name": "IsNull",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/is-null.d.ts"
+  },
+  {
+    "name": "IsNullable",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/is-nullable.d.ts"
+  },
+  {
+    "name": "IsNumericLiteral",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/is-numeric-literal.d.ts"
+  },
+  {
+    "name": "IsOptional",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/is-optional.d.ts"
+  },
+  {
+    "name": "IsOptionalKeyOf",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/is-optional-key-of.d.ts"
+  },
+  {
+    "name": "IsReadonlyKeyOf",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/is-readonly-key-of.d.ts"
+  },
+  {
+    "name": "IsRequiredKeyOf",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/is-required-key-of.d.ts"
+  },
+  {
+    "name": "IsStringLiteral",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/is-string-literal.d.ts"
+  },
+  {
+    "name": "IsSymbolLiteral",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/is-symbol-literal.d.ts"
+  },
+  {
+    "name": "IsTuple",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/is-tuple.d.ts"
+  },
+  {
+    "name": "IsTupleOptions",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/is-tuple.d.ts"
+  },
+  {
+    "name": "IsUndefined",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/is-undefined.d.ts"
+  },
+  {
+    "name": "IsUnion",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/is-union.d.ts"
+  },
+  {
+    "name": "IsUnknown",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/is-unknown.d.ts"
+  },
+  {
+    "name": "IsUppercase",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/is-uppercase.d.ts"
+  },
+  {
+    "name": "IsWritableKeyOf",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/is-writable-key-of.d.ts"
+  },
+  {
+    "name": "IterableElement",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/iterable-element.d.ts"
+  },
+  {
+    "name": "Join",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/join.d.ts"
+  },
+  {
+    "name": "JsonArray",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/json-value.d.ts"
+  },
+  {
+    "name": "JsonObject",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/json-value.d.ts"
+  },
+  {
+    "name": "JsonPrimitive",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/json-value.d.ts"
+  },
+  {
+    "name": "JsonValue",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/json-value.d.ts"
+  },
+  {
+    "name": "Jsonifiable",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/jsonifiable.d.ts"
+  },
+  {
+    "name": "Jsonify",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/jsonify.d.ts"
+  },
+  {
+    "name": "KebabCase",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/kebab-case.d.ts"
+  },
+  {
+    "name": "KebabCasedProperties",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/kebab-cased-properties.d.ts"
+  },
+  {
+    "name": "KebabCasedPropertiesDeep",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/kebab-cased-properties-deep.d.ts"
+  },
+  {
+    "name": "KeyAsString",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/key-as-string.d.ts"
+  },
+  {
+    "name": "KeysOfUnion",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/keys-of-union.d.ts"
+  },
+  {
+    "name": "LastArrayElement",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/last-array-element.d.ts"
+  },
+  {
+    "name": "LessThan",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/less-than.d.ts"
+  },
+  {
+    "name": "LessThanOrEqual",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/less-than-or-equal.d.ts"
+  },
+  {
+    "name": "LiteralToPrimitive",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/literal-to-primitive.d.ts"
+  },
+  {
+    "name": "LiteralToPrimitiveDeep",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/literal-to-primitive-deep.d.ts"
+  },
+  {
+    "name": "LiteralUnion",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/literal-union.d.ts"
+  },
+  {
+    "name": "LowercaseLetter",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/characters.d.ts"
+  },
+  {
+    "name": "Merge",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/merge.d.ts"
+  },
+  {
+    "name": "MergeDeep",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/merge-deep.d.ts"
+  },
+  {
+    "name": "MergeDeepOptions",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/merge-deep.d.ts"
+  },
+  {
+    "name": "MergeExclusive",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/merge-exclusive.d.ts"
+  },
+  {
+    "name": "MultidimensionalArray",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/multidimensional-array.d.ts"
+  },
+  {
+    "name": "MultidimensionalReadonlyArray",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/multidimensional-readonly-array.d.ts"
+  },
+  {
+    "name": "Negative",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/numeric.d.ts"
+  },
+  {
+    "name": "NegativeFloat",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/numeric.d.ts"
+  },
+  {
+    "name": "NegativeInfinity",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/numeric.d.ts"
+  },
+  {
+    "name": "NegativeInteger",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/numeric.d.ts"
+  },
+  {
+    "name": "NonEmptyObject",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/non-empty-object.d.ts"
+  },
+  {
+    "name": "NonEmptyString",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/non-empty-string.d.ts"
+  },
+  {
+    "name": "NonEmptyTuple",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/non-empty-tuple.d.ts"
+  },
+  {
+    "name": "NonNegative",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/numeric.d.ts"
+  },
+  {
+    "name": "NonNegativeInteger",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/numeric.d.ts"
+  },
+  {
+    "name": "NonNullableDeep",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/non-nullable-deep.d.ts"
+  },
+  {
+    "name": "ObjectMerge",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/object-merge.d.ts"
+  },
+  {
+    "name": "OmitDeep",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/omit-deep.d.ts"
+  },
+  {
+    "name": "OmitIndexSignature",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/omit-index-signature.d.ts"
+  },
+  {
+    "name": "Opaque",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/tagged.d.ts"
+  },
+  {
+    "name": "Optional",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/optional.d.ts"
+  },
+  {
+    "name": "OptionalKeysOf",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/optional-keys-of.d.ts"
+  },
+  {
+    "name": "Or",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/or.d.ts"
+  },
+  {
+    "name": "OrAll",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/or-all.d.ts"
+  },
+  {
+    "name": "OverrideProperties",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/override-properties.d.ts"
+  },
+  {
+    "name": "PackageJson",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/package-json.d.ts"
+  },
+  {
+    "name": "PartialDeep",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/partial-deep.d.ts"
+  },
+  {
+    "name": "PartialDeepOptions",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/partial-deep.d.ts"
+  },
+  {
+    "name": "PartialOnUndefinedDeep",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/partial-on-undefined-deep.d.ts"
+  },
+  {
+    "name": "PartialOnUndefinedDeepOptions",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/partial-on-undefined-deep.d.ts"
+  },
+  {
+    "name": "PascalCase",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/pascal-case.d.ts"
+  },
+  {
+    "name": "PascalCasedProperties",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/pascal-cased-properties.d.ts"
+  },
+  {
+    "name": "PascalCasedPropertiesDeep",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/pascal-cased-properties-deep.d.ts"
+  },
+  {
+    "name": "Paths",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/paths.d.ts"
+  },
+  {
+    "name": "PathsOptions",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/paths.d.ts"
+  },
+  {
+    "name": "PickDeep",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/pick-deep.d.ts"
+  },
+  {
+    "name": "PickIndexSignature",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/pick-index-signature.d.ts"
+  },
+  {
+    "name": "PositiveInfinity",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/numeric.d.ts"
+  },
+  {
+    "name": "Primitive",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/primitive.d.ts"
+  },
+  {
+    "name": "Promisable",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/promisable.d.ts"
+  },
+  {
+    "name": "ReadonlyDeep",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/readonly-deep.d.ts"
+  },
+  {
+    "name": "ReadonlyKeysOf",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/readonly-keys-of.d.ts"
+  },
+  {
+    "name": "ReadonlyTuple",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/readonly-tuple.d.ts"
+  },
+  {
+    "name": "RemovePrefix",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/remove-prefix.d.ts"
+  },
+  {
+    "name": "RemovePrefixOptions",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/remove-prefix.d.ts"
+  },
+  {
+    "name": "RemoveSuffix",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/remove-suffix.d.ts"
+  },
+  {
+    "name": "RemoveSuffixOptions",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/remove-suffix.d.ts"
+  },
+  {
+    "name": "RenameKeys",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/rename-keys.d.ts"
+  },
+  {
+    "name": "Replace",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/replace.d.ts"
+  },
+  {
+    "name": "ReplaceOptions",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/replace.d.ts"
+  },
+  {
+    "name": "RequireAllOrNone",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/require-all-or-none.d.ts"
+  },
+  {
+    "name": "RequireAtLeastOne",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/require-at-least-one.d.ts"
+  },
+  {
+    "name": "RequireExactlyOne",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/require-exactly-one.d.ts"
+  },
+  {
+    "name": "RequireOneOrNone",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/require-one-or-none.d.ts"
+  },
+  {
+    "name": "RequiredDeep",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/required-deep.d.ts"
+  },
+  {
+    "name": "RequiredKeysOf",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/required-keys-of.d.ts"
+  },
+  {
+    "name": "Schema",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/schema.d.ts"
+  },
+  {
+    "name": "SchemaOptions",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/schema.d.ts"
+  },
+  {
+    "name": "ScreamingSnakeCase",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/screaming-snake-case.d.ts"
+  },
+  {
+    "name": "SetFieldType",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/set-field-type.d.ts"
+  },
+  {
+    "name": "SetFieldTypeOptions",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/set-field-type.d.ts"
+  },
+  {
+    "name": "SetNonNullable",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/set-non-nullable.d.ts"
+  },
+  {
+    "name": "SetNonNullableDeep",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/set-non-nullable-deep.d.ts"
+  },
+  {
+    "name": "SetOptional",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/set-optional.d.ts"
+  },
+  {
+    "name": "SetParameterType",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/set-parameter-type.d.ts"
+  },
+  {
+    "name": "SetReadonly",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/set-readonly.d.ts"
+  },
+  {
+    "name": "SetRequired",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/set-required.d.ts"
+  },
+  {
+    "name": "SetRequiredDeep",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/set-required-deep.d.ts"
+  },
+  {
+    "name": "SetReturnType",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/set-return-type.d.ts"
+  },
+  {
+    "name": "SharedUnionFields",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/shared-union-fields.d.ts"
+  },
+  {
+    "name": "SharedUnionFieldsDeep",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/shared-union-fields-deep.d.ts"
+  },
+  {
+    "name": "SharedUnionFieldsDeepOptions",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/shared-union-fields-deep.d.ts"
+  },
+  {
+    "name": "Simplify",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/simplify.d.ts"
+  },
+  {
+    "name": "SimplifyDeep",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/simplify-deep.d.ts"
+  },
+  {
+    "name": "SingleKeyObject",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/single-key-object.d.ts"
+  },
+  {
+    "name": "SnakeCase",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/snake-case.d.ts"
+  },
+  {
+    "name": "SnakeCasedProperties",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/snake-cased-properties.d.ts"
+  },
+  {
+    "name": "SnakeCasedPropertiesDeep",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/snake-cased-properties-deep.d.ts"
+  },
+  {
+    "name": "SomeExtend",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/some-extend.d.ts"
+  },
+  {
+    "name": "SomeExtendOptions",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/some-extend.d.ts"
+  },
+  {
+    "name": "Split",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/split.d.ts"
+  },
+  {
+    "name": "SplitOnRestElement",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/split-on-rest-element.d.ts"
+  },
+  {
+    "name": "SplitOptions",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/split.d.ts"
+  },
+  {
+    "name": "Spread",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/spread.d.ts"
+  },
+  {
+    "name": "StringLength",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/string-length.d.ts"
+  },
+  {
+    "name": "StringRepeat",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/string-repeat.d.ts"
+  },
+  {
+    "name": "StringSlice",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/string-slice.d.ts"
+  },
+  {
+    "name": "StringToArray",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/string-to-array.d.ts"
+  },
+  {
+    "name": "StringToArrayOptions",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/string-to-array.d.ts"
+  },
+  {
+    "name": "StringToNumber",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/string-to-number.d.ts"
+  },
+  {
+    "name": "Stringified",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/stringified.d.ts"
+  },
+  {
+    "name": "StructuredCloneable",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/structured-cloneable.d.ts"
+  },
+  {
+    "name": "Subtract",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/subtract.d.ts"
+  },
+  {
+    "name": "Sum",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/sum.d.ts"
+  },
+  {
+    "name": "Tagged",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/tagged.d.ts"
+  },
+  {
+    "name": "TaggedUnion",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/tagged-union.d.ts"
+  },
+  {
+    "name": "Trim",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/trim.d.ts"
+  },
+  {
+    "name": "TsConfigJson",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/tsconfig-json.d.ts"
+  },
+  {
+    "name": "TupleOf",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/tuple-of.d.ts"
+  },
+  {
+    "name": "TupleToObject",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/tuple-to-object.d.ts"
+  },
+  {
+    "name": "TupleToUnion",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/tuple-to-union.d.ts"
+  },
+  {
+    "name": "TypedArray",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/typed-array.d.ts"
+  },
+  {
+    "name": "UndefinedOnPartialDeep",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/undefined-on-partial-deep.d.ts"
+  },
+  {
+    "name": "UnionLength",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/union-length.d.ts"
+  },
+  {
+    "name": "UnionMax",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/union-max.d.ts"
+  },
+  {
+    "name": "UnionMember",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/union-member.d.ts"
+  },
+  {
+    "name": "UnionToIntersection",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/union-to-intersection.d.ts"
+  },
+  {
+    "name": "UnionToTuple",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/union-to-tuple.d.ts"
+  },
+  {
+    "name": "UnknownArray",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/unknown-array.d.ts"
+  },
+  {
+    "name": "UnknownMap",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/unknown-map.d.ts"
+  },
+  {
+    "name": "UnknownRecord",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/unknown-record.d.ts"
+  },
+  {
+    "name": "UnknownSet",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/unknown-set.d.ts"
+  },
+  {
+    "name": "UnwrapOpaque",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/tagged.d.ts"
+  },
+  {
+    "name": "UnwrapPartial",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/unwrap-partial.d.ts"
+  },
+  {
+    "name": "UnwrapRequired",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/unwrap-required.d.ts"
+  },
+  {
+    "name": "UnwrapTagged",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/tagged.d.ts"
+  },
+  {
+    "name": "UppercaseLetter",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/characters.d.ts"
+  },
+  {
+    "name": "ValueOf",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/value-of.d.ts"
+  },
+  {
+    "name": "Words",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/words.d.ts"
+  },
+  {
+    "name": "WordsOptions",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/words.d.ts"
+  },
+  {
+    "name": "Writable",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/writable.d.ts"
+  },
+  {
+    "name": "WritableDeep",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/writable-deep.d.ts"
+  },
+  {
+    "name": "WritableKeysOf",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/writable-keys-of.d.ts"
+  },
+  {
+    "name": "Xor",
+    "from": "type-fest",
+    "version": "5.10.0",
+    "kind": "type",
+    "source": "https://github.com/sindresorhus/type-fest/blob/v5.10.0/source/xor.d.ts"
+  },
+  {
+    "name": "invariant",
+    "from": "tiny-invariant",
+    "version": "1.3.3",
+    "kind": "value",
+    "source": "https://github.com/alexreardon/tiny-invariant/blob/v1.3.3/src/tiny-invariant.ts",
+    "upstreamName": "default"
+  }
+]

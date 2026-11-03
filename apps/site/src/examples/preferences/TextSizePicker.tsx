@@ -13,7 +13,9 @@ const preferences = createPreferences({
 function applyTextSize() {
   document.documentElement.style.setProperty("--text-size", `${preferences.get("textSize")}px`)
 }
+
 applyTextSize()
+
 preferences.subscribe(applyTextSize)
 
 export function TextSizePicker() {

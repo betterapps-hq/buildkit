@@ -9,9 +9,11 @@ export function examplesCarousel() {
   const section = document.querySelector<HTMLElement>(".examples")
   const stage = section?.querySelector<HTMLElement>(".examples-stage")
   const slides = gsap.utils.toArray<HTMLElement>(".examples .ex-card")
+
   if (!section || !stage || slides.length < 2) {
     return undefined
   }
+
   const ids = slides.map((slide) => slide.dataset.example ?? "")
   let shown = 0
 
@@ -27,6 +29,7 @@ export function examplesCarousel() {
 
   section.classList.add("is-carousel")
   gsap.set(slides[0], { x: 0, autoAlpha: 1 })
+
   const timeline = gsap.timeline({
     defaults: { duration: 1, ease: "power2.inOut" },
     onUpdate: () => show(Math.round(timeline.time())),
@@ -44,6 +47,7 @@ export function examplesCarousel() {
       invalidateOnRefresh: true
     }
   })
+
   timeline.addLabel(ids[0], 0)
   slides.slice(1).forEach((slide, index) => {
     timeline
@@ -53,15 +57,18 @@ export function examplesCarousel() {
   })
 
   function go(event: Event) {
-    const index = ids.indexOf((event as CustomEvent<string>).detail)
+    const index = event instanceof CustomEvent ? ids.indexOf(event.detail) : -1
     const trigger = timeline.scrollTrigger
+
     if (index < 0 || !trigger) {
       return
     }
+
     event.preventDefault()
     const top = trigger.start + ((trigger.end - trigger.start) * index) / (ids.length - 1)
     window.scrollTo({ top, behavior: "smooth" })
   }
+
   section.addEventListener("examples:go", go)
 
   return () => {

@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { Documentation, StoryLink } from "./Documentation.js"
 import { packages, packageOverviewId } from "./packages.js"
+
 function WelcomePage() {
   return (
     <Documentation
@@ -31,6 +32,7 @@ function WelcomePage() {
     </Documentation>
   )
 }
+
 function ArchitecturePage() {
   return (
     <Documentation
@@ -82,10 +84,13 @@ function ArchitecturePage() {
     </Documentation>
   )
 }
+
 const meta = {
   title: "Getting started",
   parameters: { layout: "fullscreen", controls: { disable: true } }
 } satisfies Meta
+
 export default meta
+
 export const Welcome: StoryObj<typeof meta> = { render: () => <WelcomePage /> }
 export const Architecture: StoryObj<typeof meta> = { render: () => <ArchitecturePage /> }

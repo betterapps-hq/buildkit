@@ -117,6 +117,7 @@ describe("env", () => {
     for (const value of ['say "hi"', "C:\\new\\path", "it's", "has space", "a#b", "x=y", "two\nlines", `it's "both"`]) {
       expect(readEnv(setEnvValue(undefined, "A", value)).get("A")).toBe(value)
     }
+
     expect(setEnvValue(undefined, "A", 'say "hi"')).toBe("A='say \"hi\"'\n")
     expect(setEnvValue(undefined, "A", "two\nlines")).toBe('A="two\\nlines"\n')
     expect(() => setEnvValue(undefined, "A", "it's\n\"`")).toThrow("A's value can't be written")

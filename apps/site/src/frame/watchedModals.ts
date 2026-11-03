@@ -19,8 +19,10 @@ export function createModalManager(...args: Parameters<typeof createManager>) {
     const handle = confirm(options)
     show({ value: "pending", tone: "pending" })
     handle.then((discard) => show({ value: String(discard), tone: "keyword" }))
+
     return handle
   }
+
   return manager
 }
 

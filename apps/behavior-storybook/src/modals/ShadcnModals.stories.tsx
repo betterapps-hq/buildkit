@@ -17,20 +17,25 @@ import type { ExampleInputProps, ModalExampleScenario } from "./ModalExamples.js
 function NameInput({ onChange, ...props }: ExampleInputProps) {
   return <Input {...props} onChange={(event) => onChange(event.target.value)} />
 }
+
 type ShadcnModalsExampleProps = ModalExampleScenario & { adapter?: ModalAdapter }
 
 function ShadcnModalsExample({ scenario, adapter }: ShadcnModalsExampleProps) {
   const [manager] = useState(() => createModalManager({ adapter }))
+
   return (
     <ModalExamples manager={manager} Button={Button} Input={NameInput} scenario={scenario}>
       <ModalRenderer manager={manager} />
     </ModalExamples>
   )
 }
+
 const meta = { title: "shadcn/shadcn-modals-manager", component: ShadcnModalsExample } satisfies Meta<
   typeof ShadcnModalsExample
 >
+
 export default meta
+
 export const Confirmation: StoryObj<typeof meta> = modalStory("confirmation")
 export const Acknowledgment: StoryObj<typeof meta> = modalStory("alert")
 export const TypedForm: StoryObj<typeof meta> = { ...modalStory("form"), name: "Typed form" }
@@ -50,6 +55,7 @@ const registryAdapter = baseUiComponents({
   DialogDescription,
   DialogFooter
 })
+
 export const RegistryComponents: StoryObj<typeof meta> = {
   name: "Registry components",
   render: () => <ShadcnModalsExample adapter={registryAdapter} />,

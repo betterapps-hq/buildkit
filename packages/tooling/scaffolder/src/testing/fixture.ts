@@ -11,7 +11,7 @@ import type { CatalogManifest, Contribution } from "../manifest/types.js"
 import type { Answers } from "../manifest/types.js"
 import { plan, type PlanInput } from "../plan/plan.js"
 import { memoryTree } from "../plan/tree.js"
-import type { Plan, PlanRequest } from "../plan/types.js"
+import type { Intent, Plan, PlanRequest } from "../plan/types.js"
 import { defineSettings } from "../state/settings.js"
 
 export const settings = defineSettings({ product: "fixture", schemaUrl: "https://example.test/fixture.json" })
@@ -24,6 +24,7 @@ const vitePlugins = definePoint({
   export: "vitePlugins",
   title: "Vite plugins"
 })
+
 const providers = definePoint({
   id: "app.providers",
   version: 1,
@@ -31,6 +32,7 @@ const providers = definePoint({
   file: "src/generated/fixture/client.ts",
   export: "providers"
 })
+
 const envSchema = definePoint({
   id: "env.schema",
   version: 1,
@@ -48,6 +50,7 @@ const mainV1 = [
   "}",
   ""
 ].join("\n")
+
 const mainV2 = [
   'import { providers } from "./generated/fixture/client"',
   "",
@@ -109,6 +112,7 @@ export function fixtureCatalog(version: 1 | 2 = 1): CatalogManifest {
         { kind: "lines", path: ".gitignore", lines: ["node_modules", "dist", ".env"] },
         { kind: "command", run: "pnpm install", when: "after-apply", why: "Installs the new dependencies." }
       ]
+
       if (ctx.target.has("ssr")) {
         contributions.push({
           kind: "file",
@@ -117,19 +121,23 @@ export function fixtureCatalog(version: 1 | 2 = 1): CatalogManifest {
           ownership: "owned"
         })
       }
+
       return contributions
     },
     adopt(tree) {
       const existing = tree.read("README.md")
+
       if (existing !== undefined && !existing.includes("Managed by fixture")) {
         tree.write("README.md", `${existing.trimEnd()}\n\nManaged by fixture.\n`)
       }
     }
   })
+
   const lintOptions =
     version === 1
       ? z.object({ strict: z.boolean().default(true) })
       : z.object({ level: z.enum(["recommended", "strict"]).default("strict") })
+
   const lint = defineAddon({
     id: "@fixture/lint",
     version: version === 1 ? "1.0.0" : "1.1.0",
@@ -157,6 +165,7 @@ export function fixtureCatalog(version: 1 | 2 = 1): CatalogManifest {
               description: "Renames the lint script in your own scripts file.",
               run(tree) {
                 const text = tree.read("scripts/ci.sh")
+
                 if (text !== undefined) {
                   tree.write("scripts/ci.sh", text.replaceAll("npm run lint", "pnpm lint"))
                 }
@@ -170,6 +179,7 @@ export function fixtureCatalog(version: 1 | 2 = 1): CatalogManifest {
             }
           ]
   })
+
   const sqlite = defineAddon({
     id: "@fixture/db-sqlite",
     version: "1.0.0",
@@ -192,6 +202,7 @@ export function fixtureCatalog(version: 1 | 2 = 1): CatalogManifest {
       { kind: "entry", point: "env.schema", id: "DATABASE_URL", value: { value: { type: "string" } } }
     ]
   })
+
   const postgres = defineAddon({
     id: "@fixture/db-postgres",
     version: "1.0.0",
@@ -219,6 +230,7 @@ export function fixtureCatalog(version: 1 | 2 = 1): CatalogManifest {
       }
     ]
   })
+
   const uiBasic = defineAddon({
     id: "@fixture/ui-basic",
     version: "1.0.0",
@@ -235,6 +247,7 @@ export function fixtureCatalog(version: 1 | 2 = 1): CatalogManifest {
       }
     ]
   })
+
   const uiFancy = defineAddon({
     id: "@fixture/ui-fancy",
     version: "1.0.0",
@@ -253,6 +266,7 @@ export function fixtureCatalog(version: 1 | 2 = 1): CatalogManifest {
       }
     ]
   })
+
   const i18n = defineAddon({
     id: "@fixture/i18n",
     version: "1.0.0",
@@ -285,6 +299,7 @@ export function fixtureCatalog(version: 1 | 2 = 1): CatalogManifest {
       { kind: "json", path: "tsconfig.json", pointer: "/include", op: "append", value: "locales" }
     ]
   })
+
   const storybook = defineAddon({
     id: "@fixture/storybook",
     version: "1.0.0",
@@ -296,6 +311,7 @@ export function fixtureCatalog(version: 1 | 2 = 1): CatalogManifest {
       { kind: "lines", path: ".gitignore", lines: ["storybook-static"] }
     ]
   })
+
   const sessions = defineAddon({
     id: "@fixture/sessions",
     version: "1.0.0",
@@ -305,6 +321,7 @@ export function fixtureCatalog(version: 1 | 2 = 1): CatalogManifest {
       { kind: "file", path: "src/sessions.ts", content: "export const sessions = true\n", ownership: "owned" }
     ]
   })
+
   const auth = defineAddon({
     id: "@fixture/auth",
     version: "1.0.0",
@@ -321,6 +338,7 @@ export function fixtureCatalog(version: 1 | 2 = 1): CatalogManifest {
       }
     ]
   })
+
   const sentry = defineAddon({
     id: "@fixture/sentry",
     version: "1.0.0",
@@ -339,6 +357,7 @@ export function fixtureCatalog(version: 1 | 2 = 1): CatalogManifest {
       { kind: "notice", code: "sentry", text: "Errors are sent to Sentry." }
     ]
   })
+
   return defineCatalog({
     id: "@fixture/catalog",
     version: version === 1 ? "1.0.0" : "2.0.0",
@@ -424,8 +443,9 @@ export function fixtureCatalog(version: 1 | 2 = 1): CatalogManifest {
 }
 
 /** Applies a planned plan to an in-memory record, the way `applyPlan` does on disk. */
-export function applyInMemory(files: Record<string, string>, planned: Plan): Record<string, string> {
+export function applyInMemory(files: Record<string, string>, planned: Plan) {
   const next = { ...files }
+
   for (const operation of planned.operations) {
     if (operation.action === "delete") {
       delete next[operation.path]
@@ -433,6 +453,7 @@ export function applyInMemory(files: Record<string, string>, planned: Plan): Rec
       next[operation.path] = operation.content
     }
   }
+
   return next
 }
 
@@ -443,7 +464,7 @@ export function initRequest(answers: Partial<Answers> = {}): PlanRequest {
 export function addRequest(
   addons: string[],
   replace: string[] = [],
-  options: Record<string, Record<string, unknown>> = {}
+  options: Extract<Intent, { command: "add" }>["options"] = {}
 ): PlanRequest {
   return { intent: { command: "add", addons, replace, options } }
 }
@@ -464,10 +485,12 @@ export async function applyFixture(
   extra: Partial<PlanInput> = {}
 ): Promise<Record<string, string>> {
   const planned = await planFixture(files, request, extra)
+
   if (planned.status !== "planned" && planned.status !== "unchanged") {
     throw new Error(
       `Expected a plan, got ${planned.status}: ${JSON.stringify(planned.error ?? planned.decisions ?? planned.conflicts)}`
     )
   }
+
   return applyInMemory(files, planned)
 }

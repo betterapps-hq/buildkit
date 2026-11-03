@@ -45,6 +45,7 @@ it("localizes internal portaled controls and updates an open dialog", async () =
       </ShadcnLocalizationProvider>
     )
   }
+
   const user = userEvent.setup()
   const view = render(<Example close="Fermer" />)
   await user.click(screen.getByRole("button", { name: "Open" }))

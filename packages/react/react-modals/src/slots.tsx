@@ -2,9 +2,10 @@ import { createElement } from "react"
 import type { ModalDefaultFooterProps, ModalSlot } from "./types.js"
 
 export function renderSlot<TProps extends object>(slot: ModalSlot<TProps>, props: TProps) {
-  if (slot !== null && typeof slot === "object" && "component" in slot) {
+  if (slot instanceof Object && "component" in slot) {
     return createElement(slot.component, props)
   }
+
   return slot
 }
 
@@ -28,8 +29,15 @@ export function validateName({ title, ariaLabel }: { title: unknown; ariaLabel?:
   if (ariaLabel !== undefined && !ariaLabel.trim()) {
     throw new Error("ariaLabel must be non-empty when supplied")
   }
+
   const isMissingTitle =
-    title === null || title === undefined || typeof title === "boolean" || (typeof title === "string" && !title.trim())
+    title === null ||
+    title === undefined ||
+    title === true ||
+    title === false ||
+    // oxlint-disable-next-line anti-slop/no-runtime-typeof -- a title can be any slot, and only a string one can be blank
+    (typeof title === "string" && !title.trim())
+
   if (isMissingTitle && !ariaLabel?.trim()) {
     throw new Error("A modal needs a title or a non-empty ariaLabel")
   }

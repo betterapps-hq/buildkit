@@ -10,11 +10,14 @@ function show() {
 
 // The store saves on its own, so writes to storage keep the wire current
 const setItem = Storage.prototype.setItem
+
 Storage.prototype.setItem = function (key, value) {
   setItem.call(this, key, value)
   show()
 }
+
 const removeItem = Storage.prototype.removeItem
+
 Storage.prototype.removeItem = function (key) {
   removeItem.call(this, key)
   show()

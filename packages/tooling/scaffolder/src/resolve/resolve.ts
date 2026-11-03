@@ -10,6 +10,7 @@ import {
 import type {
   AddonManifest,
   CatalogManifest,
+  ResolveContext,
   TargetInfo,
   TargetManifest,
   TargetMode,
@@ -23,12 +24,14 @@ export interface Selection {
   template: string
   target: { id: string; mode: string }
   /** Explicitly chosen add-ons and their raw options. */
+  // oxlint-disable-next-line anti-slop/no-unsafe-dictionary-type -- raw options keyed by add-on id, which each add-on's schema parses
   addons: Record<string, Record<string, unknown>>
   declined: string[]
 }
 
 export interface ResolvedAddon {
   manifest: AddonManifest
+  // oxlint-disable-next-line anti-slop/no-unsafe-dictionary-type -- options the add-on's own schema parsed, so only it knows their types
   options: Record<string, unknown>
   explicit: boolean
   /** Add-ons that pulled this one in through `requires`, or that a combination add-on joins. */
@@ -64,12 +67,15 @@ export function projectNameProblem(name: string): string | undefined {
   if (name.length === 0 || name.length > 214) {
     return "Use 1 to 214 characters."
   }
+
   if (!projectNamePattern.test(name)) {
     return "Use lowercase letters, digits, hyphens, dots and underscores, starting with a letter or digit."
   }
+
   if (name === "node_modules" || name === "favicon.ico") {
     return `"${name}" is reserved.`
   }
+
   return undefined
 }
 
@@ -78,6 +84,7 @@ export function unknownAddonError(catalog: CatalogManifest, name: string): PlanE
   const suggestions = "suggestions" in lookup ? lookup.suggestions : []
   const ambiguous = "ambiguous" in lookup && lookup.ambiguous
   const hint = suggestions.length > 0 ? ` ${ambiguous ? "It could be" : "Did you mean"} ${suggestions.join(", ")}?` : ""
+
   return new PlanError(
     "E_UNKNOWN_ADDON",
     `${ambiguous ? `"${name}" matches more than one add-on.` : `There's no add-on named "${name}".`}${hint}`,
@@ -93,14 +100,17 @@ export function unknownAddonError(catalog: CatalogManifest, name: string): PlanE
  */
 export function refuseCombination(catalog: CatalogManifest, id: string): void {
   const addon = findAddon(catalog, id)
+
   if (!addon?.joins) {
     return
   }
+
   const parts = addon.joins.map((reference) =>
     reference.startsWith("provides:")
       ? `an add-on that provides ${reference.slice(9)}`
       : (findAddon(catalog, reference)?.title ?? reference)
   )
+
   const last = parts.pop() ?? ""
   throw new PlanError(
     "E_USAGE",
@@ -111,30 +121,38 @@ export function refuseCombination(catalog: CatalogManifest, id: string): void {
 /** Resolves a name to an add-on id, or throws `E_UNKNOWN_ADDON` with suggestions. */
 export function requireAddonId(catalog: CatalogManifest, name: string): string {
   const lookup = lookupAddon(catalog, name)
+
   if ("id" in lookup) {
     return lookup.id
   }
+
   throw unknownAddonError(catalog, name)
 }
 
 export function resolveTarget(catalog: CatalogManifest, selection: Pick<Selection, "template" | "target">) {
   const template = findTemplate(catalog, selection.template)
+
   if (!template) {
     throw new PlanError("E_UNKNOWN_TEMPLATE", `There's no template named "${selection.template}".`, {
       next: catalog.templates.map((candidate) => candidate.id)
     })
   }
+
   const target = findTarget(catalog, selection.target.id)
+
   if (!target) {
     throw new PlanError("E_UNKNOWN_TARGET", `There's no target named "${selection.target.id}".`)
   }
+
   const mode = findMode(target, selection.target.mode)
+
   if (!mode) {
     throw new PlanError(
       "E_UNKNOWN_TARGET",
       `${target.title} has no mode "${selection.target.mode}". Use ${target.modes.map((candidate) => candidate.id).join(" or ")}.`
     )
   }
+
   return { template, target, mode, info: targetInfo(catalog, target, mode) }
 }
 
@@ -142,15 +160,18 @@ export function resolveTarget(catalog: CatalogManifest, selection: Pick<Selectio
 export function addonSupports(
   addon: AddonManifest,
   info: TargetInfo,
-  options?: Record<string, unknown>
+  options?: Selection["addons"][string]
 ): true | string {
   if (!addon.supports) {
     return true
   }
+
   const parsed = parseOptions(addon, options)
+
   if (!parsed.ok) {
     return true
   }
+
   return addon.supports({ options: parsed.value, target: info, provided: () => undefined, selected: () => false })
 }
 
@@ -160,46 +181,61 @@ export function addonSupports(
  */
 export function resolveSelection(catalog: CatalogManifest, selection: Selection): ResolveResult {
   const nameProblem = projectNameProblem(selection.name)
+
   if (nameProblem) {
     throw new PlanError("E_INVALID_OPTIONS", `"${selection.name}" can't be a project name. ${nameProblem}`)
   }
+
   const { template, target, mode, info } = resolveTarget(catalog, selection)
   const chosen = new Map<string, { explicit: boolean; by: Set<string> }>()
+
   const visit = (id: string, by: string | undefined) => {
     const addon = findAddon(catalog, id)
+
     if (!addon) {
       throw unknownAddonError(catalog, id)
     }
+
     // A combination add-on is selected by what it joins, never by name.
     if (addon.joins) {
       return
     }
+
     const existing = chosen.get(id)
+
     if (existing) {
       if (by) {
         existing.by.add(by)
       } else {
         existing.explicit = true
       }
+
       return
     }
+
     chosen.set(id, { explicit: by === undefined, by: new Set(by ? [by] : []) })
+
     for (const requirement of addon.requires ?? []) {
       if (!requirement.startsWith("provides:")) {
         visit(requirement, id)
       }
     }
   }
+
   for (const id of Object.keys(selection.addons).sort()) {
     visit(id, undefined)
   }
-  const selected = [...chosen.keys()].map((id) => findAddon(catalog, id)).filter((addon) => addon !== undefined)
+
+  const selected = [...chosen.keys()].flatMap((id) => findAddon(catalog, id) ?? [])
+
   // Combination add-ons join when every reference matches, and one can join another, so this runs until nothing changes.
   // They're part of the selection before its requirements and conflicts are checked.
   for (let added = true; added;) {
     added = false
+
     for (const addon of catalog.addons) {
       const joined = addon.joins && !chosen.has(addon.id) ? joinedBy(addon.joins, selected) : undefined
+
       if (joined) {
         chosen.set(addon.id, { explicit: false, by: new Set(joined) })
         selected.push(addon)
@@ -207,10 +243,12 @@ export function resolveSelection(catalog: CatalogManifest, selection: Selection)
       }
     }
   }
+
   for (const addon of selected) {
     for (const requirement of addon.requires ?? []) {
       if (requirement.startsWith("provides:")) {
         const capability = requirement.slice(9)
+
         if (!selected.some((other) => other.provides && Object.hasOwn(other.provides, capability))) {
           const candidates = catalog.addons
             // A combination is never added by name, so it's never a choice.
@@ -219,33 +257,44 @@ export function resolveSelection(catalog: CatalogManifest, selection: Selection)
             )
             .filter((candidate) => addonSupports(candidate, info) === true)
             .map((candidate) => candidate.id)
+
           return { ok: false, issue: { kind: "choose-provider", capability, by: addon.id, candidates } }
         }
       }
     }
   }
+
   for (const addon of selected) {
     for (const other of selected) {
       const conflict = declaredConflict(addon, other)
+
       if (conflict) {
         return { ok: false, issue: { kind: "conflicts", addon: addon.id, other: other.id, ...conflict } }
       }
     }
   }
+
   const ordered = orderAddons(selected)
-  const provided = (name: string): unknown =>
+
+  const provided: ResolveContext<unknown>["provided"] = (name) =>
     ordered.find((addon) => addon.provides && Object.hasOwn(addon.provides, name))?.provides?.[name]
+
   const isSelected = (id: string) => chosen.has(id)
   const addons: ResolvedAddon[] = []
+
   for (const addon of ordered) {
     const parsed = parseOptions(addon, selection.addons[addon.id])
+
     if (!parsed.ok) {
       throw new PlanError("E_INVALID_OPTIONS", `${addon.title} has invalid options: ${parsed.issues.join("; ")}.`)
     }
+
     const support = addon.supports?.({ options: parsed.value, target: info, provided, selected: isSelected }) ?? true
+
     if (support !== true) {
       throw new PlanError("E_UNSUPPORTED", `${addon.title} doesn't support ${target.title} (${mode.title}): ${support}`)
     }
+
     const state = chosen.get(addon.id)
     addons.push({
       manifest: addon,
@@ -254,6 +303,7 @@ export function resolveSelection(catalog: CatalogManifest, selection: Selection)
       by: [...(state?.by ?? [])].sort()
     })
   }
+
   return {
     ok: true,
     value: { name: selection.name, template, target, mode, info, addons, declined: [...selection.declined].sort() }
@@ -263,17 +313,21 @@ export function resolveSelection(catalog: CatalogManifest, selection: Selection)
 /** The add-ons that match every reference of a combination add-on, or `undefined` when one doesn't match. */
 function joinedBy(references: readonly string[], selected: readonly AddonManifest[]): string[] | undefined {
   const joined = new Set<string>()
+
   for (const reference of references) {
     const matches = selected.filter((addon) =>
       reference.startsWith("provides:")
         ? addon.provides !== undefined && Object.hasOwn(addon.provides, reference.slice(9))
         : addon.id === reference
     )
+
     if (matches.length === 0) {
       return undefined
     }
+
     matches.forEach((addon) => joined.add(addon.id))
   }
+
   return [...joined]
 }
 
@@ -285,9 +339,11 @@ function declaredConflict(addon: AddonManifest, other: AddonManifest): { capabil
   if (addon.id === other.id) {
     return undefined
   }
+
   for (const reference of addon.conflicts ?? []) {
     if (reference.startsWith("provides:")) {
       const capability = reference.slice(9)
+
       if (other.provides && Object.hasOwn(other.provides, capability)) {
         return { capability }
       }
@@ -295,6 +351,7 @@ function declaredConflict(addon: AddonManifest, other: AddonManifest): { capabil
       return {}
     }
   }
+
   return undefined
 }
 
@@ -307,8 +364,10 @@ export function addonsConflict(left: AddonManifest, right: AddonManifest): boole
 function orderAddons(addons: AddonManifest[]): AddonManifest[] {
   const ids = new Set(addons.map((addon) => addon.id))
   const edges = new Map<string, Set<string>>()
+
   for (const addon of addons) {
     const before = new Set<string>()
+
     for (const requirement of [...(addon.requires ?? []), ...(addon.joins ?? [])]) {
       if (requirement.startsWith("provides:")) {
         const capability = requirement.slice(9)
@@ -319,29 +378,37 @@ function orderAddons(addons: AddonManifest[]): AddonManifest[] {
         before.add(requirement)
       }
     }
+
     for (const after of addon.after ?? []) {
       if (ids.has(after)) {
         before.add(after)
       }
     }
+
     before.delete(addon.id)
     edges.set(addon.id, before)
   }
+
   const result: AddonManifest[] = []
   const done = new Set<string>()
   const pending = addons.map((addon) => addon.id).sort()
+
   while (pending.length > 0) {
     const index = pending.findIndex((id) => [...(edges.get(id) ?? [])].every((dependency) => done.has(dependency)))
     const next = index === -1 ? undefined : pending[index]
+
     if (next === undefined) {
       throw new PlanError("E_CYCLE", `These add-ons require each other in a cycle: ${pending.join(", ")}.`)
     }
+
     pending.splice(index, 1)
     done.add(next)
     const addon = addons.find((candidate) => candidate.id === next)
+
     if (addon) {
       result.push(addon)
     }
   }
+
   return result
 }

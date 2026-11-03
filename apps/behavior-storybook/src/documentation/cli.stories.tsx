@@ -5,9 +5,13 @@ import { PackageOverview } from "./PackageOverview.js"
 function OverviewPage() {
   return <PackageOverview name="cli" />
 }
+
 const meta = { title: "Tooling/cli", parameters: { buildkitDocumentation: true } } satisfies Meta
+
 export default meta
+
 export const Overview: StoryObj<typeof meta> = { render: () => <OverviewPage /> }
+
 export const CreateAnApp: StoryObj<typeof meta> = {
   name: "Create an app",
   render: () => (
@@ -39,10 +43,12 @@ export const CreateAnApp: StoryObj<typeof meta> = {
     </Documentation>
   )
 }
+
 const addons = [
   ["ci", "Always included", "A GitHub Actions workflow: buildkit check, lint, format, build and type-check"],
   ["i18n", "Optional add-on", "Lingui catalogs, localized URLs and the html lang and dir attributes"]
 ] as const
+
 export const WhatCreateAsks: StoryObj<typeof meta> = {
   name: "What create asks",
   render: () => (

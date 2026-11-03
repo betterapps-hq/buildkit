@@ -8,6 +8,7 @@ type ModalContentProps = ModalSurfaceProps<ModalSurfaceOptions> & { components: 
 export function ModalContent({ components, entry, title, body, footer, children }: ModalContentProps) {
   const { DialogTitle, DialogDescription, DialogFooter } = components
   const view = entry.content
+
   return (
     <>
       <DialogTitle style={title === null || title === undefined ? { display: "none" } : undefined}>{title}</DialogTitle>

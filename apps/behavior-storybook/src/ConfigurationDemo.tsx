@@ -2,18 +2,22 @@ import { createPreferences } from "@buildkitgg/preferences-core"
 import { createConfiguration, type ReactConfigurationClient } from "@buildkitgg/react-configuration"
 import { usePreference } from "@buildkitgg/react-preferences"
 import { Button, NativeSelect, NativeSelectOption } from "@buildkitgg/shadcn-baseui-kit"
-import { ExampleResult } from "@repo/storybook-config/examples"
+import { ExampleResult } from "@buildkitgg/storybook-config/examples"
 import { useEffect, useState } from "react"
 
 type Settings = { newCheckout: boolean; defaultLanguage: string }
+
 type Context = { cohort: string }
+
 type Client = ReactConfigurationClient<Settings, Context>
+
 export type ConfigurationScenario = "loading" | "targeting" | "overrides" | "failure" | "language"
 
 export function ConfigurationDemo({ scenario }: { scenario: ConfigurationScenario }) {
   const [client, setClient] = useState<Client | null>(null)
   useEffect(() => {
     let shouldFail = scenario === "failure"
+
     const next = createConfiguration({
       defaults: { newCheckout: false, defaultLanguage: "en" },
       context: { cohort: "early-access" },
@@ -31,22 +35,28 @@ export function ConfigurationDemo({ scenario }: { scenario: ConfigurationScenari
               { once: true }
             )
           })
+
           if (shouldFail) {
             shouldFail = false
             throw new Error("Unable to reach the configuration provider.")
           }
+
           return { newCheckout: context.cohort === "early-access", defaultLanguage: "fr" }
         }
       }
     })
+
     // The effect owns this disposable external client; Strict Mode must create a fresh instance.
     // oxlint-disable-next-line react/set-state-in-effect
     setClient(next)
+
     if (scenario !== "loading") {
       void next.refresh()
     }
+
     return () => next.dispose()
   }, [scenario])
+
   return client ? <ConfigurationExample client={client} scenario={scenario} /> : <output>Preparing example...</output>
 }
 
@@ -56,8 +66,10 @@ function ConfigurationExample({ client, scenario }: { client: Client; scenario: 
   const snapshot = client.useConfiguration()
   const [preferences] = useState(() => createPreferences<{ language: string }>())
   const [selectedLanguage, setLanguage] = usePreference(preferences, "language")
+
   if (scenario === "language") {
     const effectiveLanguage = selectedLanguage ?? language.value
+
     return (
       <section>
         <div className="bk-settings">
@@ -91,6 +103,7 @@ function ConfigurationExample({ client, scenario }: { client: Client; scenario: 
       </section>
     )
   }
+
   return (
     <section>
       <div className="bk-settings">

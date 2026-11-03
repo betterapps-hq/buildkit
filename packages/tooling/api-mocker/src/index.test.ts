@@ -5,8 +5,11 @@ import { createApiMock, type OnRequest } from "./index.js"
 
 const url = "https://example.test/items"
 const server = setupServer(http.get(url, () => new HttpResponse(null, { status: 404 })))
+
 beforeAll(() => server.listen({ onUnhandledFrame: "error" }))
+
 afterEach(() => server.resetHandlers())
+
 afterAll(() => server.close())
 
 it("serves a response sequence and repeats its final response", async () => {

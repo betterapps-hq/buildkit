@@ -16,6 +16,7 @@ export function ProjectNameForm({ savedName }: { savedName: string }) {
       confirmLabel: "Discard",
       cancelLabel: "Keep editing"
     })
+
     if (discard) {
       setName(savedName)
     }

@@ -1,6 +1,7 @@
 import { z } from "zod"
 
 const label = z.string().regex(/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/, "Use a lowercase DNS label")
+
 const domain = z
   .string()
   .max(190)
@@ -8,11 +9,14 @@ const domain = z
     (value) => value.split(".").every((part) => label.safeParse(part).success),
     "Use a lowercase domain without a protocol or port"
   )
+
 const argument = z
   .string()
   .min(1)
   .refine((value) => !value.includes("\0"), "NUL is not allowed")
+
 const command = z.array(argument).min(1)
+
 const routePath = z
   .string()
   .regex(/^\/(?!\/)/, "Use an absolute path starting with one slash")
@@ -20,6 +24,7 @@ const routePath = z
     (value) => !/[?#\\%]/.test(value) && !value.split("/").some((part) => part === "." || part === ".."),
     "Use a plain path without query, encoding, or traversal"
   )
+
 const environment = z.record(
   z
     .string()
@@ -85,11 +90,14 @@ export const configSchema = z
   )
 
 export type DevDomainsConfig = z.input<typeof configSchema>
+
 export type ResolvedConfig = z.output<typeof configSchema>
+
 export type Endpoint = ResolvedConfig["endpoints"][string]
 
 /** Typed authoring helper. Runtime loading uses the same schema. */
 export function defineConfig(config: DevDomainsConfig): DevDomainsConfig {
   configSchema.parse(config)
+
   return config
 }

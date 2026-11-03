@@ -33,6 +33,7 @@ function ModalSurface({ entry, title, body, footer, children }: ModalSurfaceProp
   const descriptionId = useId()
   useModalExit(entry)
   const view = entry.content
+
   return (
     <Dialog
       open={entry.status === "open"}
@@ -47,6 +48,7 @@ function ModalSurface({ entry, title, body, footer, children }: ModalSurfaceProp
             if (view.returnFocus?.isConnected) {
               view.returnFocus.focus()
             }
+
             entry.finishExit()
           }
         }
@@ -93,12 +95,14 @@ function DefaultFooter({ kind, labels, isPending, dismiss, confirm }: ModalDefau
 const defaultAdapter = { Surface: ModalSurface, DefaultFooter }
 
 export type ModalRendererProps = { manager: ModalManager }
+
 /** Renders the manager's adapter. The default surface needs a FluentProvider. */
 export function ModalRenderer({ manager }: ModalRendererProps) {
   return <ReactModalRenderer manager={manager} />
 }
 
 export { useModals } from "@buildkitgg/react-modals"
+
 export type {
   ModalSlotProps,
   ModalAdapter,

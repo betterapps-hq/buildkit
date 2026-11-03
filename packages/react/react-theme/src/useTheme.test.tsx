@@ -22,8 +22,10 @@ it("updates without a provider when called outside React", () => {
 it("renders an immutable server snapshot", () => {
   const store = createThemeStore({ defaultTheme: "light" })
   store.setTheme("dark")
+
   function Consumer() {
     return <span>{useTheme(store).resolvedTheme}</span>
   }
+
   expect(renderToString(<Consumer />)).toBe("<span>light</span>")
 })
