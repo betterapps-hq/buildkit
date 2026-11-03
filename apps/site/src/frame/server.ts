@@ -18,10 +18,13 @@ export function setOffline(value: boolean) {
   offline = value
 }
 
+/** A response body, sent as JSON. */
+type Json = string | number | boolean | null | Json[] | { [key: string]: Json }
+
 type Route = {
   method: string
   path: RegExp
-  respond(request: Request, params: string[]): unknown
+  respond(request: Request, params: string[]): Json | Promise<Json>
 }
 
 const routes: Route[] = [
@@ -40,8 +43,10 @@ function wait(signal: AbortSignal) {
   return new Promise<void>((resolve, reject) => {
     if (signal.aborted) {
       reject(signal.reason)
+
       return
     }
+
     const timer = setTimeout(resolve, LATENCY)
     signal.addEventListener("abort", () => {
       clearTimeout(timer)
@@ -55,19 +60,25 @@ const network = window.fetch.bind(window)
 window.fetch = async (input, init) => {
   const request = new Request(input, init)
   const url = new URL(request.url)
+
   if (url.origin !== window.location.origin || !url.pathname.startsWith("/api/")) {
     return network(input, init)
   }
+
   await wait(request.signal)
+
   if (offline) {
     throw new TypeError("Failed to fetch")
   }
+
   for (const route of routes) {
     const match = route.method === request.method ? route.path.exec(url.pathname) : null
+
     if (match) {
       return Response.json(await route.respond(request, match.slice(1)))
     }
   }
+
   return new Response(null, { status: 404 })
 }
 
@@ -76,9 +87,11 @@ document.addEventListener(
   "click",
   (event) => {
     const link = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>("a[download]") : null
+
     if (!link || new URL(link.href).pathname !== "/api/invoices.csv") {
       return
     }
+
     event.preventDefault()
     const rows = INVOICES.map((invoice) => [invoice.id, invoice.issuedAt.slice(0, 10), invoice.total].join(","))
     const file = new Blob([["id,issued,total", ...rows].join("\n")], { type: "text/csv" })

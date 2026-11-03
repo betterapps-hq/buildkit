@@ -17,10 +17,13 @@ it("reacts to external selection and maps custom tokens under StrictMode", async
     lightTheme: { ...webLightTheme, colorBrandBackground: "red" },
     darkTheme: { ...webDarkTheme, colorBrandBackground: "purple" }
   })
+
   function Consumer() {
     const state = useTheme(store)
+
     return <Button onClick={() => store.setTheme("dark")}>{state.resolvedTheme}</Button>
   }
+
   const view = render(
     <StrictMode>
       <FluentThemeProvider store={store} dir="rtl" data-testid="provider">
@@ -28,6 +31,7 @@ it("reacts to external selection and maps custom tokens under StrictMode", async
       </FluentThemeProvider>
     </StrictMode>
   )
+
   expect(screen.getByTestId("provider").getAttribute("dir")).toBe("rtl")
   await userEvent.click(screen.getByRole("button", { name: "light" }))
   expect(screen.getByRole("button", { name: "dark" })).toBeDefined()
@@ -63,9 +67,11 @@ it("renders the server default without connecting browser storage", () => {
   const store = createFluentTheme({ defaultTheme: "dark" })
   vi.stubGlobal("window", undefined)
   store.start()()
+
   function Consumer() {
     return <span>{useTheme(store).resolvedTheme}</span>
   }
+
   expect(
     renderToString(
       <FluentThemeProvider store={store}>

@@ -6,6 +6,7 @@ import { getEndpoint } from "./node.js"
 
 it("resolves configured addresses for tooling without starting a server", async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), "buildkit-node-"))
+
   try {
     await writeFile(
       path.join(root, "dev-domains.json"),

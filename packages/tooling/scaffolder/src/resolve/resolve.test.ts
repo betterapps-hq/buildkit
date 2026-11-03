@@ -21,15 +21,17 @@ import { projectNameProblem, resolveSelection, type Selection } from "./resolve.
 
 const base: Selection = { name: "demo", template: "app", target: { id: "web", mode: "ssr" }, addons: {}, declined: [] }
 
-function thrown(run: () => unknown): PlanError {
+function thrown(run: () => void): PlanError {
   try {
     run()
   } catch (error) {
     if (error instanceof PlanError) {
       return error
     }
+
     throw error
   }
+
   throw new Error("expected a PlanError")
 }
 
@@ -71,8 +73,9 @@ function withAddons(catalog: CatalogManifest, ...addons: ReturnType<typeof defin
  * Each value of each question the fixture's app template asks in ssr mode, and the pairs of values of two questions that
  * no answer set has. The values come from what the template asks, so a value no set uses is reported.
  */
-function appPairs(catalog: CatalogManifest, sets: Answers[]): { values: string[][]; uncovered: string[] } {
+function appPairs(catalog: CatalogManifest, sets: Answers[]) {
   const asked = templateQuestions(catalog, "app", "ssr")
+
   const questions = asked.flatMap((question) =>
     question.pick === "one"
       ? [
@@ -88,10 +91,13 @@ function appPairs(catalog: CatalogManifest, sets: Answers[]): { values: string[]
           of: (answers: Answers) => `${choice.id}=${answers.questions?.[question.id]?.includes(choice.id) ?? false}`
         }))
   )
+
   const uncovered: string[] = []
+
   for (let left = 0; left < questions.length; left++) {
     for (let right = left + 1; right < questions.length; right++) {
       const seen = new Set(sets.map((answers) => `${questions[left]!.of(answers)} & ${questions[right]!.of(answers)}`))
+
       for (const a of questions[left]!.values) {
         for (const b of questions[right]!.values) {
           if (!seen.has(`${a} & ${b}`)) {
@@ -101,6 +107,7 @@ function appPairs(catalog: CatalogManifest, sets: Answers[]): { values: string[]
       }
     }
   }
+
   return { values: questions.map((question) => question.values), uncovered }
 }
 
@@ -109,6 +116,7 @@ describe("resolveSelection", () => {
     const unknown = thrown(() => resolveSelection(fixtureCatalog(), { ...base, addons: { "@fixture/i18": {} } }))
     expect(unknown.code).toBe("E_UNKNOWN_ADDON")
     expect(unknown.next).toEqual(["@fixture/i18n"])
+
     const catalog = withAddons(
       fixtureCatalog(),
       defineAddon({
@@ -128,6 +136,7 @@ describe("resolveSelection", () => {
         contribute: () => []
       })
     )
+
     expect(thrown(() => resolveSelection(catalog, { ...base, addons: { "@x/a": {} } })).code).toBe("E_CYCLE")
   })
 
@@ -136,9 +145,11 @@ describe("resolveSelection", () => {
       ...base,
       addons: { "@fixture/auth": {}, "@fixture/db-sqlite": {}, "@fixture/i18n": {} }
     })
+
     if (!result.ok) {
       throw new Error("expected a selection")
     }
+
     const ids = result.value.addons.map((addon) => addon.manifest.id)
     expect(ids.filter((id) => id === "@fixture/sessions")).toHaveLength(1)
     expect(ids.indexOf("@fixture/sessions")).toBeLessThan(ids.indexOf("@fixture/auth"))
@@ -156,6 +167,7 @@ describe("resolveSelection", () => {
       target: { id: "web", mode: "spa" },
       addons: { "@fixture/auth": {} }
     })
+
     expect(result).toEqual({
       ok: false,
       issue: {
@@ -179,6 +191,7 @@ describe("resolveSelection", () => {
         contribute: () => []
       })
     )
+
     expect(resolveSelection(catalog, { ...base, addons: { "@x/translate": {} } })).toMatchObject({
       ok: false,
       issue: { kind: "choose-provider", candidates: ["@fixture/i18n"] }
@@ -203,6 +216,7 @@ describe("resolveSelection", () => {
         contribute: () => []
       })
     )
+
     expect(resolveSelection(catalog, { ...base, addons: { "@x/no-i18n": {}, "@fixture/i18n": {} } })).toMatchObject({
       ok: false,
       issue: { kind: "conflicts", addon: "@x/no-i18n", other: "@fixture/i18n" }
@@ -211,8 +225,10 @@ describe("resolveSelection", () => {
 
   it("conflicts by capability both ways, and never with the add-on itself", () => {
     const catalog = withAddons(fixtureCatalog(), ...orms)
+
     const resolve = (...ids: string[]) =>
       resolveSelection(catalog, { ...base, addons: Object.fromEntries(ids.map((id) => [id, {}])) })
+
     expect(resolve("@x/drizzle", "@x/prisma")).toEqual({
       ok: false,
       issue: { kind: "conflicts", addon: "@x/drizzle", other: "@x/prisma", capability: "orm" }
@@ -229,6 +245,7 @@ describe("resolveSelection", () => {
 
   it("supports() returning true allows the add-on, and a string is E_UNSUPPORTED", () => {
     expect(resolveSelection(fixtureCatalog(), { ...base, addons: { "@fixture/db-postgres": {} } }).ok).toBe(true)
+
     const error = thrown(() =>
       resolveSelection(fixtureCatalog(), {
         ...base,
@@ -236,6 +253,7 @@ describe("resolveSelection", () => {
         addons: { "@fixture/db-postgres": {} }
       })
     )
+
     expect(error.code).toBe("E_UNSUPPORTED")
     expect(error.message).toContain("Postgres needs a server.")
   })
@@ -302,6 +320,7 @@ describe("templates and answers", () => {
       },
       "demo"
     )
+
     expect(result).toMatchObject({
       ok: true,
       selection: {
@@ -329,6 +348,7 @@ describe("templates and answers", () => {
         candidates: ["@fixture/ui-basic", "@fixture/ui-fancy"]
       }
     })
+
     const spaOnly: CatalogManifest = {
       ...catalog,
       templates: catalog.templates.map((template) =>
@@ -337,6 +357,7 @@ describe("templates and answers", () => {
           : template
       )
     }
+
     expect(selectionFromAnswers(spaOnly, { template: "bare" }, "demo")).toMatchObject({
       ok: true,
       selection: { addons: { "@fixture/db-sqlite": {} } }
@@ -394,30 +415,38 @@ describe("plan decisions", () => {
     const files = await applyFixture({}, initRequest())
     const taken = await planFixture(files, addRequest(["db-postgres"]))
     expect(taken.status).toBe("needs-decision")
+
     for (const choice of taken.decisions.flatMap((decision) => decision.choices)) {
       expect((await planFixture(files, choice.request)).status).toBe("planned")
     }
+
     const mode = await planFixture({}, { intent: { command: "init", answers: { template: "app", name: "demo" } } })
     expect(mode.decisions[0]?.choices.map((choice) => choice.id)).toEqual(["ssr", "spa"])
+
     for (const choice of mode.decisions[0]?.choices ?? []) {
       expect((await planFixture({}, choice.request)).status).toBe("planned")
     }
+
     const slotless = await applyFixture({}, initRequest({ questions: { database: [] } }))
     const question = await planFixture(slotless, addRequest(["database"]))
     expect(question.decisions[0]).toMatchObject({ id: "question:database", message: "Which database?" })
+
     for (const choice of question.decisions[0]?.choices ?? []) {
       expect(choice.request.intent).toMatchObject({ command: "add", addons: [choice.id] })
       expect((await planFixture(slotless, choice.request)).status).toBe("planned")
     }
+
     const auth = await planFixture(slotless, addRequest(["auth"]))
     expect(auth.decisions[0]?.message).toBe("Auth needs a database. Which database?")
   })
 
   it("swaps an add-on that conflicts by capability, through the decision's argv", async () => {
     const catalog = withAddons(fixtureCatalog(), ...orms)
+
     const files = await applyFixture({}, initRequest({ questions: { database: [] }, extra: ["@x/drizzle"] }), {
       catalog
     })
+
     const swap = await planFixture(files, addRequest(["prisma"]), { catalog })
     expect(swap.decisions).toEqual([
       {
@@ -443,6 +472,7 @@ describe("plan decisions", () => {
     const convex = await applyFixture({}, initRequest({ questions: { database: [] }, extra: ["@x/convex"] }), {
       catalog
     })
+
     const fromConvex = await planFixture(convex, addRequest(["prisma"]), { catalog })
     expect(fromConvex.decisions[0]?.message).toBe(
       "Convex can't be used with an add-on that provides orm. Replace it with Prisma?"
@@ -460,6 +490,7 @@ describe("plan decisions", () => {
 
     // Where two add-ons share a short name, the command names the one meant by its id.
     const twin = defineAddon({ ...orms[1]!, id: "@y/prisma" })
+
     const twins = await planFixture(
       files,
       { intent: { command: "sync", addons: ["@x/prisma"] } },
@@ -467,6 +498,7 @@ describe("plan decisions", () => {
         catalog: withAddons(catalog, twin)
       }
     )
+
     expect(twins.decisions[0]?.message).toBe(
       "Drizzle is your orm. To replace it with Prisma, run add @x/prisma --replace drizzle."
     )
@@ -480,16 +512,20 @@ describe("plan decisions", () => {
       requires: ["@x/drizzle"],
       contribute: () => []
     })
+
     const withMigrations = withAddons(catalog, needsDrizzle)
+
     const pulled = await applyFixture({}, initRequest({ questions: { database: [] }, extra: ["@x/migrations"] }), {
       catalog: withMigrations
     })
+
     expect((await planFixture(pulled, addRequest(["prisma"]), { catalog: withMigrations })).decisions[0]).toMatchObject(
       {
         message: "Drizzle is your orm. Migrations needs it, so it can't be replaced with Prisma.",
         choices: []
       }
     )
+
     // Chosen as well, Drizzle would still be pulled back in by Migrations.
     const chosen = await applyFixture(
       {},
@@ -498,6 +534,7 @@ describe("plan decisions", () => {
         catalog: withMigrations
       }
     )
+
     expect((await planFixture(chosen, addRequest(["prisma"]), { catalog: withMigrations })).decisions[0]).toMatchObject(
       {
         message: "Drizzle is your orm. Migrations needs it, so it can't be replaced with Prisma.",
@@ -513,6 +550,7 @@ describe("plan decisions", () => {
         catalog
       }
     )
+
     expect(both.decisions[0]).toMatchObject({
       message: "Drizzle can't be used with Prisma. Remove one of them from the config.",
       choices: []
@@ -601,12 +639,14 @@ describe("questions and catalog CI", () => {
     const { values, uncovered } = appPairs(catalog, sets)
     expect(values.filter((choices) => choices.length < 2)).toEqual([])
     expect(uncovered).toEqual([])
+
     // Every pair with the rest at their defaults would need a set per pair of values; a covering array needs far fewer.
     const pairs = values.reduce(
       (total, left, index) =>
         total + values.slice(index + 1).reduce((sum, right) => sum + left.length * right.length, 0),
       0
     )
+
     expect(sets.length).toBeLessThan(pairs / 2)
     expect(pairwiseAnswers(catalog, "app", "ssr")).toEqual(sets)
   })
@@ -618,11 +658,15 @@ describe("questions and catalog CI", () => {
         addon.id === "@fixture/i18n" ? { ...addon, conflicts: ["@fixture/sentry"] } : addon
       )
     }
+
     const sets = pairwiseAnswers(conflicting, "app", "ssr")
+
     const turnedDown = sets.filter((answers) => {
       const selection = selectionFromAnswers(conflicting, answers, "demo")
+
       return !selection.ok || !resolveSelection(conflicting, selection.selection).ok
     })
+
     expect(turnedDown).toEqual([])
     expect(appPairs(conflicting, sets).uncovered).toEqual(["localization=@fixture/i18n & telemetry=@fixture/sentry"])
   })
@@ -650,6 +694,7 @@ describe("questions and catalog CI", () => {
         }
       ]
     }
+
     expect(pairwiseAnswers(lonely, "lonely", "ssr").map(({ questions }) => questions)).toEqual([
       { localization: [] },
       { localization: ["@fixture/i18n"] }
@@ -725,7 +770,9 @@ describe("questions and catalog CI", () => {
       ],
       presets: [{ id: "orphan", title: "Orphan", answers: { template: "nope" } }]
     }
+
     const problems = checkCatalog(broken)
+
     const missing = [
       "refers to @x/gone, which isn't in the catalog",
       "uses provides:i18n in after, which takes add-on ids only",
@@ -752,6 +799,7 @@ describe("questions and catalog CI", () => {
       "Template orphaned extends missing, which isn't in the catalog.",
       "Preset orphan"
     ].filter((expected) => !problems.some((problem) => problem.includes(expected)))
+
     expect(missing).toEqual([])
   })
 
@@ -760,6 +808,7 @@ describe("questions and catalog CI", () => {
     const catalog = fixtureCatalog()
     const sentry = catalog.addons.find((addon) => addon.id === "@fixture/sentry")!
     const contribute = sentry.contribute
+
     for (const help of ["http://sentry.example/keys", "the Sentry dashboard"]) {
       sentry.contribute = (ctx) =>
         contribute(ctx).map((contribution) => (contribution.kind === "env" ? { ...contribution, help } : contribution))
@@ -772,6 +821,7 @@ describe("questions and catalog CI", () => {
   it("reports pins that aren't ranges, and add-ons whose packages the pins don't fit", () => {
     const written = (id: string, packages: Record<string, string>) =>
       defineAddon({ id, version: "1.0.0", title: id, description: "", packages, contribute: () => [] })
+
     const pinned: CatalogManifest = {
       ...withAddons(
         catalog,
@@ -782,9 +832,11 @@ describe("questions and catalog CI", () => {
         written("@x/unbounded", { pg: "^8" }),
         written("@x/empty", { "@lingui/core": "^6" })
       ),
+      // SAFETY: a catalog written in JavaScript can hold a range style outside the type, which is what the check catches.
       range: "sideways" as CatalogManifest["range"],
       versions: { ...catalog.versions, vite: "latest", pg: "<9", "@lingui/core": ">=7 <6" }
     }
+
     expect(checkCatalog(pinned)).toEqual([
       `Catalog range "sideways" isn't exact, caret or tilde.`,
       `The pin for vite, "latest", isn't an exact version or a version range.`,
@@ -825,23 +877,28 @@ describe("combination add-ons", () => {
         { kind: "file", path: `src/glue/${shortName(id)}.ts`, content: "export {}\n", ownership: "seed" }
       ]
     })
+
   const combinations = [
     glue("@x/auth-sqlite", "Auth tables for SQLite", ["@fixture/auth", "@fixture/db-sqlite"]),
     glue("@x/auth-postgres", "Auth tables for Postgres", ["@fixture/auth", "@fixture/db-postgres"]),
     // It joins another combination, so it's selected only once that one is.
     glue("@x/auth-i18n", "Translated auth", ["@x/auth-sqlite", "provides:i18n"])
   ]
+
   const catalog = withAddons(fixtureCatalog(), ...combinations)
   const lockOf = (files: Record<string, string>) => readLock(".fixture/lock.json", files[".fixture/lock.json"] ?? "")
 
   it("are selected when every reference matches, until nothing changes, after what they join", () => {
     const resolve = (...ids: string[]) => {
       const result = resolveSelection(catalog, { ...base, addons: Object.fromEntries(ids.map((id) => [id, {}])) })
+
       if (!result.ok) {
         throw new Error(result.issue.kind)
       }
+
       return result.value.addons.map(({ manifest, explicit, by }) => ({ id: manifest.id, explicit, by }))
     }
+
     const sqlite = resolve("@fixture/auth", "@fixture/db-sqlite")
     expect(sqlite.find((addon) => addon.id.startsWith("@x/"))).toEqual({
       id: "@x/auth-sqlite",
@@ -856,6 +913,7 @@ describe("combination add-ons", () => {
     expect(ids.indexOf("@x/auth-i18n")).toBeGreaterThan(
       Math.max(ids.indexOf("@x/auth-sqlite"), ids.indexOf("@fixture/i18n"))
     )
+
     // A combination is part of the selection its conflicts and requirements are checked against.
     const strict = withAddons(
       catalog,
@@ -870,8 +928,10 @@ describe("combination add-ons", () => {
         contribute: () => []
       })
     )
+
     const strictly = (...ids: string[]) =>
       resolveSelection(strict, { ...base, addons: Object.fromEntries(ids.map((id) => [id, {}])) })
+
     expect(strictly("@fixture/auth", "@fixture/ui-basic", "@fixture/i18n", "@fixture/db-sqlite")).toMatchObject({
       ok: false,
       issue: { kind: "conflicts", addon: "@x/auth-ui", other: "@fixture/i18n" }
@@ -936,6 +996,7 @@ describe("combination add-ons", () => {
   it("are checked: two references that exist, no requires or options, and never named", () => {
     expect(checkCatalog(catalog, { matrix: true })).toEqual([])
     const [app] = catalog.templates
+
     const broken: CatalogManifest = {
       ...withAddons(
         catalog,
@@ -946,7 +1007,9 @@ describe("combination add-ons", () => {
       templates: [{ ...app!, required: [...(app?.required ?? []), "@x/auth-sqlite"] }],
       presets: [{ id: "glued", title: "Glued", answers: { template: "app", extra: ["@x/auth-postgres"] } }]
     }
+
     const problems = checkCatalog(broken)
+
     const missing = [
       "@x/lonely is a combination add-on, so it joins at least two add-ons.",
       "@x/lonely is a combination add-on, so it can't have requires or options.",
@@ -956,6 +1019,7 @@ describe("combination add-ons", () => {
       "Template app names @x/auth-sqlite, a combination add-on, which is added with what it joins.",
       "Preset glued names @x/auth-postgres, a combination add-on, which is added with what it joins."
     ].filter((expected) => !problems.includes(expected))
+
     expect(missing).toEqual([])
   })
 })

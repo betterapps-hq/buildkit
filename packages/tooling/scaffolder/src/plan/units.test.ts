@@ -67,6 +67,7 @@ describe("paths", () => {
       "a\u0001",
       "x".repeat(241)
     ]
+
     expect(unsafe.filter((path) => pathProblem(path) === undefined)).toEqual([])
     expect(pathProblem("..foo/bar.ts")).toBeUndefined()
     expect(caseCollision(["a/B.ts", "a/c.ts", "a/b.ts"])).toEqual(["a/B.ts", "a/b.ts"])
@@ -231,6 +232,7 @@ describe("versions and migrations", () => {
       "1.0.0-rc.1",
       "1.2.3+build.1"
     ]
+
     expect(ranges.filter((range) => !isValidRange(range))).toEqual([])
     expect(["latest", "", " ", "^one", "1.0.0 ||", ">>1", "1.2.3.4"].filter(isValidRange)).toEqual([])
   })
@@ -256,9 +258,11 @@ describe("versions and migrations", () => {
 
   it("selects migrations in the upgraded range", () => {
     const lint = fixtureCatalog(2).addons.find((addon) => addon.id === "@fixture/lint")
+
     if (!lint) {
       throw new Error("missing lint")
     }
+
     expect(pendingMigrations(lint, "1.0.0", "1.1.0")).toHaveLength(3)
     expect(pendingMigrations(lint, "1.1.0", "1.1.0")).toEqual([])
     expect(pendingMigrations(lint, "1.1.0", "2.0.0")).toEqual([])
@@ -309,6 +313,7 @@ describe("envelope", () => {
       intent: { command: "init" as const, answers: { template: "app", name: "demo", questions: { devtools: [] } } },
       catalogVersion: "2.0.0"
     }
+
     const envelope = toEnvelope(
       { ...plan, decisions: [{ id: "d", message: "Pick", choices: [{ id: "c", label: "C", request }] }] },
       {
@@ -317,6 +322,7 @@ describe("envelope", () => {
         catalogs: (version) => (version === "2.0.0" ? fixtureCatalog(2) : undefined)
       }
     )
+
     expect(envelope.decisions?.[0]?.choices[0]?.argv).toEqual([
       "x",
       "create",
@@ -442,11 +448,13 @@ describe("envelope", () => {
     const fixture = fixtureCatalog()
     const i18n = fixture.addons.find((addon) => addon.id === "@fixture/i18n")!
     const catalog = { ...fixture, addons: [...fixture.addons, { ...i18n, id: "@other/i18n" }] }
+
     const answers = {
       template: "app",
       name: "demo",
       questions: { localization: ["@fixture/i18n"], devtools: ["@fixture/storybook"] }
     }
+
     expect(requestArgv({ intent: { command: "init", answers } }, { catalog })).toEqual([
       "create",
       "app",
@@ -462,6 +470,7 @@ describe("envelope", () => {
     const request = {
       intent: { command: "add" as const, addons: ["npm:zod", "npm:@playwright/test"], replace: [], options: {} }
     }
+
     expect(requestArgv(request)).toEqual(["add", "zod", "@playwright/test"])
     expect(requestArgv(request, { catalog: exampleCatalog() })).toEqual(["add", "zod", "@playwright/test"])
   })
@@ -477,6 +486,7 @@ describe("envelope", () => {
         options: { "@x/i18n": { locales: ["en"] } }
       }
     }
+
     const answers = { ...preset.answers, name: "demo" }
     expect(requestArgv({ intent: { command: "init", answers } }, { preset })).toEqual([
       "create",
@@ -521,6 +531,7 @@ describe("envelope", () => {
     ).toEqual(["create", "bare", "demo"])
     // So is one that answers a question the request leaves to the template's default.
     const { mode, questions, options, ...rest } = answers
+
     for (const partial of [
       { ...rest, questions, options },
       { ...rest, mode, questions: { database: questions.database }, options },
@@ -531,11 +542,13 @@ describe("envelope", () => {
         "app"
       ])
     }
+
     // A preset can name its add-ons by short name, and without the catalog they're compared by short name.
     const short = {
       ...preset,
       answers: { ...preset.answers, questions: { database: ["db-postgres"], localization: ["i18n"] } }
     }
+
     expect(requestArgv({ intent: { command: "init", answers } }, { preset: short })).toEqual([
       "create",
       "--preset",

@@ -11,5 +11,6 @@ export type FluentThemeProviderProps = Omit<FluentProviderProps, "theme"> & { st
 export function FluentThemeProvider({ store, ...props }: FluentThemeProviderProps) {
   const { resolvedTheme } = useTheme(store)
   useEffect(() => store.start(), [store])
+
   return <FluentProvider {...props} theme={store.themes[resolvedTheme]} />
 }

@@ -1,8 +1,10 @@
 import { useAlerts, type AlertManager, type AlertRegionProps } from "@buildkitgg/react-alerts"
-import { ExampleResult } from "@repo/storybook-config/examples"
+import { ExampleResult } from "@buildkitgg/storybook-config/examples"
 import type { ComponentType, ReactNode } from "react"
 import { useState } from "react"
+
 export type AlertScenario = "dismiss" | "replace" | "action" | "regions" | "silent"
+
 export function alertStory(scenario: AlertScenario) {
   const descriptions = {
     dismiss: "Show a persistent notification, then dismiss it with its close action.",
@@ -11,17 +13,21 @@ export function alertStory(scenario: AlertScenario) {
     regions: "Send notifications to independent workspace and billing regions.",
     silent: "Clear notifications without invoking their dismissal callbacks."
   }
+
   return { args: { scenario }, parameters: { docs: { description: { story: descriptions[scenario] } } } }
 }
+
 export type AlertExamplesProps = {
   manager: AlertManager
   Region: ComponentType<AlertRegionProps>
   Button: ComponentType<{ children?: ReactNode; onClick?(): void }>
   scenario?: AlertScenario
 }
+
 export function AlertExamples({ manager, Region, Button, scenario = "dismiss" }: AlertExamplesProps) {
   const [dismissals, setDismissals] = useState(0)
   const entries = useAlerts(manager)
+
   function onSave() {
     manager.success({
       id: "save",
@@ -43,6 +49,7 @@ export function AlertExamples({ manager, Region, Button, scenario = "dismiss" }:
           : undefined
     })
   }
+
   return (
     <section>
       <div className="bk-stack">

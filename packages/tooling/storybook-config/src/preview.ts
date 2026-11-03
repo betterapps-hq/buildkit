@@ -23,7 +23,7 @@ export const basePreview: PreviewOverrides = {
  * (`renderToCanvas`) is wired in.
  *
  * ```ts
- * import { definePreview } from "@repo/storybook-config/preview";
+ * import { definePreview } from "@buildkitgg/storybook-config/preview";
  *
  * export default definePreview({ decorators: [withTheme] });
  * ```

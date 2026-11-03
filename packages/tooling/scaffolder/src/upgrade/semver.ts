@@ -2,9 +2,11 @@ import semver from "semver"
 
 function requireVersion(version: string): string {
   const valid = semver.valid(version)
+
   if (valid === null) {
     throw new Error(`"${version}" isn't a semantic version.`)
   }
+
   return valid
 }
 
@@ -41,5 +43,6 @@ export function satisfiesRange(version: string, range: string): boolean {
   if (semver.validRange(range) === null) {
     throw new Error(`"${range}" isn't a version range.`)
   }
+
   return semver.satisfies(requireVersion(version), range)
 }

@@ -17,6 +17,7 @@ export function Documentation({ title, summary, children }: { title: string; sum
     </article>
   )
 }
+
 export function Code({ children }: { children: string }) {
   return (
     <pre>
@@ -24,6 +25,7 @@ export function Code({ children }: { children: string }) {
     </pre>
   )
 }
+
 export function StoryLink({ id, children }: { id: string; children: ReactNode }) {
   return (
     <a href={`./?path=/story/${id}`} target="_top">

@@ -12,6 +12,7 @@ describe("JSON layout", () => {
       ["ES2023", "DOM"],
       tsconfig
     )
+
     expect(set).toBe('{\n  "compilerOptions": {\n    "strict": true,\n    "lib": ["ES2023", "DOM"]\n  }\n}\n')
     // The array's line is 40 columns, so it fits as the last property and breaks when a comma follows it.
     const x24 = "x".repeat(24)
@@ -58,6 +59,7 @@ describe("JSON layout", () => {
   it("keeps the comments between items when it removes one", () => {
     const list =
       '{\n  "include": [\n    "src", // the app\n    // the tests\n    "tests",\n    /* last */ "locales"\n  ]\n}\n'
+
     expect(removeJson(list, ["include", 0], tsconfig)).toBe(
       '{\n  "include": [\n    // the app\n    // the tests\n    "tests",\n    /* last */ "locales"\n  ]\n}\n'
     )

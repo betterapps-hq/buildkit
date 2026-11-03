@@ -5,6 +5,9 @@ import { printWidth } from "./settings.js"
 
 const templates = new URL("../templates/", import.meta.url)
 
+/** A value the catalog writes into a JSON file. */
+type JsonValue = string | number | boolean | null | readonly JsonValue[] | { readonly [key: string]: JsonValue }
+
 /**
  * A starter file from the package's `templates/` folder. Templates are real files, formatted like the generated app,
  * so they read and diff like the code they become. Line endings are normalized, so a Windows checkout plans the same.
@@ -25,16 +28,22 @@ export function fromTemplate(set: string, path: string, ownership: Ownership = "
 
 /** A package at the version the catalog pins. */
 export function dependency(versions: { version(name: string): string }, name: string, dev = false): Contribution {
-  return { kind: "dependency", name, version: versions.version(name), ...(dev ? { dev: true } : {}) }
+  const contribution: Contribution = { kind: "dependency", name, version: versions.version(name) }
+
+  if (dev) {
+    contribution.dev = true
+  }
+
+  return contribution
 }
 
 /** Sets one key of a JSON file the app shares with the engine. */
-export function jsonKey(path: string, pointer: string, value: unknown): Contribution {
+export function jsonKey(path: string, pointer: string, value: JsonValue): Contribution {
   return { kind: "json", path, pointer, op: "set", value }
 }
 
 /** Adds items to a JSON array the engine keeps as a set, such as `tsconfig.json`'s `include`. */
-export function jsonItems(path: string, pointer: string, value: unknown[]): Contribution {
+export function jsonItems(path: string, pointer: string, value: JsonValue[]): Contribution {
   return { kind: "json", path, pointer, op: "append", value }
 }
 
@@ -42,6 +51,6 @@ export function jsonItems(path: string, pointer: string, value: unknown[]): Cont
  * JSON as the app's formatter prints it, with a final newline: the engine's layout for the app's line width. Starter
  * JSON files then pass `pnpm format:check` as written.
  */
-export function json(value: unknown): string {
+export function json(value: JsonValue): string {
   return `${printJson(value, { layout: { style: "json", printWidth } })}\n`
 }

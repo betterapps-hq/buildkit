@@ -8,6 +8,7 @@ type LinkProps = ComponentProps<"a"> & { href: string }
  */
 export function Link({ href, children, ...props }: LinkProps) {
   const leaves = !href.startsWith("#")
+
   return (
     <a href={href} {...(leaves ? { target: "_blank", rel: "noopener noreferrer" } : {})} {...props}>
       {children}

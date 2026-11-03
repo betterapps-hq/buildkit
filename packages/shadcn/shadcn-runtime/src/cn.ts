@@ -8,6 +8,7 @@ export function setCn(implementation?: CnFunction): void {
   if (implementation === cn) {
     throw new TypeError("setCn requires your own merger, not the kit's delegating cn")
   }
+
   mergeClasses = implementation ?? defaultCn
 }
 

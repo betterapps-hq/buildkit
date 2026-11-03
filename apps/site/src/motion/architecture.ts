@@ -3,14 +3,19 @@ import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { createStackLight, type Occluder, type Pillar, type Point } from "./stackLight"
 
 type Feature = "theme" | "modals" | "alerts" | "routing" | "preferences" | "configuration"
+
 type Level = "core" | "framework" | "libraries"
+
 type View = { tilt: number; turn: number; lift: number }
+
 type Bounds = { left: number; right: number; top: number; bottom: number }
+
 /** A card or glass plate the light passes under, and the plate that carries it onto its layer. */
 type Cover = { plate: HTMLElement; bounds: Bounds; layer: number; pass: number; radius: number }
 
 /** Left to right across a plate, so its packages light in a sweep. */
 const SWEEP: Feature[] = ["theme", "routing", "alerts", "preferences", "modals", "configuration"]
+
 /** The path the light traces up the stack and names along the way, into the app's dialog. */
 const TRACED: Feature = "modals"
 const LEVELS: Level[] = ["core", "framework", "libraries"]
@@ -19,13 +24,17 @@ const LEVELS: Level[] = ["core", "framework", "libraries"]
 const TILT = 56
 const TURN = -32
 const DRIFT = { tilt: -4, turn: 7 }
+
 /** How far above its layer a plate starts before it lands, in the stack's own pixels. */
 const RISE = 320
+
 /** How far into the app the last pillar of light reaches, hidden behind it, in screen pixels. */
 const INTO_APP = 40
+
 /** How much of the app's width the last pillar spreads to where it reaches the app, and how much deeper it grows. */
 const FLARE = 0.78
 const FLARE_DEPTH = 1.4
+
 /** How much light gets through a glass plate. */
 const GLASS = 0.45
 
@@ -40,25 +49,33 @@ function radians(degrees: number) {
 function search(low: number, high: number, below: (value: number) => boolean) {
   for (let step = 0; step < 30; step++) {
     const middle = (low + high) / 2
+
     if (below(middle)) {
       low = middle
     } else {
       high = middle
     }
   }
+
   return (low + high) / 2
 }
 
 /** Finds every selector under `root`, or nothing when one is missing. */
 function pick<Key extends string>(root: ParentNode, selectors: Record<Key, string>) {
+  // SAFETY: every key gets its element below, or nothing is returned.
   const found = {} as Record<Key, HTMLElement>
+
+  // SAFETY: `selectors` is a Record<Key, string>, so its keys are Keys.
   for (const key of Object.keys(selectors) as Key[]) {
     const element = root.querySelector<HTMLElement>(selectors[key])
+
     if (!element) {
       return null
     }
+
     found[key] = element
   }
+
   return found
 }
 
@@ -66,22 +83,30 @@ function pick<Key extends string>(root: ParentNode, selectors: Record<Key, strin
 function offsetWithin(element: HTMLElement, ancestor: HTMLElement): Point {
   let x = 0
   let y = 0
+
   for (
     let node: HTMLElement | null = element;
     node && node !== ancestor;
-    node = node.offsetParent as HTMLElement | null
+    node = node.offsetParent instanceof HTMLElement ? node.offsetParent : null
   ) {
     x += node.offsetLeft
     y += node.offsetTop
   }
+
   return { x, y }
 }
 
 function chipsOf(plate: HTMLElement) {
   const chips: Partial<Record<Feature, HTMLElement>> = {}
+
   for (const chip of plate.querySelectorAll<HTMLElement>(".arch-story-chip")) {
-    chips[chip.dataset.feature as Feature] = chip
+    const feature = SWEEP.find((name) => name === chip.dataset.feature)
+
+    if (feature) {
+      chips[feature] = chip
+    }
   }
+
   return chips
 }
 
@@ -97,6 +122,7 @@ function boundsOf(plate: HTMLElement, width: number, height: number): Bounds {
 /** Presses a tower's switch so the plate at `index` is in front, unless it already is. */
 function pressTower(tower: string, index: number) {
   const button = document.querySelectorAll<HTMLButtonElement>(`[data-tower="${tower}"] .arch-switch-option`)[index]
+
   if (button && button.getAttribute("aria-pressed") !== "true") {
     button.click()
   }
@@ -113,9 +139,11 @@ function pressTower(tower: string, index: number) {
 export function architectureScene() {
   const stage = document.querySelector<HTMLElement>(".arch-stage")
   const story = stage?.querySelector<HTMLElement>(".arch-story")
+
   if (!stage || !story) {
     return undefined
   }
+
   const parts = pick(story, {
     scene: ".arch-story-scene",
     tilt: ".arch-story-tilt",
@@ -136,14 +164,17 @@ export function architectureScene() {
     shadcn: '[data-plate="shadcn"]',
     fluentui: '[data-plate="fluentui"]'
   })
+
   const flat = pick(stage, {
     libraries: '.arch-level[data-layer="libraries"] > .arch-level-body',
     framework: '.arch-level[data-layer="framework"] > .arch-level-body',
     core: '.arch-level[data-layer="core"] > .arch-level-body'
   })
-  if (!parts || !flat) {
+
+  if (!parts || !flat || !(parts.light instanceof HTMLCanvasElement)) {
     return undefined
   }
+
   // Each layer's legend entry, its label beside the stack and the rail it lifts off from
   const levelParts = (level: Level) => {
     const own = pick(story, {
@@ -153,21 +184,28 @@ export function architectureScene() {
       leader: `.arch-story-leader[data-level="${level}"]`,
       tie: `.arch-story-tie[data-level="${level}"]`
     })
+
     const rail = pick(stage, {
       rail: `.arch-level[data-layer="${level}"] .arch-rail`,
       railTitle: `.arch-level[data-layer="${level}"] .arch-rail-title`
     })
+
     return own && rail ? { ...own, ...rail } : null
   }
+
   const coreParts = levelParts("core")
   const frameworkParts = levelParts("framework")
   const libraryParts = levelParts("libraries")
+
   if (!coreParts || !frameworkParts || !libraryParts) {
     return undefined
   }
+
   const levels = { core: coreParts, framework: frameworkParts, libraries: libraryParts }
+
   const fill = (level: Level) =>
     story.querySelector<HTMLElement>(`.arch-story-level[data-level="${level}"] .arch-story-link-fill`) ?? []
+
   const chips = {
     core: chipsOf(parts.core),
     react: chipsOf(parts.react),
@@ -175,7 +213,8 @@ export function architectureScene() {
     shadcn: chipsOf(parts.shadcn),
     fluentui: chipsOf(parts.fluentui)
   }
-  const light = createStackLight(parts.light as HTMLCanvasElement)
+
+  const light = createStackLight(parts.light)
   const prompt = parts.prompt.textContent ?? ""
   parts.prompt.textContent = ""
 
@@ -186,11 +225,13 @@ export function architectureScene() {
     height: 0,
     step: 0,
     chip: { width: 0, height: 0, radius: 0 },
+    // SAFETY: measure() places every feature's cell before anything reads one.
     cells: {} as Record<Feature, Point>,
-    library: { left: 0, right: 0, top: 0, bottom: 0 } as Bounds,
-    router: { left: 0, right: 0, top: 0, bottom: 0 } as Bounds,
-    covers: [] as Cover[]
+    library: { left: 0, right: 0, top: 0, bottom: 0 },
+    router: { left: 0, right: 0, top: 0, bottom: 0 },
+    covers: new Array<Cover>()
   }
+
   // Where the story sits in the viewport, recomputed whenever ScrollTrigger refreshes.
   const layout = {
     width: 0,
@@ -203,8 +244,11 @@ export function architectureScene() {
     x: 0,
     y: 0,
     lifts: { core: 0, framework: 0 },
-    flip: { core: { x: 0, y: 0 }, framework: { x: 0, y: 0 }, libraries: { x: 0, y: 0 } } as Record<Level, Point>,
-    leaders: { core: { x: 0, y: 0 }, framework: { x: 0, y: 0 }, libraries: { x: 0, y: 0 } } as Record<Level, Point>,
+    flip: { core: { x: 0, y: 0 }, framework: { x: 0, y: 0 }, libraries: { x: 0, y: 0 } } satisfies Record<Level, Point>,
+    leaders: { core: { x: 0, y: 0 }, framework: { x: 0, y: 0 }, libraries: { x: 0, y: 0 } } satisfies Record<
+      Level,
+      Point
+    >,
     app: { left: 0, top: 0, width: 0, height: 0 },
     tag: 0
   }
@@ -221,6 +265,7 @@ export function architectureScene() {
     const ty = py * cosTilt - pz * sinTilt + view.lift
     const tz = py * sinTilt + pz * cosTilt
     const k = Number.isFinite(depth) ? depth / (depth - tz) : 1
+
     return { x: layout.x + px * k, y: layout.y + ty * k }
   }
 
@@ -236,6 +281,7 @@ export function architectureScene() {
     const cell = cells[TRACED]
     const edge = project(view, cell.x + chip.width / 2, cell.y, step * layer, scale)
     const side = project(view, width / 2, cell.y, step * layer, scale)
+
     return { edge, left: Math.max(edge.x, side.x) + 22 }
   }
 
@@ -245,33 +291,40 @@ export function architectureScene() {
    */
   const extent = (scale: number, tagWidth: number) => {
     const { width, height, step, library, router } = geometry
+
     const corners = (bounds: Bounds, z: number): [number, number, number][] => [
       [bounds.left, bounds.top, z],
       [bounds.right, bounds.top, z],
       [bounds.left, bounds.bottom, z],
       [bounds.right, bounds.bottom, z]
     ]
+
     const box = { left: -width / 2, right: width / 2, top: -height / 2, bottom: height / 2 }
+
     const points = [
       ...corners(box, 0),
       ...corners(box, step),
       ...corners(library, step * 2),
       ...corners(router, step * 2)
     ]
+
     const xs: number[] = []
     const ys: number[] = []
+
     for (const view of [rest(0), rest(1)]) {
       for (const [x, y, z] of points) {
         const point = project(view, x, y, z, scale)
         xs.push(point.x - layout.x)
         ys.push(point.y - layout.y)
       }
+
       if (tagWidth > 0) {
         for (const layer of [0, 1, 2]) {
           xs.push(tagAt(view, layer, scale).left - layout.x + tagWidth)
         }
       }
     }
+
     return { left: Math.min(...xs), right: Math.max(...xs), top: Math.min(...ys), bottom: Math.max(...ys) }
   }
 
@@ -281,18 +334,29 @@ export function architectureScene() {
     geometry.width = width
     geometry.height = height
     geometry.step = Math.round(height * 0.8)
-    for (const [feature, chip] of Object.entries(chips.core) as [Feature, HTMLElement][]) {
+
+    for (const feature of SWEEP) {
+      const chip = chips.core[feature]
+
+      if (!chip) {
+        continue
+      }
+
       geometry.cells[feature] = {
         x: chip.offsetLeft + chip.offsetWidth / 2 - width / 2,
         y: chip.offsetTop + chip.offsetHeight / 2 - height / 2
       }
     }
+
     const traced = chips.core[TRACED]
+
     const radius = (element: HTMLElement | undefined) =>
       element ? Number.parseFloat(getComputedStyle(element).borderTopLeftRadius) || 0 : 0
+
     geometry.chip = { width: traced?.offsetWidth ?? 0, height: traced?.offsetHeight ?? 0, radius: radius(traced) }
     geometry.library = boundsOf(parts.shadcn, width, height)
     geometry.router = boundsOf(parts.router, width, height)
+
     // Every plate above the core is glass, and every card on it blocks the light
     const above: [HTMLElement, number][] = [
       [parts.react, 1],
@@ -300,11 +364,14 @@ export function architectureScene() {
       [parts.shadcn, 2],
       [parts.fluentui, 2]
     ]
+
     geometry.covers = above.flatMap(([plate, layer]) => {
       const bounds = boundsOf(plate, width, height)
+
       const cards = [...plate.querySelectorAll<HTMLElement>(".arch-story-chip")].map((chip) => {
         const left = bounds.left + chip.offsetLeft
         const top = bounds.top + chip.offsetTop
+
         return {
           plate,
           bounds: { left, top, right: left + chip.offsetWidth, bottom: top + chip.offsetHeight },
@@ -313,6 +380,7 @@ export function architectureScene() {
           radius: geometry.chip.radius
         }
       })
+
       return [{ plate, bounds, layer, pass: GLASS, radius: radius(plate) }, ...cards]
     })
   }
@@ -337,11 +405,13 @@ export function architectureScene() {
     const rail = levels.core.rail
     layout.rails = !caption && rail.offsetWidth > 0
     let legendWidth = 200
+
     if (caption) {
       legendWidth = width - margin * 2
     } else if (layout.rails) {
       legendWidth = rail.offsetWidth
     }
+
     const legendLeft = layout.rails ? offsetWithin(rail, stage).x + stageLeft : margin
     parts.legend.style.width = `${legendWidth}px`
 
@@ -358,6 +428,7 @@ export function architectureScene() {
     layout.tag = levels.core.tag.offsetHeight
 
     const captionHeight = caption ? parts.legend.offsetHeight : 0
+
     const region = caption
       ? {
           left: margin,
@@ -371,10 +442,13 @@ export function architectureScene() {
           top: margin + appHeight + gapY,
           bottom: height - margin
         }
+
     // Perspective grows the stack unevenly, so the fit narrows in on its scale over a few passes
     layout.depth = Number.parseFloat(getComputedStyle(parts.scene).perspective) || 2200
+
     const fit = (tags: number) => {
       let scale = 1
+
       for (let pass = 0; pass < 4; pass += 1) {
         const span = extent(scale, tags)
         scale *= Math.min(
@@ -383,8 +457,10 @@ export function architectureScene() {
         )
         scale = Math.min(scale, caption ? 1.3 : 1.1)
       }
+
       return scale
     }
+
     // Tags stay when they leave the stack most of its size
     const tagged = fit(tagWidth)
     layout.tags = (!caption || width >= 600) && tagged >= fit(0) * 0.86
@@ -432,7 +508,9 @@ export function architectureScene() {
         geometry.step * 2
       )
     }
+
     parts.legend.style.left = `${legendLeft}px`
+
     if (caption) {
       parts.legend.style.top = `${margin}px`
     } else {
@@ -452,6 +530,7 @@ export function architectureScene() {
       layout.flip[level] = layout.rails ? { x: from.x - to.x, y: from.y - to.y } : { x: -24, y: 0 }
       const at = offsetWithin(title, story)
       layout.leaders[level] = { x: legendLeft + legendWidth + 14, y: at.y + title.offsetHeight / 2 }
+
       if (!layout.tags) {
         tie.removeAttribute("d")
       }
@@ -468,6 +547,7 @@ export function architectureScene() {
     upper: { grow: 0, land: 0, power: 1 },
     out: { grow: 0, land: 0, power: 1 }
   }
+
   const drawn = { core: { value: 0 }, framework: { value: 0 }, libraries: { value: 0 } }
   const typed = { count: 0 }
 
@@ -491,15 +571,18 @@ export function architectureScene() {
       onUpdate: ({ progress }) => pressTower("components", progress * AT.end >= AT.swap + 0.95 ? 1 : 0)
     }
   })
+
   const present = (elements: (HTMLElement | undefined)[]) =>
     elements.filter((element): element is HTMLElement => element !== undefined)
 
   /** Lights a plate's packages in a sweep as its layer settles into place. */
   const build = (at: number, plate: Partial<Record<Feature, HTMLElement>>) =>
     timeline.to(present(SWEEP.map((feature) => plate[feature])), { "--lit": 1, duration: 0.3, stagger: 0.06 }, at)
+
   /** A pillar of light arrives, flashing where it lands. */
   const arrive = (part: Pillar, at: number) =>
     timeline.fromTo(part, { land: 1 }, { land: 0, duration: 0.7, ease: "power2.out", immediateRender: false }, at)
+
   /**
    * The traced light reaches a package: it brightens, light pools under it and a soft shockwave crosses its plate. The
    * pillar it came up flashes where it lands.
@@ -514,13 +597,16 @@ export function architectureScene() {
         at
       )
       .to(plate, { "--pool": 1, duration: 0.35 }, at)
+
     if (from) {
       arrive(from, at)
     }
   }
+
   /** A pillar of light climbs steadily from one card to the next, so it keeps rising for as long as the reader scrolls. */
   const rise = (part: Pillar, from: number, to: number) =>
     timeline.fromTo(part, { grow: 0 }, { grow: 1, duration: to - from, ease: "none", immediateRender: false }, from)
+
   /** Drops a plate onto its layer from above, with a flash where it lands. */
   const land = (plate: HTMLElement, layer: number, at: number) => {
     timeline
@@ -533,15 +619,19 @@ export function architectureScene() {
       .to(plate, { "--flash": 1, duration: 0.1, ease: "none" }, at + 0.42)
       .to(plate, { "--flash": 0, duration: 0.5, ease: "power2.out" }, at + 0.52)
   }
+
   /** Moves the camera, and in the legend's column the legend with it, so each entry stays level with its plate. */
   const frame = (lift: () => number, at: number) =>
     timeline
       .to(parts.tilt, { y: lift, duration: 0.8 }, at)
       .to(parts.legend, { y: () => (layout.caption ? 0 : lift()), duration: 0.8 }, at)
+
   const show = (targets: gsap.TweenTarget, at: number, duration = 0.3) =>
     timeline.to(targets, { autoAlpha: 1, duration }, at)
+
   const hide = (targets: gsap.TweenTarget, at: number, duration = 0.3) =>
     timeline.to(targets, { autoAlpha: 0, duration }, at)
+
   const items = LEVELS.map((level) => levels[level].item)
   const links = gsap.utils.toArray<HTMLElement>(".arch-story-link", story)
   const railBoxes = LEVELS.map((level) => levels[level].rail)
@@ -566,6 +656,7 @@ export function architectureScene() {
     .fromTo(parts.legend, { y: coreLift }, { y: coreLift, duration: 0.85 }, 0.12)
     .fromTo(parts.core, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.35, ease: "none" }, 0.18)
     .fromTo(links, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3 }, 0.7)
+
   for (const level of LEVELS) {
     timeline.fromTo(
       levels[level].item,
@@ -579,6 +670,7 @@ export function architectureScene() {
       0.08
     )
   }
+
   // The camera drifts around the stack for as long as it stands
   timeline
     .to(parts.turn, { rotation: TURN + DRIFT.turn, duration: AT.settle - AT.core, ease: "none" }, AT.core)
@@ -707,6 +799,7 @@ export function architectureScene() {
     .to(railBoxes, { autoAlpha: 1, duration: 0.05, ease: "none" }, AT.end - 0.12)
     .to(story, { autoAlpha: 0, duration: 0.01, ease: "none" }, AT.end - 0.02)
     .set({}, {}, AT.end)
+
   for (const level of LEVELS) {
     timeline.to(
       levels[level].item,
@@ -726,6 +819,7 @@ export function architectureScene() {
     geometry.covers
       .map(({ plate, bounds, layer, pass, radius }) => {
         const shown = plate.style.visibility === "hidden" ? 0 : Number(gsap.getProperty(plate, "opacity"))
+
         return { ...bounds, z: Number(gsap.getProperty(plate, "z")), pass: 1 - (1 - pass) * shown, layer, radius }
       })
       .filter((cover) => cover.pass < 1)
@@ -733,17 +827,21 @@ export function architectureScene() {
   /** Draws the light, leader lines and labels for the camera's current view. */
   const render = () => {
     const trigger = timeline.scrollTrigger
+
     if (!trigger?.isActive && (timeline.progress() <= 0 || timeline.progress() >= 1)) {
       gsap.ticker.remove(render)
     }
+
     if (story?.style.visibility === "hidden") {
       return
     }
+
     const view: View = {
       tilt: radians(Number(gsap.getProperty(parts.tilt, "rotationX"))),
       turn: radians(Number(gsap.getProperty(parts.turn, "rotation"))),
       lift: Number(gsap.getProperty(parts.tilt, "y"))
     }
+
     const { step, chip } = geometry
     const cell = geometry.cells[TRACED]
     const place = (x: number, y: number, z: number) => project(view, x, y, z)
@@ -758,11 +856,13 @@ export function architectureScene() {
     const column = place(cell.x, cell.y, reaches).x
     const room = Math.min(column - app.left, app.left + app.width - column) - 16
     const across = Math.min(app.width * FLARE, room * 2)
+
     const spread = search(
       chip.width / 2,
       chip.width * 3,
       (x) => place(cell.x + x, cell.y, reaches).x - place(cell.x - x, cell.y, reaches).x < across
     )
+
     const full = (reaches - step * 2) / Math.max(top - step * 2, 1)
 
     light?.draw({
@@ -786,9 +886,11 @@ export function architectureScene() {
       framework: project(view, -geometry.width / 2, 0, step),
       libraries: project(view, geometry.library.left, (geometry.library.top + geometry.library.bottom) / 2, step * 2)
     }
+
     const legendLift = Number(gsap.getProperty(parts.legend, "y"))
     LEVELS.forEach((level, layer) => {
       const { leader, tie, tag } = levels[level]
+
       if (!layout.caption) {
         const start = { x: layout.leaders[level].x, y: layout.leaders[level].y + legendLift }
         const end = anchors[level]
@@ -801,6 +903,7 @@ export function architectureScene() {
         const length = Math.hypot(end.x - start.x, end.y - start.y) * 1.15 + 16
         leader.setAttribute("stroke-dasharray", `${length * drawn[level].value} ${length}`)
       }
+
       if (layout.tags) {
         const { edge, left } = tagAt(view, layer)
         tag.style.translate = `${left}px ${edge.y - layout.tag / 2}px`
@@ -814,14 +917,17 @@ export function architectureScene() {
     ScrollTrigger.removeEventListener("refreshInit", compose)
     light?.destroy()
     parts.prompt.textContent = prompt
+
     for (const element of [story, parts.scene, parts.zoom, parts.legend, parts.app, parts.swap]) {
       element.removeAttribute("style")
     }
+
     for (const level of LEVELS) {
       levels[level].tag.style.removeProperty("translate")
       levels[level].leader.removeAttribute("d")
       levels[level].tie.removeAttribute("d")
     }
+
     parts.tags.hidden = false
   }
 }

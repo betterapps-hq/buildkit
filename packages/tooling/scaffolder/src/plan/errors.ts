@@ -17,20 +17,27 @@ export class PlanError extends Error {
   }
 
   toInfo(): PlanErrorInfo {
-    return {
-      code: this.code,
-      message: this.message,
-      retryable: retryableCodes.has(this.code),
-      ...(this.paths ? { paths: this.paths } : {}),
-      ...(this.next ? { next: this.next } : {})
+    const info: PlanErrorInfo = { code: this.code, message: this.message, retryable: retryableCodes.has(this.code) }
+
+    if (this.paths) {
+      info.paths = this.paths
     }
+
+    if (this.next) {
+      info.next = this.next
+    }
+
+    return info
   }
 }
 
-export function errorInfo(error: unknown): PlanErrorInfo {
-  if (error instanceof PlanError) {
-    return error.toInfo()
+/** Describes anything a planner step threw. */
+export function errorInfo(cause: unknown): PlanErrorInfo {
+  if (cause instanceof PlanError) {
+    return cause.toInfo()
   }
-  const message = error instanceof Error ? error.message : String(error)
+
+  const message = cause instanceof Error ? cause.message : String(cause)
+
   return { code: "E_INTERNAL", message, retryable: false }
 }

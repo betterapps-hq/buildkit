@@ -1,7 +1,7 @@
 // @ts-check
 /// <reference types="node" />
-const { writeFileSync } = require("node:fs")
-const { join } = require("node:path")
+import { writeFileSync } from "node:fs"
+import { join } from "node:path"
 
 /**
  * Beachball manages versioning and changelogs for the workspace packages.
@@ -9,7 +9,7 @@ const { join } = require("node:path")
  *
  * @type {import("beachball").BeachballConfig}
  */
-module.exports = {
+const config = {
   branch: "origin/main",
   access: "public",
   groups: [
@@ -26,9 +26,13 @@ module.exports = {
     postbump(packagePath, name, version) {
       if (name === "@buildkitgg/scaffolder") {
         const comment = "/** The engine's version, recorded in every lock. A test keeps it equal to package.json. */"
+
+        const safety =
+          "// SAFETY: widening a string literal to string always holds, and keeps each release's number out of the public type."
+
         writeFileSync(
           join(packagePath, "src/version.ts"),
-          `${comment}\nexport const engineVersion = ${JSON.stringify(version)} as string\n`
+          `${comment}\n${safety}\nexport const engineVersion = ${JSON.stringify(version)} as string\n`
         )
       }
     }
@@ -43,3 +47,8 @@ module.exports = {
     "**/.oxlintrc.json"
   ]
 }
+
+export default config
+
+// Beachball loads its config with `require`, which returns this export rather than the frozen module namespace.
+export { config as "module.exports" }

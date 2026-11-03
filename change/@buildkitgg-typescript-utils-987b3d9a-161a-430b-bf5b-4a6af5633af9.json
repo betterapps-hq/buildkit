@@ -1,0 +1,7 @@
+{
+  "type": "minor",
+  "comment": "feat(typescript-utils): add a curated re-export of es-toolkit, ts-extras, ts-pattern, type-fest and tiny-invariant, with ts-reset applied",
+  "packageName": "@buildkitgg/typescript-utils",
+  "email": "ajcraswell@gmail.com",
+  "dependentChangeType": "patch"
+}

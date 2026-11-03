@@ -6,10 +6,13 @@ it.each(["close", "dismiss", "closeAll", "clear", "dispose"] as const)(
   "observes %s exactly once after publishing",
   async (operation) => {
     const store = createModalStore<null>()
+
     const onClose = vi.fn<(event: ModalCloseEvent<string>) => void>(() => {
       expect(store.getSnapshot().every((entry) => entry.status === "closing")).toBe(true)
     })
+
     const modal = store.open({ defaultResult: "cancel", createContent: () => null, onClose })
+
     const reasons = {
       close: "completed",
       dismiss: "dismissed",
@@ -17,6 +20,7 @@ it.each(["close", "dismiss", "closeAll", "clear", "dispose"] as const)(
       clear: "cleared",
       dispose: "disposed"
     }
+
     if (operation === "close") {
       modal.close("saved")
     } else if (operation === "dismiss") {
@@ -24,6 +28,7 @@ it.each(["close", "dismiss", "closeAll", "clear", "dispose"] as const)(
     } else {
       store[operation]()
     }
+
     modal.close("ignored")
     store.dispose()
     expect(onClose).toHaveBeenCalledExactlyOnceWith({
@@ -51,6 +56,7 @@ it("settles every result and invokes other observers when an observer throws", a
   const store = createModalStore<null>()
   const onClose = vi.fn<(event: ModalCloseEvent<null>) => void>()
   const parent = store.open({ defaultResult: null, createContent: () => null, onClose })
+
   const child = store.open({
     defaultResult: null,
     createContent: () => null,
@@ -58,6 +64,7 @@ it("settles every result and invokes other observers when an observer throws", a
       throw new Error("Telemetry failed")
     }
   })
+
   expect(() => store.dispose()).toThrow(AggregateError)
   expect(store.getSnapshot()).toEqual([])
   expect(onClose).toHaveBeenCalledOnce()
@@ -67,9 +74,11 @@ it("settles every result and invokes other observers when an observer throws", a
 
 it("allows a close observer to open a new modal without observing the old close twice", () => {
   const store = createModalStore<null>()
+
   const onClose = vi.fn<(event: ModalCloseEvent<null>) => void>(() => {
     store.open({ id: "next", defaultResult: null, createContent: () => null })
   })
+
   const modal = store.open({ defaultResult: null, createContent: () => null, onClose })
   modal.close(null)
   expect(onClose).toHaveBeenCalledOnce()

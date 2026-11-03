@@ -15,6 +15,7 @@ const watchedModals = fileURLToPath(new URL("src/frame/watchedModals.ts", import
  */
 function exampleFrames(): Plugin {
   const isFile = (id: string | undefined, file: string) => id?.replaceAll("\\", "/").endsWith(file) ?? false
+
   return {
     name: "buildkit:example-frames",
     enforce: "pre",
@@ -22,12 +23,14 @@ function exampleFrames(): Plugin {
       if (source === "react-router" && isFile(importer, "/src/examples/routing/router.tsx")) {
         return memoryRouter
       }
+
       if (
         source === "@buildkitgg/shadcn-modals-manager" &&
         isFile(importer, "/src/examples/modals/ProjectNameForm.tsx")
       ) {
         return watchedModals
       }
+
       return null
     },
     transform(code, id) {
@@ -38,6 +41,7 @@ function exampleFrames(): Plugin {
 
 export default defineConfig(({ command, isSsrBuild }) => {
   const base = process.env.PAGES_BASE ?? "/"
+
   return {
     base,
     plugins: lazyPlugins(() => [exampleFrames(), react({ compiler: true })]),

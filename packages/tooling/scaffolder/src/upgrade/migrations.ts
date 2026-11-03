@@ -2,6 +2,7 @@ import type { AddonManifest, Migration } from "../manifest/types.js"
 import { PlanError } from "../plan/errors.js"
 import type { ScratchTree } from "../plan/tree.js"
 import type { MigrationNote } from "../plan/types.js"
+import type { ProjectConfig } from "../state/schemas.js"
 import { compareVersions } from "./semver.js"
 
 export interface PendingMigration {
@@ -14,10 +15,19 @@ export function pendingMigrations(addon: AddonManifest, from: string, to: string
   if (compareVersions(from, to) >= 0) {
     return []
   }
+
   return (addon.migrations ?? [])
     .filter((migration) => compareVersions(migration.version, from) > 0 && compareVersions(migration.version, to) <= 0)
     .sort((left, right) => compareVersions(left.version, right.version))
     .map((migration) => ({ addon, migration }))
+}
+
+/** Each add-on's options, by add-on id, as the config records them. */
+type AddonOptions = ProjectConfig["addons"]
+
+interface MigrationResult {
+  options: AddonOptions
+  notes: MigrationNote[]
 }
 
 export function migrationId(pending: PendingMigration): string {
@@ -28,20 +38,19 @@ export function migrationId(pending: PendingMigration): string {
  * Runs migrations: option rewrites change the recorded options, codemods and package bumps edit the scratch tree, and
  * agent tasks are only listed. Returns the rewritten options and a note for each migration.
  */
-export function runMigrations(
-  pending: PendingMigration[],
-  options: Record<string, Record<string, unknown>>,
-  tree: ScratchTree
-): { options: Record<string, Record<string, unknown>>; notes: MigrationNote[] } {
+export function runMigrations(pending: PendingMigration[], options: AddonOptions, tree: ScratchTree): MigrationResult {
   const next = { ...options }
   const notes: MigrationNote[] = []
+
   for (const item of pending) {
     const { addon, migration } = item
     const id = migrationId(item)
+
     try {
       if (migration.options && next[addon.id]) {
         next[addon.id] = migration.options(next[addon.id] ?? {})
       }
+
       if (migration.kind !== "agent") {
         migration.run?.(tree)
       }
@@ -51,12 +60,15 @@ export function runMigrations(
         `Migration ${id} failed: ${error instanceof Error ? error.message : String(error)}`
       )
     }
-    notes.push({
-      id,
-      kind: migration.kind,
-      description: migration.description,
-      ...(migration.prompt === undefined ? {} : { prompt: migration.prompt })
-    })
+
+    const note: MigrationNote = { id, kind: migration.kind, description: migration.description }
+
+    if (migration.prompt !== undefined) {
+      note.prompt = migration.prompt
+    }
+
+    notes.push(note)
   }
+
   return { options: next, notes }
 }

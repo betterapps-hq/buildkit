@@ -28,7 +28,7 @@ import { engineVersion } from "../version.js"
 import { issueDecision } from "./decisions.js"
 import { desiredSelection, selectionFromLock } from "./desired.js"
 import { errorInfo, PlanError } from "./errors.js"
-import { canonicalJson, compareText, isRecord, parsePointer } from "./json.js"
+import { canonicalJson, compareText, isRecord, isString, parsePointer } from "./json.js"
 import { render, type Rendered } from "./render.js"
 import { RecordingTree, ScratchTree, type FileState, type VirtualTree } from "./tree.js"
 import type {
@@ -40,7 +40,9 @@ import type {
   Plan,
   PlanConflict,
   PlanRequest,
-  Resolution
+  PulledAddon,
+  Resolution,
+  UpgradeSummary
 } from "./types.js"
 
 export interface PlanInput {
@@ -87,6 +89,7 @@ function emptyPlan(input: PlanInput): Plan {
 export async function plan(input: PlanInput): Promise<Plan> {
   const tree = new RecordingTree(input.tree)
   const result = emptyPlan(input)
+
   try {
     await planInto(input, tree, result)
   } catch (error) {
@@ -95,15 +98,19 @@ export async function plan(input: PlanInput): Promise<Plan> {
     result.operations = []
     delete result.lock
   }
+
   if (result.status !== "error") {
     result.status = statusOf(result)
   }
+
   result.fingerprint = await fingerprint(result, tree)
   const lockOperation = result.operations.find((operation) => operation.class === "lock")
+
   if (lockOperation && result.lock) {
     result.lock = { ...result.lock, lastApply: { fingerprint: result.fingerprint } }
     lockOperation.content = writeLock(result.lock)
   }
+
   return result
 }
 
@@ -111,17 +118,21 @@ function statusOf(result: Plan): Plan["status"] {
   if (result.decisions.length > 0) {
     return "needs-decision"
   }
+
   if (result.conflicts.length > 0) {
     return "conflict"
   }
+
   return result.operations.length > 0 ? "planned" : "unchanged"
 }
 
 function stateText(tree: RecordingTree, path: string): string | undefined {
   const state = tree.read(path)
+
   if (state.kind === "unsafe") {
     throw new PlanError("E_UNSAFE_PATH", `${path} can't be read: ${state.reason}`, { paths: [path] })
   }
+
   return state.kind === "file" ? state.content : undefined
 }
 
@@ -133,9 +144,11 @@ function carriedAdditions(catalog: CatalogManifest, intent: Intent): string[] {
   if (intent.command !== "add" || intent.replace.length > 0 || Object.keys(intent.options).length > 0) {
     return []
   }
+
   const ids = intent.addons
     .map((name) => lookupAddon(catalog, name))
     .map((lookup) => ("id" in lookup ? lookup.id : undefined))
+
   return ids.every((id): id is string => id !== undefined) ? ids : []
 }
 
@@ -148,8 +161,10 @@ async function planInto(input: PlanInput, tree: RecordingTree, result: Plan) {
   const config = configText === undefined ? undefined : readConfig(configPath, configText)
   const lock = lockText === undefined ? undefined : readLock(lockFile, lockText)
   let catalog = input.catalog
+
   if (request.catalogVersion !== undefined && request.catalogVersion !== catalog.version) {
     const pinned = input.catalogs?.(request.catalogVersion, lock?.catalog.packs)
+
     if (!pinned) {
       throw new PlanError(
         "E_BASELINE_UNAVAILABLE",
@@ -159,9 +174,12 @@ async function planInto(input: PlanInput, tree: RecordingTree, result: Plan) {
         }
       )
     }
+
     catalog = pinned
   }
+
   result.catalog = { id: catalog.id, version: catalog.version }
+
   if (config && config.catalog !== catalog.id) {
     throw new PlanError(
       "E_INVALID_STATE",
@@ -169,7 +187,9 @@ async function planInto(input: PlanInput, tree: RecordingTree, result: Plan) {
       { paths: [configPath] }
     )
   }
+
   const command = request.intent.command
+
   if (lock && command !== "upgrade" && !sameCatalogVersion(lock.catalog, catalog)) {
     const recorded = lock.catalog.version
     const carried = carriedAdditions(catalog, request.intent)
@@ -183,69 +203,92 @@ async function planInto(input: PlanInput, tree: RecordingTree, result: Plan) {
             carried.length > 0
               ? `Upgrade to ${catalog.version} and add ${carried.map((id) => findAddon(catalog, id)?.title ?? id).join(", ")}`
               : `Upgrade to ${catalog.version}`,
-          request: { intent: { command: "upgrade", ...(carried.length > 0 ? { addons: carried } : {}) } }
+          request: { intent: carried.length > 0 ? { command: "upgrade", addons: carried } : { command: "upgrade" } }
         },
         ...(input.catalogs?.(recorded, lock.catalog.packs)
           ? [{ id: "recorded", label: `Plan with ${recorded}`, request: { ...request, catalogVersion: recorded } }]
           : [])
       ]
     })
+
     return
   }
+
   const desired = desiredSelection(catalog, request.intent, config, lock)
+
   if (!desired.ok) {
     result.decisions.push(issueDecision(catalog, request, desired.issue))
+
     return
   }
+
   const selection = desired.selection
   // The plan lists what it brings in, so add-ons the lock already records aren't listed again.
   const installed = new Set(Object.keys(lock?.addons ?? {}))
   result.required = desired.required.filter((id) => !installed.has(id))
   const scratch = new ScratchTree(tree)
+
   if (command === "upgrade" && lock) {
     const pending = Object.entries(lock.addons).flatMap(([id, state]) => {
       const addon = findAddon(catalog, id)
+
       return addon ? pendingMigrations(addon, state.version, addon.version) : []
     })
+
     const migrated = runMigrations(pending, selection.addons, scratch)
     selection.addons = migrated.options
     result.migrations = migrated.notes
   }
+
   const resolution = resolveSelection(catalog, selection)
+
   if (!resolution.ok) {
     result.decisions.push(issueDecision(catalog, request, resolution.issue, selection))
+
     return
   }
+
   const resolved = resolution.value
   result.pulled = resolved.addons
     .filter((addon) => !addon.explicit && !installed.has(addon.manifest.id))
-    .map((addon) => ({
-      id: addon.manifest.id,
-      by: addon.by,
-      ...(addon.manifest.joins ? { joins: true as const } : {})
-    }))
+    .map((addon) => {
+      const pulled: PulledAddon = { id: addon.manifest.id, by: addon.by }
+
+      if (addon.manifest.joins) {
+        pulled.joins = true
+      }
+
+      return pulled
+    })
+
   if (desired.adopt) {
     const versions = writtenVersions(catalog)
+
     const context: TargetContext = {
       target: resolved.info,
       project: { name: resolved.name },
       versions,
       version: (name) => versions[name] ?? ""
     }
+
     resolved.target.adopt?.(scratch, context)
   }
+
   const next = render(catalog, resolved, settings)
   result.env = next.envVars
   result.commands = next.commands
   result.notices.push(...next.notices)
   result.nextSteps = next.nextSteps
   const old = lock ? oldBaseline(input, catalog, lock, result) : undefined
+
   if (lock && command === "upgrade") {
     result.upgrade = upgradeSummary(lock, catalog, resolved)
     result.notices.push(...newQuestions(input, catalog, lock, resolved))
   }
+
   const entries: Record<string, LockFileEntry> = {}
   const deleted = new Set<string>()
+
   const paths = new Set<string>([
     ...next.files.keys(),
     ...next.documents.keys(),
@@ -255,14 +298,17 @@ async function planInto(input: PlanInput, tree: RecordingTree, result: Plan) {
     ...Object.keys(lock?.files ?? {}),
     ...scratch.changes.keys()
   ])
+
   paths.delete(configPath)
   paths.delete(lockFile)
   const resolve = request.resolve ?? {}
+
   for (const path of [...paths].sort()) {
     const original = tree.read(path)
     const current = currentState(scratch, original, path)
     const entry = lock?.files[path]
     const shared = entry?.class === "shared" ? entry : undefined
+
     const outcome = await planPath({
       path,
       current,
@@ -275,49 +321,67 @@ async function planInto(input: PlanInput, tree: RecordingTree, result: Plan) {
       resolve,
       adopt: desired.adopt
     })
+
     result.conflicts.push(...outcome.conflicts)
+
     if (outcome.notice) {
       result.notices.push(outcome.notice)
     }
+
     if (outcome.mergedHunks) {
       result.merged.push({ path, hunks: outcome.mergedHunks })
     }
+
     if (outcome.entry) {
       entries[path] = outcome.entry
     }
+
     if (outcome.deleted) {
       deleted.add(path)
     }
+
     let finalContent = current.text
+
     if (outcome.content === null) {
       finalContent = undefined
     } else if (outcome.content !== undefined) {
       finalContent = outcome.content
     }
+
     pushOperation(result, path, original, finalContent, outcome.class ?? classOf(entry, next, path))
   }
+
   result.packages = packageChanges(next, lock)
   const nextConfig = configFor(selection, catalog, config)
+
   const nextConfigText =
     config && configText !== undefined
       ? updateConfig(configText, config, nextConfig, settings)
       : renderConfig(nextConfig, settings)
+
   pushOperation(result, configPath, tree.read(configPath), nextConfigText, "config")
   let integrity: string | undefined
+
   if (catalog === input.catalog && input.catalogIntegrity) {
     integrity = input.catalogIntegrity
   } else if (lock?.catalog.version === catalog.version) {
     integrity = lock.catalog.integrity
   }
+
+  const lockCatalog: Lock["catalog"] = { id: catalog.id, version: catalog.version }
+
+  if (integrity) {
+    lockCatalog.integrity = integrity
+  }
+
+  if (catalog.packs && Object.keys(catalog.packs).length > 0) {
+    lockCatalog.packs = catalog.packs
+  }
+
   const nextLock: Lock = {
     schemaVersion: lockSchemaVersion,
     engine: engineVersion,
-    catalog: {
-      id: catalog.id,
-      version: catalog.version,
-      ...(integrity ? { integrity } : {}),
-      ...(catalog.packs && Object.keys(catalog.packs).length > 0 ? { packs: catalog.packs } : {})
-    },
+    catalog: lockCatalog,
     project: {
       name: resolved.name,
       template: resolved.template.id,
@@ -331,10 +395,15 @@ async function planInto(input: PlanInput, tree: RecordingTree, result: Plan) {
       ])
     ),
     files: entries,
-    deleted: [...deleted].sort(),
-    ...(lock?.lastApply ? { lastApply: lock.lastApply } : {})
+    deleted: [...deleted].sort()
   }
+
+  if (lock?.lastApply) {
+    nextLock.lastApply = lock.lastApply
+  }
+
   result.lock = nextLock
+
   if (!lockEqual(nextLock, lock)) {
     pushOperation(result, lockFile, tree.read(lockFile), writeLock(nextLock), "lock")
   }
@@ -364,25 +433,35 @@ async function planPath(context: {
   adopt: boolean
 }): Promise<PathOutcome> {
   const { path, current, entry, shared, next, old, lock, resolve } = context
+
   if (current.state.kind === "unsafe") {
     throw new PlanError("E_UNSAFE_PATH", `${path} can't be managed: ${current.state.reason}`, { paths: [path] })
   }
+
   const document = next.documents.get(path)
   const lines = next.lines.get(path)
   const env = next.env.get(path)
   const file = next.files.get(path)
+
   const styled = (text: string | undefined): string | null | undefined =>
     text === undefined ? undefined : applyStyle(normalizeText(text), textStyle(current.text))
-  const fromShared = (outcome: SharedResult): PathOutcome => ({
-    content: styled(outcome.text),
-    ...(outcome.entry ? { entry: outcome.entry } : {}),
-    conflicts: outcome.conflicts,
-    class: "shared"
-  })
+
+  const fromShared = (outcome: SharedResult): PathOutcome => {
+    const shared: PathOutcome = { content: styled(outcome.text), conflicts: outcome.conflicts, class: "shared" }
+
+    if (outcome.entry) {
+      shared.entry = outcome.entry
+    }
+
+    return shared
+  }
+
   const sharedFormat = sharedFormatOf(document?.format, lines !== undefined, env !== undefined, shared?.format)
+
   if (!file && sharedFormat !== undefined) {
     const sharedEntry = shared && shared.format === sharedFormat ? shared : undefined
     const currentText = current.text === undefined ? undefined : normalizeText(current.text)
+
     if (sharedFormat === "json" || sharedFormat === "yaml") {
       return fromShared(
         planSharedDocument({
@@ -397,14 +476,18 @@ async function planPath(context: {
         })
       )
     }
+
     if (sharedFormat === "lines") {
       return fromShared(planSharedLines({ path, current: currentText, desired: lines, entry: sharedEntry, resolve }))
     }
+
     return fromShared(planSharedEnv({ path, current: currentText, desired: env, entry: sharedEntry, resolve }))
   }
+
   if (!file && !entry) {
     return { content: undefined, conflicts: [], class: "user" }
   }
+
   const outcome = await planFile({
     path,
     current: current.state,
@@ -417,15 +500,30 @@ async function planPath(context: {
     adopt: context.adopt,
     storeBases: context.input.settings.seedBases === "stored"
   })
-  return {
+
+  const planned: PathOutcome = {
     content: outcome.remove ? null : styled(outcome.write),
-    ...(outcome.entry ? { entry: outcome.entry } : {}),
-    ...(outcome.deleted ? { deleted: true } : {}),
     conflicts: outcome.conflict ? [outcome.conflict] : [],
-    ...(outcome.notice ? { notice: outcome.notice } : {}),
-    ...(outcome.mergedHunks ? { mergedHunks: outcome.mergedHunks } : {}),
     class: file?.ownership ?? (entry && entry.class !== "shared" ? entry.class : "user")
   }
+
+  if (outcome.entry) {
+    planned.entry = outcome.entry
+  }
+
+  if (outcome.deleted) {
+    planned.deleted = true
+  }
+
+  if (outcome.notice) {
+    planned.notice = outcome.notice
+  }
+
+  if (outcome.mergedHunks) {
+    planned.mergedHunks = outcome.mergedHunks
+  }
+
+  return planned
 }
 
 function sharedFormatOf(
@@ -437,21 +535,27 @@ function sharedFormatOf(
   if (document) {
     return document
   }
+
   if (lines) {
     return "lines"
   }
+
   return env ? "env" : recorded
 }
 
-function currentState(
-  scratch: ScratchTree,
-  original: FileState,
-  path: string
-): { state: FileState; text: string | undefined } {
+/** A path as the plan sees it so far: its state, and its text when it's a file. */
+interface CurrentState {
+  state: FileState
+  text: string | undefined
+}
+
+function currentState(scratch: ScratchTree, original: FileState, path: string): CurrentState {
   if (scratch.changes.has(path)) {
     const text = scratch.changes.get(path)
+
     return { state: text === undefined ? { kind: "absent" } : { kind: "file", content: text }, text }
   }
+
   return { state: original, text: original.kind === "file" ? original.content : undefined }
 }
 
@@ -467,17 +571,22 @@ function pushOperation(
   operationClass: OperationClass
 ) {
   const before = original.kind === "file" ? original.content : undefined
+
   if (before === finalContent) {
     return
   }
+
   let action: Operation["action"] = "update"
+
   if (before === undefined) {
     action = "create"
   } else if (finalContent === undefined) {
     action = "delete"
   }
+
   let linesAdded = 0
   let linesRemoved = 0
+
   for (const change of diffLines(normalizeText(before ?? ""), normalizeText(finalContent ?? ""))) {
     if (change.added) {
       linesAdded += change.count
@@ -485,16 +594,22 @@ function pushOperation(
       linesRemoved += change.count
     }
   }
-  result.operations.push({
-    path,
-    action,
-    class: operationClass,
-    linesAdded,
-    linesRemoved,
-    ...(finalContent === undefined ? {} : { content: finalContent }),
-    ...(before === undefined ? {} : { before }),
-    ...(secretPath.test(path) ? { secret: true } : {})
-  })
+
+  const operation: Operation = { path, action, class: operationClass, linesAdded, linesRemoved }
+
+  if (finalContent !== undefined) {
+    operation.content = finalContent
+  }
+
+  if (before !== undefined) {
+    operation.before = before
+  }
+
+  if (secretPath.test(path)) {
+    operation.secret = true
+  }
+
+  result.operations.push(operation)
 }
 
 function oldBaseline(input: PlanInput, catalog: CatalogManifest, lock: Lock, result: Plan): Rendered | undefined {
@@ -502,23 +617,31 @@ function oldBaseline(input: PlanInput, catalog: CatalogManifest, lock: Lock, res
   // Without the old render, seeds merge against the bases stored in the lock, when the product stores them.
   const fallback = input.settings.seedBases === "stored" ? "stored" : "two-way"
   const oldCatalog = lockedCatalog(input, catalog, lock)
+
   if (!oldCatalog) {
     result.baseline = { source: fallback, catalogVersion: recorded }
+
     return undefined
   }
+
   try {
     const resolution = resolveSelection(oldCatalog, selectionFromLock(lock))
+
     if (!resolution.ok) {
       result.baseline = { source: fallback, catalogVersion: recorded }
+
       return undefined
     }
+
     result.baseline = {
       source: oldCatalog === catalog || oldCatalog === input.catalog ? "installed" : "cache",
       catalogVersion: recorded
     }
+
     return render(oldCatalog, resolution.value, input.settings)
   } catch {
     result.baseline = { source: fallback, catalogVersion: recorded }
+
     return undefined
   }
 }
@@ -538,18 +661,22 @@ function lockedCatalog(input: PlanInput, catalog: CatalogManifest, lock: Lock): 
  */
 function newQuestions(input: PlanInput, catalog: CatalogManifest, lock: Lock, resolved: ResolvedSelection): Notice[] {
   const old = lockedCatalog(input, catalog, lock)
+
   if (!old || old === catalog) {
     return []
   }
+
   try {
     const before = new Set(expandTemplate(old, lock.project.template)?.questions.map((question) => question.id) ?? [])
     const installed = new Set(resolved.addons.map((addon) => addon.manifest.id))
+
     return (expandTemplate(catalog, lock.project.template)?.questions ?? [])
       .filter((question) => !before.has(question.id))
       .filter((question) => !question.choices.some((choice) => installed.has(choice.id)))
       .map((question) => {
         const asked = question.question ?? question.choose ?? question.title
         const end = /[.?!]$/.test(asked) ? "" : "."
+
         return {
           code: "new-question",
           text: `The template now asks: ${asked}${end} Run \`${input.settings.product} add ${question.id}\` to answer it.`
@@ -563,23 +690,47 @@ function newQuestions(input: PlanInput, catalog: CatalogManifest, lock: Lock, re
 
 function upgradeSummary(lock: Lock, catalog: CatalogManifest, resolved: ResolvedSelection): Plan["upgrade"] {
   const ids = new Set([...Object.keys(lock.addons), ...resolved.addons.map((addon) => addon.manifest.id)])
+
   const addons = [...ids]
     .sort()
     .map((id) => {
+      const change: UpgradeSummary["addons"][number] = { id }
       const from = lock.addons[id]?.version
       const to = resolved.addons.find((addon) => addon.manifest.id === id)?.manifest.version
-      return { id, ...(from === undefined ? {} : { from }), ...(to === undefined ? {} : { to }) }
+
+      if (from !== undefined) {
+        change.from = from
+      }
+
+      if (to !== undefined) {
+        change.to = to
+      }
+
+      return change
     })
     .filter((addon) => addon.from !== addon.to)
+
   const names = new Set([...Object.keys(lock.catalog.packs ?? {}), ...Object.keys(catalog.packs ?? {})])
+
   const packs = [...names]
     .sort()
     .map((name) => {
+      const change: UpgradeSummary["packs"][number] = { name }
       const from = lock.catalog.packs?.[name]?.version
       const to = catalog.packs?.[name]?.version
-      return { name, ...(from === undefined ? {} : { from }), ...(to === undefined ? {} : { to }) }
+
+      if (from !== undefined) {
+        change.from = from
+      }
+
+      if (to !== undefined) {
+        change.to = to
+      }
+
+      return change
     })
     .filter((pack) => pack.from !== pack.to)
+
   return { catalog: { from: lock.catalog.version, to: catalog.version }, packs, addons }
 }
 
@@ -591,24 +742,35 @@ function packageChanges(next: Rendered, lock: Lock | undefined): PackageChange[]
   const base = recorded?.class === "shared" ? recorded.keys : {}
   const pointers = new Set([...desired.keys(), ...Object.keys(base)])
   const changes: PackageChange[] = []
+
   for (const pointer of [...pointers].sort()) {
     const [section, name, ...rest] = parsePointer(pointer)
+
     if (!section || !name || rest.length > 0 || !dependencySections.has(section)) {
       continue
     }
+
     const to = desired.get(pointer)?.value
     const state = base[pointer]
     const from = state?.base
+
     if (canonicalJson(from) === canonicalJson(to)) {
       continue
     }
-    changes.push({
-      name,
-      section,
-      ...(typeof from === "string" ? { from } : {}),
-      ...(typeof to === "string" ? { to } : {})
-    })
+
+    const change: PackageChange = { name, section }
+
+    if (isString(from)) {
+      change.from = from
+    }
+
+    if (isString(to)) {
+      change.to = to
+    }
+
+    changes.push(change)
   }
+
   return changes
 }
 
@@ -626,21 +788,28 @@ function configFor(selection: Selection, catalog: CatalogManifest, existing: Pro
 
 async function fingerprint(result: Plan, tree: RecordingTree): Promise<string> {
   const reads: [string, string][] = []
+
   for (const [path, state] of [...tree.reads].sort(([left], [right]) => compareText(left, right))) {
     let hash = state.kind === "absent" ? "absent" : `unsafe:${state.kind === "unsafe" ? state.reason : ""}`
+
     if (state.kind === "file") {
       hash = await sha256(state.content)
     }
+
     reads.push([path, hash])
   }
+
   const operations: [string, string, string][] = []
+
   for (const operation of result.operations) {
     const content =
       operation.class === "lock" && result.lock
         ? writeLock({ ...result.lock, lastApply: undefined })
         : operation.content
+
     operations.push([operation.path, operation.action, content === undefined ? "" : await sha256(content)])
   }
+
   return sha256(
     canonicalJson({
       engine: engineVersion,

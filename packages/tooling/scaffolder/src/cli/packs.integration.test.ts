@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, it } from "vite-plus/test"
+import { z } from "zod"
 import type { CommandRunner } from "../node/catalogs.js"
 import type { Envelope } from "../plan/envelope.js"
 import { fixtureCatalog, settings } from "../testing/fixture.js"
@@ -31,6 +32,7 @@ function packSource(version: string, options: { range?: string; templates?: stri
     required: ["@acme/tower/turrets"],
     questions: [{ use: "ui", required: true, default: "@fixture/ui-basic" }]
   }))
+
   return `export default {
   extends: { catalog: "@fixture/catalog", versions: ${JSON.stringify(options.range ?? "^1.0.0")} },
   templates: ${JSON.stringify(templates)},
@@ -46,29 +48,45 @@ function packSource(version: string, options: { range?: string; templates?: stri
 }
 
 /** npm, as far as the package store uses it, with `@acme/tower` published at the versions given. */
-function fakeNpm(published: Record<string, string>): { run: CommandRunner; calls: string[][] } {
+/** A stand-in for npm, and the commands it was asked to run. */
+interface FakeNpm {
+  run: CommandRunner
+  calls: string[][]
+}
+
+function fakeNpm(published: Record<string, string>): FakeNpm {
   const calls: string[][] = []
+
   const run: CommandRunner = async (_command, args, cwd) => {
     calls.push(args)
     const [verb, spec = "", field] = args
+
     if (!spec.startsWith("@acme/tower")) {
       return { code: 1, output: "npm ERR! 404 Not Found" }
     }
+
     const versions = Object.keys(published)
+
     if (verb === "view") {
       if (field === "versions") {
         return { code: 0, output: JSON.stringify(versions) }
       }
+
       const range = spec.slice("@acme/tower@".length)
+
       const matching =
         range === "latest" ? versions.slice(-1) : versions.filter((version) => satisfiesRange(version, range))
+
       return { code: 0, output: matching.length === 1 ? JSON.stringify(matching[0]) : JSON.stringify(matching) }
     }
+
     const version = spec.slice(spec.lastIndexOf("@") + 1)
     const source = published[version]
+
     if (source === undefined) {
       return { code: 1, output: "npm ERR! notarget" }
     }
+
     const folder = join(cwd, "node_modules/@acme/tower")
     mkdirSync(folder, { recursive: true })
     writeFileSync(
@@ -80,14 +98,17 @@ function fakeNpm(published: Record<string, string>): { run: CommandRunner; calls
       join(cwd, "package-lock.json"),
       JSON.stringify({ packages: { "node_modules/@acme/tower": { integrity: `sha512-${version}` } } })
     )
+
     return { code: 0, output: "" }
   }
+
   return { run, calls }
 }
 
 async function run(argv: string[], npm: { run: CommandRunner }, script: ScriptedAnswer[] = []) {
   output = []
   const scripted = scriptedPrompter(script)
+
   const code = await runCli(argv, {
     name: "fixture",
     version: "0.0.0",
@@ -103,9 +124,16 @@ async function run(argv: string[], npm: { run: CommandRunner }, script: Scripted
       prompter: scripted.prompter
     }
   })
+
   return { code, out: output.join(""), asked: scripted.asked }
 }
 
+/** What `schema --json` prints: the config schema lists each add-on's options. */
+const printedSchemas = z.object({
+  config: z.object({ properties: z.object({ addons: z.object({ properties: z.record(z.string(), z.unknown()) }) }) })
+})
+
+// SAFETY: the CLI printed its envelope with --json, and each test checks the fields it reads.
 const envelope = (out: string): Envelope => JSON.parse(out) as Envelope
 const lock = () => JSON.parse(readFileSync(join(root, "demo/.fixture/lock.json"), "utf8"))
 
@@ -123,9 +151,9 @@ describe("template packages", () => {
 
     // Later commands load the recorded version from the cache, without asking npm.
     npm.calls.length = 0
-    const schema = JSON.parse((await run(["schema", "--cwd", "demo", "--json"], npm)).out) as {
-      config: { properties: { addons: { properties: Record<string, unknown> } } }
-    }
+
+    const schema = printedSchemas.parse(JSON.parse((await run(["schema", "--cwd", "demo", "--json"], npm)).out))
+
     expect(Object.keys(schema.config.properties.addons.properties)).toContain("@acme/tower/turrets")
     const added = await run(["add", "i18n", "--cwd", "demo", "--yes", "--json"], npm)
     expect(envelope(added.out).status).toBe("applied")
@@ -157,11 +185,14 @@ describe("template packages", () => {
   templates: [{ id: "tower", title: "Tower", description: "The app, as a game", extends: "app", questions: ["engine"] }]
 }
 `
+
     const npm = fakeNpm({ "1.0.0": source })
+
     const created = await run(
       ["create", "@acme/tower", "demo", "--mode", "ssr", "--engine", "phaser", "--yes", "--json"],
       npm
     )
+
     expect(envelope(created.out).error).toBeUndefined()
     expect(envelope(created.out).status).toBe("applied")
     const manifest = JSON.parse(readFileSync(join(root, "demo/package.json"), "utf8"))
@@ -169,27 +200,33 @@ describe("template packages", () => {
     // The template inherits the catalog template's required add-on and questions.
     expect(manifest.devDependencies).toMatchObject({ oxlint: "1.72.0" })
     expect(readFileSync(join(root, "demo/fixture.jsonc"), "utf8")).toContain('"template": "@acme/tower#tower"')
+
     // A flag no question of the catalog or the package has is still unknown.
     const unknown = await run(
       ["create", "@acme/tower", "other", "--mode", "ssr", "--nope", "x", "--yes", "--json"],
       npm
     )
+
     expect(envelope(unknown.out).error).toMatchObject({ code: "E_USAGE", message: "Unknown option --nope." })
   })
 
   it("upgrades past prereleases and versions it can't load", async () => {
     await run(["create", "@acme/tower", "demo", "--yes", "--json"], fakeNpm({ "1.0.0": packSource("1.0.0") }))
+
     const newer = fakeNpm({
       "1.0.0": packSource("1.0.0"),
       "1.1.0": packSource("1.1.0"),
       "1.2.0-rc.1": packSource("1.2.0-rc.1"),
       "1.3.0": "export default {}\n"
     })
+
     // Some npm versions nest the version list in another array.
     const nested: CommandRunner = async (command, args, cwd) => {
       const result = await newer.run(command, args, cwd)
+
       return args[0] === "view" && args[2] === "versions" ? { ...result, output: `[${result.output}]` } : result
     }
+
     for (const npm of [newer, { run: nested }]) {
       const listed = await run(["upgrade", "--cwd", "demo", "--list", "--json"], npm)
       expect(envelope(listed.out).upgrade?.packs).toEqual([{ name: "@acme/tower", from: "1.0.0", to: "1.1.0" }])
@@ -198,6 +235,7 @@ describe("template packages", () => {
         text: expect.stringContaining("@acme/tower@1.3.0 was skipped: @acme/tower@1.3.0 isn't a template package")
       })
     }
+
     const upgraded = await run(["upgrade", "--cwd", "demo", "--yes", "--json"], newer)
     expect(envelope(upgraded.out).upgrade?.packs).toEqual([{ name: "@acme/tower", from: "1.0.0", to: "1.1.0" }])
   })
@@ -214,6 +252,7 @@ describe("template packages", () => {
       "1.0.0": packSource("1.0.0", { templates: ["tower", "siege"] }),
       "1.1.0": 'throw new Error("1.1.0 ran")\n'
     })
+
     const applied = await run(["create", "--plan", "plans/plan.json", "--json"], newer)
     expect(envelope(applied.out).status).toBe("applied")
     expect(envelope(applied.out).notices?.[0]?.text).toContain("@acme/tower@1.0.0 on npm")
@@ -228,8 +267,10 @@ describe("template packages", () => {
 
   it("reads npm's JSON past the warnings around it", async () => {
     const npm = fakeNpm({ "1.0.0": packSource("1.0.0") })
+
     const noisy: CommandRunner = async (command, args, cwd) => {
       const result = await npm.run(command, args, cwd)
+
       return args[0] === "view"
         ? {
             ...result,
@@ -237,9 +278,12 @@ describe("template packages", () => {
           }
         : result
     }
+
     expect((await run(["create", "@acme/tower", "demo", "--yes", "--json"], { run: noisy })).code).toBe(0)
+
     const garbled: CommandRunner = async (command, args, cwd) =>
       args[0] === "view" ? { code: 0, output: "npm warn config\nnot json\n" } : npm.run(command, args, cwd)
+
     const refused = await run(["create", "@acme/tower", "other", "--json"], { run: garbled })
     expect(envelope(refused.out).error).toMatchObject({ code: "E_PACKAGE_UNAVAILABLE" })
     expect(envelope(refused.out).error?.message).toContain("npm printed something other than JSON")
@@ -289,6 +333,7 @@ describe("template packages", () => {
 
   it("explains packages it can't use, and never fetches a built-in name", async () => {
     const npm = fakeNpm({ "1.0.0": packSource("1.0.0"), "2.0.0": packSource("2.0.0", { range: "^2.0.0" }) })
+
     const cases: [string[], string][] = [
       [["create", "@acme/tower@2.0.0", "a"], "E_CATALOG_MISMATCH"],
       [["create", "@acme/tower@1.0.0#siege", "b"], "E_UNKNOWN_TEMPLATE"],
@@ -296,10 +341,12 @@ describe("template packages", () => {
       [["create", "@acme/tower@^9", "d"], "E_PACKAGE_UNAVAILABLE"],
       [["create", "@acme", "e"], "E_USAGE"]
     ]
+
     for (const [argv, code] of cases) {
       const result = await run([...argv, "--json"], npm)
       expect({ argv, code: envelope(result.out).error?.code }).toEqual({ argv, code })
     }
+
     npm.calls.length = 0
     expect(envelope((await run(["create", "tower", "f", "--json"], npm)).out).error?.code).toBe("E_UNKNOWN_TEMPLATE")
     expect(npm.calls).toEqual([])
@@ -310,27 +357,32 @@ describe("template packages", () => {
     const npm = fakeNpm({ "1.0.0": packSource("1.0.0", { templates: ["tower", "siege"] }) })
     const unattended = await run(["create", "@acme/tower", "demo", "--json"], npm)
     expect(envelope(unattended.out).error?.message).toContain("Pick one: @acme/tower#tower, @acme/tower#siege.")
+
     // Picks siege, takes each default the wizard offers, and applies.
     const answer: ScriptedAnswer = (question) => {
       if (question.message === "Which template?") {
         return "siege"
       }
+
       if (question.kind === "confirm") {
         return true
       }
+
       return question.kind === "multiselect" ? [] : String(question.initial ?? question.options?.[0])
     }
+
     const asked = await run(
       ["create", "@acme/tower", "demo"],
       npm,
       Array.from({ length: 8 }, () => answer)
     )
+
     expect(asked.code).toBe(0)
     expect(asked.asked[0]).toMatchObject({ kind: "select", message: "Which template?", options: ["tower", "siege"] })
     expect(readFileSync(join(root, "demo/fixture.jsonc"), "utf8")).toContain('"template": "@acme/tower#siege"')
 
     const described = await run(["catalog", "@acme/tower", "--json"], npm)
-    const description = JSON.parse(described.out) as { templates: { id: string }[] }
+    const description = z.object({ templates: z.array(z.object({ id: z.string() })) }).parse(JSON.parse(described.out))
     expect(description.templates.map((template) => template.id)).toEqual(["@acme/tower#tower", "@acme/tower#siege"])
     expect((await run(["catalog", "@acme/tower"], npm)).out).toContain("@fixture/catalog@1.0.0 with @acme/tower@1.0.0")
   })
@@ -414,20 +466,24 @@ describe("catalog check --registry", () => {
   const day = 24 * 60 * 60 * 1000
 
   /** npm's registry, as `npm view <name> versions time` reads it: each package's versions and their age in days. */
-  function registry(packages: Record<string, Record<string, number | undefined>>): { run: CommandRunner } {
+  function registry(packages: Record<string, Record<string, number | undefined>>): Pick<FakeNpm, "run"> {
     return {
       run: async (_command, args) => {
         const [verb, name = "", ...fields] = args
         const published = packages[name]
+
         if (verb !== "view" || published === undefined || !fields.includes("time")) {
           return { code: 1, output: "npm ERR! 404 Not Found" }
         }
+
         const time = Object.fromEntries(
           Object.entries(published).flatMap(([version, age]) =>
             age === undefined ? [] : [[version, new Date(Date.now() - age * day).toISOString()]]
           )
         )
+
         const versions = Object.keys(published)
+
         return {
           code: 0,
           output: `npm warn config ignored\n${JSON.stringify({ versions: versions.length === 1 ? versions[0] : versions, time })}`
@@ -448,6 +504,7 @@ describe("catalog check --registry", () => {
 
   async function check(argv: string[], npm: { run: CommandRunner }, catalog = fixtureCatalog()) {
     output = []
+
     const code = await runCli(["catalog", "check", ...argv, "--json"], {
       name: "fixture",
       version: "0.0.0",
@@ -457,6 +514,7 @@ describe("catalog check --registry", () => {
       runCommand: npm.run,
       io: { stdout: (text) => output.push(text), stderr: (text) => output.push(text), isTTY: false, cwd: root }
     })
+
     return { code, envelope: envelope(output.join("")) }
   }
 
@@ -485,6 +543,7 @@ describe("catalog check --registry", () => {
 
     // A range pin is checked by its newest match, against the add-ons written for that package.
     const v1 = fixtureCatalog()
+
     const ranged = {
       ...v1,
       versions: { ...v1.versions, "drizzle-orm": "~0.45.4", pg: "^8.17.0", vite: "8.0.0" },
@@ -492,6 +551,7 @@ describe("catalog check --registry", () => {
         addon.id === "@fixture/db-sqlite" ? { ...addon, packages: { "drizzle-orm": ">=0.45.4 <0.45.5" } } : addon
       )
     }
+
     const unlisted = Object.fromEntries(Object.entries(published).filter(([name]) => name !== "storybook"))
     const failed = await check(["--registry"], registry({ ...unlisted, vite: { "8.0.0": undefined } }), ranged)
     expect(failed.envelope.error?.message).toBe(
@@ -507,6 +567,7 @@ describe("catalog check --registry", () => {
 
   it("takes its flags only where they apply", async () => {
     const npm = registry(published)
+
     for (const argv of [
       ["tower", "--registry"],
       ["--registry", "--min-age", "soon"],
@@ -515,6 +576,7 @@ describe("catalog check --registry", () => {
     ]) {
       expect((await check(argv, npm)).envelope.error?.code).toBe("E_USAGE")
     }
+
     output = []
     await runCli(["catalog", "--registry", "--json"], {
       name: "fixture",

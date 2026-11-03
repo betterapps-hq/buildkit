@@ -38,8 +38,9 @@ export interface Envelope {
   error?: PlanErrorInfo
 }
 
-function nonEmpty<T>(key: string, values: T[] | undefined): Record<string, T[]> {
-  return values && values.length > 0 ? { [key]: values } : {}
+/** True when a plan list has entries, so the envelope includes it. */
+function hasItems<T>(values: T[] | undefined): values is T[] {
+  return values !== undefined && values.length > 0
 }
 
 export function toEnvelope(
@@ -59,62 +60,122 @@ export function toEnvelope(
     request.catalogVersion === undefined || request.catalogVersion === options.catalog?.version
       ? options.catalog
       : options.catalogs?.(request.catalogVersion)
-  return {
-    status: options.status ?? plan.status,
-    ...(plan.fingerprint ? { fingerprint: plan.fingerprint } : {}),
-    catalog: plan.catalog,
-    ...(plan.baseline ? { baseline: plan.baseline } : {}),
-    ...nonEmpty(
-      "decisions",
-      plan.decisions.map((decision) => ({
-        id: decision.id,
-        message: decision.message,
-        choices: decision.choices.map((choice) => {
-          const catalog = catalogFor(choice.request)
-          return { ...choice, argv: [options.product, ...requestArgv(choice.request, catalog ? { catalog } : {})] }
-        })
-      }))
-    ),
-    ...nonEmpty(
-      "conflicts",
-      plan.conflicts.map((conflict) => ({
+
+  // Fields are added in the order the JSON prints them, and only when they have something to say.
+  const envelope: Envelope = { status: options.status ?? plan.status }
+
+  if (plan.fingerprint) {
+    envelope.fingerprint = plan.fingerprint
+  }
+
+  envelope.catalog = plan.catalog
+
+  if (plan.baseline) {
+    envelope.baseline = plan.baseline
+  }
+
+  if (hasItems(plan.decisions)) {
+    envelope.decisions = plan.decisions.map((decision) => ({
+      id: decision.id,
+      message: decision.message,
+      choices: decision.choices.map((choice) => {
+        const catalog = catalogFor(choice.request)
+
+        return { ...choice, argv: [options.product, ...requestArgv(choice.request, catalog ? { catalog } : {})] }
+      })
+    }))
+  }
+
+  if (hasItems(plan.conflicts)) {
+    envelope.conflicts = plan.conflicts.map((conflict) => {
+      const entry: NonNullable<Envelope["conflicts"]>[number] = {
         id: conflict.id,
         path: conflict.path,
         kind: conflict.kind,
         message: conflict.message,
-        resolutions: conflict.resolutions,
-        ...(options.artifacts ? { artifacts: `${options.artifacts}/conflicts/${artifactName(conflict.id)}` } : {})
-      }))
-    ),
-    ...nonEmpty(
-      "operations",
-      plan.operations.map((operation) => ({
+        resolutions: conflict.resolutions
+      }
+
+      if (options.artifacts) {
+        entry.artifacts = `${options.artifacts}/conflicts/${artifactName(conflict.id)}`
+      }
+
+      return entry
+    })
+  }
+
+  if (hasItems(plan.operations)) {
+    envelope.operations = plan.operations.map((operation) => {
+      const entry: NonNullable<Envelope["operations"]>[number] = {
         path: operation.path,
         action: operation.action,
         class: operation.class,
         linesAdded: operation.secret ? 0 : operation.linesAdded,
-        linesRemoved: operation.secret ? 0 : operation.linesRemoved,
-        ...(operation.secret ? { secret: true } : {})
-      }))
-    ),
-    ...nonEmpty("pulled", plan.pulled),
-    ...nonEmpty("required", plan.required),
-    ...nonEmpty("packages", plan.packages),
-    ...nonEmpty("env", plan.env),
-    ...nonEmpty("commands", plan.commands),
-    ...nonEmpty("migrations", plan.migrations),
-    ...nonEmpty("merged", plan.merged),
-    ...(plan.upgrade &&
+        linesRemoved: operation.secret ? 0 : operation.linesRemoved
+      }
+
+      if (operation.secret) {
+        entry.secret = true
+      }
+
+      return entry
+    })
+  }
+
+  if (hasItems(plan.pulled)) {
+    envelope.pulled = plan.pulled
+  }
+
+  if (hasItems(plan.required)) {
+    envelope.required = plan.required
+  }
+
+  if (hasItems(plan.packages)) {
+    envelope.packages = plan.packages
+  }
+
+  if (hasItems(plan.env)) {
+    envelope.env = plan.env
+  }
+
+  if (hasItems(plan.commands)) {
+    envelope.commands = plan.commands
+  }
+
+  if (hasItems(plan.migrations)) {
+    envelope.migrations = plan.migrations
+  }
+
+  if (hasItems(plan.merged)) {
+    envelope.merged = plan.merged
+  }
+
+  if (
+    plan.upgrade &&
     (plan.upgrade.addons.length > 0 ||
       plan.upgrade.packs.length > 0 ||
       plan.upgrade.catalog.from !== plan.upgrade.catalog.to)
-      ? { upgrade: plan.upgrade }
-      : {}),
-    ...nonEmpty("notices", plan.notices),
-    ...nonEmpty("nextSteps", plan.nextSteps),
-    ...(options.artifacts ? { artifacts: options.artifacts } : {}),
-    ...(plan.error ? { error: plan.error } : {})
+  ) {
+    envelope.upgrade = plan.upgrade
   }
+
+  if (hasItems(plan.notices)) {
+    envelope.notices = plan.notices
+  }
+
+  if (hasItems(plan.nextSteps)) {
+    envelope.nextSteps = plan.nextSteps
+  }
+
+  if (options.artifacts) {
+    envelope.artifacts = options.artifacts
+  }
+
+  if (plan.error) {
+    envelope.error = plan.error
+  }
+
+  return envelope
 }
 
 /** A file-system-safe folder name for a conflict's artifacts. */

@@ -9,6 +9,7 @@ gsap.registerPlugin(ScrollTrigger, ScrambleTextPlugin)
 const MOTION = "(prefers-reduced-motion: no-preference)"
 const WIDE_MOTION = "(prefers-reduced-motion: no-preference) and (min-width: 761px)"
 const STAGE_MOTION = "(prefers-reduced-motion: no-preference) and (min-height: 500px)"
+
 /**
  * Where the examples pin as a carousel: wide screens with room for the side-by-side layout in examples.css and for its
  * 660px slides. Narrower screens stack each example's preview and code, too tall to pin, so their tabs switch directly.
@@ -25,6 +26,7 @@ function heroIntro() {
     .from(".battery .charge:not(.is-empty)", { scaleX: 0, stagger: 0.18, duration: 0.5, ease: "power2.out" }, 0.6)
     .from(".hero .workbench", { autoAlpha: 0, duration: 1.2, ease: "power2.out" }, 0.45)
   const command = document.querySelector<HTMLElement>(".hero .command-text")
+
   if (command?.textContent) {
     timeline.to(
       command,
@@ -66,6 +68,7 @@ function domainRows() {
     gsap.utils.toArray<HTMLElement>(".tl-domains .tl-host").forEach((host, index) => {
       const name = host.querySelector<HTMLElement>(".tl-host-name")
       timeline.from(host, { x: -10, autoAlpha: 0, duration: 0.6, ease: "expo.out" }, 0.3 + index * 0.07)
+
       if (name?.textContent) {
         timeline.to(
           name,
@@ -100,23 +103,29 @@ function toolSlides() {
 /** The scaffolder's spine draws down through its steps with the scroll, lighting each node as it passes. */
 function scaffolderSpine() {
   const steps = gsap.utils.toArray<HTMLElement>(".tl-steps .tl-step")
+
   if (steps.length === 0) {
     return
   }
+
   const timeline = gsap.timeline({
     defaults: { ease: "none" },
     scrollTrigger: { trigger: ".tl-steps", start: "top 70%", end: "bottom 60%", scrub: 0.8 }
   })
+
   steps.forEach((step, index) => {
     const above = step.querySelector<HTMLElement>(".tl-spine-above")
     const node = step.querySelector<HTMLElement>(".tl-step-node")
     const below = step.querySelector<HTMLElement>(".tl-spine-below")
+
     if (above && index > 0) {
       timeline.from(above, { scaleY: 0, duration: above.offsetHeight / 100 })
     }
+
     if (node) {
       timeline.from(node, { scale: 0.4, borderColor: "#2a3860", duration: 0.15 })
     }
+
     if (below && index < steps.length - 1) {
       timeline.from(below, { scaleY: 0, duration: below.offsetHeight / 100 })
     }
@@ -130,9 +139,11 @@ function scaffolderSpine() {
 function paletteTyping() {
   const query = document.querySelector<HTMLElement>(".docs-query-text")
   const text = query?.textContent
+
   if (!query || !text) {
     return undefined
   }
+
   const typed = { count: 0 }
   query.textContent = ""
   onArrival(".docs-palette", (timeline) =>
@@ -155,6 +166,7 @@ function paletteTyping() {
         ">0.1"
       )
   )
+
   return () => {
     query.textContent = text
   }
@@ -170,12 +182,14 @@ function ctaCharge() {
 /** Elements marked `data-reveal` rise in once, and children of `data-reveal-stagger` rise in sequence. */
 function reveals() {
   const from = { y: 28, autoAlpha: 0, duration: 1.1, ease: "expo.out" }
+
   for (const element of gsap.utils.toArray<HTMLElement>("[data-reveal]")) {
     gsap.from(element, {
       ...from,
       scrollTrigger: { trigger: element, start: "top 88%", once: true }
     })
   }
+
   for (const group of gsap.utils.toArray<HTMLElement>("[data-reveal-stagger]")) {
     gsap.from(group.children, {
       ...from,
@@ -193,8 +207,10 @@ export function startMotion() {
   // `?static` in development renders the final state, for screenshots in panes that don't draw frames.
   if (import.meta.env.DEV && new URLSearchParams(window.location.search).has("static")) {
     document.documentElement.classList.add("motion-ready")
+
     return () => document.documentElement.classList.remove("motion-ready")
   }
+
   const media = gsap.matchMedia()
   media.add(MOTION, () => {
     heroIntro()
@@ -202,6 +218,7 @@ export function startMotion() {
     domainRows()
     toolSlides()
     ctaCharge()
+
     return paletteTyping()
   })
   media.add(CAROUSEL_MOTION, () => examplesCarousel())
@@ -211,6 +228,7 @@ export function startMotion() {
   })
   media.add(STAGE_MOTION, () => architectureScene())
   document.documentElement.classList.add("motion-ready")
+
   return () => {
     media.revert()
     document.documentElement.classList.remove("motion-ready")

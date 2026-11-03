@@ -1,5 +1,6 @@
 import { describe, expect, expectTypeOf, it, vi } from "vite-plus/test"
 import { createAlertStore } from "./index.js"
+
 describe("alert store", () => {
   it("keeps a new subscription when an old unsubscribe is called twice", () => {
     const store = createAlertStore()
@@ -58,9 +59,11 @@ describe("alert store", () => {
     const store = createAlertStore()
     store.add({ id: "alert-2" })
     expect(store.add({}).id).not.toBe("alert-2")
+
     for (const intent of ["info", "success", "warning", "error"] as const) {
       store[intent]({ title: intent })
     }
+
     expect(
       store
         .getSnapshot()
@@ -71,9 +74,11 @@ describe("alert store", () => {
   })
   it("dismisses once, flushes silently, and tolerates reentrant callbacks", () => {
     const store = createAlertStore()
+
     const onDismiss = vi.fn<() => void>(() => {
       store.add({ title: "Added by callback" })
     })
+
     const handle = store.add({ onDismiss })
     handle.dismiss()
     handle.dismiss()
@@ -88,9 +93,11 @@ describe("alert store", () => {
   })
   it("finishes notification and dismissal callbacks even if one throws", () => {
     const store = createAlertStore()
+
     const first = vi.fn<() => void>(() => {
       throw new Error("handler failed")
     })
+
     const second = vi.fn<() => void>()
     store.add({ onDismiss: first })
     store.add({ onDismiss: second })

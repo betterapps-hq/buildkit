@@ -1,8 +1,10 @@
 import { describe, expect, it, vi } from "vite-plus/test"
 import { createRoutePanel, createRouteTabs, type RouteTarget } from "./index.js"
+
 function target(isActive = false): RouteTarget {
   return { href: "/", isActive: () => isActive, navigate: vi.fn<() => void>() }
 }
+
 describe("route state", () => {
   it("selects the first match, uses a display fallback, and never navigates while reading", () => {
     const route = target(true)
@@ -20,19 +22,23 @@ describe("route state", () => {
   })
   it("navigates only inactive tabs and returns navigation errors", async () => {
     const route = target()
+
     const tabs = createRouteTabs({
       tabs: [
         { id: "one", route },
         { id: "two", route: target(true) }
       ]
     })
+
     tabs.select("one")
     tabs.select("two")
     expect(route.navigate).toHaveBeenCalledOnce()
     const error = new Error("blocked")
+
     const broken = createRouteTabs({
       tabs: [{ id: "one", route: { ...route, navigate: () => Promise.reject(error) } }]
     })
+
     await expect(broken.select("one")).rejects.toThrow("blocked")
     // @ts-expect-error Only configured IDs are valid.
     expect(() => tabs.select("missing")).toThrow("Unknown")
