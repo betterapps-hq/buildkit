@@ -84,7 +84,7 @@ writeJson(resolve(tool, "upstream/snapshot.json"), {
 })
 
 if (!requestedRevision) {
-  pnpm(["--filter", "@repo/shadcn-generator", "update", "shadcn", "--latest", "--save-exact"], root)
+  pnpm(["--filter", "@buildkitgg/shadcn-generator", "update", "shadcn", "--latest", "--save-exact"], root)
   pnpm(
     [
       "--filter",

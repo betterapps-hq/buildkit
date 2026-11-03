@@ -31,7 +31,7 @@
   "devDependencies": {
     "happy-dom": "^21.0.4",
     "@types/node": "^24.19.2",
-    "@repo/typescript-config": "workspace:*",
+    "@buildkitgg/typescript-config": "workspace:*",
     "vitest": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "typescript": "catalog:",

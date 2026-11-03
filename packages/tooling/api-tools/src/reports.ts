@@ -116,6 +116,11 @@ for (const manifest of globSync("packages/*/*/package.json", { cwd: root }).sort
   }
 
   if (!isRecord(pkg.exports)) {
+    // Private repo tooling, such as this package, has no API to report.
+    if (pkg.private === true) {
+      continue
+    }
+
     throw new Error(`${pkg.name} needs explicit exports for API discovery`)
   }
 

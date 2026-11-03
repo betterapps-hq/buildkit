@@ -43,7 +43,7 @@
     "oxlint": "^1.89.0"
   },
   "devDependencies": {
-    "@repo/typescript-config": "workspace:*",
+    "@buildkitgg/typescript-config": "workspace:*",
     "@types/node": "24.19.2",
     "@vitest/coverage-v8": "catalog:",
     "oxlint": "1.89.0",

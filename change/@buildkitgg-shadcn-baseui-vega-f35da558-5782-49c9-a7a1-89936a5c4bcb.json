@@ -1,0 +1,7 @@
+{
+  "type": "none",
+  "comment": "chore: depend on @buildkitgg/typescript-config",
+  "packageName": "@buildkitgg/shadcn-baseui-vega",
+  "email": "ajcraswell@gmail.com",
+  "dependentChangeType": "none"
+}

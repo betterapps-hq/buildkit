@@ -42,7 +42,7 @@
   },
   "devDependencies": {
     "@microsoft/api-extractor": "^7.59.4",
-    "@repo/typescript-config": "workspace:*",
+    "@buildkitgg/typescript-config": "workspace:*",
     "@types/node": "24.19.2",
     "@vitest/coverage-v8": "catalog:",
     "typescript": "catalog:",
