@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   build:
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v7
@@ -45,7 +45,7 @@ jobs:
   deploy:
     if: github.ref == 'refs/heads/main'
     needs: build
-    runs-on: blacksmith-2vcpu-ubuntu-2404
+    runs-on: ubuntu-latest
     permissions:
       pages: write
       id-token: write
