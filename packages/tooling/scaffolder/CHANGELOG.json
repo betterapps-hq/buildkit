@@ -2,6 +2,27 @@
   "name": "@buildkitgg/scaffolder",
   "entries": [
     {
+      "date": "Tue, 03 Nov 2026 02:41:57 GMT",
+      "version": "0.8.0",
+      "tag": "@buildkitgg/scaffolder_v0.8.0",
+      "comments": {
+        "minor": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/scaffolder",
+            "commit": "c5dd86e9997aee5c8aa7e63f1e3a561851239df0",
+            "comment": "Read slot:<id> in an old config or lock as question:<id>, and write the new form on the next apply. An upgrade lists each question the template gains as a new-question notice instead of asking it."
+          },
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/scaffolder",
+            "commit": "3d3d38f7f948ee7c0f3085e3d4bcc39449540e6c",
+            "comment": "checkCatalog checks gallery images: an https URL, or a path inside the package that the new files option confirms. catalog check confirms a template package's images are in its folder."
+          }
+        ]
+      }
+    },
+    {
       "date": "Tue, 03 Nov 2026 01:39:16 GMT",
       "version": "0.7.0",
       "tag": "@buildkitgg/scaffolder_v0.7.0",

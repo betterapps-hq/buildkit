@@ -2,6 +2,21 @@
   "name": "@buildkitgg/catalog",
   "entries": [
     {
+      "date": "Tue, 03 Nov 2026 02:41:57 GMT",
+      "version": "0.3.1",
+      "tag": "@buildkitgg/catalog_v0.3.1",
+      "comments": {
+        "patch": [
+          {
+            "author": "beachball",
+            "package": "@buildkitgg/catalog",
+            "comment": "Bump @buildkitgg/scaffolder to v0.8.0",
+            "commit": "not available"
+          }
+        ]
+      }
+    },
+    {
       "date": "Tue, 03 Nov 2026 01:39:16 GMT",
       "version": "0.3.0",
       "tag": "@buildkitgg/catalog_v0.3.0",
