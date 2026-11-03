@@ -11,6 +11,13 @@ export default defineConfig({
     sortImports: { enabled: true, newlinesBetween: false, sortSpecifiers: true },
     sortPackageJson: false,
     ignorePatterns: [
+      // Generated from Playbook or installed by the skills CLI.
+      "best-practices/**",
+      ".agents/skills/**",
+      ".claude/skills/**",
+      "AGENTS.md",
+      "CLAUDE.md",
+      ".github/copilot-instructions.md",
       "**/dist/**",
       "**/coverage/**",
       "**/node_modules/**",
@@ -31,6 +38,8 @@ export default defineConfig({
   lint: {
     extends: [base],
     ignorePatterns: [
+      ".agents/skills/**",
+      ".claude/skills/**",
       "packages/tooling/catalog/templates/**",
       "**/src/vendor/**",
       // Written by pnpm --filter @buildkitgg/typescript-utils generate

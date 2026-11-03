@@ -30,3 +30,6 @@ peerDependencyRules:
     vitest: "*"
 patchedDependencies:
   beachball: patches/beachball.patch
+minimumReleaseAgeExclude:
+  - rulesync@43.5.0
+  - skills@1.7.6
