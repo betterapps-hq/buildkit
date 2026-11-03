@@ -1,8 +1,17 @@
 # Change Log - @buildkitgg/catalog
 
-<!-- This log was last generated on Tue, 03 Nov 2026 02:41:57 GMT and should not be manually modified. -->
+<!-- This log was last generated on Tue, 03 Nov 2026 03:52:39 GMT and should not be manually modified. -->
 
 <!-- Start content -->
+
+## 0.4.0
+
+Tue, 03 Nov 2026 03:52:39 GMT
+
+### Minor changes
+
+- Remove the better-apps-deploy, sql and better-auth add-ons and the saas preset, so the catalog uses no Better Apps
+  packages (ajcraswell@gmail.com)
 
 ## 0.3.1
 

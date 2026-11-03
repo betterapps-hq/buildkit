@@ -2,6 +2,21 @@
   "name": "@buildkitgg/catalog",
   "entries": [
     {
+      "date": "Tue, 03 Nov 2026 03:52:39 GMT",
+      "version": "0.4.0",
+      "tag": "@buildkitgg/catalog_v0.4.0",
+      "comments": {
+        "minor": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/catalog",
+            "commit": "b890c2db268acef023ddf0e0f08c7e79713f660c",
+            "comment": "Remove the better-apps-deploy, sql and better-auth add-ons and the saas preset, so the catalog uses no Better Apps packages"
+          }
+        ]
+      }
+    },
+    {
       "date": "Tue, 03 Nov 2026 02:41:57 GMT",
       "version": "0.3.1",
       "tag": "@buildkitgg/catalog_v0.3.1",
