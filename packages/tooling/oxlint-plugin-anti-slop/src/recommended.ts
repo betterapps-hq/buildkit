@@ -24,3 +24,6 @@ const antiSlop: OxlintConfig = {
 }
 
 export default antiSlop
+
+// What `require` returns, so a config compiled to CommonJS gets the rule set rather than this module's namespace.
+export { antiSlop as "module.exports" }

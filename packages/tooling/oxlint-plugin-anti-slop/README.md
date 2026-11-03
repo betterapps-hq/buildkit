@@ -1,8 +1,11 @@
 # @buildkitgg/oxlint-plugin-anti-slop
 
-An [Oxlint](https://oxc.rs/docs/guide/usage/linter) plugin that rejects patterns that make TypeScript harder to trust,
-such as unchecked type assertions, `unknown` passed around instead of decoded, and conditional empty spreads. It works
-on its own, without Buildkit's other lint rules.
+[anti-slop](https://github.com/dmmulroy/anti-slop) by Dillon Mulroy, published to npm. Upstream is meant to be copied
+into each project and has no npm package, so this package is that copy at a pinned commit, without its Effect rules.
+
+anti-slop is an [Oxlint](https://oxc.rs/docs/guide/usage/linter) plugin that rejects patterns that make TypeScript
+harder to trust, such as unchecked type assertions, `unknown` passed around instead of decoded, and conditional empty
+spreads. It works on its own, without Buildkit's other lint rules.
 
 ```sh
 pnpm add -D @buildkitgg/oxlint-plugin-anti-slop
@@ -92,7 +95,7 @@ Register the plugin by package name under `jsPlugins` and turn on only the rules
 
 `oxc/no-accumulating-spread` is a built-in Oxlint rule that the recommended rule set turns on alongside the plugin's.
 
-The rules come from [anti-slop](https://github.com/dmmulroy/anti-slop) by Dillon Mulroy (MIT), vendored at a pinned
-commit. Its Effect rules aren't included. See [vendored anti-slop](docs/vendoring.md) for how it is updated.
+Upstream is MIT licensed, and its license ships with this package. See [vendored anti-slop](docs/vendoring.md) for how
+the copy is updated.
 
 Oxlint JS plugins are in alpha and outside semver, so a new Oxlint release may need a matching release of this package.
