@@ -8,7 +8,7 @@ const FEATURES = [
   {
     icon: ListChecks,
     title: "Questions, in order",
-    desc: "A template lists what every project gets, then asks its questions in order. Pick one or many, from your add-ons or any npm package. A choice that won't work says why."
+    desc: "A template lists what every project gets, then asks its questions in order. Pick one or many, from your catalog's add-ons or the packages it pins. A choice that won't work says why."
   },
   {
     icon: Package,
@@ -29,7 +29,10 @@ type TemplateLine = {
   note?: string
 }
 
-/** A template for a CLI built on the engine. It uses the catalog's questions by id, and defines one of its own. */
+/**
+ * A template in Acme's catalog, for the CLI Acme builds on the engine. It uses the catalog's questions by id, and
+ * defines one of its own. The catalog defines the `web` target, the questions and add-ons, and pins the packages.
+ */
 const TEMPLATE: TemplateLine[] = [
   { code: 'import { defineTemplate } from "@buildkitgg/scaffolder"', wideOnly: true },
   { code: "", wideOnly: true },
@@ -46,14 +49,14 @@ const TEMPLATE: TemplateLine[] = [
   { code: "  questions: [" },
   { code: '    "localization",', tone: "one", note: "one of lingui, react-intl" },
   { code: '    "database",', tone: "one", note: "one of drizzle, prisma, convex" },
-  { code: '    { use: "auth", default: "better-auth" },', tone: "one", note: "one of better-auth, clerk" },
+  { code: '    { use: "auth", default: "@acme/better-auth" },', tone: "one", note: "one of better-auth, clerk" },
   { code: "    {" },
   { code: '      id: "telemetry",' },
   { code: '      title: "Telemetry",' },
   { code: '      question: "Add telemetry?",', tone: "many", note: "asked first" },
   { code: '      choose: "Which ones?",' },
   { code: '      pick: "many",', tone: "many", note: 'checkboxes, "one" for radios' },
-  { code: '      choices: ["sentry", "npm:posthog-js"],', tone: "many", note: "add-ons or any npm package" },
+  { code: '      choices: ["@acme/sentry", "npm:posthog-js"],', tone: "many", note: "add-ons or pinned packages" },
   { code: "    }," },
   { code: "  ]," },
   { code: "})" }
@@ -95,17 +98,15 @@ function TemplateCode() {
 const ANSWERS = [
   { question: "Add localization?", answer: "No" },
   { question: "Add a database?", answer: "Yes" },
-  { question: "Which one?", answer: "Convex" },
+  { question: "Which database?", answer: "Convex" },
   { question: "Add sign-in?", answer: "Yes" }
 ]
 
 /** The question's choices, mid-answer. Better Auth needs an ORM, so with Convex it can't be picked, and says why. */
 const CHOICES = [
-  { label: "Better Auth", hint: "Needs Drizzle or Prisma", disabled: true },
-  { label: "Clerk", hint: "Hosted sign-in", selected: true }
+  { label: "Better Auth", reason: "needs Drizzle or Prisma" },
+  { label: "Clerk", selected: true }
 ]
-
-const CHOICE_COLUMN = Math.max(...CHOICES.map((choice) => choice.label.length)) + 2
 
 function Bar({ children }: { children?: ReactNode }) {
   return (
@@ -151,7 +152,7 @@ function InstallTerminal() {
         <Bar />
         <span className="tl-term-line">
           <span className="tl-glyph tl-t-mark">◆</span>
-          {"  "}Which provider?
+          {"  "}Which sign-in provider?
         </span>
         {CHOICES.map((choice) => (
           <Bar key={choice.label}>
@@ -159,8 +160,8 @@ function InstallTerminal() {
             <span className={`tl-glyph ${choice.selected ? "tl-t-ok" : "tl-t-dim"}`}>
               {choice.selected ? "●" : "○"}
             </span>{" "}
-            <span className={choice.selected ? undefined : "tl-t-dim"}>{choice.label.padEnd(CHOICE_COLUMN)}</span>
-            <span className={choice.disabled ? "tl-t-warn" : "tl-t-dim"}>{choice.hint}</span>
+            <span className={choice.selected ? undefined : "tl-t-dim"}>{choice.label}</span>
+            {choice.reason && <span className="tl-t-dim"> ({choice.reason})</span>}
           </Bar>
         ))}
         <span className="tl-term-line tl-t-bar">└</span>
@@ -209,7 +210,7 @@ const STEPS = [
   {
     key: "author",
     icon: PenLine,
-    title: "You write the template",
+    title: "You write the template in your catalog",
     window: (
       <div className="tl-window tl-template">
         <WindowBar icon={FileCode} title="templates/app.ts" />
