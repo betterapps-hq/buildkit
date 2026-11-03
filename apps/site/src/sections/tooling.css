@@ -776,10 +776,6 @@
   color: var(--mint);
 }
 
-.tl-t-warn {
-  color: var(--amber);
-}
-
 .tl-t-strong {
   font-weight: 600;
 }
