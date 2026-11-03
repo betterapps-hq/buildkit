@@ -7,7 +7,8 @@ on:
 permissions:
   contents: read
 # pnpm validate runs as four jobs side by side, each on a Blacksmith runner, and each keeps Vite+'s task cache between
-# runs under a key of its own, so vp run replays the builds, tests and docs whose inputs haven't changed.
+# runs under a key of its own, so vp run replays the builds, tests and docs whose inputs haven't changed. Each also
+# needs a concurrency key of its own, or the four calls share a group and cancel each other.
 jobs:
   check:
     uses: betterapps-hq/pipelines/.github/workflows/ci-verify.yml@main
@@ -15,6 +16,7 @@ jobs:
       os: '["blacksmith-4vcpu-ubuntu-2404"]'
       vite-task-cache: true
       vite-task-cache-key: check
+      concurrency-key: check
       # The release notes check diffs a pull request against its base branch, so it needs the whole history.
       fetch-depth: 0
       command: |
@@ -28,6 +30,7 @@ jobs:
       os: '["blacksmith-4vcpu-ubuntu-2404"]'
       vite-task-cache: true
       vite-task-cache-key: test
+      concurrency-key: test
       command: pnpm test:coverage
   # The docs read the API models check:api writes, so the API check and the build share a job.
   build:
@@ -36,6 +39,7 @@ jobs:
       os: '["blacksmith-4vcpu-ubuntu-2404"]'
       vite-task-cache: true
       vite-task-cache-key: build
+      concurrency-key: build
       command: pnpm check:api && pnpm build
   shadcn:
     uses: betterapps-hq/pipelines/.github/workflows/ci-verify.yml@main
@@ -43,6 +47,7 @@ jobs:
       os: '["blacksmith-4vcpu-ubuntu-2404"]'
       vite-task-cache: true
       vite-task-cache-key: shadcn
+      concurrency-key: shadcn
       command: pnpm build:packages && pnpm --filter @repo/shadcn-generator validate
   # main's ruleset requires a check named verify, and a reusable workflow's checks are named after the calling job, such
   # as "check / Verify (blacksmith-4vcpu-ubuntu-2404)". This job reports the four jobs' results as verify.
