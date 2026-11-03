@@ -1,5 +1,5 @@
 import { defineConfig } from "vite-plus"
-import base from "./packages/tooling/oxlint-config/base.ts"
+import base from "./packages/tooling/oxlint-config/src/base.ts"
 
 // Lint and format run once from the workspace root; packages keep their own Vitest configs.
 export default defineConfig({
@@ -18,15 +18,30 @@ export default defineConfig({
       "api-reports/*.api.md",
       "**/.generated/**",
       "**/routeTree.gen.ts",
+      // Written by pnpm --filter @buildkitgg/typescript-utils generate
+      "packages/core/typescript-utils/src/index.ts",
+      "packages/core/typescript-utils/reexports.json",
+      "packages/core/typescript-utils/AGENTS.md",
       // The site shows these files as written, wrapped to fit its code editor
-      "apps/site/src/examples/**"
+      "apps/site/src/examples/**",
+      // Upstream copies, written by a sync script
+      "**/src/vendor/**"
     ]
   },
   lint: {
     extends: [base],
-    ignorePatterns: ["packages/tooling/catalog/templates/**"],
+    ignorePatterns: [
+      "packages/tooling/catalog/templates/**",
+      "**/src/vendor/**",
+      // Written by pnpm --filter @buildkitgg/typescript-utils generate
+      "packages/core/typescript-utils/src/index.ts",
+      // Code the anti-slop tests expect to be reported
+      "packages/tooling/oxlint-plugin-anti-slop/test/fixture/slop.ts",
+      "packages/tooling/oxlint-config/test/fixture/commonjs/slop.ts"
+    ],
     options: { typeAware: true, typeCheck: true },
-    jsPlugins: [{ name: "vite-plus", specifier: "vite-plus/oxlint-plugin" }],
+    // Listing plugins here replaces the ones base registers, so keep them.
+    jsPlugins: [...(base.jsPlugins ?? []), { name: "vite-plus", specifier: "vite-plus/oxlint-plugin" }],
     rules: {
       "vite-plus/prefer-vite-plus-imports": "error",
       // Type-aware rules the code doesn't pass yet; turning one on means fixing its errors first.

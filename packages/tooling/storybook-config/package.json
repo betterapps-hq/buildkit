@@ -1,20 +1,50 @@
 {
-  "name": "@repo/storybook-config",
+  "name": "@buildkitgg/storybook-config",
   "version": "0.0.0",
-  "private": true,
+  "description": "Shared Storybook main and preview configuration, and story example frames.",
   "license": "MIT",
   "type": "module",
+  "sideEffects": [
+    "**/*.css"
+  ],
   "exports": {
-    "./main": "./main.ts",
-    "./preview": "./preview.ts",
-    "./examples": "./ExampleFrame.tsx"
+    "./main": {
+      "types": "./dist/main.d.ts",
+      "import": "./dist/main.js"
+    },
+    "./preview": {
+      "types": "./dist/preview.d.ts",
+      "import": "./dist/preview.js"
+    },
+    "./examples": {
+      "types": "./dist/ExampleFrame.d.ts",
+      "import": "./dist/ExampleFrame.js"
+    }
+  },
+  "files": [
+    "dist/**/*.js",
+    "dist/**/*.d.ts",
+    "dist/**/*.css",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && node -e \"require('node:fs').copyFileSync('src/examples.css', 'dist/examples.css')\"",
+    "test": "vp test run",
+    "test:coverage": "vp test run --coverage",
+    "prepack": "pnpm build"
   },
   "dependencies": {
     "@chromatic-com/storybook": "^5.6.0",
     "@storybook/addon-a11y": "10.6.5",
     "@storybook/addon-vitest": "10.6.5",
+    "@storybook/react": "10.6.5",
     "@storybook/react-vite": "10.6.5",
     "storybook": "10.6.5"
+  },
+  "peerDependencies": {
+    "react": "^19.2.0"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
@@ -24,11 +54,17 @@
     "@types/react": "^19.3.0",
     "vite-plus": "catalog:"
   },
-  "scripts": {
-    "test": "vp test run",
-    "test:coverage": "vp test run --coverage"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AndrewCraswell/buildkit.git",
+    "directory": "packages/tooling/storybook-config"
   },
-  "peerDependencies": {
-    "react": "^19.2.0"
+  "homepage": "https://github.com/AndrewCraswell/buildkit/tree/main/packages/tooling/storybook-config#readme",
+  "bugs": {
+    "url": "https://github.com/AndrewCraswell/buildkit/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }

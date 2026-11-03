@@ -3,6 +3,7 @@ import path from "node:path"
 import { z } from "zod"
 
 export const workspaceList = z.array(z.string())
+
 const manifestSchema = z.object({
   name: z.string().optional(),
   workspaces: z.union([workspaceList, z.object({ packages: workspaceList })]).optional(),
@@ -18,6 +19,7 @@ export async function readManifest(directory: string) {
     if (error instanceof Error && "code" in error && error.code === "ENOENT") {
       return manifestSchema.parse({})
     }
+
     throw new Error(`Cannot read package.json in ${directory}`, { cause: error })
   }
 }

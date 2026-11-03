@@ -53,14 +53,19 @@ export function render(catalog: CatalogManifest, resolved: ResolvedSelection, se
     nextSteps: [],
     entries: []
   }
+
   const versions = writtenVersions(catalog)
+
   const version = (name: string) => {
     const pinned = versions[name]
+
     if (pinned === undefined) {
       throw new PlanError("E_CONTRIBUTION", `Catalog ${catalog.id} doesn't pin a version of ${name}.`)
     }
+
     return pinned
   }
+
   const ignoreFile = stateIgnoreFile(settings)
   collect(result, engineContributor, [
     { kind: "file", path: ignoreFile.path, content: ignoreFile.content, ownership: "owned" }
@@ -68,16 +73,21 @@ export function render(catalog: CatalogManifest, resolved: ResolvedSelection, se
   const targetContext: TargetContext = { target: resolved.info, project: { name: resolved.name }, versions, version }
   const entries: PointEntry[] = []
   collect(result, resolved.target.id, resolved.target.base(targetContext), entries)
+
   const points: OwnedPoint[] = (resolved.target.points ?? []).map((definition) => ({
     definition,
     owner: resolved.target.id
   }))
-  const provided = (name: string): unknown =>
+
+  const provided: ContributeContext<unknown>["provided"] = (name) =>
     resolved.addons.find((addon) => addon.manifest.provides && Object.hasOwn(addon.manifest.provides, name))?.manifest
       .provides?.[name]
+
   const selected = (id: string) => resolved.addons.some((addon) => addon.manifest.id === id)
+
   for (const addon of resolved.addons) {
     const manifest = addon.manifest
+
     const context: ContributeContext<unknown> = {
       options: addon.options,
       target: resolved.info,
@@ -88,31 +98,42 @@ export function render(catalog: CatalogManifest, resolved: ResolvedSelection, se
       version,
       runtimeModule(map) {
         const module = map[resolved.target.family]
+
         if (module === undefined) {
           throw new PlanError("E_CONTRIBUTION", `${manifest.title} has no integration for ${resolved.target.family}.`)
         }
+
         return module
       },
       ignored(option, reason) {
         result.notices.push({ code: "option-ignored", text: `${manifest.title}: ${option} doesn't apply. ${reason}` })
       }
     }
+
     collect(result, manifest.id, manifest.contribute(context), entries)
+
     for (const definition of manifest.points ?? []) {
       points.push({ definition, owner: manifest.id })
     }
+
     result.nextSteps.push(...(manifest.nextSteps?.(context) ?? []))
   }
+
   result.entries = entries
+
   for (const { definition, owner } of points) {
     checkPath(owner, definition.file)
   }
+
   const rendered = renderPoints({ points, entries, product: settings.product })
+
   for (const [path, file] of rendered.files) {
     claimFile(result, path, { content: file.content, ownership: "owned", contributors: file.contributors })
   }
+
   result.notices.push(...rendered.notices)
   const kinds = new Map<string, string>()
+
   for (const [kind, paths] of [
     ["file", result.files.keys()],
     ["document", result.documents.keys()],
@@ -121,20 +142,25 @@ export function render(catalog: CatalogManifest, resolved: ResolvedSelection, se
   ] as const) {
     for (const path of paths) {
       const other = kinds.get(path)
+
       if (other) {
         throw new PlanError("E_CONTRIBUTION", `${path} is contributed both as a ${other} and as a ${kind}.`, {
           paths: [path]
         })
       }
+
       kinds.set(path, kind)
     }
   }
+
   const collision = caseCollision(kinds.keys())
+
   if (collision) {
     throw new PlanError("E_UNSAFE_PATH", `${collision[0]} and ${collision[1]} differ only in case.`, {
       paths: collision
     })
   }
+
   return result
 }
 
@@ -156,24 +182,34 @@ function collect(result: Rendered, contributor: string, contributions: Contribut
         break
       case "env": {
         const existing = result.envVars.find((variable) => variable.name === contribution.name)
+
         const variable: EnvVar = {
           name: contribution.name,
           scope: contribution.scope,
           secret: contribution.secret,
           required: contribution.required,
-          description: contribution.description,
-          ...(contribution.example === undefined ? {} : { example: contribution.example }),
-          ...(contribution.help === undefined ? {} : { help: contribution.help })
+          description: contribution.description
         }
+
+        if (contribution.example !== undefined) {
+          variable.example = contribution.example
+        }
+
+        if (contribution.help !== undefined) {
+          variable.help = contribution.help
+        }
+
         if (existing && !jsonEqual(existing, variable)) {
           throw new PlanError(
             "E_CONTRIBUTION",
             `Two contributions describe ${contribution.name} differently, including ${contributor}.`
           )
         }
+
         if (!existing) {
           result.envVars.push(variable)
         }
+
         const desired = result.env.get(envExampleFile) ?? new Map<string, DesiredEnv>()
         const current = desired.get(contribution.name)
         desired.set(contribution.name, {
@@ -184,6 +220,7 @@ function collect(result: Rendered, contributor: string, contributions: Contribut
         result.env.set(envExampleFile, desired)
         break
       }
+
       case "file":
         checkPath(contributor, contribution.path)
         claimFile(result, contribution.path, {
@@ -196,25 +233,21 @@ function collect(result: Rendered, contributor: string, contributions: Contribut
         if (!entries) {
           throw new PlanError("E_CONTRIBUTION", `${contributor} can't contribute entries.`)
         }
-        entries.push({
-          point: contribution.point,
-          id: contribution.id,
-          value: contribution.value,
-          contributor,
-          ...(contribution.order ? { order: contribution.order } : {}),
-          ...(contribution.when ? { when: contribution.when } : {})
-        })
+
+        entries.push(pointEntry(contributor, contribution))
         break
       case "json":
       case "yaml": {
         checkPath(contributor, contribution.path)
         const segments = parsePointer(contribution.pointer)
+
         if (!isJsonValue(contribution.value)) {
           throw new PlanError(
             "E_CONTRIBUTION",
             `${contributor} sets ${contribution.pointer} in ${contribution.path} to a value that isn't JSON.`
           )
         }
+
         if (contribution.op === "set") {
           setKey(result, contributor, contribution.path, contribution.kind, segments, contribution.value)
         } else if (contribution.op === "merge") {
@@ -223,6 +256,7 @@ function collect(result: Rendered, contributor: string, contributions: Contribut
           }
         } else {
           const items = Array.isArray(contribution.value) ? contribution.value : [contribution.value]
+
           for (const item of items) {
             appendItem(
               result,
@@ -236,38 +270,51 @@ function collect(result: Rendered, contributor: string, contributions: Contribut
             )
           }
         }
+
         break
       }
+
       case "lines": {
         checkPath(contributor, contribution.path)
         const desired = result.lines.get(contribution.path) ?? new Map<string, Desired>()
+
         for (const line of contribution.lines) {
           const key = line.trim()
+
           if (key === "") {
             continue
           }
+
           const current = desired.get(key)
           desired.set(key, { value: key, contributors: [...(current?.contributors ?? []), contributor] })
         }
+
         result.lines.set(contribution.path, desired)
         break
       }
+
       case "command": {
         const same = result.commands.find(
           (command) => command.run === contribution.run && command.when === contribution.when
         )
-        if (!same) {
-          result.commands.push({
-            run: contribution.run,
-            when: contribution.when,
-            why: contribution.why,
-            ...(contribution.setup ? { setup: true as const } : {})
-          })
-        } else if (contribution.setup) {
-          same.setup = true
+
+        if (same) {
+          if (contribution.setup) {
+            same.setup = true
+          }
+        } else {
+          const hint: CommandHint = { run: contribution.run, when: contribution.when, why: contribution.why }
+
+          if (contribution.setup) {
+            hint.setup = true
+          }
+
+          result.commands.push(hint)
         }
+
         break
       }
+
       case "notice":
         result.notices.push({ code: contribution.code, text: contribution.text })
         break
@@ -277,6 +324,7 @@ function collect(result: Rendered, contributor: string, contributions: Contribut
 
 function checkPath(contributor: string, path: string) {
   const problem = pathProblem(path)
+
   if (problem) {
     throw new PlanError("E_UNSAFE_PATH", `${contributor} contributes ${JSON.stringify(path)}: ${problem}`, {
       paths: [path]
@@ -286,6 +334,7 @@ function checkPath(contributor: string, path: string) {
 
 function claimFile(result: Rendered, path: string, file: RenderedFile) {
   const existing = result.files.get(path)
+
   if (existing) {
     throw new PlanError(
       "E_CONTRIBUTION",
@@ -295,19 +344,24 @@ function claimFile(result: Rendered, path: string, file: RenderedFile) {
       }
     )
   }
+
   result.files.set(path, file)
 }
 
 function documentFor(result: Rendered, path: string, format: "json" | "yaml"): DesiredDocument {
   const existing = result.documents.get(path)
+
   if (existing) {
     if (existing.format !== format) {
       throw new PlanError("E_CONTRIBUTION", `${path} is edited both as JSON and as YAML.`, { paths: [path] })
     }
+
     return existing.desired
   }
+
   const desired: DesiredDocument = { keys: new Map(), items: new Map() }
   result.documents.set(path, { format, desired })
+
   return desired
 }
 
@@ -323,6 +377,21 @@ function checkSegments(contributor: string, path: string, segments: string[]) {
   }
 }
 
+/** A point entry as a contributor wrote it, with the order and condition only when it gave them. */
+function pointEntry(contributor: string, contribution: Extract<Contribution, { kind: "entry" }>): PointEntry {
+  const entry: PointEntry = { point: contribution.point, id: contribution.id, value: contribution.value, contributor }
+
+  if (contribution.order) {
+    entry.order = contribution.order
+  }
+
+  if (contribution.when) {
+    entry.when = contribution.when
+  }
+
+  return entry
+}
+
 function overlaps(left: string, right: string): boolean {
   return left === right || left.startsWith(`${right}/`) || right.startsWith(`${left}/`)
 }
@@ -333,12 +402,13 @@ function setKey(
   path: string,
   format: "json" | "yaml",
   segments: string[],
-  value: unknown
+  value: Desired["value"]
 ) {
   checkSegments(contributor, path, segments)
   const desired = documentFor(result, path, format)
   const pointer = formatPointer(segments)
   const existing = desired.keys.get(pointer)
+
   if (existing) {
     if (!jsonEqual(existing.value, value)) {
       throw new PlanError(
@@ -347,9 +417,12 @@ function setKey(
         { paths: [path] }
       )
     }
+
     existing.contributors.push(contributor)
+
     return
   }
+
   for (const other of [...desired.keys.keys(), ...desired.items.keys()]) {
     if (overlaps(other, pointer)) {
       throw new PlanError("E_CONTRIBUTION", `${contributor} sets ${pointer} in ${path}, which overlaps ${other}.`, {
@@ -357,6 +430,7 @@ function setKey(
       })
     }
   }
+
   desired.keys.set(pointer, { value, contributors: [contributor] })
 }
 
@@ -366,13 +440,14 @@ function appendItem(
   path: string,
   format: "json" | "yaml",
   segments: string[],
-  item: unknown,
+  item: DesiredItem["value"],
   keyField: string | undefined,
   order: ItemOrder | undefined
 ) {
   checkSegments(contributor, path, segments)
   const desired = documentFor(result, path, format)
   const pointer = formatPointer(segments)
+
   if (order && keyField === undefined) {
     throw new PlanError(
       "E_CONTRIBUTION",
@@ -380,6 +455,7 @@ function appendItem(
       { paths: [path] }
     )
   }
+
   for (const other of desired.keys.keys()) {
     if (overlaps(other, pointer)) {
       throw new PlanError(
@@ -389,6 +465,7 @@ function appendItem(
       )
     }
   }
+
   if (keyField !== undefined && !(isRecord(item) && Object.hasOwn(item, keyField))) {
     throw new PlanError(
       "E_CONTRIBUTION",
@@ -398,9 +475,11 @@ function appendItem(
       }
     )
   }
+
   const items = desired.items.get(pointer) ?? new Map<string, DesiredItem>()
   const identity = itemIdentity(item, keyField)
   const existing = items.get(identity)
+
   if (existing) {
     if (!jsonEqual(existing.value, item)) {
       throw new PlanError(
@@ -409,7 +488,9 @@ function appendItem(
         { paths: [path] }
       )
     }
+
     existing.contributors.push(contributor)
+
     if (order) {
       existing.order = {
         after: [...new Set([...(existing.order?.after ?? []), ...(order.after ?? [])])],
@@ -417,24 +498,33 @@ function appendItem(
       }
     }
   } else {
-    items.set(identity, {
-      value: item,
-      contributors: [contributor],
-      ...(keyField === undefined ? {} : { keyField }),
-      ...(order ? { order } : {})
-    })
+    const added: DesiredItem = { value: item, contributors: [contributor] }
+
+    if (keyField !== undefined) {
+      added.keyField = keyField
+    }
+
+    if (order) {
+      added.order = order
+    }
+
+    items.set(identity, added)
   }
+
   desired.items.set(pointer, items)
 }
 
 /** Leaves of a merged object. Arrays and scalars are leaves, set as a whole. */
-function flatten(prefix: string[], value: unknown): [string[], unknown][] {
+function flatten(prefix: string[], value: Desired["value"]): [string[], Desired["value"]][] {
   if (!isRecord(value)) {
     return [[prefix, value]]
   }
+
   const entries = Object.entries(value)
+
   if (entries.length === 0) {
     return [[prefix, value]]
   }
+
   return entries.flatMap(([key, nested]) => flatten([...prefix, key], nested))
 }

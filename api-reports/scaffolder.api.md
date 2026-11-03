@@ -64,10 +64,7 @@ export interface AvailableChoice extends ChoiceDescription {
 }
 
 // @public
-export function availableChoices(catalog: CatalogManifest, answers: Answers, question: string): {
-    asked: boolean;
-    choices: AvailableChoice[];
-};
+export function availableChoices(catalog: CatalogManifest, answers: Answers, question: string): QuestionAvailability;
 
 // @public (undocumented)
 export type Band = "pre" | "framework" | "post";
@@ -1080,12 +1077,20 @@ export interface PulledAddon {
     joins?: true;
 }
 
-// Warning: (ae-forgotten-export) The symbol "QuestionShape" needs to be exported by the entry point core.d.ts
+// @public
+export interface QuestionAvailability {
+    // (undocumented)
+    asked: boolean;
+    // (undocumented)
+    choices: AvailableChoice[];
+}
+
+// Warning: (ae-forgotten-export) The symbol "QuestionFields" needs to be exported by the entry point core.d.ts
 // Warning: (ae-forgotten-export) The symbol "Asking" needs to be exported by the entry point core.d.ts
 // Warning: (ae-forgotten-export) The symbol "Picking" needs to be exported by the entry point core.d.ts
 //
 // @public
-export type QuestionDefinition = QuestionShape & Asking & Picking;
+export type QuestionDefinition = QuestionFields & Asking & Picking;
 
 // @public (undocumented)
 export interface QuestionDescription {

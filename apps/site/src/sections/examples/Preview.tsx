@@ -16,6 +16,7 @@ export function Preview({ example, active }: { example: Example; active: boolean
   const [state, setState] = useState<FrameState>({ wire: example.wire })
   const [load, setLoad] = useState<Load>({ count: 0 })
   const [offline, setOffline] = useState(false)
+
   if (active && !started) {
     setStarted(true)
   }
@@ -26,12 +27,15 @@ export function Preview({ example, active }: { example: Example; active: boolean
         setState(event.data.state)
       }
     }
+
     window.addEventListener("message", onMessage)
+
     return () => window.removeEventListener("message", onMessage)
   }, [])
 
   function command(name: FrameCommand) {
     const target = frame.current?.contentWindow
+
     if (target) {
       send(target, name)
     }
@@ -48,9 +52,11 @@ export function Preview({ example, active }: { example: Example; active: boolean
   }
 
   const params = new URLSearchParams({ example: example.id })
+
   if (load.path) {
     params.set("path", load.path)
   }
+
   const route = state.route
 
   return (

@@ -1,4 +1,5 @@
 import { shadcnStylePackages } from "./shadcnStyles.js"
+
 export const packages = [
   {
     name: "configuration-core",
@@ -344,11 +345,12 @@ export const packages = [
 
 /** Shared navigation for package directories and the public site. */
 export function packageOverviewId(entry: { name: string; group: string }) {
-  const routing: Record<string, string> = {
-    "router-core": "routing-core",
-    "react-routing": "routing-react-bindings",
-    "react-router": "routing-react-router",
-    "tanstack-router": "routing-tanstack-router"
-  }
-  return `${routing[entry.name] ?? `${entry.group.toLowerCase().replaceAll(" ", "-")}-${entry.name}`}--overview`
+  const routing = new Map([
+    ["router-core", "routing-core"],
+    ["react-routing", "routing-react-bindings"],
+    ["react-router", "routing-react-router"],
+    ["tanstack-router", "routing-tanstack-router"]
+  ])
+
+  return `${routing.get(entry.name) ?? `${entry.group.toLowerCase().replaceAll(" ", "-")}-${entry.name}`}--overview`
 }

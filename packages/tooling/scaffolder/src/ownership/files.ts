@@ -47,8 +47,16 @@ function newEntry(
   switch (ownership) {
     case "owned":
       return { class: "owned", genHash, diskHash, contributors }
-    case "seed":
-      return { class: "seed", genHash, diskHash, ...(base === undefined ? {} : { base }) }
+    case "seed": {
+      const seed: Extract<FileEntry, { class: "seed" }> = { class: "seed", genHash, diskHash }
+
+      if (base !== undefined) {
+        seed.base = base
+      }
+
+      return seed
+    }
+
     case "sample":
       return { class: "sample", genHash }
   }
@@ -57,11 +65,13 @@ function newEntry(
 /** What the engine last wrote: the old render, or the stored copy. Either one counts only if it hashes to `genHash`. */
 async function verifiedBase(input: FileInput, entry: FileEntry): Promise<string | undefined> {
   const candidates = [input.old?.content, entry.class === "seed" ? entry.base : undefined]
+
   for (const candidate of candidates) {
     if (candidate !== undefined && (await hashText(candidate)) === entry.genHash) {
       return candidate
     }
   }
+
   return undefined
 }
 
@@ -96,16 +106,21 @@ function conflict(
  */
 export async function planFile(input: FileInput): Promise<FileOutcome> {
   const { path, incoming, resolution } = input
+
   if (input.current.kind === "unsafe") {
     throw new PlanError("E_UNSAFE_PATH", `${path} can't be managed: ${input.current.reason}`, { paths: [path] })
   }
+
   const current = input.current.kind === "file" ? input.current.content : undefined
   const currentHash = current === undefined ? undefined : await hashText(current)
   const recorded = input.entry?.class === "shared" ? undefined : input.entry
+
   if (!incoming) {
     return planOrphan(input, recorded, current, currentHash)
   }
+
   const incomingHash = await hashText(incoming.content)
+
   const fresh = (diskHash = incomingHash) =>
     newEntry(
       incoming.ownership,
@@ -114,47 +129,56 @@ export async function planFile(input: FileInput): Promise<FileOutcome> {
       incoming.contributors,
       input.storeBases ? incoming.content : undefined
     )
-  if (typeof resolution === "object") {
+
+  if (resolution !== undefined && resolution !== "keep-current" && resolution !== "take-incoming") {
     return { write: resolution.content, entry: fresh(await hashText(resolution.content)) }
   }
+
   let entry = recorded
+
   if (entry && entry.class !== incoming.ownership) {
     const unchanged = currentHash === undefined || currentHash === diskHashOf(entry)
+
     if (!unchanged && resolution === undefined) {
       return conflict(
         input,
         "class-change",
         `${path} changes from ${entry.class} to ${incoming.ownership}, but you edited it.`,
-        {
-          ...(current === undefined ? {} : { current }),
-          incoming: incoming.content
-        }
+        current === undefined ? { incoming: incoming.content } : { current, incoming: incoming.content }
       )
     }
+
     entry =
       unchanged && currentHash !== undefined
         ? newEntry(incoming.ownership, entry.genHash, currentHash, incoming.contributors)
         : undefined
   }
+
   if (!entry) {
     if (input.deleted) {
       return { deleted: true, notice: { code: "stays-deleted", path, text: `${path} stays deleted, as you chose.` } }
     }
+
     if (current === undefined) {
       return { write: incoming.content, entry: fresh() }
     }
+
     if (currentHash === incomingHash) {
       return { entry: fresh() }
     }
+
     if (input.adopt) {
       return { notice: { code: "kept-yours", path, text: `${path} already exists, so it stays yours.` } }
     }
+
     if (resolution === "keep-current" && currentHash !== undefined) {
       return { entry: fresh(currentHash) }
     }
+
     if (resolution === "take-incoming") {
       return { write: incoming.content, entry: fresh() }
     }
+
     return conflict(
       input,
       "exists",
@@ -165,22 +189,28 @@ export async function planFile(input: FileInput): Promise<FileOutcome> {
       }
     )
   }
+
   if (entry.class === "sample") {
     if (current === undefined) {
       return { deleted: true }
     }
+
     return { entry }
   }
+
   if (current === undefined || currentHash === undefined) {
     if (entry.class === "seed") {
       return { deleted: true }
     }
+
     if (resolution === "keep-current") {
       return { deleted: true }
     }
+
     if (resolution === "take-incoming") {
       return { write: incoming.content, entry: fresh() }
     }
+
     return conflict(
       input,
       "deleted",
@@ -190,13 +220,16 @@ export async function planFile(input: FileInput): Promise<FileOutcome> {
       }
     )
   }
+
   const engineChanged = incomingHash !== entry.genHash
   const diskUnchanged = currentHash === entry.diskHash
+
   if (!engineChanged) {
     if (input.storeBases && entry.class === "seed" && entry.base === undefined) {
       // Settings now store bases, and this seed still matches what was generated, so its base can be recorded.
       return { entry: { ...entry, base: incoming.content } }
     }
+
     if (!diskUnchanged && entry.class === "owned" && currentHash !== entry.genHash) {
       return {
         entry,
@@ -207,27 +240,35 @@ export async function planFile(input: FileInput): Promise<FileOutcome> {
         }
       }
     }
+
     return { entry: entry.class === "owned" ? { ...entry, contributors: incoming.contributors } : entry }
   }
+
   if (currentHash === incomingHash) {
     return { entry: fresh() }
   }
+
   if (diskUnchanged && entry.diskHash === entry.genHash) {
     return { write: incoming.content, entry: fresh() }
   }
+
   if (resolution === "keep-current") {
     return { entry: fresh(currentHash) }
   }
+
   if (resolution === "take-incoming") {
     return { write: incoming.content, entry: fresh() }
   }
+
   if (entry.class === "owned") {
     return conflict(input, "edited", `You edited ${path}, and ${incoming.contributors.join(", ")} regenerates it.`, {
       current,
       incoming: incoming.content
     })
   }
+
   const base = await verifiedBase(input, entry)
+
   if (base === undefined) {
     return conflict(
       input,
@@ -239,10 +280,13 @@ export async function planFile(input: FileInput): Promise<FileOutcome> {
       }
     )
   }
+
   const merged = mergeText(current, base, incoming.content)
+
   if (merged.clean) {
     return { write: merged.content, entry: fresh(await hashText(merged.content)), mergedHunks: merged.hunks }
   }
+
   if (input.conflictStyle === "markers") {
     return {
       write: merged.content,
@@ -250,6 +294,7 @@ export async function planFile(input: FileInput): Promise<FileOutcome> {
       notice: { code: "conflict-markers", path, text: `${path} has conflict markers. Resolve them, then run check.` }
     }
   }
+
   return conflict(input, "merge", `${path} has your edits and new changes in the same lines.`, {
     base,
     current,
@@ -264,9 +309,11 @@ async function planOrphan(
   currentHash: string | undefined
 ): Promise<FileOutcome> {
   const { path, resolution } = input
+
   if (!entry || entry.class === "sample" || current === undefined) {
     return {}
   }
+
   if ((await verifiedBase(input, entry)) === undefined) {
     return {
       notice: {
@@ -276,12 +323,15 @@ async function planOrphan(
       }
     }
   }
+
   if (currentHash === entry.diskHash || resolution === "take-incoming") {
     return { remove: true }
   }
+
   if (resolution === "keep-current") {
     return {}
   }
+
   return conflict(
     input,
     "orphan-edited",

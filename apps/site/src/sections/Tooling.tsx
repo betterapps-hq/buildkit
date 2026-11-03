@@ -21,13 +21,17 @@ export function Tooling() {
   // The bar is stuck once the spot it sits in at rest has scrolled up past the top of the screen
   useEffect(() => {
     const element = marker.current
+
     if (!element) {
       return undefined
     }
+
     const observer = new IntersectionObserver(([entry]) => {
       setStuck(!entry.isIntersecting && entry.boundingClientRect.top < 0)
     })
+
     observer.observe(element)
+
     return () => observer.disconnect()
   }, [])
 
@@ -43,12 +47,15 @@ export function Tooling() {
       },
       { rootMargin: "-45% 0px -55% 0px" }
     )
+
     for (const tool of TOOLS) {
       const element = document.getElementById(tool.id)
+
       if (element) {
         observer.observe(element)
       }
     }
+
     return () => observer.disconnect()
   }, [])
 
@@ -72,6 +79,7 @@ export function Tooling() {
             <ul className="tl-chips">
               {TOOLS.map((tool) => {
                 const Icon = tool.icon
+
                 return (
                   <li key={tool.id}>
                     <a className="tl-chip" href={`#${tool.id}`} aria-current={tool.id === current ? "true" : undefined}>

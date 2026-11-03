@@ -19,12 +19,14 @@ afterEach(() => {
 /** A command that prints its arguments as JSON: a .cmd file on Windows, as npm is, and a shell script elsewhere. */
 function echoCommand(): string {
   const command = join(root, "echo-args")
+
   if (windows) {
     writeFileSync(`${command}.cmd`, `@"${process.execPath}" -e "${printArgs}" %*\r\n`)
   } else {
     writeFileSync(command, `#!/bin/sh\nexec "${process.execPath}" -e '${printArgs}' "$@"\n`)
     chmodSync(command, 0o755)
   }
+
   return command
 }
 
@@ -43,13 +45,16 @@ describe("runCommand", () => {
     mkdirSync(bin)
     mkdirSync(elsewhere)
     writeFileSync(join(bin, "probe.js"), "console.log(JSON.stringify(process.argv.slice(2)))")
+
     if (windows) {
       writeFileSync(join(bin, "probe.cmd"), `@"${process.execPath}" "%~dp0probe.js" %*\r\n`)
     } else {
       writeFileSync(join(bin, "probe"), `#!/bin/sh\nexec "${process.execPath}" "$(dirname "$0")/probe.js" "$@"\n`)
       chmodSync(join(bin, "probe"), 0o755)
     }
+
     vi.stubEnv("PATH", `${bin}${delimiter}${process.env.PATH ?? ""}`)
+
     try {
       const result = await runCommand("probe", ["view", "@acme/tower@>=1 <2", "version"], elsewhere)
       expect(result.code).toBe(0)

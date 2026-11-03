@@ -7,6 +7,7 @@ export type FluentThemeOptions = ThemeOptions &
     lightTheme?: Theme
     darkTheme?: Theme
   }
+
 export type FluentThemeStore = ThemeStore & {
   readonly themes: Readonly<{ light: Theme; dark: Theme }>
   start(): () => void
@@ -18,26 +19,33 @@ export function createFluentTheme(options: FluentThemeOptions = {}): FluentTheme
   const themes = { light: options.lightTheme ?? webLightTheme, dark: options.darkTheme ?? webDarkTheme }
   let disconnect: (() => void) | undefined
   let owners = 0
+
   function start() {
     const browser = options.window ?? (typeof window === "undefined" ? undefined : window)
+
     if (!browser) {
       return () => {
         /* No browser effects during server rendering. */
       }
     }
+
     disconnect ??= connectBrowserTheme(store, { ...options, window: browser })
     owners++
     let isStopped = false
+
     return () => {
       if (isStopped) {
         return
       }
+
       isStopped = true
+
       if (--owners === 0) {
         disconnect?.()
         disconnect = undefined
       }
     }
   }
+
   return { ...store, themes, start }
 }

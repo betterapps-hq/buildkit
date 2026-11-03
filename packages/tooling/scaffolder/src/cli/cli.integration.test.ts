@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import type { Resolvable } from "citty"
 import { afterEach, beforeEach, describe, expect, it } from "vite-plus/test"
 import type { CatalogManifest } from "../manifest/types.js"
 import { requestArgv } from "../plan/argv.js"
@@ -50,6 +51,7 @@ function options(
 ) {
   const scripted = scriptedPrompter(extra.script ?? [])
   const setupRuns: string[] = []
+
   const cli: CliOptions = {
     name: "fixture",
     version: "0.0.0",
@@ -57,9 +59,10 @@ function options(
     settings: { ...settings, setup: extra.setup ?? { install: false, git: false } },
     runSetup: async (command, cwd) => {
       setupRuns.push(command)
+
       return extra.runSetup ? extra.runSetup(command, cwd) : { code: 0, output: "" }
     },
-    ...(extra.defaultCache ? {} : { cacheDir: join(root, "cache") }),
+    cacheDir: extra.defaultCache ? undefined : join(root, "cache"),
     io: {
       stdout: (text) => stdout.push(text),
       stderr: (text) => stderr.push(text),
@@ -68,10 +71,16 @@ function options(
       prompter: scripted.prompter,
       env: extra.env ?? {}
     },
-    ...(extra.hooks ? { hooks: extra.hooks } : {}),
-    ...(extra.runCommand ? { runCommand: extra.runCommand } : {})
+    hooks: extra.hooks,
+    runCommand: extra.runCommand
   }
+
   return { cli, setupRuns, ...scripted }
+}
+
+/** A citty value, whichever way the command gives it: as it is, a promise or a function. */
+async function resolved<T>(value: Resolvable<T> | undefined): Promise<T | undefined> {
+  return value instanceof Function ? value() : value
 }
 
 async function run(argv: string[], extra: Parameters<typeof options>[0] = {}) {
@@ -79,11 +88,13 @@ async function run(argv: string[], extra: Parameters<typeof options>[0] = {}) {
   stdout = []
   stderr = []
   const code = await runCli(argv, cli)
+
   return { code, asked, notes, tasks, setupRuns, out: stdout.join(""), err: stderr.join("") }
 }
 
 function envelope(out: string): Envelope {
   const value: Envelope = JSON.parse(out)
+
   return value
 }
 
@@ -91,6 +102,7 @@ function files(folder = join(root, "demo")): string[] {
   if (!existsSync(folder)) {
     return []
   }
+
   return readdirSync(folder, { recursive: true, withFileTypes: true })
     .filter((entry) => entry.isFile())
     .map((entry) => join(entry.parentPath, entry.name))
@@ -108,11 +120,13 @@ describe("create", () => {
   it("refuses a non-empty destination, and --dry-run runs the same check", async () => {
     mkdirSync(join(root, "demo"))
     writeFileSync(join(root, "demo/notes.txt"), "x\n")
+
     for (const flag of ["--yes", "--dry-run"]) {
       const result = await run([...createDemo, flag, "--json"])
       expect(result.code).toBe(2)
       expect(envelope(result.out).error?.code).toBe("E_DESTINATION")
     }
+
     const adopted = await run([...createDemo, "--adopt", "--yes", "--json"])
     expect(adopted.code).toBe(0)
     expect(readFileSync(join(root, "demo/notes.txt"), "utf8")).toBe("x\n")
@@ -142,16 +156,19 @@ describe("create", () => {
     // The app template selects Storybook by default, so the sets that leave it out answer no to developer tools.
     const sets = pairwiseAnswers(catalog, "app", "ssr")
     expect(sets.some((answers) => !answers.questions?.devtools?.includes("@fixture/storybook"))).toBe(true)
+
     for (const [index, set] of sets.entries()) {
       const answers = { ...set, name: `pair-${index}` }
       const argv = requestArgv({ intent: { command: "init", answers } }, { catalog })
       expect(envelope((await run([...argv, "--yes", "--json"])).out).status).toBe("applied")
+
       const planned = await plan({
         catalog,
         settings,
         request: { intent: { command: "init", answers } },
         tree: memoryTree({})
       })
+
       const lock = JSON.parse(readFileSync(join(root, answers.name, ".fixture/lock.json"), "utf8"))
       // The command is part of what's compared, so a failure names it.
       expect({ argv: argv.join(" "), addons: Object.keys(lock.addons).sort() }).toEqual({
@@ -176,6 +193,7 @@ describe("create", () => {
     expect(envelope(again.out).status).toBe("unchanged")
     const shown = await run(["plan", "show", "plans/plan.json"])
     expect(shown.out).toContain("Planned")
+
     for (const argv of [
       ["sync", "--cwd", "demo", "--plan", "plans/plan.json", "--dry-run", "--json"],
       ["upgrade", "--cwd", "demo", "--list", "--plan", "plans/plan.json", "--json"]
@@ -188,6 +206,7 @@ describe("create", () => {
 
   it("rejects usage errors with exit 2 and writes nothing", async () => {
     const accepted: string[] = []
+
     for (const argv of [
       ["create", "app", "demo", "--frobnicate"],
       ["create", "app", "demo", "extra", "--yes"],
@@ -200,18 +219,22 @@ describe("create", () => {
       ["create", "bare", "demo", "--preset", "saas", "--yes"]
     ]) {
       const result = await run(argv)
+
       if (result.code !== 2) {
         accepted.push(`${argv.join(" ")}: exit ${result.code}`)
       }
     }
+
     expect(accepted).toEqual([])
     expect(files()).toEqual([])
     const name = await run(["create", "app", "Demo App", "--yes", "--json"])
     expect(envelope(name.out).error?.code).toBe("E_INVALID_OPTIONS")
+
     const escaping = {
       fingerprint: "f",
       request: { intent: { command: "init", answers: { template: "app", name: "../away" } } }
     }
+
     writeFileSync(join(root, "escaping.json"), JSON.stringify(escaping))
     const planned = await run(["create", "--plan", "escaping.json", "--yes", "--json"])
     expect(envelope(planned.out).error?.code).toBe("E_INVALID_OPTIONS")
@@ -238,6 +261,7 @@ describe("create", () => {
         }
       }
     })
+
     expect(result.code).toBe(2)
     expect(result.out).not.toContain("Applied")
     expect(result.err).toContain("disk full")
@@ -256,6 +280,7 @@ function setupCatalog(): CatalogManifest {
     { kind: "command", run: "pnpm db:seed", when: "after-apply", why: "Write the seed data", setup: true },
     { kind: "command", run: "pnpm db:studio", when: "after-install", why: "Opens the database browser." }
   ]
+
   return catalog
 }
 
@@ -270,6 +295,7 @@ const withDatabase = (folder: string) => [
   "--ui",
   "ui-basic"
 ]
+
 const gitStep = 'git init && git add -A && git commit -m "Initial commit"'
 
 describe("setup steps", () => {
@@ -279,6 +305,7 @@ describe("setup steps", () => {
       setup: {},
       env: { npm_config_user_agent: "npm/11.0.0 node/v24.0.0 win32 x64" }
     })
+
     expect(result.code).toBe(0)
     expect(result.setupRuns).toEqual(["pnpm db:seed", "npm install", "pnpm db:push", gitStep])
     expect(result.out).toContain("Setup:\n  Done: Write the seed data\n  Done: Install dependencies")
@@ -295,11 +322,14 @@ describe("setup steps", () => {
       setup: { packageManager: "bun", git: false },
       env: { npm_config_user_agent: "npm/11.0.0" }
     })
+
     expect(result.setupRuns).toEqual(["pnpm db:seed", "bun install", "pnpm db:push"])
+
     const off = await run([...withDatabase("other"), "--yes", "--setup"], {
       catalog: setupCatalog(),
       setup: { install: false }
     })
+
     expect(off.setupRuns).toEqual(["pnpm db:seed", "pnpm db:push", gitStep])
   })
 
@@ -318,6 +348,7 @@ describe("setup steps", () => {
           ? { code: 1, output: "ERR_PNPM_FETCH_404 GET https://registry.npmjs.org/nope: Not Found\n" }
           : { code: 0, output: "" }
     })
+
     expect(result.code).toBe(6)
     expect(result.setupRuns).toEqual(["pnpm db:seed", "pnpm install"])
     expect(result.out).toContain("Applied")
@@ -369,20 +400,30 @@ describe("setup steps", () => {
       if (question.message === "Run setup now?") {
         return ["0", "2"]
       }
+
       if (question.kind === "password") {
         return "postgres://local"
       }
+
       if (question.kind === "confirm") {
         return question.message === "Apply these changes?" ? true : question.initial === true
       }
-      return question.kind === "multiselect" ? (question.initial as string[]) : String(question.initial ?? "")
+
+      if (question.kind === "multiselect") {
+        // SAFETY: the wizard gives a multi-select its initial values as a list of choice ids.
+        return question.initial as string[]
+      }
+
+      return String(question.initial ?? "")
     }
+
     const result = await run(withDatabase("demo"), {
       tty: true,
       catalog: setupCatalog(),
       setup: { git: false },
       script: Array.from({ length: 12 }, () => answer)
     })
+
     expect(result.code).toBe(0)
     const messages = result.asked.map((question) => question.message)
     expect(messages.indexOf("Run setup now?")).toBe(messages.indexOf("Apply these changes?") + 1)
@@ -403,31 +444,43 @@ describe("setup steps", () => {
       (pick: ScriptedAnswer): ScriptedAnswer =>
       (question) => {
         if (question.message === "Run setup now?") {
-          return typeof pick === "function" ? pick(question) : pick
+          return pick instanceof Function ? pick(question) : pick
         }
+
         if (question.kind === "password") {
           return "postgres://local"
         }
+
         if (question.kind === "confirm") {
           return question.message === "Apply these changes?" ? true : question.initial === true
         }
-        return question.kind === "multiselect" ? (question.initial as string[]) : String(question.initial ?? "")
+
+        if (question.kind === "multiselect") {
+          // SAFETY: the wizard gives a multi-select its initial values as a list of choice ids.
+          return question.initial as string[]
+        }
+
+        return String(question.initial ?? "")
       }
+
     const skipped = await run([...withDatabase("demo"), "--no-setup"], {
       tty: true,
       catalog: setupCatalog(),
       setup: {},
       script: Array.from({ length: 12 }, () => answer(cancelled))
     })
+
     expect(skipped.code).toBe(0)
     expect(skipped.asked.map((question) => question.message)).not.toContain("Run setup now?")
     expect(skipped.setupRuns).toEqual([])
+
     const cancelledPick = await run(withDatabase("other"), {
       tty: true,
       catalog: setupCatalog(),
       setup: {},
       script: Array.from({ length: 12 }, () => answer(cancelled))
     })
+
     expect(cancelledPick.code).toBe(0)
     expect(cancelledPick.setupRuns).toEqual([])
     expect(existsSync(join(root, "demo/fixture.jsonc"))).toBe(true)
@@ -454,6 +507,7 @@ describe("the wizard", () => {
         true
       ]
     })
+
     expect(result.code).toBe(0)
     expect(result.asked.map((question) => [question.kind, question.message])).toEqual([
       ["select", "Which template?"],
@@ -484,10 +538,12 @@ describe("the wizard", () => {
 
   it("an optional question asks yes or no first, and one with one fitting choice asks nothing more", async () => {
     const answered = ["--ui", "ui-basic", "--with", "storybook", "--no-localization", "--no-telemetry"]
+
     const result = await run(["create", "app", "demo", "--mode", "spa", ...answered], {
       tty: true,
       script: [true, "file:local.db", true]
     })
+
     expect(result.asked.map((question) => question.message)).toEqual([
       "Add a database?",
       "DATABASE_URL: Database file",
@@ -497,10 +553,12 @@ describe("the wizard", () => {
     expect(result.asked[1]).toMatchObject({ kind: "text", initial: "file:local.db" })
     expect(readFileSync(join(root, "demo/fixture.jsonc"), "utf8")).toContain("@fixture/db-sqlite")
     expect(readFileSync(join(root, "demo/.env"), "utf8")).toContain("DATABASE_URL=file:local.db")
+
     const declined = await run(["create", "app", "other", "--mode", "spa", ...answered], {
       tty: true,
       script: [false, true]
     })
+
     expect(declined.code).toBe(0)
     expect(readFileSync(join(root, "other/fixture.jsonc"), "utf8")).toContain("question:database")
   })
@@ -510,6 +568,7 @@ describe("the wizard", () => {
       tty: true,
       script: ["@fixture/ui-basic", true, false, "en", "postgres://local", true]
     })
+
     expect(result.asked.map((question) => question.message)).toEqual([
       "Which UI kit?",
       "Add developer tools?",
@@ -526,6 +585,7 @@ describe("the wizard", () => {
       tty: true,
       script: ["ssr", true, "@fixture/db-sqlite", "@fixture/ui-basic", true, false, false, "en"]
     })
+
     expect(wizard.asked.map((question) => question.message)).not.toContain("Apply these changes?")
     await run([
       "create",
@@ -548,19 +608,24 @@ describe("the wizard", () => {
       "--out",
       "flags"
     ])
+
     const fingerprint = (folder: string) =>
       JSON.parse(readFileSync(join(root, folder, "plan.json"), "utf8")).fingerprint
+
     expect(fingerprint("flags")).toBe(fingerprint("wizard"))
   })
 
   it("asks for a required secret with a masked prompt and keeps it out of the summary, plan and lock", async () => {
     const dsn = "https://publickey@sentry.example/123"
+
     const answer: ScriptedAnswer = (question) => {
       if (question.kind === "password") {
         return dsn
       }
+
       return question.kind === "text" ? String(question.initial) : true
     }
+
     const result = await run(
       [
         ...createDemo,
@@ -579,6 +644,7 @@ describe("the wizard", () => {
         script: [answer, answer, answer]
       }
     )
+
     expect(result.code).toBe(0)
     expect(result.asked.map((question) => question.kind).sort()).toEqual(["confirm", "password", "text"])
     expect(result.asked.find((question) => question.kind === "password")?.message).toBe(
@@ -586,10 +652,12 @@ describe("the wizard", () => {
     )
     expect(result.notes.join("")).not.toContain(dsn)
     expect(readFileSync(join(root, "demo/.env"), "utf8")).toContain(dsn)
+
     const tracked = files()
       .filter((file) => !file.endsWith(".env"))
       .map((file) => readFileSync(file, "utf8"))
       .join("\n")
+
     expect(tracked).not.toContain(dsn)
     const plain = await run(["create", "app", "other", "--mode", "ssr", "--with", "sentry", "--yes", "--json"])
     expect(envelope(plain.out).nextSteps).toEqual([
@@ -605,14 +673,18 @@ describe("the wizard", () => {
       ...contribute(ctx),
       { kind: "env", name: "SENTRY_RELEASE", scope: "build", secret: false, required: false, description: "Release" }
     ]
+
     const answer: ScriptedAnswer = (question) => {
       if (question.kind === "confirm") {
         return true
       }
+
       // A blank text answer skips the optional value; the password prompt is the database's.
       return question.kind === "text" ? "" : "postgres://local"
     }
+
     const quiet = ["--no-localization", "--no-devtools"]
+
     const created = await run(
       [...createDemo, "--database", "db-postgres", "--ui", "ui-basic", "--with", "sentry", ...quiet],
       {
@@ -621,6 +693,7 @@ describe("the wizard", () => {
         script: Array.from({ length: 4 }, () => answer)
       }
     )
+
     expect(created.code).toBe(0)
     expect(created.asked).toContainEqual(
       expect.objectContaining({ kind: "text", message: "SENTRY_RELEASE: Release (optional, press Enter to skip)" })
@@ -701,6 +774,7 @@ describe("question flags", () => {
 
   it("refuses no to a required question, two answers to a one question, and a choice it doesn't offer", async () => {
     const catalog = exampleCatalog()
+
     for (const flags of [["--no-database"], ["--database", "prisma,drizzle"], ["--auth", "sentry"]]) {
       const result = await run(["create", "saas", "demo", ...flags, "--json"], { catalog })
       expect(result.code).toBe(2)
@@ -718,9 +792,11 @@ describe("question flags", () => {
       ["fixture", "add", "prisma"],
       ["fixture", "add", "convex"]
     ])
+
     const answered = await run(["add", "database", "--database", "convex", "--cwd", "demo", "--yes", "--json"], {
       catalog
     })
+
     expect(envelope(answered.out).status).toBe("applied")
     expect(readFileSync(join(root, "demo/fixture.jsonc"), "utf8")).toContain("@acme/convex")
   })
@@ -744,20 +820,24 @@ describe("add and other commands", () => {
 
   it("asks a question later, and offers the replace decision on a terminal", async () => {
     await project(["--no-database"])
+
     const result = await run(["add", "database", "--cwd", "demo"], {
       tty: true,
       script: ["@fixture/db-postgres", "postgres://local", true]
     })
+
     expect(result.asked.map((question) => question.message)).toEqual([
       "Which database?",
       "DATABASE_URL: Connection string",
       "Apply these changes?"
     ])
     expect(readFileSync(join(root, "demo/fixture.jsonc"), "utf8")).toContain("@fixture/db-postgres")
+
     const replace = await run(["add", "--database", "db-sqlite", "--cwd", "demo"], {
       tty: true,
       script: ["replace", true]
     })
+
     expect(replace.code).toBe(0)
     expect(readFileSync(join(root, "demo/fixture.jsonc"), "utf8")).toContain("@fixture/db-sqlite")
     const blocked = await run(["add", "db-postgres", "--cwd", "demo", "--yes", "--json"])
@@ -775,15 +855,18 @@ describe("add and other commands", () => {
 
   it("a change made during review fails apply with drift and exit 4", async () => {
     await project()
+
     const result = await run(["add", "i18n", "--cwd", "demo"], {
       tty: true,
       script: [
         () => {
           writeFileSync(join(root, "demo/package.json"), "{}\n")
+
           return true
         }
       ]
     })
+
     expect(result.code).toBe(4)
     expect(existsSync(join(root, "demo/src/i18n/setup.ts"))).toBe(false)
   })
@@ -801,6 +884,7 @@ describe("add and other commands", () => {
     const human = await run(["add", "auth", "--cwd", "demo", "--yes"])
     expect(human.out).toContain('--resolve "src/auth.ts=keep-current|take-incoming|file:<path>"')
     writeFileSync(join(root, "merged.ts"), "merged\n")
+
     const resolved = await run([
       "add",
       "auth",
@@ -811,6 +895,7 @@ describe("add and other commands", () => {
       "src/auth.ts=file:merged.ts",
       "--json"
     ])
+
     expect(envelope(resolved.out).status).toBe("applied")
     expect(readFileSync(join(root, "demo/src/auth.ts"), "utf8")).toBe("merged\n")
     expect((await run(["sync", "--cwd", "demo", "--resolve", "x", "--yes"])).code).toBe(2)
@@ -920,6 +1005,7 @@ describe("add and other commands", () => {
   it("catalog fetch caches a version and checks its integrity before loading it", async () => {
     await project()
     const cached = join(root, "cache/catalogs/@fixture/catalog")
+
     const runCommand: CliOptions["runCommand"] = async (_command, args, cwd) => {
       const folder = join(cwd, "node_modules/@fixture/catalog")
       mkdirSync(folder, { recursive: true })
@@ -935,8 +1021,10 @@ describe("add and other commands", () => {
         join(cwd, "package-lock.json"),
         JSON.stringify({ packages: { "node_modules/@fixture/catalog": { integrity: "sha512-test" } } })
       )
+
       return { code: args.includes("@fixture/catalog@0.9.0") ? 0 : 1, output: "npm ERR! not found" }
     }
+
     const fetched = await run(["catalog", "fetch", "0.9.0", "--cwd", "demo", "--json"], { runCommand })
     expect(envelope(fetched.out).notices?.[0]?.text).toContain("sha512-test")
     expect(JSON.parse(readFileSync(join(cached, "0.9.0/integrity.json"), "utf8")).integrity).toBe("sha512-test")
@@ -990,6 +1078,7 @@ describe("add and other commands", () => {
     // XDG_CACHE_HOME keeps the default cache folder inside the test's temp folder on every platform.
     const previous = process.env.XDG_CACHE_HOME
     process.env.XDG_CACHE_HOME = join(root, "xdg")
+
     try {
       const planned = await run(["sync", "--cwd", "demo", "--dry-run", "--json"], { defaultCache: true })
       expect(envelope(planned.out).decisions?.[0]?.choices.map((choice) => choice.id)).toEqual(["upgrade"])
@@ -1000,14 +1089,15 @@ describe("add and other commands", () => {
         process.env.XDG_CACHE_HOME = previous
       }
     }
+
     expect(existsSync(marker)).toBe(false)
   })
 
-  it("builds a citty command tree with every command and the catalog's question flags", () => {
+  it("builds a citty command tree with every command and the catalog's question flags", async () => {
     const { cli } = options()
     const command = createCli(cli)
-    const subCommands = command.subCommands
-    expect(subCommands && typeof subCommands === "object" ? Object.keys(subCommands) : []).toEqual([
+    const subCommands = await resolved(command.subCommands)
+    expect(Object.keys(subCommands ?? {})).toEqual([
       "create",
       "add",
       "config",
@@ -1026,9 +1116,9 @@ describe("add and other commands", () => {
 
   it("keeps init as a hidden name for create", async () => {
     const { cli } = options()
-    const subCommands = createCli(cli).subCommands
-    const init = typeof subCommands === "object" && !(subCommands instanceof Promise) ? subCommands.init : undefined
-    const meta = init && typeof init === "object" && "meta" in init ? init.meta : undefined
+    const subCommands = await resolved(createCli(cli).subCommands)
+    const init = await resolved(subCommands?.init)
+    const meta = await resolved(init?.meta)
     expect(meta).toMatchObject({ name: "init", hidden: true })
     const result = await run(["init", "app", "demo", "--mode", "ssr", "--yes", "--json"])
     expect(result.code).toBe(0)

@@ -98,15 +98,19 @@ function SearchPalette() {
             {group.results.map((result) => {
               const Icon = result.icon
               const classes = ["docs-result"]
+
               if (result.active) {
                 classes.push("is-active")
               }
+
               if (result.code) {
                 classes.push("is-code")
               }
+
               if (result.extra) {
                 classes.push("docs-wide")
               }
+
               return (
                 <div key={result.title} className={classes.join(" ")}>
                   <span className="docs-result-icon">
@@ -151,6 +155,7 @@ export function Docs() {
           <ul className="docs-doors" data-reveal-stagger>
             {DOORS.map((door) => {
               const Icon = door.icon
+
               return (
                 <li key={door.title}>
                   <Link className="docs-door" href={door.href}>

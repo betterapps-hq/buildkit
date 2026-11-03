@@ -26,8 +26,10 @@ it("inherits direction, updates Base UI behavior, and permits nested overrides",
   function Direction() {
     const { direction } = useShadcnLocalization()
     const primitiveDirection = useDirection()
+
     return <span>{`${direction}/${primitiveDirection}`}</span>
   }
+
   const view = render(
     <ShadcnLocalizationProvider direction="rtl">
       <ShadcnLocalizationProvider>
@@ -35,6 +37,7 @@ it("inherits direction, updates Base UI behavior, and permits nested overrides",
       </ShadcnLocalizationProvider>
     </ShadcnLocalizationProvider>
   )
+
   expect(screen.getByText("rtl/rtl")).toBeTruthy()
   view.rerender(
     <ShadcnLocalizationProvider direction="rtl">
@@ -48,6 +51,7 @@ it("inherits direction, updates Base UI behavior, and permits nested overrides",
 
 function Labels() {
   const { strings: labels } = useShadcnLocalization()
+
   return (
     <span>
       {labels.close}|{labels.clear}|{labels.removeItem("Tea")}
@@ -83,6 +87,7 @@ it("inherits nested labels, updates portals, and keeps sibling providers isolate
       </>
     )
   }
+
   const view = render(<Example close="Fermer" />)
   expect(screen.getByText("Fermer|Effacer|Retirer Tea")).toBeTruthy()
   expect(screen.getByText("Close|Clear|Remove Tea")).toBeTruthy()

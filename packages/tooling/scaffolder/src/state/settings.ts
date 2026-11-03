@@ -48,8 +48,14 @@ export function lockPath(settings: ProductSettings): string {
   return `${settings.stateDir}/lock.json`
 }
 
+/** A file the engine writes under the state folder. */
+interface StateFile {
+  path: string
+  content: string
+}
+
 /** Paths under the state folder that never belong in git. */
-export function stateIgnoreFile(settings: ProductSettings): { path: string; content: string } {
+export function stateIgnoreFile(settings: ProductSettings): StateFile {
   return {
     path: `${settings.stateDir}/.gitignore`,
     content: ["apply.lock", "journal.json", "backup/", "plans/", ""].join("\n")

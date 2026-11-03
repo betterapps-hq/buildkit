@@ -2,9 +2,11 @@ import type { z } from "zod"
 
 /** Classes a file contribution can claim. `shared` files are edited by key, and `user` files are never touched. */
 export type Ownership = "owned" | "seed" | "sample"
+
 export type FileClass = Ownership | "shared" | "user"
 
 export type Band = "pre" | "framework" | "post"
+
 export type PointKind = "list" | "nest" | "wrap" | "map" | "single" | "chain"
 
 /** Entries are data, never code strings. Each renderer prints them in its own language. */
@@ -109,6 +111,7 @@ export interface ResolveContext<O> {
   options: O
   target: TargetInfo
   /** Data another selected add-on provides, such as `{ dialect: "sqlite" }`. Narrow it before use. */
+  // oxlint-disable-next-line anti-slop/no-unknown-returns -- each add-on declares its own `provides` data, so only the reader knows what to narrow it to
   provided(name: string): unknown
   /** True when the add-on is part of the resolved selection. */
   selected(id: string): boolean
@@ -143,6 +146,7 @@ export interface Migration {
   kind: "codemod" | "packages" | "options" | "agent"
   run?(tree: MutableTree): void
   /** Rewrites the add-on's recorded options. */
+  // oxlint-disable-next-line anti-slop/no-unsafe-dictionary-type -- recorded options predate the add-on's current schema, which parses what this returns
   options?(old: Record<string, unknown>): Record<string, unknown>
   /** An agent task, surfaced in the plan and never run. */
   prompt?: string
@@ -155,6 +159,7 @@ export interface AddonManifest<S extends z.ZodType = z.ZodType> {
   title: string
   description: string
   /** Typed data other add-ons read with `ctx.provided()`, keyed by capability, such as `orm` or `database`. */
+  // oxlint-disable-next-line anti-slop/no-unsafe-dictionary-type -- each capability's data is the providing add-on's own contract, narrowed by the reader
   provides?: Record<string, unknown>
   /** Pulled in with this add-on (ids), or needed from another (`provides:<name>`). */
   requires?: AddonReference[]
@@ -239,7 +244,7 @@ export interface Condition {
   notSelected?: AddonReference[]
 }
 
-interface QuestionShape {
+interface QuestionFields {
   /**
    * Unique in the template: lowercase letters, digits and hyphens. It's the flag (`--database`), the name
    * `add database` answers, and the key in answers.
@@ -261,7 +266,7 @@ type Asking = { required: true; question?: string } | { required?: false; questi
 type Picking = { pick: "one"; default?: string } | { pick: "many"; default?: string[] }
 
 /** A question: yes or no unless it's required, then which. `default` preselects, and makes yes the first answer. */
-export type QuestionDefinition = QuestionShape & Asking & Picking
+export type QuestionDefinition = QuestionFields & Asking & Picking
 
 /** A catalog question in a template, with what this template changes. */
 export interface QuestionUse {
@@ -310,6 +315,7 @@ export interface Answers {
   /** Add-ons no question offers, added as `add` would add them. */
   extra?: string[]
   /** Options keyed by add-on id. */
+  // oxlint-disable-next-line anti-slop/no-unsafe-dictionary-type -- each add-on's `options` schema types its values, and the resolver parses them with it
   options?: Record<string, Record<string, unknown>>
   /** Adopt an existing project: existing files stay yours, and the target wires it once. */
   adopt?: boolean

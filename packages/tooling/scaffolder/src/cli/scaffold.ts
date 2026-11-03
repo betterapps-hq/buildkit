@@ -1,4 +1,5 @@
 import { resolve } from "node:path"
+import { z } from "zod"
 import { isTemplatePack, templateSource, type TemplateSource } from "../manifest/packs.js"
 import type { CatalogManifest } from "../manifest/types.js"
 import { isCatalogManifest, PackStore, userCacheDir, type CommandRunner } from "../node/catalogs.js"
@@ -52,25 +53,34 @@ export async function runScaffold(argv: readonly string[], options: ScaffoldOpti
     cwd: options.io?.cwd ?? process.cwd(),
     env: options.io?.env ?? process.env
   }
+
   const [first] = argv
+
   if (first === "--help" || first === "-h") {
     io.stdout(usage)
+
     return 0
   }
+
   if (first === "--version" || first === "-v") {
     io.stdout(`${options.version}\n`)
+
     return 0
   }
+
   const json = argv.includes("--json")
   const cacheDir = options.cacheDir ?? userCacheDir(defineSettings({ product: "scaffold" }))
-  const store = new PackStore({ cacheRoot: cacheDir, ...(options.runCommand ? { run: options.runCommand } : {}) })
+  const store = new PackStore({ cacheRoot: cacheDir, run: options.runCommand })
+
   try {
     // A package is named as create names a template package. Anything else is for the default catalog.
     const named = first !== undefined && (first.startsWith("@") || first.startsWith("npm:"))
+
     const source = (named ? templateSource(first) : undefined) ?? {
       package: options.defaultPackage ?? defaultPackage,
       range: "latest"
     }
+
     const rest = named ? argv.slice(1) : argv
     // A saved plan names the versions it was reviewed with, so no newer package's code runs before it's checked.
     const planPath = flagValue(rest, "plan")
@@ -78,44 +88,57 @@ export async function runScaffold(argv: readonly string[], options: ScaffoldOpti
     const recorded = reviewed ? recordedVersion(reviewed, source) : undefined
     const version = recorded?.version ?? (await store.resolve(source.package, source.range))
     const { integrity, module } = await store.import(source.package, version, recorded?.integrity)
+
     const cli = {
       name: "scaffold",
       version: options.version,
       io,
       cacheDir,
-      ...(options.runCommand ? { runCommand: options.runCommand } : {}),
-      ...(options.runSetup ? { runSetup: options.runSetup } : {})
+      runCommand: options.runCommand,
+      runSetup: options.runSetup
     }
+
     const pack = isRecord(module) ? module.default : undefined
+
     if (isTemplatePack(pack)) {
       const planned = reviewed?.catalog?.id === pack.extends.catalog ? reviewed.catalog : undefined
+
       const base = await loadCatalog(
         store,
         pack.extends.catalog,
         planned?.version ?? (await store.resolve(pack.extends.catalog, pack.extends.versions)),
         planned?.integrity
       )
+
       if (reviewed) {
         // create loads the template package version the plan records.
         return await runCli(["create", ...rest], { ...cli, ...base })
       }
+
       const spec = `${specPrefix(source.package)}${source.package}@${version}${source.template === undefined ? "" : `#${source.template}`}`
+
       return await runCli(["create", spec, ...rest], { ...cli, ...base })
     }
+
     const loaded = catalogModule(module, `${source.package}@${version}`)
     // With --preset, the template comes from the preset, and with --plan, from the plan. For the default catalog, a
     // first argument that isn't one of its templates is the folder.
     const leading = rest[0]?.startsWith("-") === false ? rest[0] : undefined
     const namesTemplate = !named && loaded.catalog.templates.some((each) => each.id === leading)
+
     const template =
       reviewed || namesTemplate || flagValue(rest, "preset") !== undefined
         ? undefined
         : await pickTemplate(loaded.catalog, source, io, json || rest.includes("--yes") || rest.includes("-y"))
+
     if (template === cancelled) {
       const error = { code: "E_CANCELLED", message: "Cancelled. Nothing was changed.", retryable: false } as const
+
       return emit(io, { status: "error", error }, json)
     }
+
     const create = template === undefined ? ["create", ...rest] : ["create", template, ...rest]
+
     return await runCli(create, { ...cli, ...loaded, catalogIntegrity: integrity })
   } catch (error) {
     return emit(io, { status: "error", error: errorInfo(error) }, json)
@@ -125,33 +148,41 @@ export async function runScaffold(argv: readonly string[], options: ScaffoldOpti
 /** A flag's value, written as `--name value` or `--name=value`. */
 function flagValue(args: readonly string[], name: string): string | undefined {
   const flag = `--${name}`
+
   for (const [index, arg] of args.entries()) {
     if (arg === flag) {
       return args[index + 1] ?? ""
     }
+
     if (arg.startsWith(`${flag}=`)) {
       return arg.slice(flag.length + 1)
     }
   }
+
   return undefined
+}
+
+interface RecordedVersion {
+  version: string
+  integrity?: string
 }
 
 /**
  * The version of the named package that a saved plan was made with: a template package's from the plan's packages, a
  * catalog's from its catalog, or the exact version the argument names, for a plan that records neither.
  */
-function recordedVersion(
-  reviewed: ReturnType<typeof readPlanFile>,
-  source: TemplateSource
-): { version: string; integrity?: string } {
+function recordedVersion(reviewed: ReturnType<typeof readPlanFile>, source: TemplateSource): RecordedVersion {
   const recorded =
     reviewed.packs?.[source.package] ?? (reviewed.catalog?.id === source.package ? reviewed.catalog : undefined)
+
   if (recorded) {
     return recorded
   }
+
   if (isValidVersion(source.range)) {
     return { version: source.range }
   }
+
   throw new PlanError(
     "E_USAGE",
     `The plan doesn't record which version of ${source.package} it was made with. Name it: ${source.package}@<version>.`
@@ -164,26 +195,36 @@ function specPrefix(name: string): string {
 
 async function loadCatalog(store: PackStore, name: string, version: string, expectedIntegrity?: string) {
   const { integrity, module } = await store.import(name, version, expectedIntegrity)
+
   return { ...catalogModule(module, `${name}@${version}`), catalogIntegrity: integrity }
 }
 
+interface CatalogModule {
+  catalog: CatalogManifest
+  settings: ProductSettings
+}
+
+/** Settings a catalog package exports. They need the product's name; the rest is defaulted. */
+const namedProduct = z.looseObject({ product: z.string() })
+
 /** A catalog package's catalog and product settings. Without settings, the project's files are named for scaffold. */
-function catalogModule(module: unknown, label: string): { catalog: CatalogManifest; settings: ProductSettings } {
+// oxlint-disable-next-line anti-slop/no-unknown-parameters -- decodes an imported module's exports, which import() leaves untyped
+function catalogModule(module: unknown, label: string): CatalogModule {
   const exports = isRecord(module) ? module : {}
   const catalog = exports.catalog ?? exports.default
+
   if (!isCatalogManifest(catalog)) {
     throw new PlanError(
       "E_INVALID_PACK",
       `${label} isn't a catalog or template package: it needs to export a catalog, or a template package by default.`
     )
   }
-  const settings = exports.settings
+
+  const productSettings = namedProduct.safeParse(exports.settings)
+
   return {
     catalog,
-    settings:
-      isRecord(settings) && typeof settings.product === "string"
-        ? defineSettings({ ...settings, product: settings.product })
-        : defineSettings({ product: "scaffold" })
+    settings: productSettings.success ? defineSettings(productSettings.data) : defineSettings({ product: "scaffold" })
   }
 }
 
@@ -195,6 +236,7 @@ async function pickTemplate(
   unattended: boolean
 ): Promise<string | typeof cancelled> {
   const ids = catalog.templates.map((template) => template.id)
+
   if (source.template !== undefined) {
     if (!ids.includes(source.template)) {
       throw new PlanError(
@@ -202,18 +244,23 @@ async function pickTemplate(
         `${source.package} has no template named ${source.template}. It has ${ids.join(", ")}.`
       )
     }
+
     return source.template
   }
+
   const [only] = ids
+
   if (ids.length === 1 && only !== undefined) {
     return only
   }
+
   if (unattended || !io.isTTY) {
     throw new PlanError(
       "E_USAGE",
       `${source.package} has more than one template. Pick one: ${ids.map((id) => `${source.package}#${id}`).join(", ")}.`
     )
   }
+
   return io.prompter.select({
     message: "Which template?",
     options: catalog.templates.map((template) => ({
@@ -230,5 +277,6 @@ function emit(io: CliIo, envelope: Envelope, json: boolean): number {
   } else {
     io.stderr(describeEnvelope(envelope))
   }
+
   return exitCode(envelope)
 }

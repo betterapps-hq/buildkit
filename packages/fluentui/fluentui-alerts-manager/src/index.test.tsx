@@ -2,7 +2,9 @@ import { FluentProvider, webLightTheme } from "@fluentui/react-components"
 import { act, cleanup, render, screen } from "@testing-library/react"
 import { afterEach, expect, it, vi } from "vite-plus/test"
 import { AlertRegion, createAlertManager } from "./index.js"
+
 afterEach(cleanup)
+
 it("renders Fluent actions, persistent notices, and dismissal", () => {
   const manager = createAlertManager()
   const action = vi.fn<() => void>()
@@ -22,10 +24,12 @@ it("renders Fluent actions, persistent notices, and dismissal", () => {
   expect(screen.getByText("Persistent")).toBeTruthy()
   expect(screen.queryByRole("button")).toBeNull()
 })
+
 it("accepts the shared custom adapter contract", () => {
   function Alert() {
     return <p>Custom surface</p>
   }
+
   const manager = createAlertManager({ adapter: { Alert } })
   manager.add({})
   render(<AlertRegion manager={manager} />)

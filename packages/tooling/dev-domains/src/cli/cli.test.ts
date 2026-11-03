@@ -17,13 +17,17 @@ vi.mock("@clack/prompts", () => ({
   multiselect: vi.fn<typeof prompts.select>(),
   confirm: vi.fn<typeof prompts.confirm>()
 }))
+
 Object.defineProperty(process.stdin, "isTTY", { configurable: true, get: () => false })
+
 const dirs: string[] = []
+
 afterEach(async () => {
   vi.restoreAllMocks()
   vi.clearAllMocks()
   await Promise.all(dirs.splice(0).map((dir) => rm(dir, { recursive: true, force: true })))
 })
+
 async function fixture() {
   const root = await mkdtemp(path.join(os.tmpdir(), "buildkit-cli-"))
   dirs.push(root)
@@ -31,8 +35,10 @@ async function fixture() {
     path.join(root, "package.json"),
     JSON.stringify({ name: "demo", scripts: { dev: "vite", storybook: "storybook dev" } })
   )
+
   return root
 }
+
 it("prints detection, resolved URLs, and schema without writing config", async () => {
   const root = await fixture()
   const write = vi.spyOn(process.stdout, "write").mockReturnValue(true)
@@ -42,6 +48,7 @@ it("prints detection, resolved URLs, and schema without writing config", async (
   expect(write.mock.calls.map(([value]) => String(value)).join("\n")).toContain("https://demo.localhost")
   await expect(readFile(path.join(root, "dev-domains.json"))).rejects.toThrow(Error)
 })
+
 it("supports noninteractive dry runs and refuses overwrite", async () => {
   const root = await fixture()
   vi.spyOn(process.stdout, "write").mockReturnValue(true)
@@ -51,6 +58,7 @@ it("supports noninteractive dry runs and refuses overwrite", async () => {
   expect(JSON.parse(await readFile(path.join(root, "dev-domains.json"), "utf8"))).toMatchObject({ project: "demo" })
   await expect(initialize(root, { yes: true })).rejects.toThrow("already exists")
 })
+
 it("guides selection, naming, callbacks, tests, and webhook configuration", async () => {
   const root = await fixture()
   vi.spyOn(process.stdin, "isTTY", "get").mockReturnValue(true)
@@ -69,6 +77,7 @@ it("guides selection, naming, callbacks, tests, and webhook configuration", asyn
   expect(config.endpoints.app).toMatchObject({ auth: ["/callback"], tunnel: { paths: ["/hooks"] } })
   expect(config.endpoints["app-e2e"]).toMatchObject({ kind: "e2e", script: "dev" })
 })
+
 it("handles cancellation and endpoint selection without implicit choices", async () => {
   expect(() => answer(Symbol("cancel"))).toThrow("cancelled")
   expect(await chooseEndpoint([{ service: "app", origin: "http://app" }])).toBe("app")

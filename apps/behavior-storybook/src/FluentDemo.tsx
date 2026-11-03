@@ -1,4 +1,5 @@
 import { createFluentTheme, FluentThemeProvider, useTheme, type FluentThemeOptions } from "@buildkitgg/fluentui-theme"
+import { ExampleResult } from "@buildkitgg/storybook-config/examples"
 import {
   Button,
   Dialog,
@@ -10,7 +11,6 @@ import {
   DialogActions,
   Text
 } from "@fluentui/react-components"
-import { ExampleResult } from "@repo/storybook-config/examples"
 import { useState } from "react"
 import { useFluentDemoStyles } from "./FluentDemo.styles.js"
 
@@ -18,6 +18,7 @@ export function FluentDemo({ showPortal = false, ...options }: FluentThemeOption
   const [store] = useState(() => createFluentTheme(options))
   const { theme, resolvedTheme, setTheme } = useTheme(store)
   const classes = useFluentDemoStyles()
+
   return (
     <FluentThemeProvider store={store} className={classes.surface}>
       <section className={classes.content} aria-label="Fluent theme example">

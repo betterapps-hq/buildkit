@@ -34,6 +34,7 @@ const packageManagers = ["pnpm", "npm", "yarn", "bun"] as const
 /** The package manager that ran the CLI, from `npm_config_user_agent`, such as `pnpm/10.0.0 npm/? node/v24.0.0`. */
 export function packageManagerFrom(userAgent: string | undefined): SetupSettings["packageManager"] {
   const name = userAgent?.split("/")[0]
+
   return packageManagers.find((manager) => manager === name)
 }
 
@@ -47,10 +48,14 @@ export function setupSteps(
 ): SetupStep[] {
   const manager = options.settings?.packageManager ?? packageManagerFrom(options.userAgent) ?? "pnpm"
   const install = `${manager} install`
+
   const commandSteps = (when: CommandHint["when"]) =>
-    commands
-      .filter((command) => command.setup && command.when === when && command.run !== install)
-      .map((command) => ({ label: command.why, run: command.run, hint: command.run }))
+    commands.flatMap((command) =>
+      command.setup && command.when === when && command.run !== install
+        ? [{ label: command.why, run: command.run, hint: command.run }]
+        : []
+    )
+
   return [
     ...commandSteps("after-apply"),
     ...(options.settings?.install === false ? [] : [{ label: "Install dependencies", run: install, hint: install }]),
@@ -77,6 +82,7 @@ export function insideRepository(folder: string): boolean {
     if (existsSync(join(current, ".git"))) {
       return true
     }
+
     if (dirname(current) === current) {
       return false
     }

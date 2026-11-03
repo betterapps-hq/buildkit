@@ -4,6 +4,7 @@ const VERTEX_SOURCE = "attribute vec2 a; void main() { gl_Position = vec4(a, 0.0
 
 /** The most cards and plates the light can pass under, matching the array in the shader. */
 const MAX_OCCLUDERS = 20
+
 /** How far the pillars sway, as a share of the card's width. */
 const SWAY = 0.13
 
@@ -62,40 +63,51 @@ function fit(canvas: HTMLCanvasElement, frame: LightFrame, most: number) {
   const ratio = Math.min(window.devicePixelRatio || 1, most)
   const width = Math.max(1, Math.round(frame.width * ratio))
   const height = Math.max(1, Math.round(frame.height * ratio))
+
   if (canvas.width !== width || canvas.height !== height) {
     canvas.width = width
     canvas.height = height
   }
+
   return ratio
 }
 
 function compile(gl: WebGLRenderingContext, type: number, source: string) {
   const shader = gl.createShader(type)
+
   if (!shader) {
     return null
   }
+
   gl.shaderSource(shader, source)
   gl.compileShader(shader)
+
   return gl.getShaderParameter(shader, gl.COMPILE_STATUS) ? shader : null
 }
 
 function webglLight(canvas: HTMLCanvasElement): StackLight | null {
   const gl = canvas.getContext("webgl", { antialias: false, alpha: true, powerPreference: "low-power" })
+
   if (!gl) {
     return null
   }
+
   const vertex = compile(gl, gl.VERTEX_SHADER, VERTEX_SOURCE)
   const fragment = compile(gl, gl.FRAGMENT_SHADER, fragmentSource)
   const program = gl.createProgram()
+
   if (!vertex || !fragment || !program) {
     return null
   }
+
   gl.attachShader(program, vertex)
   gl.attachShader(program, fragment)
   gl.linkProgram(program)
+
   if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
     return null
   }
+
   gl.useProgram(program)
   gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer())
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW)
@@ -166,6 +178,7 @@ function webglLight(canvas: HTMLCanvasElement): StackLight | null {
  */
 function canvasLight(canvas: HTMLCanvasElement): StackLight | null {
   const context = canvas.getContext("2d")
+
   if (!context) {
     return null
   }
@@ -182,20 +195,25 @@ function canvasLight(canvas: HTMLCanvasElement): StackLight | null {
         if (pillar.grow <= 0 || pillar.power <= 0) {
           return
         }
+
         const bottom = levels[index] ?? 0
         const head = bottom + ((levels[index + 1] ?? bottom) - bottom) * pillar.grow
         const spread = index === 2 ? Math.min(1, Math.max(0, (pillar.grow - flare.from) / (flare.to - flare.from))) : 0
         const top = cell.width / 2 + (flare.width / 2 - cell.width / 2) * spread
+
         const corners = [
           place(cell.x - cell.width / 2, cell.y, bottom),
           place(cell.x + cell.width / 2, cell.y, bottom),
           place(cell.x + top, cell.y, head),
           place(cell.x - top, cell.y, head)
         ]
+
         const [start, , end] = corners
+
         if (!start || !end) {
           return
         }
+
         const gradient = context.createLinearGradient(0, start.y, 0, end.y)
         gradient.addColorStop(0, "rgba(56, 242, 209, 0.3)")
         gradient.addColorStop(0.6, "rgba(51, 107, 255, 0.24)")
@@ -223,18 +241,23 @@ function canvasLight(canvas: HTMLCanvasElement): StackLight | null {
  */
 export function createStackLight(canvas: HTMLCanvasElement): StackLight | null {
   const webgl = webglLight(canvas)
+
   if (webgl) {
     return webgl
   }
+
   const fallback = canvasLight(canvas)
+
   if (fallback) {
     return fallback
   }
+
   const sibling = document.createElement("canvas")
   sibling.className = canvas.className
   canvas.after(sibling)
   canvas.hidden = true
   const light = canvasLight(sibling)
+
   return {
     draw: (frame) => light?.draw(frame),
     destroy() {

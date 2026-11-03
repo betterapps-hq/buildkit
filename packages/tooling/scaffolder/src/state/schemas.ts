@@ -14,14 +14,17 @@ export const projectConfigSchema = z.looseObject({
   /** Questions answered "no" (`question:<id>`), and the add-on ids a `many` question offered and its answer left out. */
   declined: z.array(z.string()).optional()
 })
+
 export type ProjectConfig = z.infer<typeof projectConfigSchema>
 
 const provenance = z.enum(["introduced", "adopted"])
 
 const keyState = z.object({ base: z.unknown(), provenance })
+
 export type KeyState = z.infer<typeof keyState>
 
 export const sharedFormats = ["json", "yaml", "lines", "env"] as const
+
 export type SharedFormat = (typeof sharedFormats)[number]
 
 const ownedEntry = z.object({
@@ -32,6 +35,7 @@ const ownedEntry = z.object({
   diskHash: z.string(),
   contributors: z.array(z.string())
 })
+
 const seedEntry = z.object({
   class: z.literal("seed"),
   genHash: z.string(),
@@ -39,7 +43,9 @@ const seedEntry = z.object({
   /** What the engine generated, when the product stores seed bases. It hashes to `genHash`. */
   base: z.string().optional()
 })
+
 const sampleEntry = z.object({ class: z.literal("sample"), genHash: z.string() })
+
 const sharedEntry = z.object({
   class: z.literal("shared"),
   format: z.enum(sharedFormats),
@@ -50,7 +56,9 @@ const sharedEntry = z.object({
 })
 
 export const lockFileEntrySchema = z.discriminatedUnion("class", [ownedEntry, seedEntry, sampleEntry, sharedEntry])
+
 export type LockFileEntry = z.infer<typeof lockFileEntrySchema>
+
 export type SharedLockEntry = z.infer<typeof sharedEntry>
 
 export const lockSchemaVersion = 1
@@ -83,4 +91,5 @@ export const lockSchema = z.object({
   deleted: z.array(z.string()),
   lastApply: z.object({ fingerprint: z.string() }).optional()
 })
+
 export type Lock = z.infer<typeof lockSchema>

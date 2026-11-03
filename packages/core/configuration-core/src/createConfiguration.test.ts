@@ -3,17 +3,23 @@ import { createConfiguration } from "./index.js"
 import type { ConfigurationProvider } from "./index.js"
 
 const defaults = { checkout: false, limit: 10, variant: "standard" }
+
 type Settings = typeof defaults
+
 type Context = { user: string }
+
 function deferred<T>() {
   let resolve!: (value: T) => void
   let reject!: (cause: unknown) => void
+
   const promise = new Promise<T>((yes, no) => {
     resolve = yes
     reject = no
   })
+
   return { promise, resolve, reject }
 }
+
 describe("configuration", () => {
   it("widens inline defaults, accepts interfaces, and rejects non-scalar flag definitions", () => {
     const client = createConfiguration({
@@ -21,13 +27,16 @@ describe("configuration", () => {
       context: {},
       overrides: true
     })
+
     expectTypeOf(client.get("enabled")).toEqualTypeOf<boolean>()
     expectTypeOf(client.get("limit")).toEqualTypeOf<number>()
     expectTypeOf(client.get("variant")).toEqualTypeOf<string>()
     client.override("enabled", true)
+
     interface AppFlags {
       variant: "a" | "b"
     }
+
     const typed = createConfiguration<AppFlags, Context>({ defaults: { variant: "a" }, context: { user: "a" } })
     expectTypeOf(typed.get("variant")).toEqualTypeOf<"a" | "b">()
     // @ts-expect-error Structured values are not supported config.
@@ -45,12 +54,14 @@ describe("configuration", () => {
     expectTypeOf(client.setContext).parameter(0).toEqualTypeOf<Context>()
     // @ts-expect-error Unknown setting names must not compile.
     expect(() => client.get("missing")).toThrow("Unknown settingsuration setting")
+
     const typed = createConfiguration<{ variant: "a" | "b" }, Context>({
       defaults: { variant: "a" },
       context: { user: "a" },
       overrides: true,
       validate: { variant: (value) => value === "a" || value === "b" }
     })
+
     expectTypeOf(typed.get("variant")).toEqualTypeOf<"a" | "b">()
     typed.override("variant", "b")
     // @ts-expect-error Value must match the selected flag.
@@ -66,6 +77,7 @@ describe("configuration", () => {
         .fn<() => Promise<Partial<Settings> & { extra?: boolean }>>()
         .mockResolvedValue({ checkout: true, limit: 20, extra: true })
     }
+
     const client = createConfiguration({ defaults, context: {}, provider, overrides: true })
     const initial = client.getSnapshot()
     expect(client.getSnapshot()).toBe(initial)
@@ -94,6 +106,7 @@ describe("configuration", () => {
     const provider = {
       load: vi.fn<() => Promise<Partial<Settings> & { extra?: boolean }>>().mockResolvedValue({ checkout: true })
     }
+
     const client = createConfiguration({ defaults, context: { user: "a" }, provider })
     await client.refresh()
     provider.load.mockRejectedValue(new Error("offline"))
@@ -109,12 +122,15 @@ describe("configuration", () => {
     const first = deferred<Partial<Settings>>()
     const second = deferred<Partial<Settings>>()
     const signals: AbortSignal[] = []
+
     const provider: ConfigurationProvider<Settings, Context> = {
       load(context, { signal }) {
         signals.push(signal)
+
         return context.user === "a" ? first.promise : second.promise
       }
     }
+
     const client = createConfiguration({ defaults, context: { user: "a" }, provider })
     const a = client.refresh()
     const b = client.setContext({ user: "b" })
@@ -128,17 +144,22 @@ describe("configuration", () => {
   })
   it("disconnects invalidations, aborts pending work, and rejects mutations after disposal", async () => {
     const pending = deferred<Partial<Settings>>()
+
     let invalidate: () => void = () => {
       /* Assigned on subscription. */
     }
+
     const disconnect = vi.fn<() => void>()
+
     const provider = {
       load: vi.fn<() => Promise<Partial<Settings>>>(() => pending.promise),
       subscribe: vi.fn<(listener: () => void) => () => void>((listener: () => void) => {
         invalidate = listener
+
         return disconnect
       })
     }
+
     const client = createConfiguration({ defaults, context: {}, provider, overrides: true })
     const listener = vi.fn<() => void>()
     const unsubscribe = client.subscribe(listener)
@@ -163,6 +184,7 @@ describe("configuration", () => {
       // @ts-expect-error Simulate malformed data from an external SDK.
       load: vi.fn<() => Promise<Partial<Settings>>>().mockResolvedValue({ checkout: true, limit: "oops" })
     }
+
     const client = createConfiguration({ defaults, context: {}, provider, overrides: true })
     await client.refresh()
     expect(client.get("checkout")).toBe(false)

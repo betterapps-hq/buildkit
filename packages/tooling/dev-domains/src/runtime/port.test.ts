@@ -9,6 +9,7 @@ it("holds distinct ports until release and allows repeated cleanup", async () =>
   const state = await mkdtemp(path.join(os.tmpdir(), "buildkit-ports-"))
   vi.stubEnv("PORTLESS_STATE_DIR", state)
   const reservations = await Promise.all([reservePort(), reservePort()])
+
   try {
     expect(reservations[0]!.port).not.toBe(reservations[1]!.port)
     const server = createServer()

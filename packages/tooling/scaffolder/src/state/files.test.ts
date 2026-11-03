@@ -4,6 +4,7 @@ import type { ProjectConfig } from "./schemas.js"
 import { defineSettings } from "./settings.js"
 
 const settings = defineSettings({ product: "acme", printWidth: 60 })
+
 const config: ProjectConfig = {
   catalog: "@acme/catalog",
   name: "demo",
@@ -12,6 +13,7 @@ const config: ProjectConfig = {
   addons: { "@acme/ci": {} },
   declined: ["slot:auth"]
 }
+
 const long = { locales: ["en", "fr", "de"], detection: ["url", "cookie"], source: "en" }
 
 describe("the config file", () => {

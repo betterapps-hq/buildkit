@@ -4,7 +4,9 @@ import type { ComponentType } from "react"
 import type { ExampleButtonProps, ExampleInputProps, ModalScenario } from "./ModalExamples.js"
 
 type ProfileState = { name: string; email: string }
+
 type SavedProfile = ProfileState & { id: number }
+
 type ProfileComponents = {
   mode?: ModalScenario
   Button: ComponentType<ExampleButtonProps>
@@ -26,6 +28,7 @@ export function createProfileModal<TSurface>(
     error
   }: ModalSlotProps<ProfileState, SavedProfile | null, TSurface>) {
     const [shouldFail, setShouldFail] = useState(mode === "async")
+
     return (
       <form
         className="modal-example-form"
@@ -35,12 +38,15 @@ export function createProfileModal<TSurface>(
             if (!current.name.trim()) {
               throw new Error("Enter a display name.")
             }
+
             // Simulate an application request; no timer or network policy lives in the package.
             await new Promise((resolve) => setTimeout(resolve, 1000))
+
             if (shouldFail) {
               setShouldFail(false)
               throw new Error("Your changes could not be saved. Try again.")
             }
+
             return { id: 42, name: current.name.trim(), email: current.email }
           })
         }}
@@ -105,9 +111,11 @@ export function createProfileModal<TSurface>(
       if (mode !== "guard") {
         return true
       }
+
       if (data.name === initialState.name && data.email === initialState.email) {
         return true
       }
+
       return manager.confirm({
         title: "Discard changes?",
         description: "Your profile changes have not been saved.",

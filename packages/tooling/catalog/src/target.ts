@@ -30,6 +30,7 @@ function appName(name: string): string {
 
 function base(ctx: TargetContext): Contribution[] {
   const mode = ctx.target.mode
+
   return [
     jsonKey("package.json", "/name", ctx.project.name),
     jsonKey("package.json", "/version", "0.0.0"),

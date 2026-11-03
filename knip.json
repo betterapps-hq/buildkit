@@ -1,6 +1,6 @@
 {
   "ignoreExportsUsedInFile": true,
-  "ignore": [],
+  "ignore": ["**/src/vendor/**"],
   "workspaces": {
     "apps/docs": {
       "entry": ["scripts/generate.ts", "content/.vitepress/config.ts", "content/.vitepress/theme/index.ts"]
@@ -17,7 +17,11 @@
     ".": {
       "entry": ["beachball.config.js"]
     },
+    "packages/core/typescript-utils": {
+      "entry": ["src/index.ts", "src/reset.ts", "test/consumer/*.ts", "test/consumer-types/*.ts"]
+    },
     "packages/tooling/storybook-config": {
+      "entry": ["src/main.ts", "src/preview.ts", "src/ExampleFrame.tsx"],
       "ignoreDependencies": ["@chromatic-com/storybook", "@storybook/addon-a11y", "@storybook/addon-vitest"]
     },
     "packages/tooling/scaffolder": {
@@ -124,6 +128,12 @@
     "packages/shadcn/shadcn-baseui-vega": {
       "entry": [".generated/index.ts"],
       "ignoreDependencies": ["@repo/shadcn-generator", "lucide-react", "next-themes"]
+    },
+    "packages/tooling/oxlint-plugin-anti-slop": {
+      "entry": ["src/index.ts", "src/recommended.ts", "test/fixture/*.ts"]
+    },
+    "packages/tooling/oxlint-config": {
+      "entry": ["src/base.ts", "test/fixture/**/*.ts"]
     }
   }
 }

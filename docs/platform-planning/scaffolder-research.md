@@ -28,7 +28,7 @@ Working notes with full detail and a URL for each claim are in the side-session 
 | #          | Decision (2026-10-28)                                                                                                                                                  | What changes                                                                                                                       |
 | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | D1         | **No backwards compatibility for SpawnKit.** It has never been released, so state formats, generated games and catalog URLs can change freely                          | There is no state conversion, no byte-identical migration phase and no fixture games. SpawnKit moves straight onto the engine (§6) |
-| D4         | **No `@buildkitgg/i18n` package.** Localization is Lingui only. The localization add-on writes its wiring into the app as code you own, and `upgrade` keeps it current | §4.7 and §3.2. The per-request rule ships as the `i18n` rule set in `@buildkitgg/oxlint-config`                                    |
+| D4         | **No `@buildkitgg/i18n` package.** Localization is Lingui only. The localization add-on writes its wiring into the app as code you own, and `upgrade` keeps it current | §4.7 and §3.2                                                                                                                      |
 | D2, D3, D5 | **Deploys.** Moved to [the Better Apps deploy plan](https://github.com/betterapps-hq/better-apps/blob/main/docs/deploy-plan.md), which also holds D6                   | §5                                                                                                                                 |
 
 ## Review
@@ -647,13 +647,9 @@ There is no `@buildkitgg/i18n` package (D4). The add-on writes the Lingui wiring
   - the native `macroTransform` (the example uses Babel);
   - the Workers specifics.
 
-- **The per-request rule is a lint rule, not a runtime guard.**
-  - A Worker serves concurrent requests, so the global Lingui `i18n` or the core `t` macro on the server leaks one
-    user's locale to another. The `i18n` rule set of `@buildkitgg/oxlint-config` bans both, and the add-on adds that
-    rule set to the lint config.
-  - `.oxlintrc.json` can't extend a package: "Package imports are not supported". So the add-on contributes a
-    `lint.extends` entry, which the target spreads into a TypeScript lint config: the `lint` block of `vite.config.ts`
-    under Vite+, or `oxlint.config.ts`.
+- **The per-request rule is a convention, not a lint rule.** A Worker serves concurrent requests, so the global Lingui
+  `i18n` or the core `t` macro on the server leaks one user's locale to another. The add-on's seed code creates an
+  instance per request, and its generated docs explain why the global one must stay unused on the server.
 - **Tradeoff:** Renovate can't deliver a wiring fix. It reaches an app only when the app runs `buildkit upgrade`, and
   heavy local edits make that merge a conflict to resolve. A fix that a text merge can't carry ships as a `codemod` or
   `agent` migration (§4.6).
@@ -706,13 +702,6 @@ export default defineAddon({
         content: emptyCatalog(l),
         ownership: "sample"
       })),
-      // The per-request rule. The target already depends on @buildkitgg/oxlint-config for its base rules.
-      {
-        kind: "entry",
-        point: "lint.extends",
-        id: "i18n",
-        value: { ref: { module: "@buildkitgg/oxlint-config/i18n", export: "default" } }
-      },
       // Wrap renders I18nProvider; dehydrate and hydrate carry the locale and messages to the client.
       {
         kind: "entry",
@@ -824,7 +813,6 @@ SpawnKit columns show how other add-ons' entries land.
 | `app.providers`            | `client.tsx`, used in `__root.tsx`                                                                                                                                                                      | same                                                     | `app/_generated/buildkit/client.tsx` (`"use client"`) in `app/layout.tsx` | unsupported (no React)            |
 | `server.requestMiddleware` | `server.ts`, imported by `src/start.ts` `createStart(() => ({ requestMiddleware }))`. The target's `start.ts` lists Start's CSRF middleware first, because Start stops adding it once `start.ts` exists | unsupported: page requests are static                    | `proxy.ts` chain (Next 16 renamed `middleware.ts`)                        | unsupported                       |
 | `router.wrappers`          | `client.tsx`, applied in `getRouter()` in `src/router.tsx`                                                                                                                                              | same                                                     | n/a                                                                       | n/a                               |
-| `lint.extends`             | `config.ts`, spread into `lint.extends` in `vite.config.ts` (Vite+) [U: the `lint` block's `extends` accepting imported configs]                                                                        | same                                                     | same, or `oxlint.config.ts` without Vite+                                 | same                              |
 | `root.loaderData`          | `server.ts`, called from the root loader                                                                                                                                                                | runs at prerender (build) time, so not usable for locale | n/a                                                                       | n/a                               |
 | `html.attributes`          | root `shellComponent`                                                                                                                                                                                   | prerendered shell                                        | `<html>` in `app/layout.tsx`                                              | `index.html` (static values only) |
 | `router.rewrite`           | router `rewrite` option                                                                                                                                                                                 | same                                                     | n/a                                                                       | n/a                               |
