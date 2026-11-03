@@ -18,7 +18,7 @@ export const catalog = defineCatalog({
       title: "Localization",
       question: "Add localization?",
       pick: "one",
-      choices: ["@buildkit/i18n"]
+      choices: [{ addon: "@buildkit/i18n", hint: "Lingui, with locale detection and localized URLs" }]
     })
   ],
   templates: [
@@ -28,7 +28,14 @@ export const catalog = defineCatalog({
       description: "A React app on TanStack Start, server-rendered or as a single-page app.",
       target: "tanstack-start",
       required: ["@buildkit/ci"],
-      questions: ["i18n"]
+      questions: ["i18n"],
+      gallery: {
+        tags: ["react", "tanstack-start", "ssr", "spa"],
+        links: {
+          docs: "https://github.com/betterapps-hq/buildkit/tree/main/packages/tooling/catalog#readme",
+          source: "https://github.com/betterapps-hq/buildkit/tree/main/packages/tooling/catalog"
+        }
+      }
     })
   ],
   addons: [ci, i18n]

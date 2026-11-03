@@ -6,9 +6,10 @@ recommended stack. The engine itself is described in [scaffolder-research.md](sc
 [scaffolder-phase-0.md](scaffolder-phase-0.md). Third-party templates started in
 [scaffolder-template-packages.md](scaffolder-template-packages.md).
 
-**Status (2026-11-03):** phases A to D are built. Questions shipped in 0.7.0 and old answers in 0.8.0; template packages
-on the catalog's templates, setup steps and add-on packages ship in 0.9.0. Phase E, the catalogs and the site, is next.
-The `groups` work on `claude/scaffolder-picks` (e5a118a) was superseded by questions and never merged.
+**Status (2026-11-03):** phases A to D are built, and E1. Main is versioned 0.8.0 with 0.9.0's change files pending, but
+npm still has 0.6.0: releases fail until npm's trusted publishers name `betterapps-hq/buildkit` instead of the old
+`AndrewCraswell/buildkit`. E2 and E3 wait for that release. The `groups` work on `claude/scaffolder-picks` (e5a118a) was
+superseded by questions and never merged.
 
 ## Why
 
@@ -1203,6 +1204,11 @@ with the same ids (`database`, `auth`, and `i18n`), so `--database`, `--auth` an
 add-on provides `database` and conflicts with `provides:database`; Better Auth requires `provides:database`. Hints on
 each choice, help links on `BETTER_AUTH_SECRET`, `pnpm db:generate` as a setup step, gallery metadata, `packages` on the
 add-ons that wrap a library. Pins stay exact, as phase 2 decided. Tests: the catalog's matrix and smoke tests.
+
+Done on 2026-11-03 in [#E1](https://github.com/betterapps-hq/buildkit/pull/E1). #109 had removed the database and
+sign-in add-ons and B1 to B5 had moved `i18n` to a question, so what was left: a hint on the localization choice, Lingui
+ranges in the i18n add-on's `packages`, gallery tags and links on `app`, and `pnpm install` and `pnpm build` as setup
+steps, with `setup.packageManager: "pnpm"` in Buildkit's settings because apps pin pnpm.
 
 **E2. SpawnKit's catalog.** In `D:\spawn`, `packages/templates/src/scaffold`: the `physics`, `ui`, `simulation` and
 `telemetry` slots become shared questions with the same ids, so `--physics rapier2d` keeps working. Telemetry becomes

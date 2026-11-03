@@ -50,6 +50,25 @@ describe("the catalog", () => {
     expect(template?.id).toBe("app")
     expect(template?.questionsByMode.ssr?.map((question) => question.id)).toEqual(["i18n"])
     expect(template?.required.map((addon) => addon.id)).toEqual(["@buildkit/ci"])
+    expect(template?.questionsByMode.ssr?.[0]?.choices).toEqual([
+      { id: "@buildkit/i18n", label: "Localization", hint: "Lingui, with locale detection and localized URLs" }
+    ])
+  })
+
+  it("describes the app template for a gallery", () => {
+    const [template] = describeCatalog(catalog).templates
+    expect(template?.gallery.tags).toEqual(["react", "tanstack-start", "ssr", "spa"])
+    expect(template?.gallery.stack).toEqual(["CI"])
+    expect(template?.gallery.links?.docs).toMatch(/^https:\/\/github\.com\/betterapps-hq\/buildkit\//)
+  })
+
+  it("installs with pnpm and generates the route tree as setup steps", async () => {
+    expect(settings.setup).toEqual({ packageManager: "pnpm" })
+    const commands = (await init()).commands.map(({ run, when, setup }) => ({ run, when, setup }))
+    expect(commands).toEqual([
+      { run: "pnpm install", when: "after-apply", setup: true },
+      { run: "pnpm build", when: "after-install", setup: true }
+    ])
   })
 })
 
