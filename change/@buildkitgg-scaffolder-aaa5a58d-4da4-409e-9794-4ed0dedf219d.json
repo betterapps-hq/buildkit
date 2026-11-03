@@ -1,7 +1,0 @@
-{
-  "type": "minor",
-  "comment": "Add-ons can conflict with any other add-on that provides a capability, with `conflicts: [\"provides:orm\"]`, and adding one that conflicts this way offers to replace the installed one",
-  "packageName": "@buildkitgg/scaffolder",
-  "email": "ajcraswell@gmail.com",
-  "dependentChangeType": "patch"
-}
