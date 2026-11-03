@@ -3,6 +3,7 @@ import { spawn } from "node:child_process"
 import { createHash } from "node:crypto"
 import { readFileSync, readdirSync, rmSync } from "node:fs"
 import { createServer } from "node:http"
+import { availableParallelism } from "node:os"
 import { resolve } from "node:path"
 import { root, variants, readJson, writeJson, write, pnpm, pnpmCommand } from "./shared.mjs"
 
@@ -118,86 +119,95 @@ async function command(args, cwd) {
   })
 }
 
-try {
-  for (const { style, directory } of matrix) {
-    const fixture = resolve(workspace, style)
+async function validateStyle({ style, directory }) {
+  const fixture = resolve(workspace, style)
 
-    if (!/^[a-z]+$/.test(style) || !fixture.startsWith(workspace)) {
-      throw new Error("Invalid fixture directory")
-    }
-
-    rmSync(fixture, { recursive: true, force: true })
-    const selected = readJson(resolve(directory, "package.json"))
-    write(resolve(fixture, "pnpm-workspace.yaml"), "packages: []\nnodeLinker: isolated\n")
-    write(resolve(fixture, ".npmrc"), `@buildkitgg:registry=${origin}\nstrict-peer-dependencies=true\n`)
-    writeJson(resolve(fixture, "package.json"), {
-      name: `style-consumer-${style}`,
-      private: true,
-      type: "module",
-      dependencies: {
-        "@buildkitgg/shadcn-baseui-kit": `npm:${selected.name}@${selected.version}`,
-        "@buildkitgg/shadcn-modals-manager": packages.get("@buildkitgg/shadcn-modals-manager").pkg.version,
-        "@buildkitgg/shadcn-alerts-manager": packages.get("@buildkitgg/shadcn-alerts-manager").pkg.version,
-        react: "19.3.1",
-        "react-dom": "19.3.1"
-      },
-      devDependencies: { vite: "8.3.4", typescript: "7.0.2", "@types/react": "19.3.0", "@types/react-dom": "19.3.0" }
-    })
-    write(
-      resolve(fixture, "index.html"),
-      '<html><head><title>Style consumer</title></head><body><div id="root"></div><script type="module" src="/src.tsx"></script></body></html>'
-    )
-    write(
-      resolve(fixture, "src.tsx"),
-      `import React from "react"\nimport { createRoot } from "react-dom/client"\nimport { Button } from "@buildkitgg/shadcn-baseui-kit"\nimport "@buildkitgg/shadcn-baseui-kit/styles.css"\nimport "@buildkitgg/shadcn-modals-manager/styles.css"\nimport "@buildkitgg/shadcn-alerts-manager/styles.css"\nimport { createModalManager, ModalRenderer } from "@buildkitgg/shadcn-modals-manager"\nimport { createAlertManager, AlertRegion } from "@buildkitgg/shadcn-alerts-manager"\nconst modals = createModalManager()\nconst alerts = createAlertManager()\nalerts.info({ title: "${style} selected", body: "The app and both managers use the installed style." })\nfunction App() { return <main style={{padding:24,maxWidth:640,margin:"auto"}}><h1>${style}</h1><AlertRegion manager={alerts}/><Button onClick={() => { void modals.confirm({title:"Confirm selection",description:"This dialog uses the app's selected style."}) }}>Open confirmation</Button><ModalRenderer manager={modals}/></main> }\ncreateRoot(document.getElementById("root")!).render(<App/>)\n`
-    )
-    writeJson(resolve(fixture, "tsconfig.json"), {
-      compilerOptions: {
-        strict: true,
-        skipLibCheck: true,
-        jsx: "react-jsx",
-        module: "ESNext",
-        moduleResolution: "Bundler",
-        target: "ES2022",
-        noEmit: true
-      },
-      include: ["src.tsx"]
-    })
-    write(
-      resolve(fixture, "server.mjs"),
-      `import assert from 'node:assert/strict';\nimport {createElement} from 'react';\nimport {renderToString} from 'react-dom/server';\nimport {Button, buttonVariants} from '@buildkitgg/shadcn-baseui-kit';\nconst root=import.meta.resolve('@buildkitgg/shadcn-baseui-kit');\nfor(const name of ['@buildkitgg/shadcn-modals-manager','@buildkitgg/shadcn-alerts-manager']) { assert.equal(import.meta.resolve('@buildkitgg/shadcn-baseui-kit',import.meta.resolve(name)),root); }\nassert.match(renderToString(createElement(Button,null,'Selected')),/Selected/);\nprocess.stdout.write(JSON.stringify({style:${JSON.stringify(style)},classes:buttonVariants(),resolved:root}));\n`
-    )
-    await command(["install", "--no-frozen-lockfile", "--ignore-scripts", "--prefer-offline"], fixture)
-    await command(["exec", "tsc", "--noEmit"], fixture)
-    await command(["exec", "node", "--experimental-import-meta-resolve", "server.mjs"], fixture)
-    await command(["exec", "vite", "build"], fixture)
-    // The precompiled path must not require a Tailwind compiler or configuration in the consumer.
-    const consumerManifest = readJson(resolve(fixture, "package.json"))
-    assert.ok(!consumerManifest.dependencies.tailwindcss && !consumerManifest.devDependencies.tailwindcss)
-    // Exercise the alternative build input against the actual packed JavaScript, not workspace TSX.
-    await command(["add", "-D", "--ignore-scripts", "tailwindcss@^4.3.3", "@tailwindcss/cli@^4.3.3"], fixture)
-    write(
-      resolve(fixture, "input.css"),
-      '@import "tailwindcss";\n@import "@buildkitgg/shadcn-baseui-kit/tailwind.css";\n'
-    )
-    await command(["exec", "tailwindcss", "-i", "input.css", "-o", "combined.css", "--minify"], fixture)
-    const combined = readFileSync(resolve(fixture, "combined.css"), "utf8")
-    assert.ok(combined.includes(".inline-flex"), `${style}: packed component utilities were not scanned`)
-    assert.ok(combined.includes(".light"), `${style}: light island variables missing`)
-    assert.ok(combined.includes("rtl"), `${style}: RTL utilities missing`)
-    assert.doesNotMatch(combined, /@(source|theme|utility)\s/)
-
-    const consumerSource = readFileSync(resolve(fixture, "src.tsx"), "utf8")
-      .replace('import "@buildkitgg/shadcn-baseui-kit/styles.css"', 'import "./combined.css"')
-      .replace(/import "@buildkitgg\/shadcn-(?:modals|alerts)-manager\/styles.css"\n/g, "")
-
-    write(resolve(fixture, "src.tsx"), consumerSource)
-    await command(["exec", "vite", "build"], fixture)
-    // Vite must never bundle a second implementation through a manager dependency.
-    process.stdout.write(
-      `Validated packed ${style}: strict peers, TypeScript, server rendering, and production CSS/JS.`
-    )
+  if (!/^[a-z]+$/.test(style) || !fixture.startsWith(workspace)) {
+    throw new Error("Invalid fixture directory")
   }
+
+  rmSync(fixture, { recursive: true, force: true })
+  const selected = readJson(resolve(directory, "package.json"))
+  write(resolve(fixture, "pnpm-workspace.yaml"), "packages: []\nnodeLinker: isolated\n")
+  write(resolve(fixture, ".npmrc"), `@buildkitgg:registry=${origin}\nstrict-peer-dependencies=true\n`)
+  writeJson(resolve(fixture, "package.json"), {
+    name: `style-consumer-${style}`,
+    private: true,
+    type: "module",
+    dependencies: {
+      "@buildkitgg/shadcn-baseui-kit": `npm:${selected.name}@${selected.version}`,
+      "@buildkitgg/shadcn-modals-manager": packages.get("@buildkitgg/shadcn-modals-manager").pkg.version,
+      "@buildkitgg/shadcn-alerts-manager": packages.get("@buildkitgg/shadcn-alerts-manager").pkg.version,
+      react: "19.3.1",
+      "react-dom": "19.3.1"
+    },
+    devDependencies: { vite: "8.3.4", typescript: "7.0.2", "@types/react": "19.3.0", "@types/react-dom": "19.3.0" }
+  })
+  write(
+    resolve(fixture, "index.html"),
+    '<html><head><title>Style consumer</title></head><body><div id="root"></div><script type="module" src="/src.tsx"></script></body></html>'
+  )
+  write(
+    resolve(fixture, "src.tsx"),
+    `import React from "react"\nimport { createRoot } from "react-dom/client"\nimport { Button } from "@buildkitgg/shadcn-baseui-kit"\nimport "@buildkitgg/shadcn-baseui-kit/styles.css"\nimport "@buildkitgg/shadcn-modals-manager/styles.css"\nimport "@buildkitgg/shadcn-alerts-manager/styles.css"\nimport { createModalManager, ModalRenderer } from "@buildkitgg/shadcn-modals-manager"\nimport { createAlertManager, AlertRegion } from "@buildkitgg/shadcn-alerts-manager"\nconst modals = createModalManager()\nconst alerts = createAlertManager()\nalerts.info({ title: "${style} selected", body: "The app and both managers use the installed style." })\nfunction App() { return <main style={{padding:24,maxWidth:640,margin:"auto"}}><h1>${style}</h1><AlertRegion manager={alerts}/><Button onClick={() => { void modals.confirm({title:"Confirm selection",description:"This dialog uses the app's selected style."}) }}>Open confirmation</Button><ModalRenderer manager={modals}/></main> }\ncreateRoot(document.getElementById("root")!).render(<App/>)\n`
+  )
+  writeJson(resolve(fixture, "tsconfig.json"), {
+    compilerOptions: {
+      strict: true,
+      skipLibCheck: true,
+      jsx: "react-jsx",
+      module: "ESNext",
+      moduleResolution: "Bundler",
+      target: "ES2022",
+      noEmit: true
+    },
+    include: ["src.tsx"]
+  })
+  write(
+    resolve(fixture, "server.mjs"),
+    `import assert from 'node:assert/strict';\nimport {createElement} from 'react';\nimport {renderToString} from 'react-dom/server';\nimport {Button, buttonVariants} from '@buildkitgg/shadcn-baseui-kit';\nconst root=import.meta.resolve('@buildkitgg/shadcn-baseui-kit');\nfor(const name of ['@buildkitgg/shadcn-modals-manager','@buildkitgg/shadcn-alerts-manager']) { assert.equal(import.meta.resolve('@buildkitgg/shadcn-baseui-kit',import.meta.resolve(name)),root); }\nassert.match(renderToString(createElement(Button,null,'Selected')),/Selected/);\nprocess.stdout.write(JSON.stringify({style:${JSON.stringify(style)},classes:buttonVariants(),resolved:root}));\n`
+  )
+  await command(["install", "--no-frozen-lockfile", "--ignore-scripts", "--prefer-offline"], fixture)
+  await command(["exec", "tsc", "--noEmit"], fixture)
+  await command(["exec", "node", "--experimental-import-meta-resolve", "server.mjs"], fixture)
+  await command(["exec", "vite", "build"], fixture)
+  // The precompiled path must not require a Tailwind compiler or configuration in the consumer.
+  const consumerManifest = readJson(resolve(fixture, "package.json"))
+  assert.ok(!consumerManifest.dependencies.tailwindcss && !consumerManifest.devDependencies.tailwindcss)
+  // Exercise the alternative build input against the actual packed JavaScript, not workspace TSX.
+  await command(["add", "-D", "--ignore-scripts", "tailwindcss@^4.3.3", "@tailwindcss/cli@^4.3.3"], fixture)
+  write(
+    resolve(fixture, "input.css"),
+    '@import "tailwindcss";\n@import "@buildkitgg/shadcn-baseui-kit/tailwind.css";\n'
+  )
+  await command(["exec", "tailwindcss", "-i", "input.css", "-o", "combined.css", "--minify"], fixture)
+  const combined = readFileSync(resolve(fixture, "combined.css"), "utf8")
+  assert.ok(combined.includes(".inline-flex"), `${style}: packed component utilities were not scanned`)
+  assert.ok(combined.includes(".light"), `${style}: light island variables missing`)
+  assert.ok(combined.includes("rtl"), `${style}: RTL utilities missing`)
+  assert.doesNotMatch(combined, /@(source|theme|utility)\s/)
+
+  const consumerSource = readFileSync(resolve(fixture, "src.tsx"), "utf8")
+    .replace('import "@buildkitgg/shadcn-baseui-kit/styles.css"', 'import "./combined.css"')
+    .replace(/import "@buildkitgg\/shadcn-(?:modals|alerts)-manager\/styles.css"\n/g, "")
+
+  write(resolve(fixture, "src.tsx"), consumerSource)
+  await command(["exec", "vite", "build"], fixture)
+  // Vite must never bundle a second implementation through a manager dependency.
+  process.stdout.write(`Validated packed ${style}: strict peers, TypeScript, server rendering, and production CSS/JS.`)
+}
+
+// Each style installs and builds its own fixture, so they run side by side, as many at once as there are cores.
+const queue = [...matrix]
+
+try {
+  await Promise.all(
+    Array.from({ length: Math.min(queue.length, availableParallelism()) }, async () => {
+      for (let next = queue.shift(); next; next = queue.shift()) {
+        await validateStyle(next)
+      }
+    })
+  )
 } finally {
   server.closeAllConnections()
   await new Promise((done) => server.close(done))

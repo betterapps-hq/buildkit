@@ -55,7 +55,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "build": "node ../../tooling/shadcn-generator/src/build.mjs mira",
+    "build": "node ../../tooling/shadcn-generator/src/sources.mjs mira && node ../../tooling/shadcn-generator/src/build.mjs mira",
     "prepack": "pnpm build"
   },
   "dependencies": {

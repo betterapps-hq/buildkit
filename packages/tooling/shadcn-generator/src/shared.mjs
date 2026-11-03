@@ -33,12 +33,12 @@ export function pnpm(args, cwd = root, options = {}) {
 }
 
 // Runs a package's bin with Node: vp run starts tasks without pnpm's environment, and no shell is needed.
-export function runBin(packageName, binName, args, cwd) {
+export function runBin(packageName, binName, args, cwd, options = {}) {
   const manifest = createRequire(resolve(cwd, "package.json")).resolve(`${packageName}/package.json`)
   const { bin } = readJson(manifest)
   const entry = resolve(dirname(manifest), bin instanceof Object ? bin[binName] : bin)
 
-  return execFileSync(process.execPath, [entry, ...args], { cwd, stdio: "inherit" })
+  return execFileSync(process.execPath, [entry, ...args], { cwd, stdio: "inherit", ...options })
 }
 
 export function snapshot() {

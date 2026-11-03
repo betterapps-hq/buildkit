@@ -55,7 +55,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "build": "node ../../tooling/shadcn-generator/src/build.mjs nova",
+    "build": "node ../../tooling/shadcn-generator/src/sources.mjs nova && node ../../tooling/shadcn-generator/src/build.mjs nova",
     "prepack": "pnpm build"
   },
   "dependencies": {

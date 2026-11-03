@@ -5,7 +5,7 @@
   "scripts": {
     "generate": "node scripts/generate.ts",
     "dev": "vitepress dev content --host 127.0.0.1 --port 4180",
-    "build": "pnpm generate && vitepress build content",
+    "build": "pnpm generate && vp run build:site",
     "preview": "vitepress preview content --host 127.0.0.1 --port 4181"
   },
   "devDependencies": {

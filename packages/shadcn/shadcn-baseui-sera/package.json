@@ -55,7 +55,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "build": "node ../../tooling/shadcn-generator/src/build.mjs sera",
+    "build": "node ../../tooling/shadcn-generator/src/sources.mjs sera && node ../../tooling/shadcn-generator/src/build.mjs sera",
     "prepack": "pnpm build"
   },
   "dependencies": {
