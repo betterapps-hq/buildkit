@@ -1,7 +1,0 @@
-{
-  "type": "minor",
-  "comment": "Remove the better-apps-deploy, sql and better-auth add-ons and the saas preset, so the catalog uses no Better Apps packages",
-  "packageName": "@buildkitgg/catalog",
-  "email": "ajcraswell@gmail.com",
-  "dependentChangeType": "patch"
-}

@@ -2,6 +2,29 @@
   "name": "@buildkitgg/cli",
   "entries": [
     {
+      "date": "Tue, 03 Nov 2026 03:52:39 GMT",
+      "version": "0.4.0",
+      "tag": "@buildkitgg/cli_v0.4.0",
+      "comments": {
+        "patch": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/cli",
+            "commit": "b890c2db268acef023ddf0e0f08c7e79713f660c",
+            "comment": "Drop the database and sign-in examples from the README and the smoke test, now that the catalog has no such add-ons"
+          }
+        ],
+        "minor": [
+          {
+            "author": "beachball",
+            "package": "@buildkitgg/cli",
+            "comment": "Bump @buildkitgg/catalog to v0.4.0",
+            "commit": "not available"
+          }
+        ]
+      }
+    },
+    {
       "date": "Tue, 03 Nov 2026 02:41:57 GMT",
       "version": "0.3.1",
       "tag": "@buildkitgg/cli_v0.3.1",

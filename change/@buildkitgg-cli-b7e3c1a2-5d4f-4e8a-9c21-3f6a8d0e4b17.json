@@ -1,7 +1,0 @@
-{
-  "type": "patch",
-  "comment": "Drop the database and sign-in examples from the README and the smoke test, now that the catalog has no such add-ons",
-  "packageName": "@buildkitgg/cli",
-  "email": "ajcraswell@gmail.com",
-  "dependentChangeType": "patch"
-}
