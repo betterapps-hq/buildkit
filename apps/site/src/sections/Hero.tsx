@@ -1,4 +1,4 @@
-import { ArrowRight, Check, Copy, FileCode, Lock, Monitor, Moon, Palette, Sun } from "lucide-react"
+import { ArrowRight, Check, FileCode, Lock, Monitor, Moon, Palette, Sun } from "lucide-react"
 import { useId, useRef, useState } from "react"
 import { Code } from "../components/Code"
 import { HeroField } from "../components/HeroField"
@@ -6,7 +6,8 @@ import { Link } from "../components/Link"
 import "./hero.css"
 import { links, packageGuide } from "../links"
 
-const INSTALL = "npx @buildkitgg/cli create app my-app"
+// Hidden until the CLI is ready to recommend. Restore with the Copy icon's import and its use below.
+// const INSTALL = "npx @buildkitgg/cli create app my-app"
 
 const THEME_SOURCE = [
   'import { createThemeStore, useTheme, type Theme } from "@buildkitgg/react-theme"',
@@ -67,6 +68,7 @@ function Swatch({ value }: { value: ThemeChoice }) {
   )
 }
 
+/*
 function CopyCommand({ command, prompt }: { command: string; prompt: boolean }) {
   const [copied, setCopied] = useState(false)
   return (
@@ -96,6 +98,7 @@ function CopyCommand({ command, prompt }: { command: string; prompt: boolean }) 
     </div>
   )
 }
+*/
 
 function ThemeDemo() {
   const group = useId()
@@ -247,7 +250,7 @@ export function Hero() {
                 Browse packages
               </Link>
             </div>
-            <CopyCommand command={INSTALL} prompt />
+            {/* <CopyCommand command={INSTALL} prompt /> */}
             <ul className="hero-facts">
               <li>
                 <Check aria-hidden="true" />
