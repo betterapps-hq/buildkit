@@ -34,7 +34,7 @@
   "devDependencies": {
     "react-dom": "19.3.1",
     "@testing-library/react": "^16.3.3",
-    "@repo/typescript-config": "workspace:*",
+    "@buildkitgg/typescript-config": "workspace:*",
     "@vitest/coverage-v8": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:",
