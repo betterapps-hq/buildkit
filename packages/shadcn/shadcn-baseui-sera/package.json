@@ -76,7 +76,7 @@
     "sonner": "^2.0.8"
   },
   "devDependencies": {
-    "@repo/shadcn-generator": "workspace:*"
+    "@buildkitgg/shadcn-generator": "workspace:*"
   },
   "peerDependencies": {
     "react": "^19.2.0",

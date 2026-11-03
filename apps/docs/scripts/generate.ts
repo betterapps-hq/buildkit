@@ -216,6 +216,11 @@ for (const manifest of globSync("packages/*/*/package.json", { cwd: root }).sort
     continue
   }
 
+  // Private repo tooling has no exports, so there is no API to document.
+  if (pkg.private === true && !isRecord(pkg.exports)) {
+    continue
+  }
+
   const name = pkg.name.slice("@buildkitgg/".length)
   const packageModels = models.filter((model) => model.package === pkg.name)
 

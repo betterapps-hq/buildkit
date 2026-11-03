@@ -282,15 +282,15 @@ importers:
       '@buildkitgg/storybook-config':
         specifier: workspace:*
         version: link:../../packages/tooling/storybook-config
+      '@buildkitgg/typescript-config':
+        specifier: workspace:*
+        version: link:../../packages/tooling/typescript-config
       '@chromatic-com/storybook':
         specifier: ^5.6.0
         version: 5.6.0(storybook@10.6.5(@types/react@19.3.0)(prettier@3.9.10)(react@19.3.1)(vite-plus@1.4.0(@types/node@24.19.2)(@vitest/coverage-v8@5.0.5)(@vitest/ui@5.0.5)(esbuild@0.28.2)(happy-dom@21.0.4)(jiti@2.7.0)(msw@3.0.3(@types/node@24.19.2)(@voidzero-dev/vite-plus-core@1.4.0(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(typescript@7.0.2)(yaml@2.9.1))(supports-color@8.1.1)(typescript@7.0.2))(tsx@4.23.15)(typescript@7.0.2)(yaml@2.9.1)))
       '@radix-ui/react-dialog':
         specifier: ^1.3.1
         version: 1.3.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../../packages/tooling/typescript-config
       '@storybook/addon-a11y':
         specifier: 10.6.5
         version: 10.6.5(storybook@10.6.5(@types/react@19.3.0)(prettier@3.9.10)(react@19.3.1)(vite-plus@1.4.0(@types/node@24.19.2)(@vitest/coverage-v8@5.0.5)(@vitest/ui@5.0.5)(esbuild@0.28.2)(happy-dom@21.0.4)(jiti@2.7.0)(msw@3.0.3(@types/node@24.19.2)(@voidzero-dev/vite-plus-core@1.4.0(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(typescript@7.0.2)(yaml@2.9.1))(supports-color@8.1.1)(typescript@7.0.2))(tsx@4.23.15)(typescript@7.0.2)(yaml@2.9.1)))
@@ -333,12 +333,12 @@ importers:
 
   apps/docs:
     devDependencies:
+      '@buildkitgg/typescript-config':
+        specifier: workspace:*
+        version: link:../../packages/tooling/typescript-config
       '@microsoft/api-documenter':
         specifier: ^7.30.19
         version: 7.30.19(@types/node@24.19.2)
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../../packages/tooling/typescript-config
       '@types/node':
         specifier: 24.19.2
         version: 24.19.2
@@ -354,7 +354,7 @@ importers:
       '@buildkitgg/shadcn-baseui-kit':
         specifier: workspace:@buildkitgg/shadcn-baseui-nova@*
         version: link:../../packages/shadcn/shadcn-baseui-nova
-      '@repo/typescript-config':
+      '@buildkitgg/typescript-config':
         specifier: workspace:*
         version: link:../../packages/tooling/typescript-config
       '@testing-library/react':
@@ -445,7 +445,7 @@ importers:
         specifier: ^8.5.1
         version: 8.5.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
     devDependencies:
-      '@repo/typescript-config':
+      '@buildkitgg/typescript-config':
         specifier: workspace:*
         version: link:../../packages/tooling/typescript-config
       '@types/node':
@@ -475,7 +475,7 @@ importers:
 
   packages/core/alert-core:
     devDependencies:
-      '@repo/typescript-config':
+      '@buildkitgg/typescript-config':
         specifier: workspace:*
         version: link:../../tooling/typescript-config
       '@types/node':
@@ -500,7 +500,7 @@ importers:
         specifier: workspace:*
         version: link:../preferences-core
     devDependencies:
-      '@repo/typescript-config':
+      '@buildkitgg/typescript-config':
         specifier: workspace:*
         version: link:../../tooling/typescript-config
       '@types/node':
@@ -521,7 +521,7 @@ importers:
 
   packages/core/modal-core:
     devDependencies:
-      '@repo/typescript-config':
+      '@buildkitgg/typescript-config':
         specifier: workspace:*
         version: link:../../tooling/typescript-config
       '@types/node':
@@ -542,7 +542,7 @@ importers:
 
   packages/core/preferences-core:
     devDependencies:
-      '@repo/typescript-config':
+      '@buildkitgg/typescript-config':
         specifier: workspace:*
         version: link:../../tooling/typescript-config
       '@types/node':
@@ -566,7 +566,7 @@ importers:
 
   packages/core/router-core:
     devDependencies:
-      '@repo/typescript-config':
+      '@buildkitgg/typescript-config':
         specifier: workspace:*
         version: link:../../tooling/typescript-config
       '@types/node':
@@ -591,7 +591,7 @@ importers:
         specifier: workspace:*
         version: link:../preferences-core
     devDependencies:
-      '@repo/typescript-config':
+      '@buildkitgg/typescript-config':
         specifier: workspace:*
         version: link:../../tooling/typescript-config
       '@types/node':
@@ -634,12 +634,12 @@ importers:
         specifier: 5.10.0
         version: 5.10.0
     devDependencies:
+      '@buildkitgg/typescript-config':
+        specifier: workspace:*
+        version: link:../../tooling/typescript-config
       '@microsoft/api-extractor':
         specifier: ^7.59.4
         version: 7.60.0(@types/node@24.19.2)
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../../tooling/typescript-config
       '@types/node':
         specifier: 24.19.2
         version: 24.19.2
@@ -662,12 +662,12 @@ importers:
         specifier: workspace:*
         version: link:../../react/react-alerts
     devDependencies:
+      '@buildkitgg/typescript-config':
+        specifier: workspace:*
+        version: link:../../tooling/typescript-config
       '@fluentui/react-components':
         specifier: ^9.75.0
         version: 9.75.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(scheduler@0.28.0)
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../../tooling/typescript-config
       '@testing-library/react':
         specifier: ^16.3.3
         version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -708,12 +708,12 @@ importers:
         specifier: workspace:*
         version: link:../../react/react-modals
     devDependencies:
+      '@buildkitgg/typescript-config':
+        specifier: workspace:*
+        version: link:../../tooling/typescript-config
       '@fluentui/react-components':
         specifier: ^9.75.0
         version: 9.75.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(scheduler@0.28.0)
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../../tooling/typescript-config
       '@testing-library/react':
         specifier: ^16.3.3
         version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -757,12 +757,12 @@ importers:
         specifier: workspace:*
         version: link:../../core/theme-core
     devDependencies:
+      '@buildkitgg/typescript-config':
+        specifier: workspace:*
+        version: link:../../tooling/typescript-config
       '@fluentui/react-components':
         specifier: ^9.75.0
         version: 9.75.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(scheduler@0.28.0)
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../../tooling/typescript-config
       '@testing-library/react':
         specifier: ^16.3.3
         version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -806,7 +806,7 @@ importers:
         specifier: workspace:*
         version: link:../../core/alert-core
     devDependencies:
-      '@repo/typescript-config':
+      '@buildkitgg/typescript-config':
         specifier: workspace:*
         version: link:../../tooling/typescript-config
       '@testing-library/react':
@@ -852,7 +852,7 @@ importers:
         specifier: workspace:*
         version: link:../../core/configuration-core
     devDependencies:
-      '@repo/typescript-config':
+      '@buildkitgg/typescript-config':
         specifier: workspace:*
         version: link:../../tooling/typescript-config
       '@testing-library/react':
@@ -895,7 +895,7 @@ importers:
         specifier: workspace:*
         version: link:../../core/modal-core
     devDependencies:
-      '@repo/typescript-config':
+      '@buildkitgg/typescript-config':
         specifier: workspace:*
         version: link:../../tooling/typescript-config
       '@testing-library/react':
@@ -941,7 +941,7 @@ importers:
         specifier: workspace:*
         version: link:../../core/preferences-core
     devDependencies:
-      '@repo/typescript-config':
+      '@buildkitgg/typescript-config':
         specifier: workspace:*
         version: link:../../tooling/typescript-config
       '@testing-library/react':
@@ -987,7 +987,7 @@ importers:
         specifier: workspace:*
         version: link:../../core/router-core
     devDependencies:
-      '@repo/typescript-config':
+      '@buildkitgg/typescript-config':
         specifier: workspace:*
         version: link:../../tooling/typescript-config
       '@testing-library/react':
@@ -1033,7 +1033,7 @@ importers:
         specifier: workspace:*
         version: link:../../core/router-core
     devDependencies:
-      '@repo/typescript-config':
+      '@buildkitgg/typescript-config':
         specifier: workspace:*
         version: link:../../tooling/typescript-config
       '@testing-library/react':
@@ -1076,7 +1076,7 @@ importers:
         specifier: workspace:*
         version: link:../../core/theme-core
     devDependencies:
-      '@repo/typescript-config':
+      '@buildkitgg/typescript-config':
         specifier: workspace:*
         version: link:../../tooling/typescript-config
       '@testing-library/react':
@@ -1122,7 +1122,7 @@ importers:
         specifier: workspace:*
         version: link:../../core/router-core
     devDependencies:
-      '@repo/typescript-config':
+      '@buildkitgg/typescript-config':
         specifier: workspace:*
         version: link:../../tooling/typescript-config
       '@tanstack/react-router':
@@ -1174,7 +1174,7 @@ importers:
       '@buildkitgg/shadcn-baseui-kit':
         specifier: workspace:@buildkitgg/shadcn-baseui-nova@*
         version: link:../shadcn-baseui-nova
-      '@repo/typescript-config':
+      '@buildkitgg/typescript-config':
         specifier: workspace:*
         version: link:../../tooling/typescript-config
       '@testing-library/react':
@@ -1268,7 +1268,7 @@ importers:
         specifier: ^2.0.8
         version: 2.0.8(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
     devDependencies:
-      '@repo/shadcn-generator':
+      '@buildkitgg/shadcn-generator':
         specifier: workspace:*
         version: link:../../tooling/shadcn-generator
 
@@ -1326,7 +1326,7 @@ importers:
         specifier: ^2.0.8
         version: 2.0.8(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
     devDependencies:
-      '@repo/shadcn-generator':
+      '@buildkitgg/shadcn-generator':
         specifier: workspace:*
         version: link:../../tooling/shadcn-generator
 
@@ -1384,7 +1384,7 @@ importers:
         specifier: ^2.0.8
         version: 2.0.8(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
     devDependencies:
-      '@repo/shadcn-generator':
+      '@buildkitgg/shadcn-generator':
         specifier: workspace:*
         version: link:../../tooling/shadcn-generator
 
@@ -1442,7 +1442,7 @@ importers:
         specifier: ^2.0.8
         version: 2.0.8(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
     devDependencies:
-      '@repo/shadcn-generator':
+      '@buildkitgg/shadcn-generator':
         specifier: workspace:*
         version: link:../../tooling/shadcn-generator
 
@@ -1500,7 +1500,7 @@ importers:
         specifier: ^2.0.8
         version: 2.0.8(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
     devDependencies:
-      '@repo/shadcn-generator':
+      '@buildkitgg/shadcn-generator':
         specifier: workspace:*
         version: link:../../tooling/shadcn-generator
 
@@ -1558,7 +1558,7 @@ importers:
         specifier: ^2.0.8
         version: 2.0.8(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
     devDependencies:
-      '@repo/shadcn-generator':
+      '@buildkitgg/shadcn-generator':
         specifier: workspace:*
         version: link:../../tooling/shadcn-generator
 
@@ -1616,7 +1616,7 @@ importers:
         specifier: ^2.0.8
         version: 2.0.8(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
     devDependencies:
-      '@repo/shadcn-generator':
+      '@buildkitgg/shadcn-generator':
         specifier: workspace:*
         version: link:../../tooling/shadcn-generator
 
@@ -1674,7 +1674,7 @@ importers:
         specifier: ^2.0.8
         version: 2.0.8(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
     devDependencies:
-      '@repo/shadcn-generator':
+      '@buildkitgg/shadcn-generator':
         specifier: workspace:*
         version: link:../../tooling/shadcn-generator
 
@@ -1693,12 +1693,12 @@ importers:
       '@buildkitgg/shadcn-baseui-kit':
         specifier: workspace:@buildkitgg/shadcn-baseui-nova@*
         version: link:../shadcn-baseui-nova
+      '@buildkitgg/typescript-config':
+        specifier: workspace:*
+        version: link:../../tooling/typescript-config
       '@radix-ui/react-dialog':
         specifier: ^1.3.1
         version: 1.3.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../../tooling/typescript-config
       '@testing-library/react':
         specifier: ^16.3.3
         version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -1745,7 +1745,7 @@ importers:
         specifier: ^0.5.0
         version: 0.5.0
     devDependencies:
-      '@repo/typescript-config':
+      '@buildkitgg/typescript-config':
         specifier: workspace:*
         version: link:../../tooling/typescript-config
       '@testing-library/react':
@@ -1788,7 +1788,7 @@ importers:
         specifier: workspace:*
         version: link:../../core/theme-core
     devDependencies:
-      '@repo/typescript-config':
+      '@buildkitgg/typescript-config':
         specifier: workspace:*
         version: link:../../tooling/typescript-config
       '@types/node':
@@ -1812,7 +1812,7 @@ importers:
 
   packages/tooling/api-mocker:
     devDependencies:
-      '@repo/typescript-config':
+      '@buildkitgg/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
       '@vitest/coverage-v8':
@@ -1833,12 +1833,12 @@ importers:
 
   packages/tooling/api-tools:
     devDependencies:
+      '@buildkitgg/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
       '@microsoft/api-extractor':
         specifier: ^7.60.0
         version: 7.60.0(@types/node@24.19.2)
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../typescript-config
       '@types/node':
         specifier: 24.19.2
         version: 24.19.2
@@ -1855,7 +1855,7 @@ importers:
         specifier: 4.6.7
         version: 4.6.7
     devDependencies:
-      '@repo/typescript-config':
+      '@buildkitgg/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
       '@types/node':
@@ -1889,7 +1889,7 @@ importers:
         specifier: 4.6.7
         version: 4.6.7
     devDependencies:
-      '@repo/typescript-config':
+      '@buildkitgg/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
       '@types/node':
@@ -1932,7 +1932,7 @@ importers:
         specifier: 4.6.7
         version: 4.6.7
     devDependencies:
-      '@repo/typescript-config':
+      '@buildkitgg/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
       '@types/cross-spawn':
@@ -1960,7 +1960,7 @@ importers:
         specifier: workspace:*
         version: link:../oxlint-plugin-anti-slop
     devDependencies:
-      '@repo/typescript-config':
+      '@buildkitgg/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
       '@types/node':
@@ -1982,7 +1982,7 @@ importers:
         specifier: 1.89.0
         version: 1.89.0
     devDependencies:
-      '@repo/typescript-config':
+      '@buildkitgg/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
       '@types/node':
@@ -2037,7 +2037,7 @@ importers:
         specifier: 4.6.7
         version: 4.6.7
     devDependencies:
-      '@repo/typescript-config':
+      '@buildkitgg/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
       '@types/node':
@@ -2110,7 +2110,7 @@ importers:
         specifier: 10.6.5
         version: 10.6.5(@types/react@19.3.0)(prettier@3.9.10)(react@19.3.1)(vite-plus@1.4.0(@types/node@24.19.2)(@vitest/coverage-v8@5.0.5)(@vitest/ui@5.0.5)(esbuild@0.28.2)(happy-dom@21.0.4)(jiti@2.7.0)(msw@3.0.3(@types/node@24.19.2)(@voidzero-dev/vite-plus-core@1.4.0(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(typescript@7.0.2)(yaml@2.9.1))(supports-color@8.1.1)(typescript@7.0.2))(tsx@4.23.15)(typescript@7.0.2)(yaml@2.9.1))
     devDependencies:
-      '@repo/typescript-config':
+      '@buildkitgg/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
       '@types/react':

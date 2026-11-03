@@ -1,8 +1,8 @@
 # Buildkit Monorepo — Project Guidelines
 
 A Vite+ and pnpm monorepo with React 19 and TypeScript applications. UI systems are selected at the app or
-product-surface boundary. Shared config lives in `@repo/*` packages under `packages/`. See [README.md](../README.md) for
-setup and the [docs index](../docs/README.md) for conventions.
+product-surface boundary. Shared config lives in `@buildkitgg/*` packages under `packages/tooling/`. See
+[README.md](../README.md) for setup and the [docs index](../docs/README.md) for conventions.
 
 ## Tooling (differs from common defaults)
 
@@ -32,7 +32,7 @@ Git hooks (Vite+, in `.vite-hooks/`): **pre-commit** runs `vp staged`, which lin
 - `apps/` — documentation, examples, and test applications.
 - `packages/` — reusable `@buildkitgg/*` libraries and shared configs.
 - **Reusable shared config** (extend these; don't redefine per package): `@buildkitgg/oxlint-config`,
-  `@buildkitgg/storybook-config`, `@repo/typescript-config`.
+  `@buildkitgg/storybook-config`, `@buildkitgg/typescript-config`.
 
 ## Conventions
 

@@ -219,7 +219,7 @@ export function generateManifests() {
       },
       peerDependencies: template.peerDependencies,
       dependencies: template.dependencies,
-      devDependencies: { "@repo/shadcn-generator": "workspace:*" },
+      devDependencies: { "@buildkitgg/shadcn-generator": "workspace:*" },
       files: [
         "dist/**/*.js",
         "dist/**/*.d.ts",

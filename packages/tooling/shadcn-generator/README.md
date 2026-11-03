@@ -12,7 +12,7 @@ mapping.
 To fetch a specific revision without updating dependencies:
 
 ```sh
-pnpm --filter @repo/shadcn-generator update:shadcn <full-commit-sha>
+pnpm --filter @buildkitgg/shadcn-generator update:shadcn <full-commit-sha>
 ```
 
 The consumer validation starts a temporary local npm registry serving actual packed artifacts. External dependencies

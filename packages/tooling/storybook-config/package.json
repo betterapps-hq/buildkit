@@ -47,7 +47,7 @@
     "react": "^19.2.0"
   },
   "devDependencies": {
-    "@repo/typescript-config": "workspace:*",
+    "@buildkitgg/typescript-config": "workspace:*",
     "typescript": "catalog:",
     "vitest": "catalog:",
     "@vitest/coverage-v8": "catalog:",
