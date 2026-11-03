@@ -1,8 +1,18 @@
 # Change Log - @buildkitgg/catalog
 
-<!-- This log was last generated on Tue, 03 Nov 2026 11:33:32 GMT and should not be manually modified. -->
+<!-- This log was last generated on Tue, 03 Nov 2026 11:50:50 GMT and should not be manually modified. -->
 
 <!-- Start content -->
+
+## 0.5.0
+
+Tue, 03 Nov 2026 11:50:50 GMT
+
+### Minor changes
+
+- The app template offers pnpm install and pnpm build as setup steps after create, with pnpm whichever package manager
+  ran the CLI, and describes itself for a gallery with tags and links. The localization choice has a hint, and the i18n
+  add-on says which Lingui versions it's written for. (ajcraswell@gmail.com)
 
 ## 0.4.1
 
