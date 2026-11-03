@@ -349,8 +349,7 @@ a browser design on an SPA. So:
     "@buildkit/auth-better-auth": {},
     "@buildkit/db-d1": {}
   },
-  "declined": ["slot:jobs", "@buildkit/storybook"], // answered "no"; `upgrade` won't ask again (§4.11)
-  "environments": "better-apps.environments.jsonc" // read by Better Apps' deploy service
+  "declined": ["slot:jobs", "@buildkit/storybook"] // answered "no"; `upgrade` won't ask again (§4.11)
 }
 ```
 
@@ -824,12 +823,8 @@ SpawnKit columns show how other add-ons' entries land.
 - **TanStack Start SSR and SPA:** one adapter with two modes.
   - The target writes `src/start.ts`. Once that file exists, Start no longer adds its CSRF middleware, so the target
     lists `createCsrfMiddleware({ filter: (ctx) => ctx.handlerType === "serverFn" })` first.
-  - **No cloud in the target (D5).** `vite.config.ts` gets the Better Apps plugin, `betterApps()` from the Better Apps
-    TanStack Start integration [U: package name], in band `framework` before `tanstackStart()`.
-    - The plugin names no cloud. For the build's backend it adds the runtime glue
-      ([the Better Apps deploy plan](https://github.com/betterapps-hq/better-apps/blob/main/docs/deploy-plan.md) §4). In
-      v1 that is the Cloudflare Vite plugin with Start's server entry, plus the #7740 workaround in SPA mode.
-    - The target writes no Wrangler config, no `cloudflare.config.ts` and no bindings file.
+  - **No cloud in the target (D5).** The target writes no Wrangler config, no `cloudflare.config.ts` and no bindings
+    file.
   - SPA mode emits `/_shell.html` by default. The target always sets `spa.prerender.outputPath: "/index.html"`. That is
     the path Cloudflare's SPA fallback serves, and the usual fallback on other static hosts, so the target needs no
     cloud branch. A maintainer confirmed that this works (TanStack/router#5619). [U: whether prerendering `/` collides
@@ -961,9 +956,7 @@ decisions D2, D3, D5 and D6. This section keeps the scaffolder's side.
 
 - Add-ons add capability packages as dependencies, and write the declarations as seed files. Third-party services stay
   env vars.
-- The Start target wires the Better Apps Vite plugin into `vite.plugins` (§4.8).
-- `init` writes `better-apps.environments.jsonc`. The CI add-on writes the workflows. `ci.yml`'s app-code checks are
-  Buildkit's; the preview, deploy and cleanup workflows call Better Apps' versioned actions and `better-apps deploy`.
+- The CI add-on writes `ci.yml`, whose app-code checks are Buildkit's.
 - There are no hosts, no `needs()`, no generated bindings and no cloud config. `check` flags a Wrangler config or a
   `cloudflare.config.ts`, because the deploy service ignores both.
 

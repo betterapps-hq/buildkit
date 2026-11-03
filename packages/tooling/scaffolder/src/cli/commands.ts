@@ -1,8 +1,8 @@
-import { readdirSync, readFileSync, statSync } from "node:fs"
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs"
 import { basename, dirname, resolve } from "node:path"
 import { z } from "zod"
 import { readEnv } from "../edit/env.js"
-import { catalogVersionText, findPreset, packOf } from "../manifest/catalog.js"
+import { catalogVersionText, expandTemplate, findPreset, packOf } from "../manifest/catalog.js"
 import { mergePacks, templateSource, type LoadedPack, type TemplateSource } from "../manifest/packs.js"
 import type { CatalogManifest, PackRecord } from "../manifest/types.js"
 import { recover, type ApplyHooks } from "../node/apply.js"
@@ -92,6 +92,27 @@ function spec(extra: FlagSpec): FlagSpec {
     lists: [...(extra.lists ?? [])],
     dynamic: [...(extra.dynamic ?? [])]
   }
+}
+
+/** A flag's comma-separated value: `--telemetry sentry,posthog`. */
+function listValue(value: string): string[] {
+  return value
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean)
+}
+
+/** Every question id in a catalog, each a flag of create and add: its own questions and every template's. */
+export function questionIds(catalog: CatalogManifest): string[] {
+  const ids = new Set((catalog.questions ?? []).map((question) => question.id))
+  for (const template of catalog.templates) {
+    try {
+      expandTemplate(catalog, template.id)?.questions.forEach((question) => ids.add(question.id))
+    } catch {
+      // A template that doesn't expand is the catalog check's to report. Its own questions still count.
+    }
+  }
+  return [...ids]
 }
 
 /** The command handlers shared by every product CLI. Each returns its exit code. */
@@ -558,8 +579,9 @@ export class CliRuntime {
     return this.#emit(envelope(plan, status), json)
   }
 
-  #slotIds(): string[] {
-    return this.#catalog.slots.map((slot) => slot.id)
+  /** Every question id, which is a flag: the catalog's questions and every template's own. */
+  #questionIds(): string[] {
+    return questionIds(this.#catalog)
   }
 
   #options(flags: ParsedFlags): Record<string, Record<string, unknown>> {
@@ -579,7 +601,7 @@ export class CliRuntime {
         strings: ["mode", "preset", "name"],
         lists: ["with", "without"],
         repeats: ["set"],
-        dynamic: this.#slotIds()
+        dynamic: this.#questionIds()
       })
     )
     const json = flags.booleans.has("json")
@@ -638,8 +660,8 @@ export class CliRuntime {
         ...partial,
         template: preset.answers.template,
         ...(preset.answers.mode === undefined ? {} : { mode: preset.answers.mode }),
-        slots: { ...preset.answers.slots },
-        ...(preset.answers.optional === undefined ? {} : { optional: [...preset.answers.optional] }),
+        questions: structuredClone(preset.answers.questions ?? {}),
+        ...(preset.answers.extra === undefined ? {} : { extra: [...preset.answers.extra] }),
         options: structuredClone(preset.answers.options ?? {})
       }
       if (templateArg !== undefined && templateArg !== preset.answers.template) {
@@ -655,8 +677,8 @@ export class CliRuntime {
     if (mode !== undefined) {
       partial.mode = mode
     }
-    for (const [slot, value] of flags.dynamic) {
-      partial.slots[slot] = value === null ? null : requireAddonId(catalog, value)
+    for (const [question, value] of flags.dynamic) {
+      partial.questions[question] = value === null ? [] : listValue(value).map((name) => requireAddonId(catalog, name))
     }
     partial.with = flags.lists.get("with") ?? []
     partial.without = flags.lists.get("without") ?? []
@@ -728,20 +750,29 @@ export class CliRuntime {
   }
 
   async add(argv: string[]): Promise<number> {
-    const flags = parseFlags(argv, spec({ lists: ["replace"], repeats: ["set"], dynamic: this.#slotIds() }))
+    const flags = parseFlags(argv, spec({ lists: ["replace"], repeats: ["set"], dynamic: this.#questionIds() }))
     const names = flags.positionals
       .flatMap((entry) => entry.split(","))
       .map((entry) => entry.trim())
       .filter(Boolean)
-    for (const [slot, value] of flags.dynamic) {
+    for (const [question, value] of flags.dynamic) {
       if (value === null) {
-        throw new PlanError("E_USAGE", `--no-${slot} only applies to create.`)
+        throw new PlanError("E_USAGE", `--no-${question} only applies to create.`)
       }
-      names.push(value)
+      // `add database --database drizzle` answers the question it names.
+      const answers = listValue(value)
+      const at = names.indexOf(question)
+      if (at === -1) {
+        names.push(...answers)
+      } else {
+        names.splice(at, 1, ...answers)
+      }
     }
     if (names.length === 0 && flags.strings.get("plan") === undefined) {
-      const slots = this.#catalog.slots.map((slot) => slot.id).join(", ")
-      throw new PlanError("E_USAGE", `Name an add-on to add, or a question to answer (${slots}).`)
+      throw new PlanError(
+        "E_USAGE",
+        `Name an add-on to add, or a question to answer (${this.#questionIds().join(", ")}).`
+      )
     }
     const replace = flags.lists.get("replace") ?? []
     return this.#planAndApply(
@@ -1019,7 +1050,7 @@ export class CliRuntime {
     }
     const description = describeCatalog(this.#catalog)
     if (source) {
-      description.templates = description.templates.filter((template) => packOf(template.template) === source.package)
+      description.templates = description.templates.filter((template) => packOf(template.id) === source.package)
     }
     if (json) {
       this.io.stdout(`${JSON.stringify(description)}\n`)
@@ -1027,18 +1058,16 @@ export class CliRuntime {
     }
     const lines = [`${description.catalog.id}@${catalogVersionText(this.#catalog)}`]
     for (const template of description.templates) {
-      lines.push("", `${template.title} (${template.template}): ${template.description}`)
+      lines.push("", `${template.title} (${template.id}): ${template.description}`)
       for (const required of template.required) {
-        lines.push(`  Always: ${required.title}`)
+        lines.push(`  Always: ${required.label}`)
       }
       const first = Object.values(template.questionsByMode)[0]
-      for (const slot of first?.slots ?? []) {
+      for (const question of first ?? []) {
+        const defaults = question.default.length > 0 ? ` (default ${question.default.join(", ")})` : ""
         lines.push(
-          `  ${slot.question ?? slot.choose} ${slot.choices.map((choice) => choice.title).join(", ")}${slot.default ? ` (default ${slot.default})` : ""}`
+          `  ${question.question ?? question.choose ?? question.title} ${question.choices.map((choice) => choice.label).join(", ")}${defaults}`
         )
-      }
-      if ((first?.optional.length ?? 0) > 0) {
-        lines.push(`  Optional: ${first?.optional.map((choice) => choice.title).join(", ")}`)
       }
     }
     this.io.stdout(`${lines.join("\n")}\n`)
@@ -1050,7 +1079,9 @@ export class CliRuntime {
     const loaded = await loadLocalPack(folder)
     const merged = mergePacks(this.options.catalog, [loaded])
     const templates = loaded.pack.templates.map((template) => `${loaded.name}#${template.id}`)
-    const problems = checkCatalog(merged, { matrix: true, templates })
+    // A pack's gallery images are paths in its own folder.
+    const files = (path: string, template: string) => !templates.includes(template) || existsSync(resolve(folder, path))
+    const problems = checkCatalog(merged, { matrix: true, templates, files })
     const label = `${loaded.name}@${loaded.version}`
     if (problems.length > 0) {
       throw new PlanError("E_INVALID_PACK", `${label} has problems. ${problems.join(" ")}`)

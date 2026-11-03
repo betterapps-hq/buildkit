@@ -26,8 +26,7 @@ pnpm typecheck
 `buildkit.jsonc` records the template and the add-ons you chose, and `.buildkit/lock.json` records what Buildkit wrote.
 Commit both.
 
-- `pnpm buildkit add <add-on>` adds an add-on, such as `pnpm buildkit add i18n`, or answers a question such as
-  `pnpm buildkit add database`.
+- `pnpm buildkit add <add-on>` adds an add-on, such as `pnpm buildkit add i18n`.
 - `pnpm buildkit config set <add-on>.<option>=<value>` changes an option.
 - `pnpm buildkit upgrade` moves the app to the Buildkit catalog you installed. It merges template fixes into the files
   it started, and asks when your edits and its changes overlap.

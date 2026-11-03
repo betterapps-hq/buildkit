@@ -5,7 +5,6 @@ import {
   findTemplate,
   lookupAddon,
   parseOptions,
-  slotAddons,
   targetInfo
 } from "../manifest/catalog.js"
 import type {
@@ -50,9 +49,9 @@ export interface ResolvedSelection {
 /** Something only the user can answer. The planner turns each issue into a decision with complete requests. */
 export type ResolveIssue =
   | { kind: "choose-mode"; template: string; modes: string[] }
-  | { kind: "choose-slot"; slot: string; by?: string; candidates: string[] }
+  /** A required question with no default and more than one available choice, or `add <question>`. */
+  | { kind: "choose"; template: string; question: string; candidates: string[] }
   | { kind: "choose-provider"; capability: string; by: string; candidates: string[] }
-  | { kind: "slot-taken"; slot: string; installed: string; incoming: string }
   /** `addon` declares the conflict. With `capability`, it conflicts with any add-on that provides it, as `other` does. */
   | { kind: "conflicts"; addon: string; other: string; capability?: string }
 
@@ -156,7 +155,7 @@ export function addonSupports(
 }
 
 /**
- * Resolves a selection: pulls in `requires`, adds the combination add-ons whose references all match, checks slots,
+ * Resolves a selection: pulls in `requires`, adds the combination add-ons whose references all match, checks
  * capabilities and conflicts, orders add-ons, and validates options and support.
  */
 export function resolveSelection(catalog: CatalogManifest, selection: Selection): ResolveResult {
@@ -186,7 +185,7 @@ export function resolveSelection(catalog: CatalogManifest, selection: Selection)
     }
     chosen.set(id, { explicit: by === undefined, by: new Set(by ? [by] : []) })
     for (const requirement of addon.requires ?? []) {
-      if (!requirement.startsWith("slot:") && !requirement.startsWith("provides:")) {
+      if (!requirement.startsWith("provides:")) {
         visit(requirement, id)
       }
     }
@@ -210,15 +209,6 @@ export function resolveSelection(catalog: CatalogManifest, selection: Selection)
   }
   for (const addon of selected) {
     for (const requirement of addon.requires ?? []) {
-      if (requirement.startsWith("slot:")) {
-        const slot = requirement.slice(5)
-        if (!selected.some((other) => other.slot === slot)) {
-          const candidates = slotAddons(catalog, slot)
-            .filter((candidate) => addonSupports(candidate, info) === true)
-            .map((candidate) => candidate.id)
-          return { ok: false, issue: { kind: "choose-slot", slot, by: addon.id, candidates } }
-        }
-      }
       if (requirement.startsWith("provides:")) {
         const capability = requirement.slice(9)
         if (!selected.some((other) => other.provides && Object.hasOwn(other.provides, capability))) {
@@ -232,16 +222,6 @@ export function resolveSelection(catalog: CatalogManifest, selection: Selection)
           return { ok: false, issue: { kind: "choose-provider", capability, by: addon.id, candidates } }
         }
       }
-    }
-  }
-  const bySlot = new Map<string, string>()
-  for (const addon of selected) {
-    if (addon.slot) {
-      const other = bySlot.get(addon.slot)
-      if (other) {
-        return { ok: false, issue: { kind: "slot-taken", slot: addon.slot, installed: other, incoming: addon.id } }
-      }
-      bySlot.set(addon.slot, addon.id)
     }
   }
   for (const addon of selected) {
@@ -330,10 +310,7 @@ function orderAddons(addons: AddonManifest[]): AddonManifest[] {
   for (const addon of addons) {
     const before = new Set<string>()
     for (const requirement of [...(addon.requires ?? []), ...(addon.joins ?? [])]) {
-      if (requirement.startsWith("slot:")) {
-        const slot = requirement.slice(5)
-        addons.filter((other) => other.slot === slot).forEach((other) => before.add(other.id))
-      } else if (requirement.startsWith("provides:")) {
+      if (requirement.startsWith("provides:")) {
         const capability = requirement.slice(9)
         addons
           .filter((other) => other.provides && Object.hasOwn(other.provides, capability))

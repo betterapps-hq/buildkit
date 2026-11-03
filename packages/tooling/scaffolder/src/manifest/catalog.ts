@@ -1,19 +1,265 @@
+import { PlanError } from "../plan/errors.js"
 import { isRecord } from "../plan/json.js"
 import { isValidVersion } from "../upgrade/semver.js"
 import type {
   AddonManifest,
+  AddonRef,
   CatalogManifest,
+  Choice,
+  Condition,
+  Gallery,
+  PackageAddon,
   PackRecord,
   PresetManifest,
-  SlotDefinition,
+  QuestionDefinition,
+  QuestionUse,
   TargetInfo,
   TargetManifest,
   TargetMode,
   TemplateManifest
 } from "./types.js"
 
+/** A question's choice after expansion: an add-on id, or `npm:<name>` for a bare add-on. */
+export interface ExpandedChoice {
+  id: string
+  label?: string
+  hint?: string
+}
+
+/** A question as a template asks it, after `use` applied this template's changes. */
+export interface ExpandedQuestion {
+  id: string
+  title: string
+  question?: string
+  choose?: string
+  pick: "one" | "many"
+  required: boolean
+  /** Add-on ids. One at most for a `one` question. */
+  default: string[]
+  when?: Condition
+  choices: ExpandedChoice[]
+}
+
+/** A template after `extends`, `use` and `omit`. Every step after loading reads templates this way. */
+export interface ExpandedTemplate {
+  id: string
+  title: string
+  description: string
+  extends?: string
+  target: string
+  /** Its own, else the parent's, else every mode of the target. */
+  modes: string[]
+  /** Add-on ids, with `npm:<name>` for bare add-ons, the parent's first. */
+  required: string[]
+  /** In the order they're asked. */
+  questions: ExpandedQuestion[]
+  gallery?: Gallery
+}
+
 export function findAddon(catalog: CatalogManifest, id: string): AddonManifest | undefined {
-  return catalog.addons.find((addon) => addon.id === id)
+  return (
+    catalog.addons.find((addon) => addon.id === id) ?? (id.startsWith("npm:") ? bareAddons(catalog).get(id) : undefined)
+  )
+}
+
+/** The catalog's add-ons and the bare add-ons its templates and questions name. */
+export function allAddons(catalog: CatalogManifest): AddonManifest[] {
+  return [...catalog.addons, ...bareAddons(catalog).values()]
+}
+
+interface BareAddons {
+  templates: readonly TemplateManifest[]
+  questions: readonly QuestionDefinition[] | undefined
+  addons: Map<string, AddonManifest>
+}
+
+const bareCache = new WeakMap<CatalogManifest, BareAddons>()
+
+/** The id a template uses for an add-on it installs or offers: `npm:<name>` for a bare add-on. */
+export function addonRefId(ref: AddonRef | Choice): string {
+  if (typeof ref === "string") {
+    return ref
+  }
+  return "npm" in ref ? `npm:${ref.npm}` : ref.addon
+}
+
+function packageAddon(details: PackageAddon): AddonManifest {
+  return {
+    id: `npm:${details.npm}`,
+    version: "0.0.0",
+    title: details.title ?? details.npm,
+    description: details.description ?? "",
+    contribute: (ctx) => [
+      {
+        kind: "dependency",
+        name: details.npm,
+        version: ctx.version(details.npm),
+        ...(details.dev ? { dev: true } : {})
+      }
+    ]
+  }
+}
+
+/**
+ * Every bare add-on a catalog's templates and questions name, made once per catalog: one dependency at the catalog's
+ * pin. When two places give the same package different details, the last one wins, and the catalog check reports it.
+ */
+export function bareAddons(catalog: CatalogManifest): Map<string, AddonManifest> {
+  const cached = bareCache.get(catalog)
+  if (cached && cached.templates === catalog.templates && cached.questions === catalog.questions) {
+    return cached.addons
+  }
+  const addons = new Map<string, AddonManifest>()
+  for (const ref of packageRefs(catalog)) {
+    if (typeof ref !== "string") {
+      addons.set(`npm:${ref.npm}`, packageAddon(ref))
+    } else if (!addons.has(ref)) {
+      addons.set(ref, packageAddon({ npm: ref.slice(4) }))
+    }
+  }
+  bareCache.set(catalog, { templates: catalog.templates, questions: catalog.questions, addons })
+  return addons
+}
+
+/** Every place a catalog names a bare add-on, in order: `npm:<name>`, or the details a template gives. */
+export function packageRefs(catalog: CatalogManifest): (string | PackageAddon)[] {
+  const refs: (string | PackageAddon)[] = []
+  const see = (ref: AddonRef | Choice) => {
+    if (typeof ref === "string") {
+      if (ref.startsWith("npm:")) {
+        refs.push(ref)
+      }
+    } else if ("npm" in ref) {
+      refs.push(ref)
+    }
+  }
+  for (const question of catalog.questions ?? []) {
+    question.choices.forEach(see)
+  }
+  for (const template of catalog.templates) {
+    template.required?.forEach(see)
+    for (const entry of template.questions ?? []) {
+      if (typeof entry !== "string") {
+        entry.choices?.forEach(see)
+      }
+    }
+  }
+  return refs
+}
+
+export function findQuestion(catalog: CatalogManifest, id: string): QuestionDefinition | undefined {
+  return (catalog.questions ?? []).find((question) => question.id === id)
+}
+
+function expandChoice(choice: Choice): ExpandedChoice {
+  if (typeof choice === "string") {
+    return { id: choice }
+  }
+  if ("npm" in choice) {
+    return { id: `npm:${choice.npm}`, ...(choice.hint === undefined ? {} : { hint: choice.hint }) }
+  }
+  return {
+    id: choice.addon,
+    ...(choice.label === undefined ? {} : { label: choice.label }),
+    ...(choice.hint === undefined ? {} : { hint: choice.hint })
+  }
+}
+
+function expandQuestion(question: QuestionDefinition): ExpandedQuestion {
+  return {
+    id: question.id,
+    title: question.title,
+    ...(question.question === undefined ? {} : { question: question.question }),
+    ...(question.choose === undefined ? {} : { choose: question.choose }),
+    pick: question.pick,
+    required: question.required === true,
+    default: question.default === undefined ? [] : [question.default].flat(),
+    ...(question.when === undefined ? {} : { when: question.when }),
+    choices: question.choices.map(expandChoice)
+  }
+}
+
+/**
+ * A template after `extends`, `use` and `omit`, or `undefined` when there's no template with the id. A parent that
+ * doesn't exist, a cycle, or a question that isn't defined is an `E_INVALID_CATALOG` error, which the catalog check
+ * reports first.
+ */
+export function expandTemplate(catalog: CatalogManifest, id: string): ExpandedTemplate | undefined {
+  return expand(catalog, id, [])
+}
+
+function expand(catalog: CatalogManifest, id: string, chain: readonly string[]): ExpandedTemplate | undefined {
+  const template = findTemplate(catalog, id)
+  if (!template) {
+    return undefined
+  }
+  if (chain.includes(id)) {
+    throw new PlanError("E_INVALID_CATALOG", `Templates extend each other in a cycle: ${[...chain, id].join(", ")}.`)
+  }
+  const parent = template.extends === undefined ? undefined : expand(catalog, template.extends, [...chain, id])
+  if (template.extends !== undefined && !parent) {
+    throw new PlanError("E_INVALID_CATALOG", `Template ${id} extends ${template.extends}, which isn't in the catalog.`)
+  }
+  const target = template.target ?? parent?.target
+  if (target === undefined) {
+    throw new PlanError("E_INVALID_CATALOG", `Template ${id} has no target, and extends no template.`)
+  }
+  const omit = new Set(template.omit ?? [])
+  const required = [
+    ...new Set([
+      ...(parent?.required ?? []).filter((ref) => !omit.has(ref)),
+      ...(template.required ?? []).map(addonRefId)
+    ])
+  ]
+  const questions = (parent?.questions ?? []).filter((question) => !omit.has(question.id))
+  for (const entry of template.questions ?? []) {
+    const question = expandEntry(catalog, id, entry, questions)
+    const index = questions.findIndex((candidate) => candidate.id === question.id)
+    if (index === -1) {
+      questions.push(question)
+    } else {
+      questions[index] = question
+    }
+  }
+  return {
+    id: template.id,
+    title: template.title,
+    description: template.description,
+    ...(template.extends === undefined ? {} : { extends: template.extends }),
+    target,
+    modes: template.modes ?? parent?.modes ?? findTarget(catalog, target)?.modes.map((mode) => mode.id) ?? [],
+    required,
+    questions,
+    ...(template.gallery === undefined ? {} : { gallery: template.gallery })
+  }
+}
+
+/** One of a template's `questions` entries: a catalog or parent question by id, one changed by `use`, or its own. */
+function expandEntry(
+  catalog: CatalogManifest,
+  template: string,
+  entry: string | QuestionUse | QuestionDefinition,
+  inherited: readonly ExpandedQuestion[]
+): ExpandedQuestion {
+  if (typeof entry !== "string" && !("use" in entry)) {
+    return expandQuestion(entry)
+  }
+  const id = typeof entry === "string" ? entry : entry.use
+  const own = findQuestion(catalog, id)
+  const base = inherited.find((question) => question.id === id) ?? (own ? expandQuestion(own) : undefined)
+  if (!base) {
+    throw new PlanError("E_INVALID_CATALOG", `Template ${template} asks question ${id}, which isn't in the catalog.`)
+  }
+  if (typeof entry === "string") {
+    return base
+  }
+  return {
+    ...base,
+    ...(entry.choices === undefined ? {} : { choices: entry.choices.map(expandChoice) }),
+    ...(entry.default === undefined ? {} : { default: [entry.default].flat() }),
+    ...(entry.required === undefined ? {} : { required: entry.required }),
+    ...(entry.when === undefined ? {} : { when: entry.when })
+  }
 }
 
 export function findTarget(catalog: CatalogManifest, id: string): TargetManifest | undefined {
@@ -24,16 +270,8 @@ export function findTemplate(catalog: CatalogManifest, id: string): TemplateMani
   return catalog.templates.find((template) => template.id === id)
 }
 
-export function findSlot(catalog: CatalogManifest, id: string): SlotDefinition | undefined {
-  return catalog.slots.find((slot) => slot.id === id)
-}
-
 export function findPreset(catalog: CatalogManifest, id: string): PresetManifest | undefined {
   return (catalog.presets ?? []).find((preset) => preset.id === id)
-}
-
-export function slotAddons(catalog: CatalogManifest, slot: string): AddonManifest[] {
-  return catalog.addons.filter((addon) => addon.slot === slot)
 }
 
 /**
@@ -49,12 +287,6 @@ export function writtenVersions(catalog: CatalogManifest): Record<string, string
 
 export function findMode(target: TargetManifest, mode: string): TargetMode | undefined {
   return target.modes.find((candidate) => candidate.id === mode)
-}
-
-/** The modes a template offers: its own list, or every mode of its target. */
-export function templateModes(catalog: CatalogManifest, template: TemplateManifest): string[] {
-  const target = findTarget(catalog, template.target)
-  return template.modes ?? target?.modes.map((mode) => mode.id) ?? []
 }
 
 export function targetInfo(catalog: CatalogManifest, target: TargetManifest, mode: TargetMode): TargetInfo {
@@ -81,10 +313,16 @@ export function shortName(id: string): string {
 
 export type NameLookup = { id: string } | { suggestions: string[]; ambiguous: boolean }
 
-/** Resolves an add-on id or its short name. An unknown or ambiguous name comes back with suggestions. */
+/**
+ * Resolves an add-on id, its short name, or a bare add-on's package name (`zod` for `npm:zod`). An unknown or
+ * ambiguous name comes back with suggestions.
+ */
 export function lookupAddon(catalog: CatalogManifest, name: string): NameLookup {
   if (findAddon(catalog, name)) {
     return { id: name }
+  }
+  if (bareAddons(catalog).has(`npm:${name}`)) {
+    return { id: `npm:${name}` }
   }
   const matches = catalog.addons.filter((addon) => shortName(addon.id) === name)
   const [only] = matches

@@ -1,6 +1,13 @@
 import { diffLines } from "diff"
 import { jsonLayoutFor } from "../edit/layout.js"
-import { catalogVersionText, findAddon, lookupAddon, sameCatalogVersion, writtenVersions } from "../manifest/catalog.js"
+import {
+  catalogVersionText,
+  expandTemplate,
+  findAddon,
+  lookupAddon,
+  sameCatalogVersion,
+  writtenVersions
+} from "../manifest/catalog.js"
 import type { CatalogManifest, PackRecord, TargetContext } from "../manifest/types.js"
 import { jsonFormat, yamlFormat } from "../merge/formats.js"
 import { planSharedDocument, planSharedEnv, planSharedLines, type SharedResult } from "../merge/shared.js"
@@ -26,6 +33,7 @@ import { render, type Rendered } from "./render.js"
 import { RecordingTree, ScratchTree, type FileState, type VirtualTree } from "./tree.js"
 import type {
   Intent,
+  Notice,
   Operation,
   OperationClass,
   PackageChange,
@@ -234,6 +242,7 @@ async function planInto(input: PlanInput, tree: RecordingTree, result: Plan) {
   const old = lock ? oldBaseline(input, catalog, lock, result) : undefined
   if (lock && command === "upgrade") {
     result.upgrade = upgradeSummary(lock, catalog, resolved)
+    result.notices.push(...newQuestions(input, catalog, lock, resolved))
   }
   const entries: Record<string, LockFileEntry> = {}
   const deleted = new Set<string>()
@@ -492,9 +501,7 @@ function oldBaseline(input: PlanInput, catalog: CatalogManifest, lock: Lock, res
   const recorded = lock.catalog.version
   // Without the old render, seeds merge against the bases stored in the lock, when the product stores them.
   const fallback = input.settings.seedBases === "stored" ? "stored" : "two-way"
-  const oldCatalog =
-    [catalog, input.catalog].find((candidate) => sameCatalogVersion(candidate, lock.catalog)) ??
-    input.catalogs?.(recorded, lock.catalog.packs)
+  const oldCatalog = lockedCatalog(input, catalog, lock)
   if (!oldCatalog) {
     result.baseline = { source: fallback, catalogVersion: recorded }
     return undefined
@@ -513,6 +520,44 @@ function oldBaseline(input: PlanInput, catalog: CatalogManifest, lock: Lock, res
   } catch {
     result.baseline = { source: fallback, catalogVersion: recorded }
     return undefined
+  }
+}
+
+/** The catalog version a lock was applied with, when it's installed or cached. */
+function lockedCatalog(input: PlanInput, catalog: CatalogManifest, lock: Lock): CatalogManifest | undefined {
+  return (
+    [catalog, input.catalog].find((candidate) => sameCatalogVersion(candidate, lock.catalog)) ??
+    input.catalogs?.(lock.catalog.version, lock.catalog.packs)
+  )
+}
+
+/**
+ * A question the project's template asks in the new catalog version and didn't in the old one isn't asked during an
+ * upgrade. Each gets a `new-question` notice that says how to answer it, unless the project already has one of its
+ * choices. Without the old catalog, which questions are new isn't known, so there are none.
+ */
+function newQuestions(input: PlanInput, catalog: CatalogManifest, lock: Lock, resolved: ResolvedSelection): Notice[] {
+  const old = lockedCatalog(input, catalog, lock)
+  if (!old || old === catalog) {
+    return []
+  }
+  try {
+    const before = new Set(expandTemplate(old, lock.project.template)?.questions.map((question) => question.id) ?? [])
+    const installed = new Set(resolved.addons.map((addon) => addon.manifest.id))
+    return (expandTemplate(catalog, lock.project.template)?.questions ?? [])
+      .filter((question) => !before.has(question.id))
+      .filter((question) => !question.choices.some((choice) => installed.has(choice.id)))
+      .map((question) => {
+        const asked = question.question ?? question.choose ?? question.title
+        const end = /[.?!]$/.test(asked) ? "" : "."
+        return {
+          code: "new-question",
+          text: `The template now asks: ${asked}${end} Run \`${input.settings.product} add ${question.id}\` to answer it.`
+        }
+      })
+  } catch {
+    // A template that doesn't expand in either version is the catalog check's to report.
+    return []
   }
 }
 

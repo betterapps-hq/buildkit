@@ -2,6 +2,73 @@
   "name": "@buildkitgg/catalog",
   "entries": [
     {
+      "date": "Tue, 03 Nov 2026 03:52:39 GMT",
+      "version": "0.4.0",
+      "tag": "@buildkitgg/catalog_v0.4.0",
+      "comments": {
+        "minor": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/catalog",
+            "commit": "b890c2db268acef023ddf0e0f08c7e79713f660c",
+            "comment": "Remove the better-apps-deploy, sql and better-auth add-ons and the saas preset, so the catalog uses no Better Apps packages"
+          }
+        ]
+      }
+    },
+    {
+      "date": "Tue, 03 Nov 2026 02:41:57 GMT",
+      "version": "0.3.1",
+      "tag": "@buildkitgg/catalog_v0.3.1",
+      "comments": {
+        "patch": [
+          {
+            "author": "beachball",
+            "package": "@buildkitgg/catalog",
+            "comment": "Bump @buildkitgg/scaffolder to v0.8.0",
+            "commit": "not available"
+          }
+        ]
+      }
+    },
+    {
+      "date": "Tue, 03 Nov 2026 01:39:16 GMT",
+      "version": "0.3.0",
+      "tag": "@buildkitgg/catalog_v0.3.0",
+      "comments": {
+        "patch": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/catalog",
+            "commit": "98653caf92b4a01ab82f8ae76b38b78dd9332d61",
+            "comment": "Use @better-apps/identity-better-auth, the Better Auth identity adapter's new name, in the better-auth add-on"
+          }
+        ],
+        "none": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/catalog",
+            "commit": "063d609caa08375fd9bc535186db4d5e38a4cf79",
+            "comment": "Build, lint and test with Vite+; published code is unchanged"
+          }
+        ],
+        "minor": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/catalog",
+            "commit": "e3ba96f24cbce395e32224c6c8db08fdc9649910",
+            "comment": "Ask the database, sign-in and localization as questions with the same ids, so --database, --auth and --no-auth keep working. The SQL add-on conflicts with other database add-ons, and Better Auth needs one."
+          },
+          {
+            "author": "beachball",
+            "package": "@buildkitgg/catalog",
+            "comment": "Bump @buildkitgg/scaffolder to v0.7.0",
+            "commit": "not available"
+          }
+        ]
+      }
+    },
+    {
       "date": "Fri, 30 Oct 2026 08:23:50 GMT",
       "version": "0.2.1",
       "tag": "@buildkitgg/catalog_v0.2.1",

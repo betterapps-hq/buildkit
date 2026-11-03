@@ -169,7 +169,7 @@ describe("renderPoints", () => {
   })
 
   it("is wired at init: generated files exist and the target's seeds import them", async () => {
-    const files = await applyFixture({}, initRequest({ optional: ["@fixture/i18n"] }))
+    const files = await applyFixture({}, initRequest({ extra: ["@fixture/i18n"] }))
     expect(files["src/generated/fixture/client.ts"]).toContain('import { I18nProvider } from "../../i18n/setup"')
     expect(files["vite.config.ts"]).toContain("./src/generated/fixture/config")
     expect(files["src/generated/fixture/server.ts"]).toContain('"DATABASE_URL": {"type":"string"}')

@@ -1,8 +1,39 @@
 # Change Log - @buildkitgg/scaffolder
 
-<!-- This log was last generated on Fri, 30 Oct 2026 08:23:50 GMT and should not be manually modified. -->
+<!-- This log was last generated on Tue, 03 Nov 2026 02:41:57 GMT and should not be manually modified. -->
 
 <!-- Start content -->
+
+## 0.8.0
+
+Tue, 03 Nov 2026 02:41:57 GMT
+
+### Minor changes
+
+- Read slot:\<id> in an old config or lock as question:\<id>, and write the new form on the next apply. An upgrade lists
+  each question the template gains as a new-question notice instead of asking it. (ajcraswell@gmail.com)
+- checkCatalog checks gallery images: an https URL, or a path inside the package that the new files option confirms.
+  catalog check confirms a template package's images are in its folder. (ajcraswell@gmail.com)
+
+## 0.7.0
+
+Tue, 03 Nov 2026 01:39:16 GMT
+
+### Minor changes
+
+- Breaking: templates ask an ordered list of questions instead of slots and optional add-ons. Questions can be shared by
+  the catalog, templates can extend each other, bare npm: add-ons need no defineAddon, choices show why they can't be
+  picked, and a required question with no default is a choose decision. defineSlot, slot, slot: requirements,
+  Answers.slots and Answers.optional are removed. (ajcraswell@gmail.com)
+- Env contributions take a `help` link, such as the provider's dashboard, which the wizard and the next steps show as
+  "Get one at <url>". Catalog CI checks it's https (ajcraswell@gmail.com)
+- Add-ons can conflict with any other add-on that provides a capability, with `conflicts: ["provides:orm"]`, and adding
+  one that conflicts this way offers to replace the installed one (ajcraswell@gmail.com)
+- Combination add-ons hold the glue between two choices, such as an auth library's adapter for an ORM: `joins` selects
+  one when every add-on it names is selected, and removes it when one isn't (ajcraswell@gmail.com)
+- Catalogs pin packages to exact versions or npm ranges, and write exact pins as exact, caret or tilde ranges. Add-ons
+  say which package ranges they're written for, catalog CI checks the pins fit, and `catalog check --registry` checks
+  each pin against npm (ajcraswell@gmail.com)
 
 ## 0.6.0
 

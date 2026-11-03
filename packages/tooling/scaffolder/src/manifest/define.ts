@@ -4,7 +4,7 @@ import type {
   CatalogManifest,
   PointDefinition,
   PresetManifest,
-  SlotDefinition,
+  QuestionDefinition,
   TargetManifest,
   TemplateManifest,
   TemplatePack
@@ -25,8 +25,8 @@ export function defineTemplate(manifest: TemplateManifest): TemplateManifest {
   return manifest
 }
 
-export function defineSlot(manifest: SlotDefinition): SlotDefinition {
-  return manifest
+export function defineQuestion(question: QuestionDefinition): QuestionDefinition {
+  return question
 }
 
 export function definePreset(manifest: PresetManifest): PresetManifest {

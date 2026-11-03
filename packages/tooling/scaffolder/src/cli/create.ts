@@ -1,5 +1,7 @@
 import { defineCommand, type ArgsDef, type CommandDef } from "citty"
-import { CliRuntime, type CliOptions } from "./commands.js"
+import { expandTemplate, findQuestion } from "../manifest/catalog.js"
+import type { CatalogManifest } from "../manifest/types.js"
+import { CliRuntime, questionIds, type CliOptions } from "./commands.js"
 
 const shared: ArgsDef = {
   "dry-run": { type: "boolean", description: "Plan and show the changes, and write nothing" },
@@ -36,14 +38,33 @@ function positional(description: string): ArgsDef[string] {
   return { type: "positional", required: false, description }
 }
 
+/** A question's title for its flag's help: the catalog's, else the first template's that asks it. */
+function questionTitle(catalog: CatalogManifest, id: string): string {
+  const own = findQuestion(catalog, id)
+  if (own) {
+    return own.title
+  }
+  for (const template of catalog.templates) {
+    try {
+      const question = expandTemplate(catalog, template.id)?.questions.find((candidate) => candidate.id === id)
+      if (question) {
+        return question.title
+      }
+    } catch {
+      // The catalog check reports a template that doesn't expand.
+    }
+  }
+  return id
+}
+
 /** A citty command tree for a product CLI. Each subcommand runs the shared handler with its raw arguments. */
 export function createCli(options: CliOptions): CommandDef {
   const runtime = new CliRuntime(options)
-  const slotArgs: ArgsDef = Object.fromEntries(
-    options.catalog.slots.map((slot) => [
-      slot.id,
-      { type: "string", description: `${slot.choose} Use --no-${slot.id} for no ${slot.title.toLowerCase()}` }
-    ])
+  const questionArgs: ArgsDef = Object.fromEntries(
+    questionIds(options.catalog).map((id) => {
+      const question = questionTitle(options.catalog, id)
+      return [id, { type: "string", description: `${question}. Use --no-${id} to answer no` }]
+    })
   )
   const alongside: ArgsDef[string] = {
     type: "string",
@@ -56,17 +77,23 @@ export function createCli(options: CliOptions): CommandDef {
       mode: { type: "string", description: "Target mode, when the template offers more than one" },
       preset: { type: "string", description: "Saved answers to start from" },
       name: { type: "string", description: "Project name. Defaults to the folder name" },
-      with: { type: "string", description: "Include an optional add-on. Repeatable, or comma-separated" },
-      without: { type: "string", description: "Leave out an optional add-on. Repeatable, or comma-separated" },
+      with: {
+        type: "string",
+        description: "Add an add-on to the question that offers it, or as an extra. Repeatable, or comma-separated"
+      },
+      without: {
+        type: "string",
+        description: "Take an add-on out of its question's answer. Repeatable, or comma-separated"
+      },
       set: { type: "string", description: "Set an option: <add-on>.<option>=<value>. Repeatable" },
       adopt: { type: "boolean", description: "Bring an existing project in. Your files stay yours" },
-      ...slotArgs
+      ...questionArgs
     },
     add: {
       addon: positional("Add-ons, or a question such as database"),
-      replace: { type: "string", description: "Replace an installed add-on in the same slot" },
+      replace: { type: "string", description: "Replace an installed add-on with one it conflicts with" },
       set: { type: "string", description: "Set an option: <add-on>.<option>=<value>. Repeatable" },
-      ...slotArgs
+      ...questionArgs
     },
     upgrade: {
       list: { type: "boolean", description: "Show what an upgrade changes, and write nothing" },

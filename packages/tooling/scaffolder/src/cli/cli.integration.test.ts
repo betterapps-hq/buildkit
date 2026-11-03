@@ -9,6 +9,7 @@ import { plan } from "../plan/plan.js"
 import { memoryTree } from "../plan/tree.js"
 import { pairwiseAnswers } from "../resolve/check.js"
 import { describeCatalog } from "../resolve/questions.js"
+import { exampleCatalog } from "../testing/example.js"
 import { fixtureCatalog, settings } from "../testing/fixture.js"
 import { scriptedPrompter, type ScriptedAnswer } from "../testing/prompter.js"
 import type { CliOptions } from "./commands.js"
@@ -125,9 +126,9 @@ describe("create", () => {
 
   it("makes the project of each pairwise answer set from the command requestArgv writes for it", async () => {
     const catalog = fixtureCatalog()
-    // The app template selects Storybook by default, so the sets that leave it out need --without.
+    // The app template selects Storybook by default, so the sets that leave it out answer no to developer tools.
     const sets = pairwiseAnswers(catalog, "app", "ssr")
-    expect(sets.some((answers) => !answers.optional?.includes("@fixture/storybook"))).toBe(true)
+    expect(sets.some((answers) => !answers.questions?.devtools?.includes("@fixture/storybook"))).toBe(true)
     for (const [index, set] of sets.entries()) {
       const answers = { ...set, name: `pair-${index}` }
       const argv = requestArgv({ intent: { command: "init", answers } }, { catalog })
@@ -208,7 +209,7 @@ describe("create", () => {
     const result = await run(["create", "bare", "demo", "--yes", "--json"])
     expect(result.code).toBe(1)
     expect(envelope(result.out).decisions?.[0]).toMatchObject({
-      id: "slot:ui",
+      id: "question:ui",
       choices: [{ argv: ["fixture", "create", "bare", "demo", "--ui", "ui-basic"] }, expect.anything()]
     })
     expect(files()).toEqual([])
@@ -242,7 +243,9 @@ describe("the wizard", () => {
         true,
         "@fixture/db-postgres",
         "@fixture/ui-fancy",
-        ["@fixture/i18n"],
+        true,
+        false,
+        false,
         "dark",
         "en, fr",
         "postgres://local",
@@ -257,26 +260,29 @@ describe("the wizard", () => {
       ["confirm", "Add a database?"],
       ["select", "Which database?"],
       ["select", "Which UI kit?"],
-      ["multiselect", "Add any of these?"],
+      ["confirm", "Add localization?"],
+      ["confirm", "Add developer tools?"],
+      ["confirm", "Add telemetry?"],
       ["select", "Fancy UI: Theme"],
       ["text", "Localization: Locales"],
       ["password", "DATABASE_URL: Connection string"],
       ["confirm", "Apply these changes?"]
     ])
-    expect(result.asked.find((question) => question.message === "Add any of these?")?.initial).toEqual([
-      "@fixture/storybook"
-    ])
+    // A default makes yes the first answer.
+    expect(result.asked.find((question) => question.message === "Add developer tools?")?.initial).toBe(true)
+    expect(result.asked.find((question) => question.message === "Add telemetry?")?.initial).toBe(false)
     expect(result.asked.at(-1)?.initial).toBe(false)
     expect(result.notes[0]).toContain("Changes:")
     expect(result.notes[0]).toContain("Always included:\n  @fixture/lint")
     const config = readFileSync(join(root, "demo/fixture.jsonc"), "utf8")
     expect(config).toContain('"@fixture/ui-fancy": { "theme": "dark" }')
     expect(config).toContain('"@fixture/i18n": { "locales": ["en", "fr"] }')
-    expect(config).toContain('"declined": ["@fixture/sentry", "@fixture/storybook"]')
+    expect(config).toContain('"declined": ["question:devtools", "question:telemetry"]')
   })
 
-  it("an optional slot asks yes or no first, and a slot with one fitting choice isn't asked", async () => {
-    const result = await run(["create", "app", "demo", "--mode", "spa", "--ui", "ui-basic", "--with", "storybook"], {
+  it("an optional question asks yes or no first, and one with one fitting choice asks nothing more", async () => {
+    const answered = ["--ui", "ui-basic", "--with", "storybook", "--no-localization", "--no-telemetry"]
+    const result = await run(["create", "app", "demo", "--mode", "spa", ...answered], {
       tty: true,
       script: [true, "file:local.db", true]
     })
@@ -289,21 +295,23 @@ describe("the wizard", () => {
     expect(result.asked[1]).toMatchObject({ kind: "text", initial: "file:local.db" })
     expect(readFileSync(join(root, "demo/fixture.jsonc"), "utf8")).toContain("@fixture/db-sqlite")
     expect(readFileSync(join(root, "demo/.env"), "utf8")).toContain("DATABASE_URL=file:local.db")
-    const declined = await run(["create", "app", "other", "--mode", "spa", "--ui", "ui-basic", "--with", "storybook"], {
+    const declined = await run(["create", "app", "other", "--mode", "spa", ...answered], {
       tty: true,
       script: [false, true]
     })
     expect(declined.code).toBe(0)
-    expect(readFileSync(join(root, "other/fixture.jsonc"), "utf8")).toContain("slot:database")
+    expect(readFileSync(join(root, "other/fixture.jsonc"), "utf8")).toContain("question:database")
   })
 
   it("a preset's answers skip their questions", async () => {
     const result = await run(["create", "--preset", "saas", "demo"], {
       tty: true,
-      script: ["@fixture/ui-basic", "en", "postgres://local", true]
+      script: ["@fixture/ui-basic", true, false, "en", "postgres://local", true]
     })
     expect(result.asked.map((question) => question.message)).toEqual([
       "Which UI kit?",
+      "Add developer tools?",
+      "Add telemetry?",
       "Localization: Locales",
       "DATABASE_URL: Connection string",
       "Apply these changes?"
@@ -314,7 +322,7 @@ describe("the wizard", () => {
   it("wizard answers and the equivalent flags give the same fingerprint", async () => {
     const wizard = await run(["create", "app", "demo", "--dry-run", "--out", "wizard"], {
       tty: true,
-      script: ["ssr", true, "@fixture/db-sqlite", "@fixture/ui-basic", ["@fixture/i18n"], "en"]
+      script: ["ssr", true, "@fixture/db-sqlite", "@fixture/ui-basic", true, false, false, "en"]
     })
     expect(wizard.asked.map((question) => question.message)).not.toContain("Apply these changes?")
     await run([
@@ -331,6 +339,7 @@ describe("the wizard", () => {
       "storybook",
       "--with",
       "i18n",
+      "--no-telemetry",
       "--set",
       'i18n.locales=["en"]',
       "--dry-run",
@@ -351,7 +360,18 @@ describe("the wizard", () => {
       return question.kind === "text" ? String(question.initial) : true
     }
     const result = await run(
-      [...createDemo, "--database", "db-sqlite", "--ui", "ui-basic", "--with", "sentry", "--out"],
+      [
+        ...createDemo,
+        "--database",
+        "db-sqlite",
+        "--ui",
+        "ui-basic",
+        "--with",
+        "sentry",
+        "--no-localization",
+        "--no-devtools",
+        "--out"
+      ],
       {
         tty: true,
         script: [answer, answer, answer]
@@ -390,11 +410,15 @@ describe("the wizard", () => {
       // A blank text answer skips the optional value; the password prompt is the database's.
       return question.kind === "text" ? "" : "postgres://local"
     }
-    const created = await run([...createDemo, "--database", "db-postgres", "--ui", "ui-basic", "--with", "sentry"], {
-      tty: true,
-      catalog,
-      script: Array.from({ length: 4 }, () => answer)
-    })
+    const quiet = ["--no-localization", "--no-devtools"]
+    const created = await run(
+      [...createDemo, "--database", "db-postgres", "--ui", "ui-basic", "--with", "sentry", ...quiet],
+      {
+        tty: true,
+        catalog,
+        script: Array.from({ length: 4 }, () => answer)
+      }
+    )
     expect(created.code).toBe(0)
     expect(created.asked).toContainEqual(
       expect.objectContaining({ kind: "text", message: "SENTRY_RELEASE: Release (optional, press Enter to skip)" })
@@ -405,8 +429,8 @@ describe("the wizard", () => {
   it("cancelling a choice, the secret prompt or the confirmation writes nothing and exits 130", async () => {
     for (const script of [
       [cancelled],
-      ["ssr", true, "@fixture/db-sqlite", "@fixture/ui-basic", ["@fixture/sentry"], cancelled],
-      ["ssr", false, "@fixture/ui-basic", [], false]
+      ["ssr", true, "@fixture/db-sqlite", "@fixture/ui-basic", false, false, true, cancelled],
+      ["ssr", false, "@fixture/ui-basic", false, false, false, false]
     ] satisfies ScriptedAnswer[][]) {
       const result = await run(["create", "app", "demo"], { tty: true, script })
       expect(result.code).toBe(130)
@@ -424,10 +448,79 @@ describe("the wizard", () => {
     const result = await run(["catalog", "--json"])
     const description = describeCatalog(fixtureCatalog())
     expect(JSON.parse(result.out)).toEqual(description)
-    const ssr = description.templates.find((template) => template.template === "app")?.questionsByMode.ssr
-    expect(ssr?.slots.map((slot) => slot.question ?? slot.choose)).toEqual(["Add a database?", "Which UI kit?"])
+    const ssr = description.templates.find((template) => template.id === "app")?.questionsByMode.ssr
+    expect(ssr?.map((question) => question.question ?? question.choose)).toEqual([
+      "Add a database?",
+      "Add a UI kit?",
+      "Add localization?",
+      "Add developer tools?",
+      "Add telemetry?"
+    ])
     const human = await run(["catalog"])
     expect(human.out).toContain("App (app): A web app")
+  })
+})
+
+describe("question flags", () => {
+  const plannedRequest = (folder: string) => JSON.parse(readFileSync(join(root, folder, "plan.json"), "utf8"))
+
+  it("answer questions, and requestArgv writes the same request back", async () => {
+    const catalog = exampleCatalog()
+    const flags = ["--database", "prisma", "--telemetry", "sentry,posthog", "--no-localization", "--with", "storybook"]
+    const first = await run(["create", "saas", "demo", ...flags, "--dry-run", "--out", "first"], { catalog })
+    expect(first.code).toBe(0)
+    const { request, fingerprint } = plannedRequest("first")
+    expect(request.intent.answers).toEqual({
+      template: "saas",
+      name: "demo",
+      questions: {
+        database: ["@acme/prisma"],
+        telemetry: ["@acme/sentry", "@acme/posthog"],
+        localization: []
+      },
+      extra: ["npm:storybook"]
+    })
+    const argv = requestArgv(request, { catalog })
+    expect(argv).toEqual(["create", "saas", "demo", ...flags])
+    expect((await run([...argv, "--dry-run", "--out", "again"], { catalog })).code).toBe(0)
+    expect(plannedRequest("again").fingerprint).toBe(fingerprint)
+  })
+
+  it("--with and --without start from the question's default", async () => {
+    const catalog = exampleCatalog()
+    await run(["create", "saas", "demo", "--with", "sentry", "--without", "lingui", "--dry-run", "--out", "plan"], {
+      catalog
+    })
+    expect(plannedRequest("plan").request.intent.answers.questions).toEqual({
+      telemetry: ["@acme/posthog", "@acme/sentry"],
+      localization: []
+    })
+  })
+
+  it("refuses no to a required question, two answers to a one question, and a choice it doesn't offer", async () => {
+    const catalog = exampleCatalog()
+    for (const flags of [["--no-database"], ["--database", "prisma,drizzle"], ["--auth", "sentry"]]) {
+      const result = await run(["create", "saas", "demo", ...flags, "--json"], { catalog })
+      expect(result.code).toBe(2)
+      expect(envelope(result.out).error?.code).toBe("E_USAGE")
+    }
+  })
+
+  it("add <question> asks the template's question, and answers it with its flag", async () => {
+    const catalog = exampleCatalog()
+    expect((await run(["create", "vite-web", "demo", "--no-database", "--no-auth", "--yes"], { catalog })).code).toBe(0)
+    const asked = await run(["add", "database", "--cwd", "demo", "--json"], { catalog })
+    expect(envelope(asked.out).decisions?.[0]).toMatchObject({ id: "question:database", message: "Which database?" })
+    expect(envelope(asked.out).decisions?.[0]?.choices.map((choice) => choice.argv)).toEqual([
+      ["fixture", "add", "drizzle"],
+      ["fixture", "add", "prisma"],
+      ["fixture", "add", "convex"]
+    ])
+    const answered = await run(["add", "database", "--database", "convex", "--cwd", "demo", "--yes", "--json"], {
+      catalog
+    })
+    expect(envelope(answered.out).status).toBe("applied")
+    expect(readFileSync(join(root, "demo/fixture.jsonc"), "utf8")).toContain("@acme/convex")
   })
 })
 
@@ -447,7 +540,7 @@ describe("add and other commands", () => {
     expect(readFileSync(join(root, "demo/fixture.jsonc"), "utf8")).toContain('"locales": ["en", "de"]')
   })
 
-  it("asks a slot's question later, and offers the replace decision on a terminal", async () => {
+  it("asks a question later, and offers the replace decision on a terminal", async () => {
     await project(["--no-database"])
     const result = await run(["add", "database", "--cwd", "demo"], {
       tty: true,
@@ -708,7 +801,7 @@ describe("add and other commands", () => {
     expect(existsSync(marker)).toBe(false)
   })
 
-  it("builds a citty command tree with every command and the catalog's slot flags", () => {
+  it("builds a citty command tree with every command and the catalog's question flags", () => {
     const { cli } = options()
     const command = createCli(cli)
     const subCommands = command.subCommands

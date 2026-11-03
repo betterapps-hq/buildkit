@@ -1,24 +1,25 @@
 import {
+  expandTemplate,
   findAddon,
   findMode,
-  findSlot,
+  findQuestion,
   findTarget,
   findTemplate,
+  packageRefs,
   packOf,
   parseOptions,
-  slotAddons,
   targetInfo,
-  templateModes
+  type ExpandedTemplate
 } from "../manifest/catalog.js"
-import type { Answers, CatalogManifest, RangeStyle } from "../manifest/types.js"
+import type { Answers, CatalogManifest, RangeStyle, TemplateManifest } from "../manifest/types.js"
 import { PlanError } from "../plan/errors.js"
 import { isRecord } from "../plan/json.js"
 import { render } from "../plan/render.js"
 import { defineSettings } from "../state/settings.js"
 import { compareVersions, isValidRange, isValidVersion, lowestVersion, satisfiesRange } from "../upgrade/semver.js"
 import { selectionFromAnswers } from "./answers.js"
-import { optionsSchema } from "./questions.js"
-import { addonSupports, resolveSelection } from "./resolve.js"
+import { optionsSchema, pulledIn, referenceMatches } from "./questions.js"
+import { addonsConflict, addonSupports, resolveSelection } from "./resolve.js"
 
 const rangeStyles: readonly RangeStyle[] = ["exact", "caret", "tilde"]
 
@@ -34,14 +35,23 @@ function duplicates(ids: readonly string[]): string[] {
   return [...repeated]
 }
 
+export interface CheckOptions {
+  /** Plan every pair of answers for each template and mode. */
+  matrix?: boolean
+  /** The templates the matrix plans. Defaults to every one. */
+  templates?: readonly string[]
+  /**
+   * Whether a file is in the package a template comes from, such as a gallery image. Without it, a gallery image
+   * that's a path is only checked to stay inside the package.
+   */
+  files?: (path: string, template: string) => boolean
+}
+
 /**
- * Catalog CI: checks references, slot defaults, required add-on options, facets and version pins. With `matrix`, it
+ * Catalog CI: checks references, questions, required add-on options, facets and version pins. With `matrix`, it
  * also plans every pair of answers for each template and mode, or for the `templates` listed, and reports any that fail.
  */
-export function checkCatalog(
-  catalog: CatalogManifest,
-  options: { matrix?: boolean; templates?: readonly string[] } = {}
-): string[] {
+export function checkCatalog(catalog: CatalogManifest, options: CheckOptions = {}): string[] {
   const problems: string[] = []
   if (!isValidVersion(catalog.version)) {
     problems.push(`Catalog version "${catalog.version}" isn't a semantic version.`)
@@ -50,7 +60,7 @@ export function checkCatalog(
     ["add-on", catalog.addons.map((addon) => addon.id)],
     ["target", catalog.targets.map((target) => target.id)],
     ["template", catalog.templates.map((template) => template.id)],
-    ["slot", catalog.slots.map((slot) => slot.id)],
+    ["question", (catalog.questions ?? []).map((question) => question.id)],
     ["preset", (catalog.presets ?? []).map((preset) => preset.id)]
   ] as const) {
     for (const id of duplicates(ids)) {
@@ -86,16 +96,13 @@ export function checkCatalog(
       problems.push(`The pin for ${name}, "${pin}", isn't an exact version or a version range.`)
     }
   }
+  problems.push(...packageProblems(catalog))
   const provides = new Set(catalog.addons.flatMap((addon) => Object.keys(addon.provides ?? {})))
   for (const addon of catalog.addons) {
     if (!isValidVersion(addon.version)) {
       problems.push(`${addon.id} version "${addon.version}" isn't a semantic version.`)
     }
-    if (addon.slot && !findSlot(catalog, addon.slot)) {
-      problems.push(`${addon.id} fills slot ${addon.slot}, which isn't defined.`)
-    }
-    // The resolver reads `slot:` only in requires, and `provides:` in requires and conflicts. Elsewhere they'd be
-    // accepted and do nothing.
+    // The resolver reads `provides:` in requires, conflicts and joins. In after it would be accepted and do nothing.
     for (const [field, references] of [
       ["conflicts", addon.conflicts ?? []],
       ["after", addon.after ?? []]
@@ -105,23 +112,15 @@ export function checkCatalog(
           if (!provides.has(reference.slice(9))) {
             problems.push(`${addon.id} refers to ${reference}, and no add-on provides it.`)
           }
-        } else if (reference.startsWith("slot:") || reference.startsWith("provides:")) {
-          problems.push(
-            field === "conflicts"
-              ? `${addon.id} uses ${reference} in conflicts, which takes add-on ids and provides:<name>.`
-              : `${addon.id} uses ${reference} in after, which takes add-on ids only.`
-          )
+        } else if (reference.startsWith("provides:")) {
+          problems.push(`${addon.id} uses ${reference} in after, which takes add-on ids only.`)
         } else if (!findAddon(catalog, reference)) {
           problems.push(`${addon.id} refers to ${reference}, which isn't in the catalog.`)
         }
       }
     }
     for (const reference of addon.requires ?? []) {
-      if (reference.startsWith("slot:")) {
-        if (!findSlot(catalog, reference.slice(5))) {
-          problems.push(`${addon.id} refers to ${reference}, which isn't defined.`)
-        }
-      } else if (reference.startsWith("provides:")) {
+      if (reference.startsWith("provides:")) {
         if (!provides.has(reference.slice(9))) {
           problems.push(`${addon.id} refers to ${reference}, and no add-on provides it.`)
         }
@@ -133,8 +132,8 @@ export function checkCatalog(
       if (addon.joins.length < 2) {
         problems.push(`${addon.id} is a combination add-on, so it joins at least two add-ons.`)
       }
-      if ((addon.requires ?? []).length > 0 || addon.options || addon.slot) {
-        problems.push(`${addon.id} is a combination add-on, so it can't have requires, options or a slot.`)
+      if ((addon.requires ?? []).length > 0 || addon.options) {
+        problems.push(`${addon.id} is a combination add-on, so it can't have requires or options.`)
       }
       for (const reference of addon.joins) {
         if (reference.startsWith("provides:")) {
@@ -179,13 +178,23 @@ export function checkCatalog(
     }
   }
   for (const template of catalog.templates) {
-    const target = findTarget(catalog, template.target)
-    if (!target) {
-      problems.push(`Template ${template.id} uses target ${template.target}, which isn't in the catalog.`)
+    let expanded: ExpandedTemplate | undefined
+    try {
+      expanded = expandTemplate(catalog, template.id)
+    } catch (error) {
+      problems.push(error instanceof Error ? error.message : String(error))
       continue
     }
-    const modes = templateModes(catalog, template)
-    for (const modeId of modes) {
+    if (!expanded) {
+      continue
+    }
+    problems.push(...templateProblems(catalog, template, expanded, options.files))
+    const target = findTarget(catalog, expanded.target)
+    if (!target) {
+      problems.push(`Template ${template.id} uses target ${expanded.target}, which isn't in the catalog.`)
+      continue
+    }
+    for (const modeId of expanded.modes) {
       const mode = findMode(target, modeId)
       if (!mode) {
         problems.push(`Template ${template.id} offers mode ${modeId}, which ${target.id} doesn't have.`)
@@ -205,47 +214,25 @@ export function checkCatalog(
           )
         }
       }
-      for (const id of template.required ?? []) {
+      for (const id of expanded.required) {
         check(id, "required")
         const addon = findAddon(catalog, id)
         if (addon && !parseOptions(addon, {}).ok) {
           problems.push(`${id} is required by template ${template.id}, so every option needs a default.`)
         }
       }
-      for (const id of Object.keys(template.optional ?? {})) {
-        check(id, "optional")
-      }
-      for (const [slot, policy] of Object.entries(template.slots ?? {})) {
-        if (!findSlot(catalog, slot)) {
-          problems.push(`Template ${template.id} asks about slot ${slot}, which isn't defined.`)
-        }
-        if (policy.default !== undefined) {
-          if (findAddon(catalog, policy.default)?.slot !== slot) {
-            problems.push(
-              `Template ${template.id} defaults ${slot} to ${policy.default}, which isn't one of that slot's add-ons.`
-            )
-          } else {
-            check(policy.default, "default")
-          }
+      for (const question of expanded.questions) {
+        for (const id of question.default) {
+          check(id, "default")
         }
       }
     }
   }
   // A combination add-on is added with what it joins, so nothing names it.
   const combination = (id: string) => findAddon(catalog, id)?.joins !== undefined
-  for (const template of catalog.templates) {
-    const named = [
-      ...(template.required ?? []),
-      ...Object.keys(template.optional ?? {}),
-      ...Object.values(template.slots ?? {}).flatMap((policy) => (policy.default === undefined ? [] : [policy.default]))
-    ]
-    for (const id of named.filter(combination)) {
-      problems.push(`Template ${template.id} names ${id}, a combination add-on, which is added with what it joins.`)
-    }
-  }
   for (const preset of catalog.presets ?? []) {
-    const named = [...(preset.answers.optional ?? []), ...Object.values(preset.answers.slots ?? {})]
-    for (const id of named.filter((entry): entry is string => entry !== null && combination(entry))) {
+    const named = [...Object.values(preset.answers.questions ?? {}).flat(), ...(preset.answers.extra ?? [])]
+    for (const id of named.filter(combination)) {
       problems.push(`Preset ${preset.id} names ${id}, a combination add-on, which is added with what it joins.`)
     }
     if (!findTemplate(catalog, preset.answers.template)) {
@@ -258,13 +245,13 @@ export function checkCatalog(
     for (const template of catalog.templates.filter(
       (candidate) => options.templates === undefined || options.templates.includes(candidate.id)
     )) {
-      for (const mode of templateModes(catalog, template)) {
+      for (const mode of expandTemplate(catalog, template.id)?.modes ?? []) {
         for (const answers of pairwiseAnswers(catalog, template.id, mode)) {
           problems.push(
             ...planAnswers(
               catalog,
               answers,
-              `Template ${template.id} (${JSON.stringify({ mode, slots: answers.slots, optional: answers.optional })})`
+              `Template ${template.id} (${JSON.stringify({ mode, questions: answers.questions })})`
             )
           )
         }
@@ -272,6 +259,190 @@ export function checkCatalog(
     }
   }
   return [...new Set(problems)]
+}
+
+/** The CLI's own flags, which a question id can't be, since the id is a flag too. */
+const cliFlags = new Set([
+  "adopt",
+  "catalog-version",
+  "conflict",
+  "cwd",
+  "diff",
+  "dry-run",
+  "json",
+  "list",
+  "mode",
+  "name",
+  "out",
+  "plan",
+  "preset",
+  "replace",
+  "resolve",
+  "set",
+  "setup",
+  "with",
+  "without",
+  "yes"
+])
+
+const questionIdPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+
+/** Problems with a template's questions, its parent and its gallery, found on the template as it's expanded. */
+function templateProblems(
+  catalog: CatalogManifest,
+  template: TemplateManifest,
+  expanded: ExpandedTemplate,
+  files: CheckOptions["files"]
+): string[] {
+  const problems: string[] = []
+  const label = `Template ${template.id}`
+  const combination = (id: string) => findAddon(catalog, id)?.joins !== undefined
+  for (const id of expanded.required.filter(combination)) {
+    problems.push(`${label} names ${id}, a combination add-on, which is added with what it joins.`)
+  }
+  for (const entry of template.questions ?? []) {
+    if (typeof entry === "string") {
+      continue
+    }
+    if ("use" in entry) {
+      const pick = expanded.questions.find((question) => question.id === entry.use)?.pick
+      if (entry.default !== undefined && Array.isArray(entry.default) !== (pick === "many")) {
+        problems.push(`${label} gives question ${entry.use} a default that doesn't match its pick, ${pick ?? "one"}.`)
+      }
+    } else if (findQuestion(catalog, entry.id)) {
+      problems.push(`${label} defines question ${entry.id}, which is a catalog question's id. Use it with use instead.`)
+    }
+  }
+  if (template.extends !== undefined && template.omit) {
+    const parent = expandTemplate(catalog, template.extends)
+    for (const id of template.omit) {
+      if (!parent?.questions.some((question) => question.id === id) && !parent?.required.includes(id)) {
+        problems.push(`${label} omits ${id}, which ${template.extends} doesn't have.`)
+      }
+    }
+  }
+  const offeredBy = new Map<string, string>()
+  const before = [...expanded.required]
+  for (const question of expanded.questions) {
+    const named = `${label} question ${question.id}`
+    if (!questionIdPattern.test(question.id)) {
+      problems.push(`${named} needs an id of lowercase letters, digits and hyphens.`)
+    } else if (cliFlags.has(question.id)) {
+      problems.push(`${named} has the id of one of the CLI's own flags.`)
+    }
+    if (!question.required && question.question === undefined) {
+      problems.push(`${named} is optional, so it needs a question, such as "Add a database?".`)
+    }
+    if (question.choices.length === 0) {
+      problems.push(`${named} has no choices.`)
+    } else if (question.choices.length > 1 && question.choose === undefined) {
+      problems.push(`${named} offers several choices, so it needs choose, such as "Which one?".`)
+    }
+    const offered = question.choices.map((choice) => choice.id)
+    for (const id of offered) {
+      if (!findAddon(catalog, id)) {
+        problems.push(`${named} offers ${id}, which isn't in the catalog.`)
+      } else if (combination(id)) {
+        problems.push(`${named} offers ${id}, a combination add-on, which is added with what it joins.`)
+      }
+      const other = offeredBy.get(id)
+      if (other !== undefined && other !== question.id) {
+        problems.push(`${label} offers ${id} in two questions, ${other} and ${question.id}.`)
+      }
+      offeredBy.set(id, question.id)
+    }
+    for (const id of question.default.filter((entry) => !offered.includes(entry))) {
+      problems.push(`${named} defaults to ${id}, which it doesn't offer.`)
+    }
+    if (question.pick === "one" && question.default.length > 1) {
+      problems.push(`${named} picks one, so its default is one add-on.`)
+    }
+    if (question.pick === "many") {
+      const addons = offered.map((id) => findAddon(catalog, id)).filter((addon) => addon !== undefined)
+      for (const [index, addon] of addons.entries()) {
+        for (const other of addons.slice(index + 1)) {
+          if (addonsConflict(addon, other)) {
+            problems.push(`${named} picks many, and offers ${addon.id} and ${other.id}, which conflict.`)
+          }
+        }
+      }
+    }
+    // A choice that needs a capability only a later question provides can't be picked when it's asked.
+    const earlier = pulledIn(catalog, before)
+    const later = expanded.questions.slice(expanded.questions.indexOf(question) + 1).flatMap((next) =>
+      pulledIn(
+        catalog,
+        next.choices.map((choice) => choice.id)
+      )
+    )
+    for (const id of offered) {
+      const own = pulledIn(catalog, [id])
+      for (const requirement of own.flatMap((addon) => addon.requires ?? [])) {
+        if (
+          requirement.startsWith("provides:") &&
+          !referenceMatches(requirement, [...earlier, ...own]) &&
+          referenceMatches(requirement, later)
+        ) {
+          problems.push(
+            `${named} offers ${id}, which needs ${requirement}, and only a later question provides it. Ask that one first.`
+          )
+        }
+      }
+    }
+    before.push(...offered)
+  }
+  const gallery = template.gallery
+  for (const tag of gallery?.tags ?? []) {
+    if (!questionIdPattern.test(tag)) {
+      problems.push(`${label} has the gallery tag "${tag}", which isn't lowercase and hyphenated.`)
+    }
+  }
+  for (const [name, url] of Object.entries(gallery?.links ?? {})) {
+    if (url !== undefined && !isHttps(url)) {
+      problems.push(`${label} has the ${name} link "${url}", which isn't an https URL.`)
+    }
+  }
+  const image = gallery?.image
+  if (image !== undefined && !isHttps(image)) {
+    const problem = imageProblem(image, (path) => files?.(path, template.id) ?? true)
+    if (problem) {
+      problems.push(`${label} has the gallery image "${image}", which ${problem}.`)
+    }
+  }
+  return problems
+}
+
+/** Why a gallery image that isn't an https URL can't be used: it's another kind of URL, leaves the package, or is missing. */
+function imageProblem(image: string, exists: (path: string) => boolean): string | undefined {
+  if (URL.canParse(image)) {
+    return "isn't an https URL or a path in the package"
+  }
+  const parts = image.split(/[\\/]/)
+  if (image.startsWith("/") || /^[a-z]:/i.test(image) || parts.includes("..")) {
+    return "isn't a path inside the package"
+  }
+  return exists(image) ? undefined : "isn't in the package"
+}
+
+/** Bare add-ons need a pin, and every place that names one has to agree on its details. */
+function packageProblems(catalog: CatalogManifest): string[] {
+  const problems: string[] = []
+  const versions = catalog.versions ?? {}
+  const details = new Map<string, string>()
+  for (const ref of packageRefs(catalog)) {
+    const name = typeof ref === "string" ? ref.slice(4) : ref.npm
+    if (versions[name] === undefined) {
+      problems.push(`npm:${name} is a bare add-on, so the catalog needs a pin for ${name}.`)
+    }
+    if (typeof ref !== "string") {
+      const seen = JSON.stringify([ref.title, ref.description, ref.dev === true])
+      if (details.has(name) && details.get(name) !== seen) {
+        problems.push(`npm:${name} is given different titles, descriptions or dev flags.`)
+      }
+      details.set(name, seen)
+    }
+  }
+  return problems
 }
 
 function isHttps(url: string): boolean {
@@ -299,9 +470,13 @@ function planAnswers(catalog: CatalogManifest, answers: Answers, label: string):
   }
 }
 
-/** Answer sets that cover every pair of values across a template's questions, for catalog CI's matrix. */
+/**
+ * Answer sets that cover every pair of values across a template's questions, for catalog CI's matrix. A `one` question
+ * is one factor, its choices plus no when it's optional. A `many` question is one in-or-out factor per choice, and a
+ * row that leaves a required one empty gets its first choice.
+ */
 export function pairwiseAnswers(catalog: CatalogManifest, templateId: string, mode: string): Answers[] {
-  const template = findTemplate(catalog, templateId)
+  const template = expandTemplate(catalog, templateId)
   if (!template) {
     return []
   }
@@ -310,36 +485,62 @@ export function pairwiseAnswers(catalog: CatalogManifest, templateId: string, mo
   const info = target && found ? targetInfo(catalog, target, found) : undefined
   type Factor = { apply: (answers: Answers, value: number) => Answers; values: number }
   const factors: Factor[] = []
-  for (const [slot, policy] of Object.entries(template.slots ?? {})) {
-    const candidates = slotAddons(catalog, slot)
-      .filter((addon) => !info || addonSupports(addon, info) === true)
-      .map((addon) => addon.id)
-    const values: (string | null)[] = [...(policy.required ? [] : [null]), ...candidates]
-    factors.push({
-      // A required slot with no add-on for the mode still gets one value, unanswered, so the other questions are
-      // planned and the plan reports the slot.
-      values: Math.max(values.length, 1),
-      apply: (answers, value) => ({ ...answers, slots: { ...answers.slots, [slot]: values[value] ?? null } })
-    })
-  }
-  for (const id of Object.keys(template.optional ?? {})) {
-    factors.push({
-      values: 2,
-      apply: (answers, value) => ({
-        ...answers,
-        optional:
-          value === 1 ? [...(answers.optional ?? []), id] : (answers.optional ?? []).filter((entry) => entry !== id)
+  const many: { id: string; required: boolean; first: string | undefined }[] = []
+  const answer = (answers: Answers, question: string, ids: string[]): Answers => ({
+    ...answers,
+    questions: { ...answers.questions, [question]: ids }
+  })
+  for (const question of template.questions) {
+    const candidates = question.choices
+      .map((choice) => findAddon(catalog, choice.id))
+      .filter((addon) => addon !== undefined && (!info || addonSupports(addon, info) === true))
+      .map((addon) => addon?.id ?? "")
+    if (question.pick === "one") {
+      const values: (string | undefined)[] = [...(question.required ? [] : [undefined]), ...candidates]
+      factors.push({
+        // A required question with no add-on for the mode still gets one value, unanswered, so the other questions
+        // are planned and the plan reports the question.
+        values: Math.max(values.length, 1),
+        apply: (answers, value) => {
+          const id = values[value]
+          if (id === undefined && question.required) {
+            return answers
+          }
+          return answer(answers, question.id, id === undefined ? [] : [id])
+        }
       })
-    })
+      continue
+    }
+    many.push({ id: question.id, required: question.required, first: candidates[0] })
+    for (const id of candidates) {
+      factors.push({
+        values: 2,
+        apply: (answers, value) => {
+          const current = (answers.questions?.[question.id] ?? []).filter((entry) => entry !== id)
+          return answer(answers, question.id, value === 1 ? [...current, id] : current)
+        }
+      })
+    }
   }
-  const base: Answers = { template: templateId, mode, name: "catalog-check", optional: [] }
+  const base: Answers = { template: templateId, mode, name: "catalog-check" }
+  const filled = (answers: Answers): Answers =>
+    many.reduce((current, question) => {
+      const ids = current.questions?.[question.id] ?? []
+      if (ids.length > 0) {
+        return current
+      }
+      if (question.required) {
+        return question.first === undefined ? current : answer(current, question.id, [question.first])
+      }
+      return answer(current, question.id, [])
+    }, answers)
   if (factors.length < 2) {
     const [only] = factors
-    return only ? Array.from({ length: only.values }, (_, value) => only.apply(base, value)) : [base]
+    return only ? Array.from({ length: only.values }, (_, value) => filled(only.apply(base, value))) : [filled(base)]
   }
   const sizes = factors.map((factor) => factor.values)
   const answersOf = (row: number[]) =>
-    row.reduce((answers, value, index) => factors[index]?.apply(answers, value) ?? answers, base)
+    filled(row.reduce((answers, value, index) => factors[index]?.apply(answers, value) ?? answers, base))
   // A row the engine turns down, such as one with two add-ons that conflict, plans nothing. Its pairs that no other row
   // has each get a row of their own, with the other questions at their first value, unless that's turned down too.
   const rows = coveringRows(sizes).filter((row) => !turnedDown(catalog, answersOf(row)))

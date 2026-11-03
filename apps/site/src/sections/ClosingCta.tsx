@@ -1,11 +1,13 @@
-import { ArrowRight, Check, Copy } from "lucide-react"
-import { useRef, useState } from "react"
+import { ArrowRight } from "lucide-react"
+import { useRef } from "react"
 import { GithubIcon } from "../components/GithubIcon"
 import { HeroField } from "../components/HeroField"
 import { Link } from "../components/Link"
 import "./closing-cta.css"
 import { links } from "../links"
 
+// Hidden until the CLI is ready to recommend. Restore with the Check, Copy and useState imports and its use below.
+/*
 const INSTALL = "npx @buildkitgg/cli create app my-app"
 
 function InstallCommand() {
@@ -35,6 +37,7 @@ function InstallCommand() {
     </div>
   )
 }
+*/
 
 export function ClosingCta() {
   const batteryRef = useRef<HTMLSpanElement>(null)
@@ -58,8 +61,7 @@ export function ClosingCta() {
           </span>
         </div>
         <p className="cta-body" data-reveal>
-          Add the packages your app needs, or create a new app with the CLI. Each package is MIT licensed, typed,
-          tested, and documented.
+          Add the packages your app needs. Each package is MIT licensed, typed, tested, and documented.
         </p>
         <div className="cta-actions" data-reveal>
           <Link className="btn btn-primary cta-btn" href={links.docs}>
@@ -71,9 +73,9 @@ export function ClosingCta() {
             Star on GitHub
           </Link>
         </div>
-        <div className="cta-install" data-reveal>
+        {/* <div className="cta-install" data-reveal>
           <InstallCommand />
-        </div>
+        </div> */}
       </div>
     </section>
   )

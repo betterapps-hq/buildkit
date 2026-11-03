@@ -711,11 +711,11 @@
   background: #7ee2b01a;
 }
 
-.tl-code-line.is-optional {
+.tl-code-line.is-many {
   background: #3370ff1f;
 }
 
-.tl-code-line.is-slot {
+.tl-code-line.is-one {
   background: #f5c76e1a;
 }
 
@@ -729,11 +729,11 @@
   color: var(--mint);
 }
 
-.is-optional .tl-code-note {
+.is-many .tl-code-note {
   color: var(--blue-soft);
 }
 
-.is-slot .tl-code-note {
+.is-one .tl-code-note {
   color: var(--amber);
 }
 
@@ -774,6 +774,10 @@
 
 .tl-t-ok {
   color: var(--mint);
+}
+
+.tl-t-warn {
+  color: var(--amber);
 }
 
 .tl-t-strong {

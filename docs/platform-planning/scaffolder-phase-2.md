@@ -7,24 +7,19 @@ and the `buildkit` CLI on `@buildkitgg/scaffolder`. Phase 0 built the engine
 
 **Status (2026-10-29):** merged in #67, with the engine changes it needed in #68 (`@buildkitgg/scaffolder` 0.4.0, on
 npm). `@buildkitgg/catalog` and `@buildkitgg/cli` 0.1.0 wait for their first publish by hand, as every new package does.
-The staging deploy is deferred until Better Apps' deploy packages exist.
 
 ## Owner decisions (2026-10-29)
 
-| Decision                                                                                                                                                                                                      | What it changes                                                     |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| **Two packages:** `@buildkitgg/catalog` holds the manifests, and `@buildkitgg/cli` is a thin `buildkit` bin on the engine's `runCli`                                                                          | Both live in `packages/tooling/`, beside the scaffolder             |
-| **Auth first:** Better Auth, read through the Better Apps identity interface (`@better-apps/identity-better-auth`, PR #59)                                                                                    | The auth slot has one add-on                                        |
-| **Database first:** the SQL capability `@better-apps/sql` (`defineDatabase`) with Drizzle. The Better Apps Features session builds the package                                                                | The database add-on is written against the documented API and waits |
-| **Deploy:** build everything except the staging deploy. The scaffolder writes no cloud config. The Better Apps Vite plugin point and a CI step that runs `better-apps deploy` are wired, pending the packages | No Wrangler deploy, temporary or not. The deployer is Better Apps'  |
+| Decision                                                                                                                             | What it changes                                         |
+| ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------- |
+| **Two packages:** `@buildkitgg/catalog` holds the manifests, and `@buildkitgg/cli` is a thin `buildkit` bin on the engine's `runCli` | Both live in `packages/tooling/`, beside the scaffolder |
 
 ## Done when
 
-A Buildkit app inits, adds auth and i18n, and upgrades. The research's "deploys to staging" waits for Better Apps.
+A Buildkit app inits, adds i18n, and upgrades.
 
 - `checkCatalog(catalog, { matrix: true })` passes in catalog CI.
-- `buildkit init`, `add auth`, `add i18n` and `upgrade` from an earlier catalog version pass through `runCli` against a
-  temp folder.
+- `buildkit init`, `add i18n` and `upgrade` from an earlier catalog version pass through `runCli` against a temp folder.
 - The smoke test generates the base app in both modes, and localization in both modes, then installs, checks, lints,
   format-checks, builds and type-checks each one, and requests pages from the built server.
 - `pnpm verify` passes.
@@ -33,7 +28,7 @@ A Buildkit app inits, adds auth and i18n, and upgrades. The research's "deploys 
 
 | Package               | Contents                                                                                                                 | Build                                                                 |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------- |
-| `@buildkitgg/catalog` | The target, template, slots, add-ons and preset; `settings` for Buildkit's file names; starter files in `templates/`     | `tsc`. Exports `catalog` (also the default export) and `settings`     |
+| `@buildkitgg/catalog` | The target, template, questions and add-ons; `settings` for Buildkit's file names; starter files in `templates/`         | `tsc`. Exports `catalog` (also the default export) and `settings`     |
 | `@buildkitgg/cli`     | The `buildkit` bin (`createCli`), `runBuildkit(argv, overrides)` and `buildkitOptions()` for embedding, the smoke script | `tsc`, like the scaffolder. `npx @buildkitgg/cli init …` runs the bin |
 
 - `defineSettings({ product: "buildkit" })`: `buildkit.jsonc`, `.buildkit/`, secrets in `.env`. Seeds regenerate their
@@ -59,15 +54,15 @@ A Buildkit app inits, adds auth and i18n, and upgrades. The research's "deploys 
 - No cloud: no Wrangler config, no bindings, and no cloud names in app code or `buildkit.jsonc`. A test checks every
   generated file.
 
-| Point                      | Kind   | Generated file | Wired into                       | Contributed by                                  |
-| -------------------------- | ------ | -------------- | -------------------------------- | ----------------------------------------------- |
-| `vite.plugins`             | list   | `config.ts`    | `vite.config.ts`                 | i18n (`pre`), Better Apps deploys (`framework`) |
-| `server.requestMiddleware` | chain  | `server.ts`    | `src/start.ts`, after CSRF       | i18n on `ssr`                                   |
-| `app.providers`            | nest   | `client.ts`    | `src/app/providers.tsx`          | nothing yet                                     |
-| `app.bootstrap`            | list   | `client.ts`    | `src/client.tsx`, before hydrate | i18n on `spa`                                   |
-| `router.wrappers`          | wrap   | `client.ts`    | `getRouter()`                    | i18n                                            |
-| `router.rewrite`           | single | `client.ts`    | `createRouter({ rewrite })`      | i18n with `localizedUrls`                       |
-| `html.attributes`          | single | `client.ts`    | the root shell's `<html>`        | i18n                                            |
+| Point                      | Kind   | Generated file | Wired into                       | Contributed by            |
+| -------------------------- | ------ | -------------- | -------------------------------- | ------------------------- |
+| `vite.plugins`             | list   | `config.ts`    | `vite.config.ts`                 | i18n (`pre`)              |
+| `server.requestMiddleware` | chain  | `server.ts`    | `src/start.ts`, after CSRF       | i18n on `ssr`             |
+| `app.providers`            | nest   | `client.ts`    | `src/app/providers.tsx`          | nothing yet               |
+| `app.bootstrap`            | list   | `client.ts`    | `src/client.tsx`, before hydrate | i18n on `spa`             |
+| `router.wrappers`          | wrap   | `client.ts`    | `getRouter()`                    | i18n                      |
+| `router.rewrite`           | single | `client.ts`    | `createRouter({ rewrite })`      | i18n with `localizedUrls` |
+| `html.attributes`          | single | `client.ts`    | the root shell's `<html>`        | i18n                      |
 
 Generated files are under `src/generated/buildkit/`. Every point is rendered at `init`, so `add` changes only generated
 files, `package.json`, `tsconfig.json` and new files.
@@ -78,49 +73,18 @@ files, `package.json`, `tsconfig.json` and new files.
 `src/styles.css` (seed); `src/routes/index.tsx`, `README.md` and `AGENTS.md` (sample). `src/routeTree.gen.ts` is the
 router's own: `pnpm build` or `pnpm dev` writes it, and the plan lists that command.
 
-## The template, slots and add-ons
+## The template, questions and add-ons
 
-One template, `app`. Ids drop cloud names, since they're written into `buildkit.jsonc`: `@buildkit/sql`, not
-`@buildkit/db-d1`.
+One template, `app`. Ids drop cloud names, since they're written into `buildkit.jsonc`.
 
-| Question         | Answers                                         | Default                                                      |
-| ---------------- | ----------------------------------------------- | ------------------------------------------------------------ |
-| Mode             | `ssr`, `spa`                                    | asked                                                        |
-| Add a database?  | `@buildkit/sql`                                 | no, while `@better-apps/sql` is unpublished                  |
-| Add sign-in?     | `@buildkit/better-auth`, which needs a database | no, while `@better-apps/identity-better-auth` is unpublished |
-| Optional add-ons | `@buildkit/i18n`                                | unchecked                                                    |
-| Always included  | `@buildkit/ci`                                  |                                                              |
-
-The `saas` preset answers `ssr`, `sql`, `better-auth` and `i18n`. `@buildkit/better-apps-deploy` is in the catalog but
-not the template, so only `buildkit add better-apps-deploy` adds it.
+| Question         | Answers          | Default   |
+| ---------------- | ---------------- | --------- |
+| Mode             | `ssr`, `spa`     | asked     |
+| Optional add-ons | `@buildkit/i18n` | unchecked |
+| Always included  | `@buildkit/ci`   |           |
 
 **`@buildkit/ci`** writes `.github/workflows/ci.yml` as keyed YAML: one `verify` job whose steps are keyed by `id`
 (checkout, pnpm, Node 24, install, `buildkit check`, lint, format check, build, type-check). Add-ons append their own.
-
-**`@buildkit/sql`** (slot `database`) provides
-`{ dialect: "sqlite", module: "./src/db/db.server.ts", export: "db", schemaFolder: "src/db" }`.
-
-| File                  | Class | What it does                                                                                                           |
-| --------------------- | ----- | ---------------------------------------------------------------------------------------------------------------------- |
-| `src/db/db.server.ts` | seed  | `defineDatabase("main", { dialect: "sqlite", migrations: "./migrations/main" })`, and `db = drizzle(main, { schema })` |
-| `src/db/schema.ts`    | seed  | The app's own tables, empty at first                                                                                   |
-| `drizzle.config.ts`   | seed  | drizzle-kit reads every `src/db/*schema.ts` and writes to `migrations/main`; `pnpm db:generate` runs it                |
-
-**`@buildkit/better-auth`** (slot `auth`, requires `slot:database`) checks the database add-on's provision before it
-writes anything.
-
-| File                           | Class  | What it does                                                                                      |
-| ------------------------------ | ------ | ------------------------------------------------------------------------------------------------- |
-| `src/auth/auth.server.ts`      | seed   | `betterAuth()` with email and password, the Drizzle adapter on `db`, and `tanstackStartCookies()` |
-| `src/db/auth-schema.ts`        | seed   | Better Auth's `user`, `session`, `account` and `verification` tables                              |
-| `src/auth/identity.server.ts`  | seed   | `betterAuthIdentity(auth)`: the Better Apps identity your server code and features read           |
-| `src/auth/viewer.functions.ts` | seed   | `getViewer()`, a server function that reads the actor and name through the identity               |
-| `src/auth/client.ts`           | seed   | `createAuthClient()` from `better-auth/react`                                                     |
-| `src/routes/api/auth/$.ts`     | seed   | Better Auth's handler for `GET` and `POST` under `/api/auth`                                      |
-| `src/routes/sign-in.tsx`       | sample | Sign in, create an account and sign out                                                           |
-
-It adds the env vars `BETTER_AUTH_SECRET` (secret, required: the wizard asks for it masked, or the next steps list it)
-and `BETTER_AUTH_URL`, and lists `pnpm db:generate` for the migration of Better Auth's tables.
 
 **`@buildkit/i18n`** writes Lingui into the app as code you own (research §4.7), starting from Lingui's TanStack Start
 example. Options: `sourceLocale`, `locales` (asked), `detection` (`url`, `cookie`, `header`, in order) and
@@ -143,56 +107,29 @@ Scripts `i18n:extract` (`lingui extract --clean`) and `i18n:check` (`lingui chec
 "Check translations" CI step when CI is installed. On `ssr`, a visitor whose cookie or language asks for French at `/`
 is redirected to `/fr`, because the rewrite gives the page its canonical address.
 
-**`@buildkit/better-apps-deploy`** (requires `@buildkit/ci`) adds the `betterApps()` Vite plugin in the `framework`
-band, `better-apps.environments.jsonc` (seed: preview per PR, staging, production, and a resource policy for each
-capability the app uses), and `.github/workflows/deploy.yml`, which runs `pnpm exec better-apps deploy --env staging` on
-every push to `main`.
-
 ## What the generated app depends on
 
 All pinned exactly, each on npm for at least a day on 2026-10-29: `react` and `react-dom` 19.3.1,
 `@tanstack/react-router` 1.170.46, `@tanstack/react-start` 1.169.4, `vite` 8.3.5, `@vitejs/plugin-react` 6.1.2,
 `oxc-transform-react` 0.155.0, `typescript` 7.0.2, `@types/react` and `@types/react-dom` 19.3.0, `@types/node` 24.19.2,
-`oxlint` 1.89.0, `oxfmt` 0.74.0. Add-ons add `drizzle-orm` 0.45.4, `drizzle-kit` 0.31.11, `better-auth` 1.7.9, and
-`@lingui/core`, `@lingui/react`, `@lingui/cli` and `@lingui/vite-plugin` 6.10.1.
-
-**Unpublished Better Apps packages** are pinned at `0.1.0`, the version Better Apps' platform group is planned to
-release first (it releases together, as the scaffolder did from 0.0.0). Every plan that adds one carries an
-`unpublished-package` notice naming what it waits on, and `pnpm install` fails until it's published. When a different
-version ships, a catalog release moves the pin. The template defaults both slots to "no", so a new app installs today.
+`oxlint` 1.89.0, `oxfmt` 0.74.0. The i18n add-on adds `@lingui/core`, `@lingui/react`, `@lingui/cli` and
+`@lingui/vite-plugin` 6.10.1.
 
 ## Tests
 
 - **Catalog** (`src/catalog.test.ts`, the pure planner on in-memory trees): `checkCatalog` with the matrix; the
   questionnaire's order; the target's CSRF order, plugin bands and SPA output path; points wired at `init`; no cloud in
   any generated file; the CLI pin; the CI steps and formatter ignores; each add-on's files, entries, env vars and
-  notices; auth needing a database; i18n on both modes, without localized URLs, and with an unsafe tag; adding i18n
-  without changing a seed; the deploy add-on's plugin band, workflow and environments; and an upgrade that three-way
-  merges a template fix into an edited `src/router.tsx` from the recorded catalog version.
+  notices; i18n on both modes, without localized URLs, and with an unsafe tag; adding i18n without changing a seed; and
+  an upgrade that three-way merges a template fix into an edited `src/router.tsx` from the recorded catalog version.
 - **CLI** (`src/cli.integration.test.ts`, `runBuildkit` against a temp folder): `init`, then `check`, `sync` and
-  `explain`; `catalog --json`; `add auth` asking for a database, then the decision's own argv; `add i18n` keeping an
-  edited seed and your `package.json` keys; `upgrade --list` and `upgrade` from a catalog version built in the test; and
-  an edited seed that a two-way upgrade leaves alone as a conflict. CI runs these on Linux, Windows and macOS.
+  `explain`; `catalog --json`; `add i18n` keeping an edited seed and your `package.json` keys; `upgrade --list` and
+  `upgrade` from a catalog version built in the test; and an edited seed that a two-way upgrade leaves alone as a
+  conflict. CI runs these on Linux, Windows and macOS.
 - **Smoke** (`pnpm --filter @buildkitgg/cli test:smoke`, a `templates` CI job): `ssr`, `spa`, `ssr` with i18n, and `spa`
   with `add i18n`. Each installs with the Buildkit packages packed from the checkout, then runs `buildkit check`, lint,
   format check, build, type-check and, with i18n, `i18n:check`. The SSR cases also request `/`, a missing page, `/fr`
-  and a French visitor at `/` from the built server. The database and sign-in cases are skipped, with the reason:
-  `@better-apps/sql` exists nowhere yet.
-
-## What waits on Better Apps
-
-| Item                              | Needs                                                                                                                                                                                         |
-| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| The database add-on installing    | `@better-apps/sql` with `defineDatabase`, and a Drizzle entry: `drizzle(database, { schema })` from `@better-apps/sql/drizzle` [assumed]                                                      |
-| Local dev with a database         | The Better Apps integration's local runtime and its local migrations ([the Better Apps deploy plan](https://github.com/betterapps-hq/better-apps/blob/main/docs/deploy-plan.md) §4, spike #2) |
-| The sign-in add-on installing     | `@better-apps/identity-better-auth` (PR #59), and the database above                                                                                                                          |
-| The Vite plugin entry             | `betterApps()` from `@better-apps/tanstack-start/vite` [assumed path; PR #59 adds the package]                                                                                                |
-| The staging deploy                | `better-apps deploy --env staging` in `@better-apps/cli`, its CI credentials (not designed; D6), and the deploy service                                                                       |
-| `better-apps.environments.jsonc`  | Better Apps' schema for it. Ours follows [the Better Apps deploy plan](https://github.com/betterapps-hq/better-apps/blob/main/docs/deploy-plan.md) §5                                         |
-| Smoke cases for database and auth | Any installable `@better-apps/sql`                                                                                                                                                            |
-
-When they ship: confirm the assumed names, move the pins, default the slots to yes, and make the deploy add-on required
-in the template (or move its plugin entry into the target), then deploy staging.
+  and a French visitor at `/` from the built server.
 
 ## Engine follow-ups
 
@@ -237,8 +174,6 @@ The phase found seven gaps in the engine. All but one are fixed.
 - **Detection is `url`, `cookie`, `header` in both modes.** The browser reads `document.cookie` and
   `navigator.languages`, so an SPA ignores none of them.
 - **No `$schema` in `buildkit.jsonc`** until a schema is hosted; `buildkit schema` prints it.
-- **The deploy wiring is an add-on the template doesn't offer yet,** so the wizard never offers an app that can't
-  install.
 
 ## Libraries
 

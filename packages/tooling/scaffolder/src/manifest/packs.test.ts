@@ -16,7 +16,7 @@ function towerPack(overrides: Partial<TemplatePack> = {}): TemplatePack {
         description: "A tower defense app",
         target: "web",
         required: ["@acme/tower/turrets"],
-        slots: { ui: { required: true, default: "@fixture/ui-basic" } }
+        questions: [{ use: "ui", required: true, default: "@fixture/ui-basic" }]
       }
     ],
     addons: [

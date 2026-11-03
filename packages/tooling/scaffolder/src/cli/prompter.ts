@@ -8,6 +8,8 @@ export interface SelectOption {
   value: string
   label: string
   hint?: string
+  /** Shown and not selectable, such as a choice another answer rules out. */
+  disabled?: boolean
 }
 
 /** The prompts the wizard uses. Tests pass a scripted prompter; the CLI uses clack. */
@@ -17,6 +19,8 @@ export interface Prompter {
     message: string
     options: SelectOption[]
     initialValues: string[]
+    /** At least one has to be picked. */
+    required?: boolean
   }): Promise<string[] | Cancelled>
   confirm(question: { message: string; initialValue: boolean }): Promise<boolean | Cancelled>
   text(question: {
@@ -33,16 +37,21 @@ function unwrap<T extends string | boolean | string[]>(value: T | symbol): T | C
   return typeof value === "symbol" ? cancelled : value
 }
 
+function clackOption(option: SelectOption) {
+  return {
+    value: option.value,
+    label: option.label,
+    ...(option.hint ? { hint: option.hint } : {}),
+    ...(option.disabled ? { disabled: true } : {})
+  }
+}
+
 export const clackPrompter: Prompter = {
   async select(question) {
     return unwrap<string>(
       await prompts.select({
         message: question.message,
-        options: question.options.map((option) => ({
-          value: option.value,
-          label: option.label,
-          ...(option.hint ? { hint: option.hint } : {})
-        })),
+        options: question.options.map(clackOption),
         ...(question.initialValue === undefined ? {} : { initialValue: question.initialValue })
       })
     )
@@ -51,13 +60,9 @@ export const clackPrompter: Prompter = {
     return unwrap<string[]>(
       await prompts.multiselect({
         message: question.message,
-        required: false,
+        required: question.required === true,
         initialValues: question.initialValues,
-        options: question.options.map((option) => ({
-          value: option.value,
-          label: option.label,
-          ...(option.hint ? { hint: option.hint } : {})
-        }))
+        options: question.options.map(clackOption)
       })
     )
   },

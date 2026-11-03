@@ -8,13 +8,13 @@ export type Intent =
       command: "add"
       /** Add-on ids to add. */
       addons: string[]
-      /** Installed add-on ids to remove, replacing them within their slot. */
+      /** Installed add-on ids to remove, replacing them with add-ons they conflict with. */
       replace: string[]
       options: Record<string, Record<string, unknown>>
     }
   /**
    * `addons` on config, upgrade and sync are add-on ids to add with the change. A decision's choice uses them to stay
-   * the same command, such as an upgrade whose new catalog makes an installed add-on need a slot.
+   * the same command, such as an upgrade whose new catalog makes an installed add-on need a capability.
    */
   | { command: "config"; options: Record<string, Record<string, unknown>>; addons?: string[] }
   | { command: "upgrade"; addons?: string[] }

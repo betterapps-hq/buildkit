@@ -7,8 +7,8 @@ import { GuideLink } from "./parts"
 const FEATURES = [
   {
     icon: ListChecks,
-    title: "Required and optional",
-    desc: "A template lists the add-ons every project gets and the ones people pick. Slots offer one-of choices, like which database, and groups ask about related add-ons together."
+    title: "Questions, in order",
+    desc: "A template lists what every project gets, then asks its questions in order. Pick one or many, from your add-ons or any npm package. A choice that won't work says why."
   },
   {
     icon: Package,
@@ -25,11 +25,11 @@ const FEATURES = [
 type TemplateLine = {
   code: string
   wideOnly?: boolean
-  tone?: "required" | "optional" | "slot"
+  tone?: "required" | "one" | "many"
   note?: string
 }
 
-/** A template for a CLI built on the engine. Its catalog asks each slot's `question`, then its `choose` question. Groups ask their own. */
+/** A template for a CLI built on the engine. It uses the catalog's questions by id, and defines one of its own. */
 const TEMPLATE: TemplateLine[] = [
   { code: 'import { defineTemplate } from "@buildkitgg/scaffolder"', wideOnly: true },
   { code: "", wideOnly: true },
@@ -39,30 +39,23 @@ const TEMPLATE: TemplateLine[] = [
   { code: '  description: "A React app with lint and tests",' },
   { code: '  target: "web",' },
   {
-    code: '  required: ["vite-plus", "vitest"],',
+    code: '  required: ["npm:vite-plus", "npm:vitest"],',
     tone: "required",
     note: "always installed"
   },
-  { code: "  groups: {" },
-  { code: "    telemetry: {" },
-  { code: '      question: "Add telemetry?",', tone: "optional", note: "asked first" },
+  { code: "  questions: [" },
+  { code: '    "localization",', tone: "one", note: "one of lingui, react-intl" },
+  { code: '    "database",', tone: "one", note: "one of drizzle, prisma, convex" },
+  { code: '    { use: "auth", default: "better-auth" },', tone: "one", note: "one of better-auth, clerk" },
+  { code: "    {" },
+  { code: '      id: "telemetry",' },
+  { code: '      title: "Telemetry",' },
+  { code: '      question: "Add telemetry?",', tone: "many", note: "asked first" },
   { code: '      choose: "Which ones?",' },
-  { code: '      pick: "many",', tone: "optional", note: 'checkboxes, "one" for radios' },
-  { code: "      addons: {" },
-  { code: "        sentry: { default: false },", tone: "optional", note: "then at least one" },
-  { code: "        posthog: { default: false },", tone: "optional", note: "then at least one" },
-  { code: "      }," },
+  { code: '      pick: "many",', tone: "many", note: 'checkboxes, "one" for radios' },
+  { code: '      choices: ["sentry", "npm:posthog-js"],', tone: "many", note: "add-ons or any npm package" },
   { code: "    }," },
-  { code: "  }," },
-  { code: "  slots: {" },
-  {
-    code: '    localization: { required: false, default: "lingui" },',
-    tone: "slot",
-    note: "one of react-intl, lingui"
-  },
-  { code: "    database: { required: false },", tone: "slot", note: "one of drizzle, prisma, convex" },
-  { code: "    auth: { required: false },", tone: "slot", note: "one of better-auth, clerk, workos" },
-  { code: "  }," },
+  { code: "  ]," },
   { code: "})" }
 ]
 
@@ -97,22 +90,21 @@ function TemplateCode() {
   )
 }
 
-/** The wizard asks each slot, then each group. Answered questions stay above the one being asked. */
+/** The wizard asks each question in order. Answered questions stay above the one being asked. */
 const ANSWERS = [
-  { question: "Add localization?", answer: "Yes" },
-  { question: "Which library?", answer: "Lingui" },
+  { question: "Add localization?", answer: "No" },
   { question: "Add a database?", answer: "Yes" },
-  { question: "Which ORM?", answer: "Drizzle" },
-  { question: "Add authentication?", answer: "Yes" },
-  { question: "Which provider?", answer: "Better Auth" },
-  { question: "Add telemetry?", answer: "Yes" }
+  { question: "Which one?", answer: "Convex" },
+  { question: "Add sign-in?", answer: "Yes" }
 ]
 
-/** The group's checkboxes, mid-answer. */
-const CHECKBOXES = [
-  { label: "Sentry", checked: true },
-  { label: "PostHog", checked: false }
+/** The question's choices, mid-answer. Better Auth needs an ORM, so with Convex it can't be picked, and says why. */
+const CHOICES = [
+  { label: "Better Auth", hint: "Needs Drizzle or Prisma", disabled: true },
+  { label: "Clerk", hint: "Hosted sign-in", selected: true }
 ]
+
+const CHOICE_COLUMN = Math.max(...CHOICES.map((choice) => choice.label.length)) + 2
 
 function Bar({ children }: { children?: ReactNode }) {
   return (
@@ -158,13 +150,16 @@ function InstallTerminal() {
         <Bar />
         <span className="tl-term-line">
           <span className="tl-glyph tl-t-mark">◆</span>
-          {"  "}Which ones?
+          {"  "}Which provider?
         </span>
-        {CHECKBOXES.map((box) => (
-          <Bar key={box.label}>
+        {CHOICES.map((choice) => (
+          <Bar key={choice.label}>
             {"  "}
-            <span className={`tl-glyph ${box.checked ? "tl-t-ok" : "tl-t-dim"}`}>{box.checked ? "◼" : "◻"}</span>{" "}
-            <span className={box.checked ? undefined : "tl-t-dim"}>{box.label}</span>
+            <span className={`tl-glyph ${choice.selected ? "tl-t-ok" : "tl-t-dim"}`}>
+              {choice.selected ? "●" : "○"}
+            </span>{" "}
+            <span className={choice.selected ? undefined : "tl-t-dim"}>{choice.label.padEnd(CHOICE_COLUMN)}</span>
+            <span className={choice.disabled ? "tl-t-warn" : "tl-t-dim"}>{choice.hint}</span>
           </Bar>
         ))}
         <span className="tl-term-line tl-t-bar">└</span>
@@ -173,10 +168,10 @@ function InstallTerminal() {
   )
 }
 
-/** Short names work on the command line. `--replace` names the add-on a slot swap takes out. */
+/** `add` answers a question later, by its id. `--replace` names the add-on a swap takes out. */
 const LATER = [
-  { command: "pnpm acme add posthog", result: "+ 3 files  ~ 2 updated" },
-  { command: "pnpm acme add prisma --replace drizzle", result: "Drizzle to Prisma" },
+  { command: "pnpm acme add telemetry", result: "Sentry, PostHog" },
+  { command: "pnpm acme add prisma --replace convex", result: "Convex to Prisma" },
   { command: "pnpm acme upgrade", result: "fixes merged, edits kept" }
 ]
 
@@ -255,8 +250,8 @@ export function Scaffolder() {
             <br className="tl-wide" /> as a template
           </h3>
           <p className="tl-body">
-            Build starter templates and a project-creation wizard for your platform. Define required packages, optional
-            add-ons, and setup choices in a catalog. Publish your templates or build your own CLI on the engine.
+            Build starter templates and a project-creation wizard for your platform. Define the packages every project
+            gets and the questions your wizard asks. Publish your templates or build your own CLI on the engine.
             Developers can create projects, choose add-ons, and update them later.
           </p>
           <ul className="tl-features tl-wide">

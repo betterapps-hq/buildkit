@@ -28,9 +28,6 @@ interface SmokeCase {
   skip?: string
 }
 
-const waitsOnBetterApps =
-  "it needs @better-apps/sql, which isn't published or in this checkout yet (the Better Apps Features session builds it)"
-
 const cases: SmokeCase[] = [
   {
     name: "ssr",
@@ -54,15 +51,7 @@ const cases: SmokeCase[] = [
       { path: "/", headers: { "accept-language": "fr-CA,fr;q=0.9" }, status: 307 }
     ]
   },
-  { name: "spa-add-i18n", create: ["--mode", "spa"], after: [["add", "i18n"]], scripts: ["i18n:check"] },
-  {
-    name: "ssr-database",
-    create: ["--mode", "ssr", "--database", "sql"],
-    after: [],
-    scripts: [],
-    skip: waitsOnBetterApps
-  },
-  { name: "ssr-auth", create: ["--preset", "saas"], after: [], scripts: [], skip: waitsOnBetterApps }
+  { name: "spa-add-i18n", create: ["--mode", "spa"], after: [["add", "i18n"]], scripts: ["i18n:check"] }
 ]
 
 const { values: flags } = parseArgs({
