@@ -1,8 +1,17 @@
 # Change Log - @buildkitgg/fluentui-theme
 
-<!-- This log was last generated on Thu, 29 Oct 2026 04:54:16 GMT and should not be manually modified. -->
+<!-- This log was last generated on Tue, 03 Nov 2026 01:07:54 GMT and should not be manually modified. -->
 
 <!-- Start content -->
+
+## 0.1.4
+
+Tue, 03 Nov 2026 01:07:54 GMT
+
+### Patches
+
+- Update dependencies and regenerate Base UI sources with the current shadcn generator. (noreply@anthropic.com)
+- Bump @buildkitgg/react-theme to v0.2.0
 
 ## 0.1.3
 

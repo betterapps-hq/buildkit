@@ -1,8 +1,18 @@
 # Change Log - @buildkitgg/catalog
 
-<!-- This log was last generated on Fri, 30 Oct 2026 08:23:50 GMT and should not be manually modified. -->
+<!-- This log was last generated on Tue, 03 Nov 2026 01:07:54 GMT and should not be manually modified. -->
 
 <!-- Start content -->
+
+## 0.2.2
+
+Tue, 03 Nov 2026 01:07:54 GMT
+
+### Patches
+
+- Use @better-apps/identity-better-auth, the Better Auth identity adapter's new name, in the better-auth add-on
+  (ajcraswell@gmail.com)
+- Bump @buildkitgg/scaffolder to v0.7.0
 
 ## 0.2.1
 

@@ -1,7 +1,0 @@
-{
-  "type": "minor",
-  "comment": "Combination add-ons hold the glue between two choices, such as an auth library's adapter for an ORM: `joins` selects one when every add-on it names is selected, and removes it when one isn't",
-  "packageName": "@buildkitgg/scaffolder",
-  "email": "ajcraswell@gmail.com",
-  "dependentChangeType": "patch"
-}

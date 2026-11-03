@@ -2,6 +2,35 @@
   "name": "@buildkitgg/shadcn-modals-manager",
   "entries": [
     {
+      "date": "Tue, 03 Nov 2026 01:07:54 GMT",
+      "version": "1.1.2",
+      "tag": "@buildkitgg/shadcn-modals-manager_v1.1.2",
+      "comments": {
+        "patch": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/shadcn-modals-manager",
+            "commit": "a9fd7cbe2c8ecced1795777c8e870d2149edbad8",
+            "comment": "Accept @buildkitgg/shadcn-baseui-kit 0.4 as a peer, so installing a current style no longer warns"
+          },
+          {
+            "author": "beachball",
+            "package": "@buildkitgg/shadcn-modals-manager",
+            "comment": "Bump @buildkitgg/fluentui-modals-manager to v1.0.2",
+            "commit": "not available"
+          }
+        ],
+        "none": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/shadcn-modals-manager",
+            "commit": "063d609caa08375fd9bc535186db4d5e38a4cf79",
+            "comment": "Build, lint and test with Vite+; published code is unchanged"
+          }
+        ]
+      }
+    },
+    {
       "date": "Fri, 30 Oct 2026 04:56:17 GMT",
       "version": "1.1.1",
       "tag": "@buildkitgg/shadcn-modals-manager_v1.1.1",
