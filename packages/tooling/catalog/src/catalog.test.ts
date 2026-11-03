@@ -25,6 +25,7 @@ async function init(answers: Parameters<typeof initRequest>[0] = {}): Promise<Pl
   expect(planned.error).toBeUndefined()
   expect(planned.decisions).toEqual([])
   expect(planned.status).toBe("planned")
+
   return planned
 }
 
@@ -82,9 +83,11 @@ describe("the TanStack Start target", () => {
     expect(written(planned, generated.config)).toContain("export const vitePlugins = {")
     expect(written(planned, generated.server)).toContain("export const requestMiddleware = {")
     const client = written(planned, generated.client)
+
     for (const name of ["appProviders", "appBootstrap", "routerWrappers", "routerRewrite", "htmlAttributes"]) {
       expect(client).toContain(`export const ${name} =`)
     }
+
     expect(written(planned, "src/router.tsx")).toContain("rewrite: routerRewrite")
     expect(written(planned, "src/routes/__root.tsx")).toContain("htmlAttributes ?? useDefaultHtmlAttributes")
     expect(written(planned, "src/client.tsx")).toContain("...appBootstrap.pre")
@@ -93,9 +96,11 @@ describe("the TanStack Start target", () => {
   it("names no cloud and writes no cloud config", async () => {
     for (const planned of [await init(), await init({ mode: "spa" })]) {
       expect(paths(planned).filter((path) => /wrangler|cloudflare/i.test(path))).toEqual([])
+
       const naming = planned.operations.filter((operation) =>
         /wrangler|cloudflare|\bD1\b/i.test(operation.content ?? "")
       )
+
       expect(naming.map((operation) => operation.path)).toEqual([])
     }
   })
@@ -109,9 +114,11 @@ describe("the TanStack Start target", () => {
   it("runs Buildkit's checks in CI, and formats every file but the generated ones", async () => {
     const planned = await init({ questions: { i18n: ["@buildkit/i18n"] } })
     const workflow = written(planned, ".github/workflows/ci.yml")
+
     for (const run of ["pnpm buildkit check", "pnpm lint", "pnpm format:check", "pnpm build", "pnpm typecheck"]) {
       expect(workflow).toContain(`run: ${run}`)
     }
+
     const formatter = JSON.parse(written(planned, ".oxfmtrc.json"))
     expect(formatter.printWidth).toBe(settings.printWidth)
     expect(formatter.ignorePatterns).toEqual(
@@ -157,9 +164,11 @@ describe("the localization add-on", () => {
   it("imports app modules without their extensions, so the app type-checks without allowImportingTsExtensions", async () => {
     for (const mode of ["ssr", "spa"]) {
       const planned = await init({ mode, questions: { i18n: ["@buildkit/i18n"] }, options })
+
       const imports = [generated.client, generated.server, "vite.config.ts", "lingui.config.ts"].flatMap((path) =>
         [...written(planned, path).matchAll(/from "(\.{1,2}\/[^"]+)"/g)].map((found) => found[1])
       )
+
       expect(imports).toContain("../../i18n/router")
       expect(imports.filter((specifier) => /\.tsx?$/.test(specifier ?? ""))).toEqual([])
       expect(JSON.parse(written(planned, "tsconfig.json")).compilerOptions).not.toHaveProperty(
@@ -173,23 +182,30 @@ describe("the localization add-on", () => {
       questions: { i18n: ["@buildkit/i18n"] },
       options: { "@buildkit/i18n": { localizedUrls: false } }
     })
+
     expect(paths(plain)).not.toContain("src/i18n/rewrite.ts")
     expect(written(plain, generated.client)).toContain("export const routerRewrite = undefined")
+
     const unsafe = await planProject(
       {},
       initRequest({ questions: { i18n: ["@buildkit/i18n"] }, options: { "@buildkit/i18n": { locales: ["../x"] } } })
     )
+
     expect(unsafe.error?.code).toBe("E_INVALID_OPTIONS")
+
     // A localized URL has to set the locale, so URL detection can't be left out while URLs are localized.
     const ignored = await planProject(
       {},
       initRequest({ questions: { i18n: ["@buildkit/i18n"] }, options: { "@buildkit/i18n": { detection: ["cookie"] } } })
     )
+
     expect(ignored.error).toMatchObject({ code: "E_INVALID_OPTIONS", message: expect.stringContaining('"url"') })
+
     const cookieOnly = await init({
       questions: { i18n: ["@buildkit/i18n"] },
       options: { "@buildkit/i18n": { detection: ["cookie"], localizedUrls: false } }
     })
+
     expect(cookieOnly.status).toBe("planned")
   })
 
@@ -212,9 +228,11 @@ describe("the localization add-on", () => {
     const edited = { ...project, "src/router.tsx": `${project["src/router.tsx"]}\n// mine\n` }
     const planned = await planProject(edited, addRequest(["i18n"]))
     expect(planned.status).toBe("planned")
+
     const changed = planned.operations.filter(
       (operation) => operation.class === "seed" && operation.action !== "create"
     )
+
     expect(changed).toEqual([])
     expect(written(planned, generated.client)).toContain("withI18n")
   })
@@ -226,10 +244,12 @@ describe("upgrade", () => {
     const project = applied({}, await planProject({}, initRequest(), { catalog: previous }))
     expect(project["src/router.tsx"]).not.toContain(upgradedRouterLine)
     const router = project["src/router.tsx"] ?? ""
+
     const edited = {
       ...project,
       "src/router.tsx": router.replace("export function getRouter() {", "// Mine.\nexport function getRouter() {")
     }
+
     const planned = await planProject(
       edited,
       { intent: { command: "upgrade" } },
@@ -237,6 +257,7 @@ describe("upgrade", () => {
         catalogs: (version) => (version === previous.version ? previous : undefined)
       }
     )
+
     expect(planned.status).toBe("planned")
     expect(planned.baseline?.source).toBe("cache")
     expect(planned.upgrade?.catalog).toEqual({ from: previous.version, to: catalog.version })

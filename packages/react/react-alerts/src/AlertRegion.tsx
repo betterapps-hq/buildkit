@@ -1,5 +1,6 @@
 import type { AlertManager } from "./types.js"
 import { useAlerts } from "./useAlerts.js"
+
 export type AlertRegionProps = {
   manager: AlertManager
   region?: string
@@ -7,6 +8,7 @@ export type AlertRegionProps = {
   dismissLabel?: string
   className?: string
 }
+
 /** Mount once per manager/region. Surfaces own their live announcements; the container is only a landmark. */
 export function AlertRegion({
   manager,
@@ -17,9 +19,11 @@ export function AlertRegion({
 }: AlertRegionProps) {
   const entries = useAlerts(manager, region)
   const Alert = manager.adapter?.Alert
+
   if (!Alert) {
     throw new Error("AlertRegion requires a manager with an adapter")
   }
+
   return (
     <section aria-label={label} className={className}>
       {entries.map((entry) => (

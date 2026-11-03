@@ -41,15 +41,17 @@ const loaded = (pack: TemplatePack, name = "@acme/tower"): LoadedPack => ({
   pack
 })
 
-function failure(run: () => unknown): { code: string; message: string } {
+function failure(run: () => void): Pick<PlanError, "code" | "message"> {
   try {
     run()
   } catch (error) {
     if (error instanceof PlanError) {
       return { code: error.code, message: error.message }
     }
+
     throw error
   }
+
   throw new Error("expected a PlanError")
 }
 
@@ -129,6 +131,7 @@ describe("mergePacks", () => {
       "defines points"
     ]
   ] as const)("refuses a pack with %j", (overrides, code, message) => {
+    // SAFETY: each row's overrides are TemplatePack fields, which `as const` only made readonly.
     const result = failure(() => mergePacks(fixtureCatalog(), [loaded(towerPack(overrides as Partial<TemplatePack>))]))
     expect(result.code).toBe(code)
     expect(result.message).toContain(message)
@@ -147,6 +150,7 @@ describe("mergePacks", () => {
 describe("checkCatalog", () => {
   it("keeps built-in template ids from looking like packages", () => {
     const catalog = fixtureCatalog()
+
     for (const id of ["@acme/app", "app#web", "web:app"]) {
       const problems = checkCatalog({ ...catalog, templates: [{ ...catalog.templates[0]!, id }] })
       expect(problems).toContain(`Template id ${id} can't contain /, # or :, or start with @.`)

@@ -24,16 +24,20 @@ export function Editor({ example }: { example: Example }) {
 
   function onTabKey(event: KeyboardEvent<HTMLDivElement>) {
     const index = example.files.indexOf(file)
-    const targets: Record<string, number> = {
-      ArrowLeft: index - 1,
-      ArrowRight: index + 1,
-      Home: 0,
-      End: example.files.length - 1
-    }
-    const target = targets[event.key]
+
+    const targets = new Map([
+      ["ArrowLeft", index - 1],
+      ["ArrowRight", index + 1],
+      ["Home", 0],
+      ["End", example.files.length - 1]
+    ])
+
+    const target = targets.get(event.key)
+
     if (target === undefined) {
       return
     }
+
     event.preventDefault()
     const next = example.files[(target + example.files.length) % example.files.length]
     setActive(next.name)
@@ -41,6 +45,7 @@ export function Editor({ example }: { example: Example }) {
   }
 
   const CopyIcon = copied ? Check : Copy
+
   return (
     <div className="ex-editor">
       <div className="ex-files">
@@ -54,6 +59,7 @@ export function Editor({ example }: { example: Example }) {
           {example.files.map((item) => {
             const Icon = item.name.endsWith(".tsx") ? FileCode : File
             const selected = item === file
+
             return (
               <button
                 key={item.name}

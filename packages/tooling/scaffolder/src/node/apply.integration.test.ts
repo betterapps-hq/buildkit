@@ -17,7 +17,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vite-plus/test"
 import { PlanError } from "../plan/errors.js"
 import type { Plan } from "../plan/types.js"
 import { addRequest, fixtureCatalog, initRequest, settings } from "../testing/fixture.js"
-import { applyPlan, isStaleLock, recover } from "./apply.js"
+import { applyPlan, isStaleLock, recover, type ApplyLockInfo } from "./apply.js"
 import { rawHash } from "./fs.js"
 import { applyReviewed, planProject, type ProjectContext } from "./project.js"
 import { nodeTree, readSafely } from "./tree.js"
@@ -36,15 +36,17 @@ afterEach(() => {
   rmSync(root, { recursive: true, force: true })
 })
 
-async function failure(run: () => Promise<unknown>): Promise<PlanError> {
+async function failure<Result>(run: () => Promise<Result>): Promise<PlanError> {
   try {
     await run()
   } catch (error) {
     if (error instanceof PlanError) {
       return error
     }
+
     throw error
   }
+
   throw new Error("expected a PlanError")
 }
 
@@ -52,6 +54,7 @@ function listFiles(folder: string, prefix = ""): string[] {
   if (!existsSync(folder)) {
     return []
   }
+
   return readdirSync(folder, { withFileTypes: true }).flatMap((entry) =>
     entry.isDirectory() ? listFiles(join(folder, entry.name), `${prefix}${entry.name}/`) : [`${prefix}${entry.name}`]
   )
@@ -60,6 +63,7 @@ function listFiles(folder: string, prefix = ""): string[] {
 async function initProject(): Promise<Plan> {
   const planned = await planProject(context, initRequest())
   await applyPlan(planned, { root: project, settings })
+
   return planned
 }
 
@@ -67,11 +71,13 @@ describe("applyPlan", () => {
   it("writes through temp files, writes the lock last and leaves no journal or lock behind", async () => {
     const written: string[] = []
     const planned = await planProject(context, initRequest())
+
     const result = await applyPlan(planned, {
       root: project,
       settings,
       hooks: { afterWrite: (path) => written.push(path) }
     })
+
     expect(result.status).toBe("applied")
     expect(written.at(-1)).toBe(".fixture/lock.json")
     expect(written.at(-2)).toBe("fixture.jsonc")
@@ -92,6 +98,7 @@ describe("applyPlan", () => {
 
   it("refuses a path that escapes the project before anything is written", async () => {
     const planned = await planProject(context, initRequest())
+
     const unsafe: Plan = {
       ...planned,
       operations: [
@@ -99,6 +106,7 @@ describe("applyPlan", () => {
         { path: "../outside.txt", action: "create", class: "owned", linesAdded: 1, linesRemoved: 0, content: "x\n" }
       ]
     }
+
     expect((await failure(() => applyPlan(unsafe, { root: project, settings }))).code).toBe("E_UNSAFE_PATH")
     expect(existsSync(join(root, "outside.txt"))).toBe(false)
     expect(listFiles(project).filter((file) => !file.startsWith(".fixture/"))).toEqual([])
@@ -110,6 +118,7 @@ describe("applyPlan", () => {
     const before = readFileSync(join(project, "package.json"), "utf8")
     const planned = await planProject(context, addRequest(["auth", "i18n"]))
     let writes = 0
+
     const error = await failure(() =>
       applyPlan(planned, {
         root: project,
@@ -117,6 +126,7 @@ describe("applyPlan", () => {
         hooks: {
           afterWrite: () => {
             writes++
+
             if (writes === 3) {
               throw new Error("disk full")
             }
@@ -124,6 +134,7 @@ describe("applyPlan", () => {
         }
       })
     )
+
     expect(error.code).toBe("E_INTERNAL")
     expect(error.message).toContain("disk full")
     expect(readFileSync(join(project, "package.json"), "utf8")).toBe(before)
@@ -171,10 +182,12 @@ describe("applyPlan", () => {
     const planned = await planProject(context, addRequest(["sentry"]))
     await applyPlan(planned, { root: project, settings, secrets: { SENTRY_DSN: "https://key@sentry.example/1" } })
     expect(readFileSync(join(project, ".env"), "utf8")).toBe("SENTRY_DSN=https://key@sentry.example/1\n")
+
     const everything = listFiles(project)
       .filter((file) => file !== ".env")
       .map((file) => readFileSync(join(project, file), "utf8"))
       .join("\n")
+
     expect(everything).not.toContain("key@sentry")
     expect(listFiles(project).filter((file) => file.startsWith(".fixture/backup/"))).toEqual([])
   })
@@ -201,7 +214,7 @@ describe("applyPlan", () => {
 })
 
 describe("apply lock and recovery", () => {
-  function writeLockInfo(info: object) {
+  function writeLockInfo(info: ApplyLockInfo) {
     mkdirSync(join(project, ".fixture"), { recursive: true })
     writeFileSync(join(project, ".fixture/apply.lock"), JSON.stringify(info))
   }
@@ -241,6 +254,7 @@ describe("apply lock and recovery", () => {
     writeFileSync(join(project, "untouched.txt"), "before\n")
     writeFileSync(join(project, "elsewhere.txt"), "someone else\n")
     writeFileSync(join(project, backups, "deleted.txt"), "deleted\n")
+
     const journal = {
       fingerprint,
       started: new Date().toISOString(),
@@ -292,6 +306,7 @@ describe("apply lock and recovery", () => {
         }
       ]
     }
+
     writeFileSync(join(project, ".fixture/journal.json"), JSON.stringify(journal))
     const planned = await planProject(context, initRequest())
     expect((await failure(() => applyPlan({ ...planned, status: "planned" }, { root: project, settings }))).code).toBe(
@@ -318,6 +333,7 @@ describe("apply lock and recovery", () => {
     mkdirSync(backupRoot, { recursive: true })
     symlinkSync(root, join(backupRoot, "linked"), "junction")
     linkSync(join(root, "outside.txt"), join(backupRoot, "hard.txt"))
+
     const entry = {
       path: "a.txt",
       action: "create",
@@ -325,6 +341,7 @@ describe("apply lock and recovery", () => {
       afterHash: "unsafe",
       createdFolders: []
     }
+
     for (const journal of [
       { fingerprint, entries: [{ ...entry, path: "../outside.txt" }] },
       { fingerprint: "../../outside", entries: [entry] },
@@ -344,6 +361,7 @@ describe("apply lock and recovery", () => {
       expect(error.code).toBe("E_INVALID_STATE")
       expect(error.message).toContain("nothing was changed")
     }
+
     expect(readFileSync(join(root, "outside.txt"), "utf8")).toBe("keep\n")
     expect(existsSync(join(project, ".fixture/journal.json"))).toBe(true)
   })
@@ -375,11 +393,13 @@ describe("the disk snapshot", () => {
     mkdirSync(join(project), { recursive: true })
     mkdirSync(join(root, "outside"))
     writeFileSync(join(root, "outside/secret.txt"), "x\n")
+
     try {
       symlinkSync(join(root, "outside"), join(project, "src"), "junction")
     } catch {
       return
     }
+
     expect(readSafely(project, "src/secret.txt")).toMatchObject({
       kind: "unsafe",
       reason: expect.stringContaining("symbolic link")

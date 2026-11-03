@@ -10,28 +10,37 @@ import { proxyCommand } from "../../dist/runtime/proxy.js"
 import { routeStore } from "../../dist/runtime/state.js"
 import { loadProject } from "../config/load.js"
 import { resolveEndpoints } from "../domains/resolve.js"
+import { listeningPort } from "./port.js"
 import { runProcess } from "./process.js"
 
 async function unusedPort() {
   const server = createServer()
   await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve))
-  const address = server.address()
-  if (!address || typeof address === "string") {
+  const port = listeningPort(server)
+
+  if (port === undefined) {
     throw new Error("No port")
   }
+
   await new Promise<void>((resolve) => server.close(() => resolve()))
-  return address.port
+
+  return port
 }
+
 async function waitFor(check: () => boolean | Promise<boolean>) {
   const deadline = Date.now() + 20000
+
   while (Date.now() < deadline) {
     if (await check()) {
       return
     }
+
     await new Promise((resolve) => setTimeout(resolve, 100))
   }
+
   throw new Error("Timed out waiting for server state")
 }
+
 async function get(port: number, hostname: string) {
   return new Promise<string>((resolve, reject) => {
     const req = request({ host: "127.0.0.1", port, headers: { host: hostname } }, (res) => {
@@ -41,6 +50,7 @@ async function get(port: number, hostname: string) {
       })
       res.on("end", () => resolve(body))
     })
+
     req.on("error", reject)
     req.end()
   })
@@ -51,8 +61,10 @@ it("isolates real repositories and linked worktrees, rejects takeover, and clean
   const state = path.join(root, "state")
   const primary = path.join(root, "repo one")
   const secondary = path.join(root, "repo two")
+
   const worktreeParent =
     process.platform === "win32" ? "D:/system/worktrees/buildkit" : path.join(os.tmpdir(), "buildkit-worktrees")
+
   await mkdir(worktreeParent, { recursive: true })
   const worktree = path.join(worktreeParent, path.basename(root))
   const previous = process.env.PORTLESS_STATE_DIR
@@ -61,6 +73,7 @@ it("isolates real repositories and linked worktrees, rejects takeover, and clean
   const controllers: AbortController[] = []
   const running: Promise<number>[] = []
   const git = (...args: string[]) => execFileSync("git", ["-C", primary, ...args], { stdio: "pipe" })
+
   try {
     for (const [directory, project] of [
       [primary, "first"],
@@ -87,6 +100,7 @@ it("isolates real repositories and linked worktrees, rejects takeover, and clean
         })
       )
     }
+
     git("init", "--quiet")
     git("add", ".")
     git(
@@ -105,21 +119,26 @@ it("isolates real repositories and linked worktrees, rejects takeover, and clean
     const projects = await Promise.all([primary, secondary, worktree].map((directory) => loadProject(directory)))
     expect(projects[2]!.worktree).not.toBeNull()
     expect((await proxyCommand(projects[0]!, "setup")).code).toBe(0)
+
     for (const project of projects) {
       const endpoint = resolveEndpoints(project)[0]!
       const controller = new AbortController()
       controllers.push(controller)
       running.push(runEndpoint(project, endpoint, controller.signal, false))
     }
+
     await waitFor(() => routeStore().loadRoutes().length === 3)
     const routes = routeStore().loadRoutes()
     expect(new Set(routes.map((route) => route.port)).size).toBe(3)
+
     for (const project of projects) {
       const endpoint = resolveEndpoints(project)[0]!
       let last = ""
+
       try {
         await waitFor(async () => {
           last = await get(port, endpoint.hostname)
+
           return last === endpoint.origin
         })
       } catch {
@@ -128,6 +147,7 @@ it("isolates real repositories and linked worktrees, rejects takeover, and clean
         )
       }
     }
+
     await expect(runEndpoint(projects[0]!, resolveEndpoints(projects[0]!)[0]!, undefined, true)).rejects.toThrow(
       "already in use"
     )
@@ -151,16 +171,19 @@ it("isolates real repositories and linked worktrees, rejects takeover, and clean
       env: { ...process.env, PORTLESS_PORT: String(port), PORTLESS_HTTPS: "0", PORTLESS_SYNC_HOSTS: "0" },
       quiet: true
     })
+
     try {
       git("worktree", "remove", "--force", worktree)
     } catch {
       /* Setup may fail before creation. */
     }
+
     if (previous === undefined) {
       delete process.env.PORTLESS_STATE_DIR
     } else {
       process.env.PORTLESS_STATE_DIR = previous
     }
+
     await rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 })
   }
 })

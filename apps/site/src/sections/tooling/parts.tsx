@@ -4,6 +4,7 @@ import { Link } from "../../components/Link"
 
 function CopyButton({ text, className }: { text: string; className?: string }) {
   const [copied, setCopied] = useState(false)
+
   return (
     <button
       type="button"

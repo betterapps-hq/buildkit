@@ -19,7 +19,7 @@ const shared: ArgsDef = {
   cwd: { type: "string", description: "The project folder. Defaults to the current folder" }
 }
 
-const descriptions: Record<string, string> = {
+const descriptions = {
   create: "Create a project from a template",
   add: "Add an add-on, or answer a question such as which database",
   config: "Show the config, get an option, or set options",
@@ -32,7 +32,7 @@ const descriptions: Record<string, string> = {
   catalog: "Describe every question as JSON, fetch an earlier catalog version, or check a package or the pins",
   schema: "Print JSON Schemas for the config, the lock and plan requests",
   recover: "Roll back an interrupted apply"
-}
+} satisfies Record<string, string>
 
 function positional(description: string): ArgsDef[string] {
   return { type: "positional", required: false, description }
@@ -41,12 +41,15 @@ function positional(description: string): ArgsDef[string] {
 /** A question's title for its flag's help: the catalog's, else the first template's that asks it. */
 function questionTitle(catalog: CatalogManifest, id: string): string {
   const own = findQuestion(catalog, id)
+
   if (own) {
     return own.title
   }
+
   for (const template of catalog.templates) {
     try {
       const question = expandTemplate(catalog, template.id)?.questions.find((candidate) => candidate.id === id)
+
       if (question) {
         return question.title
       }
@@ -54,81 +57,101 @@ function questionTitle(catalog: CatalogManifest, id: string): string {
       // The catalog check reports a template that doesn't expand.
     }
   }
+
   return id
 }
 
 /** A citty command tree for a product CLI. Each subcommand runs the shared handler with its raw arguments. */
 export function createCli(options: CliOptions): CommandDef {
   const runtime = new CliRuntime(options)
+
   const questionArgs: ArgsDef = Object.fromEntries(
     questionIds(options.catalog).map((id) => {
       const question = questionTitle(options.catalog, id)
+
       return [id, { type: "string", description: `${question}. Use --no-${id} to answer no` }]
     })
   )
+
   const alongside: ArgsDef[string] = {
     type: "string",
     description: "Add an add-on with this change, as a decision's choice does. Repeatable, or comma-separated"
   }
-  const extra: Record<string, ArgsDef> = {
-    create: {
-      template: positional("Template to start from"),
-      folder: positional("Folder to create"),
-      mode: { type: "string", description: "Target mode, when the template offers more than one" },
-      preset: { type: "string", description: "Saved answers to start from" },
-      name: { type: "string", description: "Project name. Defaults to the folder name" },
-      with: {
-        type: "string",
-        description: "Add an add-on to the question that offers it, or as an extra. Repeatable, or comma-separated"
-      },
-      without: {
-        type: "string",
-        description: "Take an add-on out of its question's answer. Repeatable, or comma-separated"
-      },
-      set: { type: "string", description: "Set an option: <add-on>.<option>=<value>. Repeatable" },
-      adopt: { type: "boolean", description: "Bring an existing project in. Your files stay yours" },
-      ...questionArgs
-    },
-    add: {
-      addon: positional("Add-ons, or a question such as database"),
-      replace: { type: "string", description: "Replace an installed add-on with one it conflicts with" },
-      set: { type: "string", description: "Set an option: <add-on>.<option>=<value>. Repeatable" },
-      ...questionArgs
-    },
-    upgrade: {
-      list: { type: "boolean", description: "Show what an upgrade changes, and write nothing" },
-      with: alongside
-    },
-    catalog: {
-      registry: { type: "boolean", description: "With check: check each of the catalog's pins against npm" },
-      "min-age": {
-        type: "string",
-        description: "With --registry: the days a pin's newest match must be out. Default 1"
+
+  const extra = new Map<string, ArgsDef>([
+    [
+      "create",
+      {
+        template: positional("Template to start from"),
+        folder: positional("Folder to create"),
+        mode: { type: "string", description: "Target mode, when the template offers more than one" },
+        preset: { type: "string", description: "Saved answers to start from" },
+        name: { type: "string", description: "Project name. Defaults to the folder name" },
+        with: {
+          type: "string",
+          description: "Add an add-on to the question that offers it, or as an extra. Repeatable, or comma-separated"
+        },
+        without: {
+          type: "string",
+          description: "Take an add-on out of its question's answer. Repeatable, or comma-separated"
+        },
+        set: { type: "string", description: "Set an option: <add-on>.<option>=<value>. Repeatable" },
+        adopt: { type: "boolean", description: "Bring an existing project in. Your files stay yours" },
+        ...questionArgs
       }
-    },
-    sync: { with: alongside },
-    config: { with: alongside }
-  }
+    ],
+    [
+      "add",
+      {
+        addon: positional("Add-ons, or a question such as database"),
+        replace: { type: "string", description: "Replace an installed add-on with one it conflicts with" },
+        set: { type: "string", description: "Set an option: <add-on>.<option>=<value>. Repeatable" },
+        ...questionArgs
+      }
+    ],
+    [
+      "upgrade",
+      {
+        list: { type: "boolean", description: "Show what an upgrade changes, and write nothing" },
+        with: alongside
+      }
+    ],
+    [
+      "catalog",
+      {
+        registry: { type: "boolean", description: "With check: check each of the catalog's pins against npm" },
+        "min-age": {
+          type: "string",
+          description: "With --registry: the days a pin's newest match must be out. Default 1"
+        }
+      }
+    ],
+    ["sync", { with: alongside }],
+    ["config", { with: alongside }]
+  ])
+
   const subCommands = Object.fromEntries(
     Object.entries(descriptions).map(([name, description]) => [
       name,
       defineCommand({
         meta: { name, description },
-        args: { ...extra[name], ...shared },
+        args: { ...extra.get(name), ...shared },
         async run({ rawArgs }) {
           process.exitCode = await runtime.run(name, rawArgs)
         }
       })
     ])
   )
+
   // init was create's name before 0.6. It still works, unlisted, for a release.
   subCommands.init = defineCommand({
     meta: { name: "init", description: descriptions.create, hidden: true },
-    args: { ...extra.create, ...shared },
+    args: { ...extra.get("create"), ...shared },
     async run({ rawArgs }) {
       process.exitCode = await runtime.run("create", rawArgs)
     }
   })
+
   return defineCommand({
     meta: {
       name: options.name,
@@ -143,9 +166,12 @@ export function createCli(options: CliOptions): CommandDef {
 export async function runCli(argv: readonly string[], options: CliOptions): Promise<number> {
   const [command, ...rest] = argv
   const runtime = new CliRuntime(options)
+
   if (command === undefined) {
     runtime.io.stderr(`Usage: ${options.name} <command>. Commands: ${Object.keys(descriptions).join(", ")}.\n`)
+
     return 2
   }
+
   return runtime.run(command, rest)
 }

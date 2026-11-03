@@ -42,6 +42,7 @@ function testAdapter(name: string): ModalAdapter {
           entry.finishExit()
         }
       }, [entry])
+
       return (
         <section aria-label={name}>
           <h2>{title}</h2>
@@ -84,6 +85,7 @@ it.each([
 
 function checkTypes() {
   const manager = createModalManager({ adapter: testAdapter("Typed") })
+
   const definition = manager.createModal({
     title: "Profile",
     initialState: { name: "Ada", count: 0 },
@@ -94,10 +96,12 @@ function checkTypes() {
         // @ts-expect-error Form updates keep their inferred types through the adapter.
         controls.update({ data: { count: "one" } })
         controls.close(data)
+
         return null
       }
     }
   })
+
   expectTypeOf(definition.open()).resolves.toEqualTypeOf<{ name: string; count: number } | null>()
   // @ts-expect-error Native primitive props are not part of the shared manager contract.
   manager.alert({ title: "Notice", surfaceProps: { finalFocus: false } })
@@ -109,6 +113,8 @@ function checkTypes() {
   const invalidAdapter = <ModalRenderer manager={manager} adapter={testAdapter("Wrong place")} />
   const shadcn = <ModalRenderer manager={createFluentManager()} />
   const fluent = <FluentRenderer manager={manager} />
+
   return { invalid, invalidAdapter, shadcn, fluent }
 }
+
 void checkTypes

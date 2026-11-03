@@ -1,9 +1,13 @@
 "use client"
 
 export { createModalManager } from "./createModalManager.js"
+
 export { ModalRenderer, type ModalRendererProps } from "./ModalRenderer.js"
+
 export { useModals } from "./useModals.js"
+
 export { useModalExit } from "./useModalExit.js"
+
 export type {
   ModalLabels,
   ModalAdapter,

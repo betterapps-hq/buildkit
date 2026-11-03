@@ -4,8 +4,11 @@ import { usePreference } from "@buildkitgg/react-preferences"
 import { Button, Input, Label, Textarea, NativeSelect, NativeSelectOption } from "@buildkitgg/shadcn-baseui-kit"
 import { ExampleResult } from "@buildkitgg/storybook-config/examples"
 import { useEffect, useState } from "react"
+
 export type PreferenceScenario = "defaults" | "optional" | "local" | "session" | "json"
+
 type AppPreferences = { pageSize: number; displayName: string }
+
 export function PreferencesDemo({ scenario = "defaults" }: { scenario?: PreferenceScenario }) {
   const [preferences] = useState(() => createPreferences<AppPreferences>({ defaults: { pageSize: 25 } }))
   useEffect(() => {
@@ -22,6 +25,7 @@ export function PreferencesDemo({ scenario = "defaults" }: { scenario?: Preferen
   const [message, setMessage] = useState("No import applied")
   let resultLabel = "Rows per page"
   let result: string | number | undefined = pageSize
+
   if (scenario === "json") {
     resultLabel = "Import / export"
     result = message
@@ -29,6 +33,7 @@ export function PreferencesDemo({ scenario = "defaults" }: { scenario?: Preferen
     resultLabel = "Current value"
     result = displayName === undefined ? "undefined" : JSON.stringify(displayName)
   }
+
   function onImport() {
     try {
       preferences.importJson(json)
@@ -37,6 +42,7 @@ export function PreferencesDemo({ scenario = "defaults" }: { scenario?: Preferen
       setMessage("Invalid JSON. Enter an object with valid preference values.")
     }
   }
+
   return (
     <section>
       <div className="bk-settings">

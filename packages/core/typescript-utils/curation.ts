@@ -38,6 +38,7 @@ export const upstreams: Upstream[] = [
     source: (declaration) => declaration.replace(/^dist\//, "src/").replace(/\.d\.mts$/, ".ts"),
     docs: (name, declaration) => {
       const category = /^dist\/([^/]+)\//.exec(declaration)?.[1]
+
       return `https://es-toolkit.dev/reference/${category}/${name}.html`
     }
   },

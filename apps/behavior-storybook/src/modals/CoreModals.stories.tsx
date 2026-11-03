@@ -9,6 +9,7 @@ function CoreLifecycle() {
   const [result, setResult] = useState("No result")
   const entries = useModals(store)
   useEffect(() => () => store.clear(), [store])
+
   return (
     <section className="bk-stack">
       <div className="actions">
@@ -41,8 +42,11 @@ function CoreLifecycle() {
     </section>
   )
 }
+
 const meta = { title: "Core/modal-core", component: CoreLifecycle } satisfies Meta<typeof CoreLifecycle>
+
 export default meta
+
 export const Lifecycle: StoryObj<typeof meta> = {
   parameters: {
     docs: {

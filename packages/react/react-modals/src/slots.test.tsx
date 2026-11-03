@@ -1,3 +1,4 @@
+import type { ModalActivity } from "@buildkitgg/modal-core"
 import { act, cleanup, render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { useState } from "react"
@@ -19,6 +20,7 @@ function Surface({ entry, title, body, footer }: ModalSurfaceProps<object>) {
 
 function Counter({ data }: ModalSlotProps<{ count: number }>) {
   const [local, setLocal] = useState(0)
+
   return (
     <button onClick={() => setLocal(local + 1)}>
       Count {data.count}, local {local}
@@ -28,15 +30,19 @@ function Counter({ data }: ModalSlotProps<{ count: number }>) {
 
 it.each(["standard", "custom"])("passes only public slot props to %s modal components", (kind) => {
   const manager = createModalManager({ adapter: { Surface } })
-  function Slot(props: object) {
+
+  function Slot(props: ModalActivity) {
     return <span>{Object.getOwnPropertyNames(props).sort().join(", ")}</span>
   }
+
   const slots = { title: { component: Slot }, body: { component: Slot }, footer: { component: Slot } }
+
   if (kind === "standard") {
     manager.open(slots)
   } else {
     manager.createModal({ ...slots, initialState: {}, defaultResult: null }).open()
   }
+
   render(<ModalRenderer manager={manager} />)
   expect(screen.getAllByText("controls, data, error, isPending")).toHaveLength(3)
   act(() => manager.dispose())
@@ -45,6 +51,7 @@ it.each(["standard", "custom"])("passes only public slot props to %s modal compo
 it("preserves component state across updates and sibling replacement, and remounts a replaced component", async () => {
   const user = userEvent.setup()
   const manager = createModalManager({ adapter: { Surface } })
+
   const modal = manager
     .createModal({
       title: <em>Counter</em>,
@@ -60,6 +67,7 @@ it("preserves component state across updates and sibling replacement, and remoun
       }
     })
     .open()
+
   render(<ModalRenderer manager={manager} />)
   await user.click(screen.getByRole("button", { name: "Count 0, local 0" }))
   await user.click(screen.getByRole("button", { name: "Increase 0" }))
@@ -122,10 +130,13 @@ it("uses the latest close callback and supports clearing it", async () => {
 it("provides live pending and error state to all component slots", async () => {
   const manager = createModalManager({ adapter: { Surface } })
   let rejectSave: (error: Error) => void = () => undefined
+
   function Status({ isPending, error }: ModalSlotProps<object>) {
     const message = error instanceof Error ? error.message : "Ready"
+
     return <span>{isPending ? "Working" : message}</span>
   }
+
   const modal = manager
     .createModal({
       title: { component: Status },
@@ -135,6 +146,7 @@ it("provides live pending and error state to all component slots", async () => {
       defaultResult: null
     })
     .open()
+
   render(<ModalRenderer manager={manager} />)
   let pending: Promise<boolean> | undefined
   act(() => {
@@ -157,6 +169,7 @@ it("provides live pending and error state to all component slots", async () => {
 it("does not publish or invalidate a pending guard for an unchanged patch", async () => {
   const manager = createModalManager()
   let approve: (allowed: boolean) => void = () => undefined
+
   const modal = manager
     .createModal({
       title: "Guard",
@@ -168,6 +181,7 @@ it("does not publish or invalidate a pending guard for an unchanged patch", asyn
         })
     })
     .open()
+
   const pending = modal.dismiss()
   const snapshot = manager.getSnapshot()
   modal.update({ title: "Guard", data: { count: 0 } })

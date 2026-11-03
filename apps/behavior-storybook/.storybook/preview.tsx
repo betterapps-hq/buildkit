@@ -7,6 +7,7 @@ import { StrictMode } from "react"
 import { ErrorBoundary } from "react-error-boundary"
 import "@buildkitgg/shadcn-baseui-kit/styles.css"
 import "../src/styles.css"
+
 export default definePreview({
   parameters: {
     layout: "fullscreen",

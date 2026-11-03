@@ -17,6 +17,7 @@ const KEYWORDS = new Set([
 ])
 
 type TokenKind = "kw" | "str" | "fn" | "type" | "id" | "com" | "punc"
+
 type Token = { text: string; kind: TokenKind }
 
 /** Splits one line of TypeScript into colored runs, matching the design's syntax palette. */
@@ -24,19 +25,24 @@ export function tokenize(line: string): Token[] {
   const tokens: Token[] = []
   const pattern = /(\/\/.*$)|("[^"]*"|'[^']*'|`[^`]*`)|([A-Za-z_$][\w$]*)|(\s+)|(.)/g
   let pending = ""
+
   for (const match of line.matchAll(pattern)) {
     const [text, comment, string, word, space] = match
+
     if (space) {
       pending += space
       continue
     }
+
     let kind: TokenKind
+
     if (comment) {
       kind = "com"
     } else if (string) {
       kind = "str"
     } else if (word) {
       const next = line[(match.index ?? 0) + text.length]
+
       if (KEYWORDS.has(word)) {
         kind = "kw"
       } else if (next === "(" || (next === "<" && /^[a-z]/.test(word))) {
@@ -47,17 +53,22 @@ export function tokenize(line: string): Token[] {
     } else {
       kind = "punc"
     }
+
     const previous = tokens.at(-1)
+
     if (previous?.kind === kind) {
       previous.text += pending + text
     } else {
       tokens.push({ text: pending + text, kind })
     }
+
     pending = ""
   }
+
   if (pending) {
     tokens.push({ text: pending, kind: "punc" })
   }
+
   return tokens
 }
 

@@ -9,6 +9,7 @@ import { completeAnswers, emptyAnswers, runWizard, type PartialAnswers } from ".
 /** The example catalog with a third sign-in provider, so a pick is still asked when Better Auth isn't available. */
 function catalog(): CatalogManifest {
   const example = exampleCatalog()
+
   const lucia = defineAddon({
     id: "@acme/lucia",
     version: "1.0.0",
@@ -16,6 +17,7 @@ function catalog(): CatalogManifest {
     description: "Sessions you own",
     contribute: () => []
   })
+
   return {
     ...example,
     addons: [...example.addons, lucia],
@@ -27,12 +29,14 @@ function catalog(): CatalogManifest {
 
 async function wizard(template: string, script: ScriptedAnswer[], partial: Partial<PartialAnswers> = {}) {
   const { prompter, asked } = scriptedPrompter(script)
+
   const answers = await runWizard({
     catalog: catalog(),
     partial: { ...emptyAnswers(), template, name: "demo", ...partial },
     prompter,
     askName: false
   })
+
   return { answers, asked, find: (message: string) => asked.find((question) => question.message === message) }
 }
 
@@ -56,6 +60,7 @@ describe("the wizard asks each question as the wizard table says", () => {
     const { asked, answers } = await wizard("vite-web", [false, true, "@acme/convex", true, "@acme/clerk"], {
       questions: { telemetry: [], devtools: [] }
     })
+
     expect(asked.map((question) => question.message)).toEqual([
       "Add localization?",
       "Add a database?",
@@ -65,12 +70,14 @@ describe("the wizard asks each question as the wizard table says", () => {
     ])
     // A catalog without Lucia leaves Clerk as the only provider, so it's the answer.
     const { prompter, asked: plain } = scriptedPrompter([false, true, "@acme/convex", true])
+
     const only = await runWizard({
       catalog: exampleCatalog(),
       partial: { ...emptyAnswers(), template: "vite-web", name: "demo", questions: { telemetry: [], devtools: [] } },
       prompter,
       askName: false
     })
+
     expect(plain.at(-1)?.message).toBe("Add sign-in?")
     expect(only).toMatchObject({ questions: { auth: ["@acme/clerk"] } })
     expect(answers).toMatchObject({ questions: { auth: ["@acme/clerk"] } })
@@ -100,6 +107,7 @@ describe("the wizard asks each question as the wizard table says", () => {
       true,
       ["@acme/sentry"]
     ])
+
     expect(find("Which ones?")).toMatchObject({
       kind: "multiselect",
       required: true,
@@ -143,13 +151,16 @@ describe("the wizard asks each question as the wizard table says", () => {
           : template
       )
     }
+
     const { prompter, asked } = scriptedPrompter([false])
+
     const answers = await runWizard({
       catalog: seeded,
       partial: { ...emptyAnswers(), template: "vite-web", name: "demo" },
       prompter,
       askName: false
     })
+
     expect(asked.map((question) => question.message)).toEqual(["Add a database?"])
     expect(answers).toMatchObject({ questions: { database: [] } })
     expect(answers !== cancelled && answers.questions?.seed).toBeUndefined()
@@ -160,6 +171,7 @@ describe("the wizard asks each question as the wizard table says", () => {
       questions: { database: ["@acme/prisma"], auth: ["@acme/clerk"] },
       with: ["sentry"]
     })
+
     // --with sentry answers telemetry from its default, so only localization is left.
     expect(asked.map((question) => question.message)).toEqual(["Add localization?"])
   })

@@ -1,4 +1,5 @@
 "use client"
+
 import type { PreferencesStore } from "@buildkitgg/preferences-core"
 import { useSyncExternalStore } from "react"
 

@@ -7,8 +7,11 @@ import { startGateway } from "./gateway.js"
 import { runTunnel } from "./tunnel.js"
 
 vi.mock("../runtime/state.js", () => ({ routeStore: vi.fn<typeof routeStore>() }))
+
 vi.mock("../runtime/process.js", () => ({ runProcess: vi.fn<typeof runProcess>() }))
+
 vi.mock("./gateway.js", () => ({ startGateway: vi.fn<typeof startGateway>() }))
+
 it("requires explicit exposure, binds the restricted target, and always closes it", async () => {
   const config = configSchema.parse({ project: "demo", endpoints: { app: { command: ["node"] } } })
   const project = { config, root: ".", worktree: null, file: undefined }

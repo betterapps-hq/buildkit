@@ -22,7 +22,10 @@ function reportedRules(config: string) {
     encoding: "utf8",
     env: config.startsWith("vite-plus") ? vitePlusEnv : plainEnv
   })
+
+  // SAFETY: Oxlint's JSON format reports each diagnostic with the rule's code.
   const report = JSON.parse(result.stdout) as { diagnostics: { code: string }[] }
+
   return new Set(report.diagnostics.map((diagnostic) => diagnostic.code))
 }
 

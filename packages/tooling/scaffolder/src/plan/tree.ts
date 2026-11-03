@@ -14,6 +14,7 @@ export function memoryTree(files: Readonly<Record<string, string>>): VirtualTree
   return {
     read(path) {
       const content = files[path]
+
       return content === undefined ? { kind: "absent" } : { kind: "file", content }
     }
   }
@@ -30,16 +31,20 @@ export class RecordingTree implements VirtualTree {
 
   read(path: string): FileState {
     const cached = this.reads.get(path)
+
     if (cached) {
       return cached
     }
+
     const state = this.#tree.read(path)
     this.reads.set(path, state)
+
     return state
   }
 
   text(path: string): string | undefined {
     const state = this.read(path)
+
     return state.kind === "file" ? state.content : undefined
   }
 }

@@ -63,6 +63,7 @@ function Tokens({ line }: { line: string }) {
   if (line === "") {
     return " "
   }
+
   return tokenize(line).map((token, index) => (
     <span key={index} className={`tok-${token.kind}`}>
       {token.text}
@@ -257,6 +258,7 @@ export function Scaffolder() {
           <ul className="tl-features tl-wide">
             {FEATURES.map((feature) => {
               const Icon = feature.icon
+
               return (
                 <li key={feature.title} className="tl-feature">
                   <span className="tl-feature-icon">
@@ -277,6 +279,7 @@ export function Scaffolder() {
           <ol className="tl-steps">
             {STEPS.map((step) => {
               const Icon = step.icon
+
               return (
                 <li key={step.key} className={`tl-step tl-step-${step.key}`}>
                   <span className="tl-step-track" aria-hidden="true">

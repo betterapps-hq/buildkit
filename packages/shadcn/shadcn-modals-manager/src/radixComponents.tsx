@@ -8,10 +8,12 @@ import type { ModalAdapter, RadixModalComponents } from "./types.js"
 
 export function radixComponents(components: RadixModalComponents): ModalAdapter {
   const { Dialog, DialogContent } = components
+
   function Surface(props: ModalSurfaceProps<ModalSurfaceOptions>) {
     const { entry } = props
     const view = entry.content
     useModalExit(entry)
+
     return (
       <Dialog
         open={entry.status === "open"}
@@ -32,12 +34,15 @@ export function radixComponents(components: RadixModalComponents): ModalAdapter 
             // Radix runs this after Presence unmounts, including CSS exit animations.
             // Ignore StrictMode's simulated cleanup while the entry is still open.
             event.preventDefault()
+
             if (entry.status !== "closing" || (event.target instanceof HTMLElement && event.target.isConnected)) {
               return
             }
+
             if (view.returnFocus?.isConnected) {
               view.returnFocus.focus()
             }
+
             entry.finishExit()
           }}
         >
@@ -46,5 +51,6 @@ export function radixComponents(components: RadixModalComponents): ModalAdapter 
       </Dialog>
     )
   }
+
   return { Surface, DefaultFooter: createDefaultFooter(components.Button) }
 }

@@ -8,11 +8,14 @@ import type { ExampleButtonProps, ExampleInputProps, ModalExampleScenario } from
 function NameInput({ onChange, ...props }: ExampleInputProps) {
   return <Input {...props} onChange={(_, data) => onChange(data.value)} />
 }
+
 function ExampleButton({ variant, ...props }: ExampleButtonProps) {
   return <Button {...props} appearance={variant === "outline" ? "secondary" : "primary"} />
 }
+
 function FluentModalsExample({ scenario }: ModalExampleScenario) {
   const [manager] = useState(() => createModalManager())
+
   return (
     <FluentProvider theme={webLightTheme}>
       <ModalExamples manager={manager} Button={ExampleButton} Input={NameInput} scenario={scenario}>
@@ -21,10 +24,13 @@ function FluentModalsExample({ scenario }: ModalExampleScenario) {
     </FluentProvider>
   )
 }
+
 const meta = { title: "Fluent UI/fluentui-modals-manager", component: FluentModalsExample } satisfies Meta<
   typeof FluentModalsExample
 >
+
 export default meta
+
 export const Confirmation: StoryObj<typeof meta> = modalStory("confirmation")
 export const Acknowledgment: StoryObj<typeof meta> = modalStory("alert")
 export const TypedForm: StoryObj<typeof meta> = { ...modalStory("form"), name: "Typed form" }

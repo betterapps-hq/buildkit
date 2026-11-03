@@ -1,6 +1,9 @@
 export type ModalStatus = "open" | "closing"
+
 export type ModalActivity = Readonly<{ isPending: boolean; error: unknown }>
+
 export type ModalCloseReason = "completed" | "dismissed" | "parent-closed" | "close-all" | "cleared" | "disposed"
+
 export type ModalCloseEvent<TResult> = Readonly<{ id: string; result: TResult; reason: ModalCloseReason }>
 
 export type ModalControls<TResult, TContent> = {

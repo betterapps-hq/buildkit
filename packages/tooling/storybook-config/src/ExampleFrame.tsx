@@ -1,5 +1,6 @@
 import type { ReactNode } from "react"
 import "./examples.css"
+
 export type ExampleFrameProps = {
   group: string
   title: string
@@ -8,6 +9,7 @@ export type ExampleFrameProps = {
   catalog?: boolean
   children: ReactNode
 }
+
 export function ExampleFrame({ group, title, description, code, catalog, children }: ExampleFrameProps) {
   return (
     <main className="bk-example">
@@ -37,6 +39,7 @@ export function ExampleFrame({ group, title, description, code, catalog, childre
     </main>
   )
 }
+
 export function ExampleResult({ label = "Result", children }: { label?: string; children: ReactNode }) {
   return (
     <div className="bk-example-result">

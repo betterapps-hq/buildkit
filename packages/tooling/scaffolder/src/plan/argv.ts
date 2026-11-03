@@ -1,9 +1,16 @@
+import { z } from "zod"
 import { allAddons, lookupAddon, shortName } from "../manifest/catalog.js"
 import type { Answers, CatalogManifest, PresetManifest } from "../manifest/types.js"
 import { compareText } from "./json.js"
 import type { PlanRequest } from "./types.js"
 
-type Options = Record<string, Record<string, unknown>>
+/** Options keyed by add-on id, as answers and intents hold them. */
+type Options = NonNullable<Answers["options"]>
+
+/** One add-on's options, keyed by option name. */
+type AddonOptions = Options[string]
+
+const optionText = z.string()
 
 /**
  * How a command names add-ons. A flag uses the short name, or the full id where the catalog has two add-ons with that
@@ -17,28 +24,38 @@ interface AddonNames {
 
 function addonNames(catalog: CatalogManifest | undefined): AddonNames {
   const bare = (id: string) => (id.startsWith("npm:") ? id.slice(4) : undefined)
+
   if (!catalog) {
     return { flag: (name) => bare(name) ?? shortName(name), key: (name) => bare(name) ?? shortName(name) }
   }
+
   const counts = new Map<string, number>()
+
   for (const { id } of allAddons(catalog).filter((addon) => !addon.id.startsWith("npm:"))) {
     counts.set(shortName(id), (counts.get(shortName(id)) ?? 0) + 1)
   }
+
   const key = (name: string) => {
     const found = lookupAddon(catalog, name)
+
     return "id" in found ? found.id : name
   }
+
   return {
     flag: (name) => {
       const id = key(name)
+
       return bare(id) ?? ((counts.get(shortName(id)) ?? 0) > 1 ? id : shortName(id))
     },
     key
   }
 }
 
-function optionValue(value: unknown): string {
-  return typeof value === "string" ? value : JSON.stringify(value)
+/** A `--set` value: a string as it is, anything else as JSON. */
+function optionValue(value: AddonOptions[string]): string {
+  const text = optionText.safeParse(value)
+
+  return text.success ? text.data : JSON.stringify(value)
 }
 
 function setFlags(options: Options, names: AddonNames): string[] {
@@ -50,16 +67,17 @@ function setFlags(options: Options, names: AddonNames): string[] {
 }
 
 /** Options by the add-on they belong to, however the add-on is named. */
-function optionsByAddon(options: Options, names: AddonNames): Map<string, Record<string, unknown>> {
+function optionsByAddon(options: Options, names: AddonNames): Map<string, AddonOptions> {
   return new Map(Object.entries(options).map(([id, values]) => [names.key(id), values]))
 }
 
 /** Options that differ from a preset's, by add-on and key. */
 function changedOptions(options: Options, preset: Options, names: AddonNames): Options {
   const presetOptions = optionsByAddon(preset, names)
+
   return Object.fromEntries(
     Object.entries(options)
-      .map(([id, values]): [string, Record<string, unknown>] => [
+      .map(([id, values]): [string, AddonOptions] => [
         id,
         Object.fromEntries(
           Object.entries(values).filter(
@@ -77,6 +95,7 @@ function changedOptions(options: Options, preset: Options, names: AddonNames): O
  */
 function answersPreset(answers: Answers, preset: Answers, names: AddonNames): boolean {
   const options = optionsByAddon(answers.options ?? {}, names)
+
   return (
     (preset.mode === undefined || answers.mode !== undefined) &&
     (preset.extra === undefined || answers.extra !== undefined) &&
@@ -90,6 +109,7 @@ function answersPreset(answers: Answers, preset: Answers, names: AddonNames): bo
 /** Whether a preset's answer to a question is the request's: the same add-ons, however they're named. */
 function sameAnswer(preset: readonly string[] | undefined, answer: readonly string[], names: AddonNames): boolean {
   const keys = (ids: readonly string[]) => [...new Set(ids.map((id) => names.key(id)))].sort().join(" ")
+
   return preset !== undefined && keys(preset) === keys(answer)
 }
 
@@ -108,48 +128,63 @@ export function requestArgv(
     options.catalog && (request.catalogVersion === undefined || request.catalogVersion === options.catalog.version)
       ? options.catalog
       : undefined
+
   const names = addonNames(catalog)
   const { intent } = request
   const argv: string[] = []
+
   switch (intent.command) {
     case "init": {
       const { answers } = intent
+
       const preset =
         options.preset?.answers.template === answers.template && answersPreset(answers, options.preset.answers, names)
           ? options.preset
           : undefined
+
       const name = answers.name === undefined ? [] : [answers.name]
       argv.push("create", ...(preset ? ["--preset", preset.id] : [answers.template]), ...name)
+
       if (answers.mode !== undefined && answers.mode !== preset?.answers.mode) {
         argv.push("--mode", answers.mode)
       }
+
       for (const [question, answer] of Object.entries(answers.questions ?? {})) {
         if (preset && sameAnswer(preset.answers.questions?.[question], answer, names)) {
           continue
         }
+
         argv.push(
           ...(answer.length === 0
             ? [`--no-${question}`]
             : [`--${question}`, answer.map((id) => names.flag(id)).join(",")])
         )
       }
+
       const presetExtra = new Set((preset?.answers.extra ?? []).map((id) => names.key(id)))
+
       for (const id of answers.extra ?? []) {
         if (!presetExtra.has(names.key(id))) {
           argv.push("--with", names.flag(id))
         }
       }
+
       argv.push(...setFlags(changedOptions(answers.options ?? {}, preset?.answers.options ?? {}, names), names))
+
       if (answers.adopt) {
         argv.push("--adopt")
       }
+
       break
     }
+
     case "add":
       argv.push("add", ...intent.addons.map((id) => names.flag(id)))
+
       for (const id of intent.replace) {
         argv.push("--replace", names.flag(id))
       }
+
       argv.push(...setFlags(intent.options, names))
       break
     case "config":
@@ -161,14 +196,21 @@ export function requestArgv(
       argv.push(intent.command, ...(intent.addons ?? []).flatMap((id) => ["--with", names.flag(id)]))
       break
   }
+
   for (const [id, resolution] of Object.entries(request.resolve ?? {})) {
-    argv.push("--resolve", `${id}=${typeof resolution === "string" ? resolution : "file:<path>"}`)
+    argv.push(
+      "--resolve",
+      `${id}=${resolution === "keep-current" || resolution === "take-incoming" ? resolution : "file:<path>"}`
+    )
   }
+
   if (request.conflictStyle === "markers") {
     argv.push("--conflict", "markers")
   }
+
   if (request.catalogVersion !== undefined) {
     argv.push("--catalog-version", request.catalogVersion)
   }
+
   return argv
 }

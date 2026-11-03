@@ -16,6 +16,7 @@ function Wire() {
   useEffect(() => {
     report({ wire: [{ label: 'useSetting("language")', value: format({ value, source }), tone: "plain" }] })
   }, [value, source])
+
   return null
 }
 

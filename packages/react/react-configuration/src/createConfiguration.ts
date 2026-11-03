@@ -1,4 +1,5 @@
 "use client"
+
 import { createConfiguration as createCoreConfiguration } from "@buildkitgg/configuration-core"
 import type {
   ConfigurationClient,
@@ -22,6 +23,7 @@ export function createConfiguration<T extends object, Context extends object>(
   options: ConfigurationOptions<T, Context> & (T extends { [K in keyof T]: SettingValue } ? unknown : never)
 ): ReactConfigurationClient<T, Context> {
   const client = createCoreConfiguration<T, Context>(options)
+
   return Object.assign(client, {
     useSetting<K extends SettingKey<T>>(key: K): SettingState<T[K]> {
       return useClientSetting(client, key)

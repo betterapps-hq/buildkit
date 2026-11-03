@@ -19,9 +19,11 @@ function animationCss() {
     .paths("tw-animate-css")
     .map((path) => resolve(path, "tw-animate-css"))
     .find((path) => existsSync(resolve(path, "package.json")))
+
   if (!directory) {
     throw new Error("Missing tw-animate-css")
   }
+
   return (
     `/*! ${readFileSync(resolve(directory, "LICENSE"), "utf8")} */\n` +
     readFileSync(resolve(directory, "dist/tw-animate.css"), "utf8")
@@ -32,14 +34,18 @@ async function themeData() {
   const js = ts.transpileModule(data.themes, { compilerOptions: { module: ts.ModuleKind.ESNext } }).outputText
   const { THEMES } = await import(`data:text/javascript;base64,${Buffer.from(js).toString("base64")}`)
   const neutral = THEMES.find((theme) => theme.name === "neutral")
+
   if (!neutral?.cssVars?.light || !neutral.cssVars.dark) {
     throw new Error("Upstream neutral theme missing")
   }
+
   const ast = postcss.parse(data.globals)
   const theme = ast.nodes.find((node) => node.type === "atrule" && node.name === "theme" && node.params === "inline")
+
   if (!theme) {
     throw new Error("Upstream Tailwind token mapping missing")
   }
+
   // Keep upstream token mappings, but exclude website-specific font/breakpoint customizations.
   const mappings = theme.nodes.filter(
     (node) =>
@@ -49,10 +55,12 @@ async function themeData() {
           (Object.hasOwn(neutral.cssVars.light, node.prop.slice(8)) ||
             Object.hasOwn(neutral.cssVars.dark, node.prop.slice(8)))))
   )
+
   const vars = (values) =>
     Object.entries(values)
       .map(([key, value]) => `--${key}: ${value};`)
       .join("\n")
+
   return {
     palette: neutral.name,
     cssVariables: neutral.cssVars,
@@ -66,56 +74,76 @@ export async function generateSources(style, directory) {
   if (!Object.hasOwn(data.styles, style)) {
     throw new Error(`Unknown upstream style: ${style}`)
   }
+
   const output = resolve(directory, ".generated")
+
   if (
     !directory.startsWith(resolve(root, "packages/shadcn") + "/") &&
     !directory.startsWith(resolve(root, "packages/shadcn") + "\\")
   ) {
     throw new Error("Generation must stay inside packages/shadcn")
   }
+
   rmSync(output, { recursive: true, force: true })
   const styleMap = createStyleMap(data.styles[style])
   const exports = []
+
   for (const [filename, source] of Object.entries(data.sources)) {
     let content = await transformStyle(source, { styleMap })
     content = await transformDirection(content, true)
     const file = project.createSourceFile(filename, content, { overwrite: true })
+
     if (content.includes("IconPlaceholder")) {
       await transformIcons({ sourceFile: file, filename, raw: content, config: { iconLibrary: "lucide" } })
     }
+
     transformRuntime(file)
+
     for (const declaration of file.getImportDeclarations()) {
       const specifier = declaration.getModuleSpecifierValue()
+
       if (!specifier.startsWith("@/")) {
         continue
       }
+
       const prefix = "@/registry/bases/base/"
+
       if (!specifier.startsWith(prefix)) {
         throw new Error(`Unresolved upstream import: ${filename}: ${specifier}`)
       }
+
       const target = specifier.slice(prefix.length)
       const importedSource = [target + ".ts", target + ".tsx"].find((name) => Object.hasOwn(data.sources, name))
+
       if (!importedSource) {
         throw new Error(`Missing upstream module: ${specifier}`)
       }
+
       let path = posix.relative(posix.dirname(filename), target)
+
       if (!path.startsWith(".")) {
         path = "./" + path
       }
+
       declaration.setModuleSpecifier(path + ".js")
     }
+
     content = file.getText()
+
     if (content.includes("IconPlaceholder")) {
       throw new Error(`Unresolved icon in ${filename}`)
     }
+
     write(resolve(output, filename), content)
     const modulePath = "./" + filename.replace(/\.tsx?$/, ".js")
+
     if (filename === "ui/sonner.tsx") {
       exports.push(`export { Toaster as SonnerToaster } from "${modulePath}"`)
     } else {
       exports.push(`export * from "${modulePath}"`)
     }
   }
+
   write(
     resolve(output, "index.ts"),
     '"use client"\nexport * from "@buildkitgg/shadcn-runtime"\n' + exports.join("\n") + "\n"
@@ -178,7 +206,8 @@ export function generateManifests() {
     const existing = existsSync(manifestPath) ? readJson(manifestPath) : undefined
     const name = `@buildkitgg/shadcn-baseui-${style}`
     const location = relative(root, directory).replaceAll("\\", "/")
-    writeJson(manifestPath, {
+
+    const manifest = {
       name,
       version: existing?.version ?? template.version,
       type: "module",
@@ -207,9 +236,14 @@ export function generateManifests() {
       repository: { ...template.repository, directory: location },
       homepage: `https://github.com/AndrewCraswell/buildkit/tree/main/${location}#readme`,
       bugs: template.bugs,
-      publishConfig: template.publishConfig,
-      ...(existing?.private ? { private: true } : {})
-    })
+      publishConfig: template.publishConfig
+    }
+
+    if (existing?.private) {
+      manifest.private = true
+    }
+
+    writeJson(manifestPath, manifest)
     write(resolve(directory, "LICENSE"), readFileSync(resolve(tool, "LICENSE"), "utf8"))
     write(
       resolve(directory, "README.md"),
@@ -237,6 +271,7 @@ function generateDocumentation() {
       "The shared kit name is a dependency alias, not an additional package. Modal and alert managers use that peer dependency. Select a style at installation; customize colors and light/dark mode through CSS variables. See the upstream shadcn documentation for individual components.",
     example: "shadcn-shadcn-modals-manager--confirmation"
   }))
+
   const documentation = resolve(root, "apps/behavior-storybook/src/documentation")
   write(
     resolve(documentation, "shadcnStyles.ts"),
@@ -258,10 +293,12 @@ function generateDocumentation() {
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   generateManifests()
   generateDocumentation()
+
   for (const { style, directory } of variants(data)) {
     await generateSources(style, directory)
     process.stdout.write(`Generated ${style}: ${directory}`)
   }
+
   pnpm([
     "exec",
     "oxfmt",
