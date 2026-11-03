@@ -72,11 +72,13 @@ service. The scaffolder stays in Buildkit. Full design in
 
 **Decided (2026-10-28):**
 
-- **Not built on Void.**
+- **Not built on Void's platform.** Object storage and real-time rooms use Void's open-source packages instead of Better
+  Apps packages (2026-11-02).
 - **Capability packages drive deploys.** Code declares the cloud resources it uses with open capability packages from
-  Better Apps, for example `defineDatabase("main")`, `defineBucket("uploads")` or `defineRoom("presence")` (names not
-  settled). App code, Better Apps features and the scaffolder's starter code all declare resources the same way. The
-  Better Apps Vite plugin writes the declarations that reach the server bundle to a manifest.
+  Better Apps, for example `defineDatabase("main")` (names not settled). Storage is Void's `void/storage`, and rooms are
+  Void's `void/live` and `defineDurableState`. App code, Better Apps features and the scaffolder's starter code all
+  declare resources the same way. The Better Apps Vite plugin writes the declarations that reach the server bundle to a
+  manifest.
 - **Better Apps picks the cloud behind the scenes.** Users never configure a provider, and projects hold no cloud config
   (no Wrangler config, no `cloudflare.config.ts`). The capability packages and their Cloudflare adapters are open;
   what's charged for is the service. v1 deploys to Cloudflare only.
@@ -191,8 +193,8 @@ deployed Workers read.
 **Goal:** the app developer never thinks about buckets, CORS or presigned URLs. They drop in an Uploadcn component and
 files work.
 
-**It's the storage capability:** `@better-apps/storage` is the API. Declaring a bucket with it is what makes the deploy
-service set up managed storage for each environment.
+**It's Void's storage package:** `void/storage` (R2 on Cloudflare), from Void's open-source packages, is the API. How
+the deploy service sets up managed storage for each environment from it is open.
 
 - **UI:** Uploadcn components and blocks, unchanged.
 - **Adapter:** `@better-apps/uploadcn-adapter` (name not settled) implements Uploadcn's adapter for our service.
@@ -213,10 +215,10 @@ approval flows and the audit log. Our own tools reuse them.
 - **Building blocks:** presence and live cursors, threaded comments pinned to an element or range, mentions, and
   approval flows (request → approve/reject, with status and assignee).
 - **Resources:** each feature declares what it needs with the capability packages, like any other code (Deploy CLI
-  above). Presence and live documents are real-time rooms (`@better-apps/realtime`; Durable Objects on Cloudflare).
-  Whether `partyserver` and `y-partyserver` implement the room adapter is open. Comments and approvals are tables in the
-  app's database (D1 on Cloudflare), added through Better Apps' schema layer and scoped through `AuthContext`. How a
-  feature reaches the app's `main` database is open
+  above). Presence and live documents are real-time rooms, from Void's open-source packages (`void/live` and
+  `defineDurableState`; Durable Objects on Cloudflare). Comments and approvals are tables in the app's database (D1 on
+  Cloudflare), added through Better Apps' schema layer and scoped through `AuthContext`. How a feature reaches the app's
+  `main` database is open
   ([the Better Apps deploy plan](https://github.com/betterapps-hq/better-apps/blob/main/docs/deploy-plan.md) §8).
   kibo-ui's Cursor is a visual starting point; it has no networking.
 - **Attachments** build on managed storage (above).
@@ -409,7 +411,9 @@ CI/CD pipelines.
 Engine comparison and full design: [scaffolder-research.md](scaffolder-research.md). Phase 0 plan (building the engine):
 [scaffolder-phase-0.md](scaffolder-phase-0.md). Phase 1 plan (SpawnKit on the engine):
 [scaffolder-phase-1.md](scaffolder-phase-1.md). Phase 2 plan (Buildkit's catalog and the `buildkit` CLI):
-[scaffolder-phase-2.md](scaffolder-phase-2.md).
+[scaffolder-phase-2.md](scaffolder-phase-2.md). Templates for platforms (questions, bare add-ons, version ranges,
+combination add-ons, setup steps and third-party add-ons):
+[scaffolder-platform-templates.md](scaffolder-platform-templates.md).
 
 ---
 
