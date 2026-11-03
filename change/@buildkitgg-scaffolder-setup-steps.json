@@ -1,0 +1,7 @@
+{
+  "type": "minor",
+  "comment": "create offers setup steps once the project is applied: the add-ons' commands with setup: true, the install and a git repository with a first commit. --setup runs them without asking, --no-setup skips them, a failing step exits 6, and settings.setup picks the package manager and turns the install or git step off.",
+  "packageName": "@buildkitgg/scaffolder",
+  "email": "ajcraswell@gmail.com",
+  "dependentChangeType": "patch"
+}

@@ -118,22 +118,30 @@ function fakeNpm(published: Record<string, Record<string, string>>): FakeNpm {
 async function scaffold(argv: string[], npm: { run: CommandRunner }, script: ScriptedAnswer[] = []) {
   const output: string[] = []
   const scripted = scriptedPrompter(script)
+  const setupRuns: string[] = []
 
   const code = await runScaffold(argv, {
     version: "0.0.0",
     cacheDir: join(root, "cache"),
     defaultPackage: "@fixture/catalog",
     runCommand: npm.run,
+    // The setup steps a terminal picks are recorded, and none of them runs.
+    runSetup: async (command) => {
+      setupRuns.push(command)
+
+      return { code: 0, output: "" }
+    },
     io: {
       stdout: (text) => output.push(text),
       stderr: (text) => output.push(text),
       isTTY: script.length > 0,
       cwd: root,
-      prompter: scripted.prompter
+      prompter: scripted.prompter,
+      env: {}
     }
   })
 
-  return { code, out: output.join(""), asked: scripted.asked }
+  return { code, out: output.join(""), asked: scripted.asked, setupRuns }
 }
 
 /** Answers every question after the template with its default, and confirms. */
@@ -191,6 +199,7 @@ describe("scaffold", () => {
 
     expect(asked.asked[0]?.message).toBe("Which template?")
     expect(asked.code).toBe(0)
+    expect(asked.setupRuns[0]).toBe("pnpm install")
     expect(readFileSync(join(root, "picked/fixture.jsonc"), "utf8")).toContain('"template": "app"')
   })
 

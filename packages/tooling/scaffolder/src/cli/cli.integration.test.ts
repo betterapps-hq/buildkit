@@ -10,12 +10,14 @@ import { plan } from "../plan/plan.js"
 import { memoryTree } from "../plan/tree.js"
 import { pairwiseAnswers } from "../resolve/check.js"
 import { describeCatalog } from "../resolve/questions.js"
+import type { SetupSettings } from "../state/settings.js"
 import { exampleCatalog } from "../testing/example.js"
 import { fixtureCatalog, settings } from "../testing/fixture.js"
 import { scriptedPrompter, type ScriptedAnswer } from "../testing/prompter.js"
 import type { CliOptions } from "./commands.js"
 import { createCli, runCli } from "./create.js"
 import { cancelled } from "./prompter.js"
+import type { SetupRunner } from "./setup.js"
 
 let root: string
 let stdout: string[]
@@ -40,28 +42,40 @@ function options(
     runCommand?: CliOptions["runCommand"]
     /** Leave cacheDir unset, so the CLI picks the per-user cache folder itself. */
     defaultCache?: boolean
+    /** Setup settings. Without them, create offers no install or git steps, only the add-ons' setup commands. */
+    setup?: SetupSettings
+    /** Answers a setup command. Each runs nothing and succeeds by default. */
+    runSetup?: SetupRunner
+    env?: Record<string, string | undefined>
   } = {}
 ) {
   const scripted = scriptedPrompter(extra.script ?? [])
+  const setupRuns: string[] = []
 
   const cli: CliOptions = {
     name: "fixture",
     version: "0.0.0",
     catalog: extra.catalog ?? fixtureCatalog(),
-    settings,
+    settings: { ...settings, setup: extra.setup ?? { install: false, git: false } },
+    runSetup: async (command, cwd) => {
+      setupRuns.push(command)
+
+      return extra.runSetup ? extra.runSetup(command, cwd) : { code: 0, output: "" }
+    },
     cacheDir: extra.defaultCache ? undefined : join(root, "cache"),
     io: {
       stdout: (text) => stdout.push(text),
       stderr: (text) => stderr.push(text),
       isTTY: extra.tty ?? false,
       cwd: root,
-      prompter: scripted.prompter
+      prompter: scripted.prompter,
+      env: extra.env ?? {}
     },
     hooks: extra.hooks,
     runCommand: extra.runCommand
   }
 
-  return { cli, ...scripted }
+  return { cli, setupRuns, ...scripted }
 }
 
 /** A citty value, whichever way the command gives it: as it is, a promise or a function. */
@@ -70,12 +84,12 @@ async function resolved<T>(value: Resolvable<T> | undefined): Promise<T | undefi
 }
 
 async function run(argv: string[], extra: Parameters<typeof options>[0] = {}) {
-  const { cli, asked, notes } = options(extra)
+  const { cli, asked, notes, tasks, setupRuns } = options(extra)
   stdout = []
   stderr = []
   const code = await runCli(argv, cli)
 
-  return { code, asked, notes, out: stdout.join(""), err: stderr.join("") }
+  return { code, asked, notes, tasks, setupRuns, out: stdout.join(""), err: stderr.join("") }
 }
 
 function envelope(out: string): Envelope {
@@ -252,6 +266,224 @@ describe("create", () => {
     expect(result.out).not.toContain("Applied")
     expect(result.err).toContain("disk full")
     expect(files().filter((file) => !file.includes(".fixture"))).toEqual([])
+  })
+})
+
+/** The fixture catalog, with Postgres adding a setup command before the install and one after it. */
+function setupCatalog(): CatalogManifest {
+  const catalog = fixtureCatalog()
+  const postgres = catalog.addons.find((addon) => addon.id === "@fixture/db-postgres")!
+  const contribute = postgres.contribute.bind(postgres)
+  postgres.contribute = (ctx) => [
+    ...contribute(ctx),
+    { kind: "command", run: "pnpm db:push", when: "after-install", why: "Create the tables", setup: true },
+    { kind: "command", run: "pnpm db:seed", when: "after-apply", why: "Write the seed data", setup: true },
+    { kind: "command", run: "pnpm db:studio", when: "after-install", why: "Opens the database browser." }
+  ]
+
+  return catalog
+}
+
+const withDatabase = (folder: string) => [
+  "create",
+  "app",
+  folder,
+  "--mode",
+  "ssr",
+  "--database",
+  "db-postgres",
+  "--ui",
+  "ui-basic"
+]
+
+const gitStep = 'git init && git add -A && git commit -m "Initial commit"'
+
+describe("setup steps", () => {
+  it("--setup runs them in order: after-apply commands, the install, after-install commands, then git", async () => {
+    const result = await run([...withDatabase("demo"), "--yes", "--setup"], {
+      catalog: setupCatalog(),
+      setup: {},
+      env: { npm_config_user_agent: "npm/11.0.0 node/v24.0.0 win32 x64" }
+    })
+
+    expect(result.code).toBe(0)
+    expect(result.setupRuns).toEqual(["pnpm db:seed", "npm install", "pnpm db:push", gitStep])
+    expect(result.out).toContain("Setup:\n  Done: Write the seed data\n  Done: Install dependencies")
+    // A command that isn't a setup step stays in the list to run.
+    expect(result.out).toContain(
+      "Run after applying:\n  pnpm install: Installs the new dependencies.\n  pnpm db:studio"
+    )
+    expect(result.out).not.toContain("pnpm db:push: Create the tables")
+  })
+
+  it("settings choose the package manager and turn the install and git steps off", async () => {
+    const result = await run([...withDatabase("demo"), "--yes", "--setup"], {
+      catalog: setupCatalog(),
+      setup: { packageManager: "bun", git: false },
+      env: { npm_config_user_agent: "npm/11.0.0" }
+    })
+
+    expect(result.setupRuns).toEqual(["pnpm db:seed", "bun install", "pnpm db:push"])
+
+    const off = await run([...withDatabase("other"), "--yes", "--setup"], {
+      catalog: setupCatalog(),
+      setup: { install: false }
+    })
+
+    expect(off.setupRuns).toEqual(["pnpm db:seed", "pnpm db:push", gitStep])
+  })
+
+  it("offers no git step in a project that's already in a repository", async () => {
+    mkdirSync(join(root, ".git"))
+    const result = await run([...withDatabase("demo"), "--yes", "--setup"], { catalog: setupCatalog(), setup: {} })
+    expect(result.setupRuns).toEqual(["pnpm db:seed", "pnpm install", "pnpm db:push"])
+  })
+
+  it("a failing step stops the rest, prints its output, leaves them as next steps, and exits 6", async () => {
+    const result = await run([...withDatabase("demo"), "--yes", "--setup"], {
+      catalog: setupCatalog(),
+      setup: {},
+      runSetup: async (command) =>
+        command === "pnpm install"
+          ? { code: 1, output: "ERR_PNPM_FETCH_404 GET https://registry.npmjs.org/nope: Not Found\n" }
+          : { code: 0, output: "" }
+    })
+
+    expect(result.code).toBe(6)
+    expect(result.setupRuns).toEqual(["pnpm db:seed", "pnpm install"])
+    expect(result.out).toContain("Applied")
+    expect(result.out).toContain("Setup stopped: Install dependencies failed.")
+    expect(result.out).toContain("Failed: Install dependencies (pnpm install)\n    ERR_PNPM_FETCH_404")
+    expect(result.out).toContain(
+      `Next steps:\n  Install dependencies: pnpm install\n  Create the tables: pnpm db:push\n  Create a git repository with a first commit: ${gitStep}`
+    )
+    // The project is applied either way.
+    expect(existsSync(join(root, "demo/fixture.jsonc"))).toBe(true)
+  })
+
+  it("without a terminal they don't run unless --setup is given, and stay in the next steps", async () => {
+    const result = await run([...withDatabase("demo"), "--yes"], { catalog: setupCatalog(), setup: {} })
+    expect(result.code).toBe(0)
+    expect(result.setupRuns).toEqual([])
+    expect(result.out).not.toContain("Setup:")
+    expect(result.out).toContain(
+      "Next steps:\n  Write the seed data: pnpm db:seed\n  Install dependencies: pnpm install\n  Create the tables: pnpm db:push"
+    )
+  })
+
+  it("--json never runs them, and marks setup commands in commands", async () => {
+    const result = await run([...withDatabase("demo"), "--yes", "--json"], { catalog: setupCatalog(), setup: {} })
+    expect(result.code).toBe(0)
+    expect(result.setupRuns).toEqual([])
+    const value = envelope(result.out)
+    expect(value.setup).toBeUndefined()
+    expect(value.commands).toContainEqual({
+      run: "pnpm db:push",
+      when: "after-install",
+      why: "Create the tables",
+      setup: true
+    })
+    expect(value.commands).toContainEqual({
+      run: "pnpm install",
+      when: "after-apply",
+      why: "Installs the new dependencies."
+    })
+    const refused = await run([...withDatabase("other"), "--yes", "--json", "--setup"])
+    expect(refused.code).toBe(2)
+    expect(envelope(refused.out).error?.message).toContain("--setup can't be used with --json")
+    const both = await run([...withDatabase("other"), "--yes", "--setup", "--no-setup"])
+    expect(both.code).toBe(2)
+  })
+
+  it("the wizard offers every step preselected, after the confirmation, and runs the ones picked", async () => {
+    const answer: ScriptedAnswer = (question) => {
+      if (question.message === "Run setup now?") {
+        return ["0", "2"]
+      }
+
+      if (question.kind === "password") {
+        return "postgres://local"
+      }
+
+      if (question.kind === "confirm") {
+        return question.message === "Apply these changes?" ? true : question.initial === true
+      }
+
+      if (question.kind === "multiselect") {
+        // SAFETY: the wizard gives a multi-select its initial values as a list of choice ids.
+        return question.initial as string[]
+      }
+
+      return String(question.initial ?? "")
+    }
+
+    const result = await run(withDatabase("demo"), {
+      tty: true,
+      catalog: setupCatalog(),
+      setup: { git: false },
+      script: Array.from({ length: 12 }, () => answer)
+    })
+
+    expect(result.code).toBe(0)
+    const messages = result.asked.map((question) => question.message)
+    expect(messages.indexOf("Run setup now?")).toBe(messages.indexOf("Apply these changes?") + 1)
+    expect(result.asked.at(-1)).toMatchObject({
+      kind: "multiselect",
+      options: ["0", "1", "2"],
+      hints: { "0": "pnpm db:seed", "1": "pnpm install", "2": "pnpm db:push" },
+      initial: ["0", "1", "2"]
+    })
+    expect(result.asked.at(-1)?.required).toBeUndefined()
+    expect(result.tasks).toEqual(["Write the seed data", "Create the tables"])
+    expect(result.setupRuns).toEqual(["pnpm db:seed", "pnpm db:push"])
+    expect(result.out).toContain("Next steps:\n  Install dependencies: pnpm install")
+  })
+
+  it("--no-setup doesn't ask, and a cancelled pick only skips the steps", async () => {
+    const answer =
+      (pick: ScriptedAnswer): ScriptedAnswer =>
+      (question) => {
+        if (question.message === "Run setup now?") {
+          return pick instanceof Function ? pick(question) : pick
+        }
+
+        if (question.kind === "password") {
+          return "postgres://local"
+        }
+
+        if (question.kind === "confirm") {
+          return question.message === "Apply these changes?" ? true : question.initial === true
+        }
+
+        if (question.kind === "multiselect") {
+          // SAFETY: the wizard gives a multi-select its initial values as a list of choice ids.
+          return question.initial as string[]
+        }
+
+        return String(question.initial ?? "")
+      }
+
+    const skipped = await run([...withDatabase("demo"), "--no-setup"], {
+      tty: true,
+      catalog: setupCatalog(),
+      setup: {},
+      script: Array.from({ length: 12 }, () => answer(cancelled))
+    })
+
+    expect(skipped.code).toBe(0)
+    expect(skipped.asked.map((question) => question.message)).not.toContain("Run setup now?")
+    expect(skipped.setupRuns).toEqual([])
+
+    const cancelledPick = await run(withDatabase("other"), {
+      tty: true,
+      catalog: setupCatalog(),
+      setup: {},
+      script: Array.from({ length: 12 }, () => answer(cancelled))
+    })
+
+    expect(cancelledPick.code).toBe(0)
+    expect(cancelledPick.setupRuns).toEqual([])
+    expect(existsSync(join(root, "demo/fixture.jsonc"))).toBe(true)
   })
 })
 

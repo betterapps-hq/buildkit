@@ -17,7 +17,9 @@ export type { ScaffoldOptions } from "./cli/scaffold.js"
 
 export { cancelled, clackPrompter } from "./cli/prompter.js"
 
-export type { Cancelled, Prompter, SelectOption } from "./cli/prompter.js"
+export type { Cancelled, Prompter, PromptTask, SelectOption } from "./cli/prompter.js"
+
+export type { SetupRunner } from "./cli/setup.js"
 
 export { askEnv, completeAnswers, emptyAnswers, runWizard } from "./cli/wizard.js"
 

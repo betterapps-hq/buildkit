@@ -13,12 +13,15 @@ import type { CliIo } from "./commands.js"
 import { runCli } from "./create.js"
 import { describeEnvelope } from "./output.js"
 import { cancelled, clackPrompter } from "./prompter.js"
+import type { SetupRunner } from "./setup.js"
 
 export interface ScaffoldOptions {
   version: string
   io?: Partial<CliIo>
   /** Runs npm to fetch packages. */
   runCommand?: CommandRunner
+  /** Runs `create`'s setup steps. Defaults to a shell in the project folder. */
+  runSetup?: SetupRunner
   /** Where fetched packages are cached. Defaults to the `scaffold` folder in the user's cache folder. */
   cacheDir?: string
   /** The catalog package to create from when the arguments name none. Defaults to `@buildkitgg/catalog`. */
@@ -33,7 +36,7 @@ const usage = `Usage: scaffold [package][@version][#template] [folder] [options]
 Creates a project from a catalog package, or from a template package that extends one. A scoped name, or any name after
 npm:, is a package; without one, the project comes from @buildkitgg/catalog. The package is fetched from npm into your
 cache, and every option create takes works here: --mode, --preset, --name, --with, --without, --set, --adopt,
---dry-run, --json and --yes.
+--setup, --no-setup, --dry-run, --json and --yes.
 `
 
 /**
@@ -47,7 +50,8 @@ export async function runScaffold(argv: readonly string[], options: ScaffoldOpti
     stderr: options.io?.stderr ?? ((text) => process.stderr.write(text)),
     isTTY: options.io?.isTTY ?? (process.stdout.isTTY === true && process.stdin.isTTY === true),
     prompter: options.io?.prompter ?? clackPrompter,
-    cwd: options.io?.cwd ?? process.cwd()
+    cwd: options.io?.cwd ?? process.cwd(),
+    env: options.io?.env ?? process.env
   }
 
   const [first] = argv
@@ -85,7 +89,14 @@ export async function runScaffold(argv: readonly string[], options: ScaffoldOpti
     const version = recorded?.version ?? (await store.resolve(source.package, source.range))
     const { integrity, module } = await store.import(source.package, version, recorded?.integrity)
 
-    const cli = { name: "scaffold", version: options.version, io, cacheDir, runCommand: options.runCommand }
+    const cli = {
+      name: "scaffold",
+      version: options.version,
+      io,
+      cacheDir,
+      runCommand: options.runCommand,
+      runSetup: options.runSetup
+    }
 
     const pack = isRecord(module) ? module.default : undefined
 
