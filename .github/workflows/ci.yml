@@ -17,8 +17,8 @@ jobs:
           BASE_BRANCH="$GITHUB_BASE_REF" pnpm --filter @repo/api-tools release:check
         fi
         pnpm validate
-  # Branch protection and merge-release.yml expect a check named verify, and a reusable workflow's checks are named after
-  # the calling job, such as "ci-verify / Verify (ubuntu-latest)". This job reports ci-verify's result as verify.
+  # Branch protection requires a check named verify, and a reusable workflow's checks are named after the calling job,
+  # such as "ci-verify / Verify (ubuntu-latest)". This job reports ci-verify's result as verify.
   verify:
     needs: ci-verify
     if: always()
@@ -50,23 +50,46 @@ jobs:
       - run: pnpm exec vp run --cache --filter "@buildkitgg/cli..." build
       - name: Generate Buildkit apps, then install, check, lint, build and type-check each one
         run: pnpm --filter @buildkitgg/cli test:smoke
+  # Releases main's change files once main passes, through the shared beachball-publish-npm template: Beachball bumps
+  # the versions and changelogs, publishes the new versions through npm trusted publishing, then commits, tags and
+  # pushes them to main with the npm environment's RELEASE_DEPLOY_KEY, the one actor main's ruleset lets skip a pull
+  # request. npm's trusted publishers name this file and the npm environment.
   release:
     needs: [verify, integration, templates]
-    if: >-
-      github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     permissions:
       contents: read
-      actions: write
-    uses: ./.github/workflows/publish-after-ci.yml
-  merge-release:
+      id-token: write
+    uses: betterapps-hq/pipelines/.github/workflows/beachball-publish-npm.yml@392b69ae3715155407a8154c05a24c72da92ce04
+    # The template reads RELEASE_DEPLOY_KEY from the npm environment, which a called workflow sees only when the caller
+    # inherits secrets.
+    secrets: inherit
+    with:
+      build-command: pnpm build:packages
+  # Run CI by hand on main to publish any public version npm doesn't have yet, such as after a release that failed
+  # partway. pnpm skips versions already on npm and publishes the rest in dependency order. It lives in this file because
+  # npm's trusted publishers name it.
+  publish-missing:
     needs: [verify, integration, templates]
-    if: >-
-      github.event_name == 'workflow_dispatch' && (startsWith(github.ref, 'refs/heads/codex/release-') ||
-      startsWith(github.ref, 'refs/heads/codex/shadcn-update-'))
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment:
+      name: npm
+      deployment: false
     permissions:
-      contents: write
-      pull-requests: write
-      actions: write
-      statuses: write
-    # Run the reviewed implementation, never a workflow from the dispatched branch.
-    uses: betterapps-hq/buildkit/.github/workflows/merge-release.yml@8cd3e0a83dbc90525a22d96b83bd17ae3cf69c78
+      contents: read
+      id-token: write
+    steps:
+      - uses: betterapps-hq/pipelines/github/actions/setup@8b4311a69b28ad7423898dceda366cee6644f92c # v1.1.1
+      - run: pnpm build:packages
+      - name: Publish the versions npm doesn't have
+        run: |
+          git switch -C main "$GITHUB_SHA"
+          pnpm --filter-prod "./packages/**" --sort -r publish --access public --provenance --report-summary --publish-wait-timeout 600000
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: published-packages
+          path: pnpm-publish-summary.json
+          if-no-files-found: ignore

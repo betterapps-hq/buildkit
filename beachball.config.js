@@ -1,10 +1,11 @@
 // @ts-check
+/// <reference types="node" />
 const { writeFileSync } = require("node:fs")
 const { join } = require("node:path")
 
 /**
  * Beachball manages versioning and changelogs for the workspace packages.
- * Contributors run `pnpm change`; GitHub prepares release PRs and publishes reviewed versions.
+ * Contributors run `pnpm change`; once main passes CI, its release job publishes the versions and pushes them to main.
  *
  * @type {import("beachball").BeachballConfig}
  */
