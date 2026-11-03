@@ -1,0 +1,7 @@
+{
+  "type": "minor",
+  "comment": "feat(oxlint-config): turn on the anti-slop plugin in the base rules",
+  "packageName": "@buildkitgg/oxlint-config",
+  "email": "ajcraswell@gmail.com",
+  "dependentChangeType": "patch"
+}
