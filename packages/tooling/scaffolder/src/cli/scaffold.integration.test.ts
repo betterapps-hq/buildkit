@@ -48,7 +48,7 @@ function packSource(range: string): string {
     target: "web",
     modes: ["spa"],
     required: [],
-    slots: { ui: { required: true, default: "@fixture/ui-basic" } }
+    questions: [{ use: "ui", required: true, default: "@fixture/ui-basic" }]
   }],
   addons: []
 }

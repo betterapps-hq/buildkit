@@ -1,7 +1,0 @@
-{
-  "type": "minor",
-  "comment": "Env contributions take a `help` link, such as the provider's dashboard, which the wizard and the next steps show as \"Get one at <url>\". Catalog CI checks it's https",
-  "packageName": "@buildkitgg/scaffolder",
-  "email": "ajcraswell@gmail.com",
-  "dependentChangeType": "patch"
-}

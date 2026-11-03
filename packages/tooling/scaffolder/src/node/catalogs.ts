@@ -70,7 +70,6 @@ export function isCatalogManifest(value: unknown): value is CatalogManifest {
     Array.isArray(value.facets) &&
     Array.isArray(value.targets) &&
     Array.isArray(value.templates) &&
-    Array.isArray(value.slots) &&
     Array.isArray(value.addons)
   )
 }

@@ -1,8 +1,8 @@
 # @buildkitgg/scaffolder
 
-A plan-first scaffolding engine. A product describes what projects can be made of in a **catalog**: targets, templates,
-slots and add-ons. The engine turns answers into a reviewed **plan**, applies it safely, and later adds to, changes or
-upgrades the project without overwriting your edits.
+A plan-first scaffolding engine. A product describes what projects can be made of in a **catalog**: targets, add-ons,
+questions and templates. The engine turns answers into a reviewed **plan**, applies it safely, and later adds to,
+changes or upgrades the project without overwriting your edits.
 
 Requires Node.js 24 or later. Until 1.0, minor versions may change the catalog and manifest types.
 
@@ -59,21 +59,22 @@ catalog and template package versions it was made with, and `--plan` loads exact
 
 ## Concepts
 
-| Concept          | What it is                                                                                          |
-| ---------------- | --------------------------------------------------------------------------------------------------- |
-| **Catalog**      | A product's versioned package of targets, templates, slots, add-ons and presets                     |
-| **Target**       | A framework and its modes, such as `web/ssr`. It provides base files and owns extension points      |
-| **Template**     | What `create` offers: required add-ons (never asked about), optional add-ons and slot questions     |
-| **Slot**         | A one-of choice, such as the database. A template makes it optional ("Add a database?") or required |
-| **Add-on**       | A manifest whose `contribute()` returns data-only contributions                                     |
-| **Point**        | A typed extension point, rendered into a generated file that your code imports                      |
-| **Plan**         | Operations, decisions and conflicts, with a fingerprint                                             |
-| **Config, lock** | `<product>.jsonc` holds your choices; `.<product>/lock.json` holds derived state                    |
+| Concept          | What it is                                                                                         |
+| ---------------- | -------------------------------------------------------------------------------------------------- |
+| **Catalog**      | A product's versioned package of targets, add-ons, shared questions, templates, presets and pins   |
+| **Target**       | A framework and its modes, such as `web/ssr`. It provides base files and owns extension points     |
+| **Template**     | What `create` offers: a target, required add-ons (never asked about) and questions, in order       |
+| **Question**     | Yes or no unless it's required, then one choice or several, such as "Add a database?"              |
+| **Add-on**       | A manifest whose `contribute()` returns data-only contributions, and the rules true wherever it is |
+| **Bare add-on**  | One package at the catalog's pin and nothing else, named in a template as `npm:<package>`          |
+| **Point**        | A typed extension point, rendered into a generated file that your code imports                     |
+| **Plan**         | Operations, decisions and conflicts, with a fingerprint                                            |
+| **Config, lock** | `<product>.jsonc` holds your choices; `.<product>/lock.json` holds derived state                   |
 
 ## Writing a catalog
 
 ```ts
-import { defineAddon, defineCatalog, defineSlot, defineTarget, defineTemplate } from "@buildkitgg/scaffolder"
+import { defineAddon, defineCatalog, defineQuestion, defineTarget, defineTemplate } from "@buildkitgg/scaffolder"
 import { z } from "zod"
 
 const i18n = defineAddon({
@@ -104,18 +105,29 @@ export default defineCatalog({
   id: "@acme/catalog",
   version: "1.0.0",
   facets: ["vite", "ssr", "spa"],
-  versions: { "@lingui/core": "6.10.1" },
+  versions: { "@lingui/core": "6.10.1", zod: "4.1.0" },
   targets: [/* defineTarget({ id, family, modes, points, base }) */],
-  slots: [defineSlot({ id: "database", title: "Database", question: "Add a database?", choose: "Which database?" })],
+  questions: [
+    defineQuestion({
+      id: "database",
+      title: "Database",
+      question: "Add a database?",
+      choose: "Which one?",
+      pick: "one",
+      choices: [{ addon: "@acme/db-sqlite", hint: "A local file" }, "@acme/db-postgres"]
+    })
+  ],
   templates: [
     defineTemplate({
       id: "app",
       title: "App",
       description: "A web app",
       target: "web",
-      required: ["@acme/lint"],
-      optional: { "@acme/i18n": { default: false } },
-      slots: { database: { required: false, default: "@acme/db-sqlite" } }
+      required: ["@acme/lint", "npm:zod"],
+      questions: [
+        { use: "database", default: "@acme/db-sqlite" },
+        { id: "i18n", title: "Localization", question: "Add localization?", pick: "one", choices: ["@acme/i18n"] }
+      ]
     })
   ],
   addons: [i18n /* … */]
@@ -124,13 +136,14 @@ export default defineCatalog({
 
 Contribution kinds: `dependency`, `script`, `env`, `file` (`owned`, `seed` or `sample`), `entry`, `json` and `yaml`
 (`set`, `merge`, or `append` with an optional `key` for keyed arrays), `lines`, `command` (listed, never run) and
-`notice`. Add-ons declare `requires` (ids, `slot:<id>` or `provides:<name>`), `conflicts` (ids or `provides:<name>`),
-`after`, `supports()` and `migrations`.
+`notice`. Add-ons declare `provides`, `requires` (ids, which are pulled in, or `provides:<name>`, which another add-on
+must satisfy), `conflicts` (ids or `provides:<name>`), `after`, `supports()` and `migrations`.
 
 `conflicts: ["provides:orm"]` keeps out any **other** add-on that provides `orm`, so an ORM add-on can say it and still
 be installed. One side declaring a conflict is enough: a new ORM from anyone conflicts with that add-on without saying
 so. A conflict over a capability is a swap, not an error: `add prisma` on a project with Drizzle plans the decision
-"Drizzle is your orm. Replace it with Prisma?", whose choice is `add prisma --replace drizzle`.
+"Drizzle is your database. Replace it with Prisma?", whose choice is `add prisma --replace drizzle`. The noun is the
+title of the template's question that offers both, or the capability's name when none does.
 
 ### Versions
 
@@ -174,34 +187,59 @@ const betterAuthDrizzle = defineAddon({
   title: "Better Auth tables for Drizzle",
   description: "Better Auth's schema and its Drizzle adapter",
   joins: ["@acme/better-auth", "@acme/drizzle"],
-  contribute: () => [{ kind: "file", path: "src/db/auth-schema.ts", content: "export {}
-", ownership: "seed" }]
+  contribute: () => [{ kind: "file", path: "src/db/auth-schema.ts", content: "export {}\n", ownership: "seed" }]
 })
 ```
 
 It's selected when every reference, an id or `provides:<name>`, is selected, and removed when one isn't, so `add`,
 `--replace` and `upgrade` add and remove it with the selection. It contributes after what it joins, the plan lists it as
 pulled in with what joined it, and the lock records it with `explicit: false` and `by` set to those add-ons. It's never
-asked about, and `add` refuses it by name. It can't have `requires`, `options` or a slot, and templates and presets
-can't name it. Use `ctx.selected()` for a line or two that differs, and a combination add-on when the glue has files of
-its own.
+asked about, and `add` refuses it by name. It can't have `requires` or `options`, and templates and presets can't name
+it. Use `ctx.selected()` for a line or two that differs, and a combination add-on when the glue has files of its own.
 
 ## Templates and the wizard
 
-The wizard is generated from the catalog, so a new add-on or a new choice in a slot needs no CLI code. It asks, in
-order: the template, the project name, the mode, each slot (yes or no first for an optional slot, then which one), the
-optional add-ons in one multi-select, the options each chosen add-on lists in `ask`, and the plan's environment
-variables, with a masked prompt for secrets. A required variable's example is its default, and an optional one can be
-left blank. A variable's `help`, an https URL such as the provider's dashboard, adds `Get one at <url>` to its prompt,
-and to the next steps when it's left for later. Then it shows the plan and asks for one confirmation, which defaults to
-no. The answers go to the secrets file. Later commands ask only for required secrets that file doesn't have yet.
+A template names its `target`, or `extends` another template and inherits its target, modes, required add-ons and
+questions. Its `required` add-ons are added to the parent's, and its `questions` follow the parent's in order: an entry
+whose id the parent has replaces that question in place, and a new one goes at the end. `omit` leaves out questions and
+required add-ons of the parent's. A `questions` entry is a question's id (the parent's, else the catalog's), a
+`{ use, choices?, default?, required?, when? }` that changes one, or a full definition only this template asks.
+`expandTemplate(catalog, id)` returns a template as every later step reads it.
 
-A slot's choices are the add-ons whose `supports()` accepts the target, and a slot with one fitting choice isn't asked.
-Required add-ons are never asked about, so their options must all have defaults.
+A question has an `id`, which is also its flag, a `title`, `pick` (`one` or `many`) and `choices` in order. An optional
+question asks `question` first, and a `default` makes yes the first answer and preselects it. A required question skips
+the yes or no. `choose` asks which, when more than one choice is available. A choice is an add-on id, `npm:<package>` or
+`{ npm, dev?, title? }` for a bare add-on, or `{ addon, label?, hint? }`, and its hint defaults to the add-on's
+description.
 
-Every question has a flag: `--mode`, `--<slot> <add-on>`, `--no-<slot>`, `--with`, `--without`,
-`--set <add-on>.<option>=<value>` and `--preset`. Short names drop the scope: `db-sqlite` is `@acme/db-sqlite`.
-`catalog --json` describes the whole questionnaire, for dashboards and agents.
+Which choices can be picked follows from the add-ons' rules and what's selected before the question: the required
+add-ons, the earlier answers or their defaults, and what those pull in. A choice that conflicts with something selected
+shows "Can't be used with Convex", and one that needs a capability nothing provides shows "Needs Drizzle or Prisma". A
+question whose `when` doesn't hold, or with nothing available, isn't asked and has no answer.
+`availableChoices(catalog, answers, question)` works this out for the wizard, the dashboard and agents.
+
+The wizard is generated from the catalog, so a new add-on or a new choice needs no CLI code. It asks, in order: the
+template, the project name, the mode, each question (a confirm for the yes or no, then a select for `one` or a
+multi-select for `many`, with unavailable choices disabled and their reason beside them), the options each chosen add-on
+lists in `ask`, and the plan's environment variables, with a masked prompt for secrets. A required variable's example is
+its default, and an optional one can be left blank. A variable's `help`, an https URL such as the provider's dashboard,
+adds `Get one at <url>` to its prompt, and to the next steps when it's left for later. Then it shows the plan and asks
+for one confirmation, which defaults to no. The answers go to the secrets file. Later commands ask only for required
+secrets that file doesn't have yet. Required add-ons are never asked about, so their options must all have defaults.
+
+Answers hold each question's add-ons, `[]` for no, and `extra` for add-ons no question offers. A required question with
+no default and more than one available choice is a decision. The config's `declined` records `question:<id>` for each
+no, and the choices a `many` question's answer left out. A config or lock from before questions records `slot:<id>`,
+which is read as `question:<id>` and written in the new form on the next apply.
+
+An upgrade doesn't ask the questions a template gains. Its plan has a `new-question` notice for each one the project has
+no answer to, such as "The template now asks: Add telemetry? Run `acme add telemetry` to answer it."
+
+Every question has a flag: `--<question> <add-on>[,<add-on>]`, `--no-<question>`, `--with <add-on>` (added to the
+question that offers it, from its default, or to `extra`), `--without <add-on>`, `--mode`,
+`--set <add-on>.<option>=<value>` and `--preset`. Short names drop the scope: `db-sqlite` is `@acme/db-sqlite`, and a
+bare add-on is its package name, such as `zod`. `catalog --json` describes the whole questionnaire, with each template's
+questions per mode and a gallery `stack`, for dashboards and agents.
 
 ## File ownership
 
@@ -243,7 +281,7 @@ exclude them. `printJson` and `jsonLayoutFor` in `@buildkitgg/scaffolder/edit` p
 | Command                                       | What it does                                                         |
 | --------------------------------------------- | -------------------------------------------------------------------- |
 | `create [template] [folder]`                  | Create a project, from a template or a package. `--adopt` adopts one |
-| `add <add-on or slot…>`                       | Add add-ons, or answer a slot question: `add database`. `--replace`  |
+| `add <add-on or question…>`                   | Add add-ons, or answer a question: `add database`. `--replace`       |
 | `config`, `config get`, `config set`          | Show the config, get an option, or set options                       |
 | `upgrade [--list]`                            | Move to the installed catalog version, running migrations            |
 | `sync`                                        | Bring generated files and the lock in line with the config           |
@@ -324,8 +362,8 @@ export default definePack({
 })
 ```
 
-- **It extends one catalog.** Its templates and add-ons use the catalog's targets, slots and points, and the catalog's
-  add-ons stay available to `add`. It can't add targets, slots or points, or replace anything the catalog has.
+- **It extends one catalog.** Its templates and add-ons use the catalog's targets, questions and points, and the
+  catalog's add-ons stay available to `add`. It can't add targets or points, or replace anything the catalog has.
 - **Ids.** A template is recorded as `<package>#<id>`, and its add-on ids start with `<package>/`.
 - **Compatibility.** The engine refuses a pack whose `versions` range doesn't include the installed catalog.
 - **Checks.** The engine merges the pack into the catalog and runs `checkCatalog` before planning. Run `catalog check`
@@ -340,9 +378,11 @@ product, because applying it runs the package author's code.
 
 ## Catalog CI
 
-`checkCatalog(catalog, { matrix: true })` reports broken references, slot defaults that aren't the slot's add-ons,
-required add-ons with options that lack defaults, unregistered facets, pins that aren't versions or ranges, add-ons
-whose `packages` a pin doesn't fit, and any pair of answers that fails to plan.
+`checkCatalog(catalog, { matrix: true })` reports broken references, templates that don't expand, questions without
+their `question` or `choose`, defaults a question doesn't offer, an add-on offered twice, a `many` question offering
+add-ons that conflict, a choice that needs what only a later question provides, bare add-ons without a pin, required
+add-ons with options that lack defaults, unregistered facets, pins that aren't versions or ranges, add-ons whose
+`packages` a pin doesn't fit, gallery tags and links, and any pair of answers that fails to plan.
 
 `catalog check --registry` runs the installed catalog's checks, then asks npm for each pin. It fails when nothing
 published matches a pin, when the newest match is younger than `--min-age` days (default 1), and when an add-on's

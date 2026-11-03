@@ -5,38 +5,52 @@ export {
   definePack,
   definePoint,
   definePreset,
-  defineSlot,
+  defineQuestion,
   defineTarget,
   defineTemplate
 } from "./manifest/define.js"
-export { findAddon, findPreset, findTemplate, lookupAddon, shortName, slotAddons } from "./manifest/catalog.js"
-export type { NameLookup } from "./manifest/catalog.js"
+export {
+  expandTemplate,
+  findAddon,
+  findPreset,
+  findQuestion,
+  findTemplate,
+  lookupAddon,
+  shortName
+} from "./manifest/catalog.js"
+export type { ExpandedChoice, ExpandedQuestion, ExpandedTemplate, NameLookup } from "./manifest/catalog.js"
 export { match } from "./manifest/match.js"
 export { mergePacks, templateSource } from "./manifest/packs.js"
 export type { LoadedPack, TemplateSource } from "./manifest/packs.js"
 export type {
   AddonManifest,
+  AddonRef,
+  AddonReference,
   Answers,
   Band,
   CatalogManifest,
+  Choice,
+  Condition,
   ContributeContext,
   Contribution,
   EntryValue,
   FileClass,
+  Gallery,
   ItemOrder,
   JsonOp,
   Migration,
   MutableTree,
   Order,
   Ownership,
+  PackageAddon,
   PackRecord,
   PointDefinition,
   PointKind,
   PresetManifest,
+  QuestionDefinition,
+  QuestionUse,
   RangeStyle,
   ResolveContext,
-  SlotDefinition,
-  SlotPolicy,
   TargetContext,
   TargetInfo,
   TargetManifest,
@@ -45,13 +59,21 @@ export type {
   TemplatePack
 } from "./manifest/types.js"
 export { checkCatalog, pairwiseAnswers } from "./resolve/check.js"
-export { describeCatalog, optionQuestions, optionsSchema, templateQuestions } from "./resolve/questions.js"
+export {
+  availableChoices,
+  describeCatalog,
+  describeTemplate,
+  optionQuestions,
+  optionsSchema,
+  templateQuestions
+} from "./resolve/questions.js"
 export type {
+  AvailableChoice,
   CatalogDescription,
-  Choice,
+  ChoiceDescription,
   OptionQuestion,
-  SlotQuestion,
-  TemplateQuestions
+  QuestionDescription,
+  TemplateDescription
 } from "./resolve/questions.js"
 export { projectNameProblem } from "./resolve/resolve.js"
 export { requestArgv } from "./plan/argv.js"

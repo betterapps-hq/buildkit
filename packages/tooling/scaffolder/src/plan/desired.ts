@@ -1,9 +1,9 @@
-import { findAddon, findSlot, findTarget, findTemplate, lookupAddon, slotAddons } from "../manifest/catalog.js"
+import { expandTemplate, findAddon, findTarget, lookupAddon } from "../manifest/catalog.js"
 import type { CatalogManifest } from "../manifest/types.js"
 import { selectionFromAnswers } from "../resolve/answers.js"
+import { pulledIn, questionChoices } from "../resolve/questions.js"
 import {
   addonsConflict,
-  addonSupports,
   refuseCombination,
   requireAddonId,
   resolveTarget,
@@ -18,13 +18,21 @@ export type DesiredResult =
   | { ok: true; selection: Selection; required: string[]; adopt: boolean; unchanged: string[] }
   | { ok: false; issue: ResolveIssue }
 
+/**
+ * Declined entries in the current form. Before questions, "no" was recorded as `slot:<id>`. It reads as
+ * `question:<id>`, so the next apply writes the new form.
+ */
+function currentDeclined(declined: readonly string[]): string[] {
+  return [...new Set(declined.map((entry) => (entry.startsWith("slot:") ? `question:${entry.slice(5)}` : entry)))]
+}
+
 export function selectionFromConfig(config: ProjectConfig): Selection {
   return {
     name: config.name,
     template: config.template,
     target: { id: config.target.id, mode: config.target.mode },
     addons: structuredClone(config.addons),
-    declined: [...(config.declined ?? [])]
+    declined: currentDeclined(config.declined ?? [])
   }
 }
 
@@ -40,7 +48,7 @@ export function selectionFromLock(lock: Lock): Selection {
     template: lock.project.template,
     target: { ...lock.project.target },
     addons,
-    declined: [...lock.project.declined]
+    declined: currentDeclined(lock.project.declined)
   }
 }
 
@@ -77,7 +85,7 @@ export function desiredSelection(
       if (!result.ok) {
         return result
       }
-      const required = findTemplate(catalog, intent.answers.template)?.required ?? []
+      const required = expandTemplate(catalog, intent.answers.template)?.required ?? []
       return { ok: true, selection: result.selection, required, adopt: intent.answers.adopt === true, unchanged: [] }
     }
     case "add":
@@ -134,22 +142,34 @@ function addSelection(
     }
     replaced.push(id)
   }
+  const template = expandTemplate(catalog, config.template)
   const adding: string[] = []
   const unchanged: string[] = []
   for (const name of intent.addons) {
-    const slot = "id" in lookupAddon(catalog, name) ? undefined : findSlot(catalog, name)
-    if (slot) {
-      const occupant = slotAddons(catalog, slot.id).find((addon) => installed(addon.id) && !replaced.includes(addon.id))
-      if (occupant) {
+    // A name that isn't an add-on can be one of the template's questions: `add database`.
+    const question =
+      "id" in lookupAddon(catalog, name) ? undefined : template?.questions.find((candidate) => candidate.id === name)
+    if (template && question) {
+      const kept = Object.keys(selection.addons).filter((id) => !replaced.includes(id))
+      const answered = question.choices.filter((choice) => installed(choice.id) && !replaced.includes(choice.id))
+      const [occupant] = answered
+      if (occupant && question.pick === "one") {
         unchanged.push(occupant.id)
         continue
       }
-      const candidates = slotAddons(catalog, slot.id)
-        .filter((addon) => addonSupports(addon, info) === true)
-        .map((addon) => addon.id)
+      const choices = questionChoices(catalog, template, question, info, pulledIn(catalog, kept)).filter(
+        (choice) => !answered.some((other) => other.id === choice.id)
+      )
+      // The available choices come first. With none, every choice is offered, and the resolver turns what it needs or
+      // conflicts with into the next decision, such as which database sign-in needs.
+      const available = choices.filter((choice) => choice.disabled === undefined)
+      const candidates = (available.length > 0 ? available : choices).map((choice) => choice.id)
       const [only] = candidates
-      if (only === undefined || candidates.length > 1) {
-        return { ok: false, issue: { kind: "choose-slot", slot: slot.id, candidates } }
+      if (only === undefined) {
+        throw new PlanError("E_UNSUPPORTED", `Nothing more can be added for ${question.title.toLowerCase()}.`)
+      }
+      if (candidates.length > 1) {
+        return { ok: false, issue: { kind: "choose", template: template.id, question: question.id, candidates } }
       }
       adding.push(only)
       continue
@@ -162,36 +182,27 @@ function addSelection(
     const outgoing = findAddon(catalog, id)
     const swaps = (other: string) => {
       const incoming = findAddon(catalog, other)
-      return (
-        outgoing !== undefined &&
-        incoming !== undefined &&
-        ((outgoing.slot !== undefined && incoming.slot === outgoing.slot) || addonsConflict(outgoing, incoming))
-      )
+      return outgoing !== undefined && incoming !== undefined && addonsConflict(outgoing, incoming)
     }
     if (!adding.some(swaps)) {
       throw new PlanError(
         "E_USAGE",
-        `--replace swaps add-ons that share a slot or conflict, and nothing you're adding shares a slot or conflicts with ${id}.`
+        `--replace swaps add-ons that conflict, and nothing you're adding conflicts with ${id}.`
       )
     }
     delete selection.addons[id]
   }
   for (const id of adding) {
-    const addon = findAddon(catalog, id)
     if (Object.hasOwn(selection.addons, id) && !intent.options[id]) {
       unchanged.push(id)
       continue
     }
-    if (addon?.slot) {
-      const occupant = Object.keys(selection.addons).find(
-        (other) => other !== id && findAddon(catalog, other)?.slot === addon.slot
-      )
-      if (occupant) {
-        return { ok: false, issue: { kind: "slot-taken", slot: addon.slot, installed: occupant, incoming: id } }
-      }
-    }
     selection.addons[id] = { ...selection.addons[id], ...intent.options[id] }
-    selection.declined = selection.declined.filter((entry) => entry !== id && entry !== `slot:${addon?.slot ?? ""}`)
+    // Adding an add-on answers the question that offers it, so neither it nor that question stays declined.
+    const offeredBy = template?.questions.find((candidate) => candidate.choices.some((choice) => choice.id === id))
+    selection.declined = selection.declined.filter(
+      (entry) => entry !== id && entry !== `question:${offeredBy?.id ?? ""}`
+    )
   }
   for (const [id, options] of Object.entries(intent.options)) {
     if (!adding.includes(id)) {

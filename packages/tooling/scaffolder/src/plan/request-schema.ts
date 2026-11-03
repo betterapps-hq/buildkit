@@ -7,8 +7,8 @@ const answers = z.object({
   template: z.string(),
   mode: z.string().optional(),
   name: z.string().optional(),
-  slots: z.record(z.string(), z.string().nullable()).optional(),
-  optional: z.array(z.string()).optional(),
+  questions: z.record(z.string(), z.array(z.string())).optional(),
+  extra: z.array(z.string()).optional(),
   options: options.optional(),
   adopt: z.boolean().optional()
 })
