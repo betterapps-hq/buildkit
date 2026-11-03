@@ -113,6 +113,7 @@ export function emptyAnswers(): PartialAnswers;
 
 // @public (undocumented)
 export interface FlagSpec {
+    anyDynamic?: boolean;
     booleans?: readonly string[];
     dynamic?: readonly string[];
     lists?: readonly string[];

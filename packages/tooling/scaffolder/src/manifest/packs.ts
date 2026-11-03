@@ -1,8 +1,8 @@
 import { PlanError } from "../plan/errors.js"
 import { isRecord } from "../plan/json.js"
-import { checkCatalog } from "../resolve/check.js"
+import { checkCatalog, cliFlags, questionIdPattern } from "../resolve/check.js"
 import { satisfiesRange } from "../upgrade/semver.js"
-import type { CatalogManifest, PackRecord, TemplatePack } from "./types.js"
+import type { CatalogManifest, PackRecord, TemplateManifest, TemplatePack } from "./types.js"
 
 /** A template package named on the command line: `@scope/name`, `@scope/name@^2`, `npm:name`, `@scope/name#id`. */
 export interface TemplateSource {
@@ -53,7 +53,9 @@ export function isTemplatePack(value: unknown): value is TemplatePack {
     typeof value.extends.catalog === "string" &&
     typeof value.extends.versions === "string" &&
     Array.isArray(value.templates) &&
-    (value.addons === undefined || Array.isArray(value.addons))
+    (value.addons === undefined || Array.isArray(value.addons)) &&
+    (value.questions === undefined || Array.isArray(value.questions)) &&
+    (value.versions === undefined || isRecord(value.versions))
   )
 }
 
@@ -67,6 +69,34 @@ export interface LoadedPack extends PackRecord {
  * range, and keep to its own ids. The merged catalog then has to pass `checkCatalog`, so a pack that breaks a rule
  * stops before anything is planned.
  */
+/**
+ * A pack's template as the merged catalog has it: `<package>#<id>`, extending a template of the same pack by its
+ * recorded id, or one of the catalog's by its own.
+ */
+function packTemplate(
+  catalog: CatalogManifest,
+  name: string,
+  label: string,
+  pack: TemplatePack,
+  template: TemplateManifest
+): TemplateManifest {
+  const id = `${name}#${template.id}`
+  if (template.extends === undefined) {
+    return { ...template, id }
+  }
+  const parent = template.extends
+  if (pack.templates.some((other) => other.id === parent)) {
+    return { ...template, id, extends: `${name}#${parent}` }
+  }
+  if (catalog.templates.some((other) => other.id === parent && !other.id.includes("#"))) {
+    return { ...template, id }
+  }
+  throw new PlanError(
+    "E_INVALID_PACK",
+    `${label}'s template ${template.id} extends ${parent}, which isn't a template of ${catalog.id} or of the package.`
+  )
+}
+
 export function mergePacks(catalog: CatalogManifest, packs: readonly LoadedPack[]): CatalogManifest {
   if (packs.length === 0) {
     return catalog
@@ -75,8 +105,11 @@ export function mergePacks(catalog: CatalogManifest, packs: readonly LoadedPack[
     ...catalog,
     templates: [...catalog.templates],
     addons: [...catalog.addons],
+    questions: [...(catalog.questions ?? [])],
+    versions: { ...catalog.versions },
     packs: { ...catalog.packs }
   }
+  const pinnedBy = new Map<string, string>()
   for (const { name, version, integrity, pack } of packs) {
     const label = `${name}@${version}`
     if (pack.extends.catalog !== catalog.id) {
@@ -106,7 +139,38 @@ export function mergePacks(catalog: CatalogManifest, packs: readonly LoadedPack[
           `${label} has a template with the id ${JSON.stringify(id)}. Use letters, digits, ., - and _.`
         )
       }
-      merged.templates.push({ ...template, id: `${name}#${id}` })
+      merged.templates.push(packTemplate(catalog, name, label, pack, template))
+    }
+    for (const question of pack.questions ?? []) {
+      const id: unknown = question.id
+      if (typeof id !== "string" || !questionIdPattern.test(id) || cliFlags.has(id)) {
+        throw new PlanError(
+          "E_INVALID_PACK",
+          `${label} has a question with the id ${JSON.stringify(id)}. Use lowercase letters, digits and hyphens, and none of the CLI's own flags.`
+        )
+      }
+      if (merged.questions?.some((other) => other.id === id)) {
+        throw new PlanError(
+          "E_INVALID_PACK",
+          `${label} defines question ${id}, which ${catalog.id} or another package has.`
+        )
+      }
+      merged.questions?.push(question)
+    }
+    // A pack pins only what the catalog doesn't, so the platform's versions are the same in every template.
+    for (const [packageName, pin] of Object.entries(pack.versions ?? {})) {
+      if (catalog.versions?.[packageName] !== undefined) {
+        throw new PlanError(
+          "E_INVALID_PACK",
+          `${label} pins ${packageName}, which ${catalog.id} pins. A template package can't change the catalog's versions.`
+        )
+      }
+      const other = pinnedBy.get(packageName)
+      if (other !== undefined && merged.versions?.[packageName] !== pin) {
+        throw new PlanError("E_INVALID_PACK", `${label} and ${other} pin ${packageName} differently.`)
+      }
+      pinnedBy.set(packageName, label)
+      merged.versions = { ...merged.versions, [packageName]: pin }
     }
     for (const addon of pack.addons ?? []) {
       const id: unknown = addon.id

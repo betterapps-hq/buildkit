@@ -1,0 +1,7 @@
+{
+  "type": "minor",
+  "comment": "Template packages can extend the catalog's templates and their own, ask the catalog's questions, and bring questions and pins of their own. create takes a package's question flags once the package is loaded.",
+  "packageName": "@buildkitgg/scaffolder",
+  "email": "ajcraswell@gmail.com",
+  "dependentChangeType": "patch"
+}
