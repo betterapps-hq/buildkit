@@ -2,6 +2,7 @@
 export {
   defineAddon,
   defineCatalog,
+  defineAddonPack,
   definePack,
   definePoint,
   definePreset,
@@ -24,6 +25,7 @@ export { mergePacks, templateSource } from "./manifest/packs.js"
 export type { LoadedPack, TemplateSource } from "./manifest/packs.js"
 export type {
   AddonManifest,
+  AddonPack,
   AddonRef,
   AddonReference,
   Answers,

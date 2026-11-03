@@ -330,11 +330,11 @@ export interface CatalogManifest {
   questions?: QuestionDefinition[]
   addons: AddonManifest[]
   presets?: PresetManifest[]
-  /** Template packages merged into this catalog, keyed by package name. The engine sets it; a catalog never does. */
+  /** Template and add-on packages merged into this catalog, keyed by name. The engine sets it; a catalog never does. */
   packs?: Record<string, PackRecord>
 }
 
-/** A template package version, as the catalog it's merged into and the lock record it. */
+/** A template or add-on package version, as the catalog it's merged into and the lock record it. */
 export interface PackRecord {
   version: string
   /** npm's integrity for the package, checked every time it's loaded. */
@@ -356,5 +356,18 @@ export interface TemplatePack {
   /** Questions the pack's templates use by id. An id can't be a catalog question's id or one of the CLI's flags. */
   questions?: QuestionDefinition[]
   /** Pins for packages the catalog doesn't pin, used by the pack's add-ons and bare add-ons. It can't change the catalog's. */
+  versions?: Record<string, string>
+}
+
+/**
+ * An add-on package's default export: add-ons for the product catalog it extends, which `add` installs by the package's
+ * name. It can't add targets, points, questions or templates, or replace anything the catalog defines.
+ */
+export interface AddonPack {
+  /** The product catalog's id, and the catalog versions this package works with, as an npm range such as `^1.0.0`. */
+  extends: { catalog: string; versions: string }
+  /** Ids start with `<package>/`, so they never collide with the catalog's or another package's. */
+  addons: AddonManifest[]
+  /** Pins for packages the catalog doesn't pin, used by the add-ons. It can't change the catalog's. */
   versions?: Record<string, string>
 }

@@ -1,0 +1,7 @@
+{
+  "type": "minor",
+  "comment": "Add-on packages: defineAddonPack({ extends, addons, versions }) publishes add-ons for a catalog, add installs one by its package name, the lock records it in packs, and later commands and upgrade load it as they load template packages.",
+  "packageName": "@buildkitgg/scaffolder",
+  "email": "ajcraswell@gmail.com",
+  "dependentChangeType": "patch"
+}

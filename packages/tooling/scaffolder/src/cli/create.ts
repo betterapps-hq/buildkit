@@ -21,7 +21,7 @@ const shared: ArgsDef = {
 
 const descriptions: Record<string, string> = {
   create: "Create a project from a template",
-  add: "Add an add-on, or answer a question such as which database",
+  add: "Add an add-on or an add-on package, or answer a question such as which database",
   config: "Show the config, get an option, or set options",
   upgrade: "Upgrade to the installed catalog version, running migrations",
   sync: "Bring generated files and the lock in line with the config",
@@ -90,7 +90,7 @@ export function createCli(options: CliOptions): CommandDef {
       ...questionArgs
     },
     add: {
-      addon: positional("Add-ons, or a question such as database"),
+      addon: positional("Add-ons, an add-on package such as @acme/turrets, or a question such as database"),
       replace: { type: "string", description: "Replace an installed add-on with one it conflicts with" },
       set: { type: "string", description: "Set an option: <add-on>.<option>=<value>. Repeatable" },
       ...questionArgs

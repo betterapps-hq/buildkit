@@ -170,7 +170,7 @@ async function planInto(input: PlanInput, tree: RecordingTree, result: Plan) {
     )
   }
   const command = request.intent.command
-  if (lock && command !== "upgrade" && !sameCatalogVersion(lock.catalog, catalog)) {
+  if (lock && command !== "upgrade" && !plannedWith(lock, catalog)) {
     const recorded = lock.catalog.version
     const carried = carriedAdditions(catalog, request.intent)
     result.decisions.push({
@@ -521,6 +521,15 @@ function oldBaseline(input: PlanInput, catalog: CatalogManifest, lock: Lock, res
     result.baseline = { source: fallback, catalogVersion: recorded }
     return undefined
   }
+}
+
+/**
+ * Whether the catalog is the version the lock was applied with, its packages included. A package the lock doesn't record
+ * is one this command adds, such as an add-on package.
+ */
+function plannedWith(lock: Lock, catalog: CatalogManifest): boolean {
+  const packs = Object.entries(catalog.packs ?? {}).filter(([name]) => lock.catalog.packs?.[name] !== undefined)
+  return sameCatalogVersion(lock.catalog, { version: catalog.version, packs: Object.fromEntries(packs) })
 }
 
 /** The catalog version a lock was applied with, when it's installed or cached. */
