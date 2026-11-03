@@ -1,7 +1,0 @@
-{
-  "type": "minor",
-  "comment": "Read slot:<id> in an old config or lock as question:<id>, and write the new form on the next apply. An upgrade lists each question the template gains as a new-question notice instead of asking it.",
-  "packageName": "@buildkitgg/scaffolder",
-  "email": "ajcraswell@gmail.com",
-  "dependentChangeType": "patch"
-}
