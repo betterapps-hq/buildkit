@@ -68,6 +68,5 @@
     "panels",
     "typescript",
     "buildkit"
-  ],
-  "private": true
+  ]
 }
