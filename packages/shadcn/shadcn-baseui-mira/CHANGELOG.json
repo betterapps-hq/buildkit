@@ -2,6 +2,41 @@
   "name": "@buildkitgg/shadcn-baseui-mira",
   "entries": [
     {
+      "date": "Tue, 03 Nov 2026 11:33:32 GMT",
+      "version": "0.4.4",
+      "tag": "@buildkitgg/shadcn-baseui-mira_v0.4.4",
+      "comments": {
+        "none": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/shadcn-baseui-mira",
+            "commit": "9a090806f3ffce624e83a97a70e6d601ad824ccd",
+            "comment": "Build in two cached steps, generating sources and then compiling them"
+          },
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/shadcn-baseui-mira",
+            "commit": "82b35a41ef7ccbc4f8da11ff844cc681cdc04699",
+            "comment": "Point repository, bugs and homepage at betterapps-hq/buildkit"
+          },
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/shadcn-baseui-mira",
+            "commit": "cb28c32943eb51eb486131148d0e2ef49bc148c7",
+            "comment": "chore: depend on @buildkitgg/typescript-config"
+          }
+        ],
+        "patch": [
+          {
+            "author": "beachball",
+            "package": "@buildkitgg/shadcn-baseui-mira",
+            "comment": "Bump @buildkitgg/shadcn-runtime to v0.1.2",
+            "commit": "not available"
+          }
+        ]
+      }
+    },
+    {
       "date": "Tue, 03 Nov 2026 01:39:16 GMT",
       "version": "0.4.3",
       "tag": "@buildkitgg/shadcn-baseui-mira_v0.4.3",

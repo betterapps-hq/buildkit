@@ -1,7 +1,0 @@
-{
-  "type": "minor",
-  "comment": "feat(router-core): publish to npm",
-  "packageName": "@buildkitgg/router-core",
-  "email": "ajcraswell@gmail.com",
-  "dependentChangeType": "patch"
-}

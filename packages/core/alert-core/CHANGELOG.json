@@ -1,0 +1,28 @@
+{
+  "name": "@buildkitgg/alert-core",
+  "entries": [
+    {
+      "date": "Tue, 03 Nov 2026 11:33:32 GMT",
+      "version": "0.1.0",
+      "tag": "@buildkitgg/alert-core_v0.1.0",
+      "comments": {
+        "minor": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/alert-core",
+            "commit": "50980e4fd8407174ce7d5990e146a1f20db2b470",
+            "comment": "feat(alert-core): publish to npm"
+          }
+        ],
+        "none": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/alert-core",
+            "commit": "82b35a41ef7ccbc4f8da11ff844cc681cdc04699",
+            "comment": "Point repository, bugs and homepage at betterapps-hq/buildkit"
+          }
+        ]
+      }
+    }
+  ]
+}

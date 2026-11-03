@@ -26,7 +26,7 @@
     "test": "vp test run",
     "build": "tsc -p tsconfig.build.json"
   },
-  "version": "0.1.1",
+  "version": "0.1.2",
   "type": "module",
   "devDependencies": {
     "happy-dom": "^21.0.4",
@@ -45,12 +45,12 @@
   "types": "./dist/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AndrewCraswell/buildkit.git",
+    "url": "git+https://github.com/betterapps-hq/buildkit.git",
     "directory": "packages/shadcn/shadcn-runtime"
   },
-  "homepage": "https://github.com/AndrewCraswell/buildkit/tree/main/packages/shadcn/shadcn-runtime#readme",
+  "homepage": "https://github.com/betterapps-hq/buildkit/tree/main/packages/shadcn/shadcn-runtime#readme",
   "bugs": {
-    "url": "https://github.com/AndrewCraswell/buildkit/issues"
+    "url": "https://github.com/betterapps-hq/buildkit/issues"
   },
   "publishConfig": {
     "access": "public",

@@ -29,7 +29,7 @@
     "test": "vp test run",
     "build": "tsc -p tsconfig.build.json"
   },
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "devDependencies": {
     "react-dom": "19.3.1",
@@ -48,12 +48,12 @@
   "types": "./dist/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AndrewCraswell/buildkit.git",
+    "url": "git+https://github.com/betterapps-hq/buildkit.git",
     "directory": "packages/react/react-configuration"
   },
-  "homepage": "https://github.com/AndrewCraswell/buildkit/tree/main/packages/react/react-configuration#readme",
+  "homepage": "https://github.com/betterapps-hq/buildkit/tree/main/packages/react/react-configuration#readme",
   "bugs": {
-    "url": "https://github.com/AndrewCraswell/buildkit/issues"
+    "url": "https://github.com/betterapps-hq/buildkit/issues"
   },
   "publishConfig": {
     "access": "public",

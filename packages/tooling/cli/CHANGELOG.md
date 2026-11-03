@@ -1,8 +1,19 @@
 # Change Log - @buildkitgg/cli
 
-<!-- This log was last generated on Tue, 03 Nov 2026 03:52:39 GMT and should not be manually modified. -->
+<!-- This log was last generated on Tue, 03 Nov 2026 11:33:32 GMT and should not be manually modified. -->
 
 <!-- Start content -->
+
+## 0.4.1
+
+Tue, 03 Nov 2026 11:33:32 GMT
+
+### Patches
+
+- fix: pass the anti-slop lint rules (ajcraswell@gmail.com)
+- Keep the command when publishing: npm dropped a bin path that started with ./ (ajcraswell@gmail.com)
+- Bump @buildkitgg/catalog to v0.4.1
+- Bump @buildkitgg/scaffolder to v0.9.0
 
 ## 0.4.0
 

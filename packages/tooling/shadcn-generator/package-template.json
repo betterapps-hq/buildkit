@@ -47,11 +47,11 @@
   "types": "./dist/index.d.ts",
   "sideEffects": ["**/*.css"],
   "repository": {
-    "url": "git+https://github.com/AndrewCraswell/buildkit.git",
+    "url": "git+https://github.com/betterapps-hq/buildkit.git",
     "type": "git"
   },
   "bugs": {
-    "url": "https://github.com/AndrewCraswell/buildkit/issues"
+    "url": "https://github.com/betterapps-hq/buildkit/issues"
   },
   "publishConfig": {
     "access": "public",

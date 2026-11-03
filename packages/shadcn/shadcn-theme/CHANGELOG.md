@@ -1,8 +1,17 @@
 # Change Log - @buildkitgg/shadcn-theme
 
-<!-- This log was last generated on Thu, 22 Oct 2026 20:48:41 GMT and should not be manually modified. -->
+<!-- This log was last generated on Tue, 03 Nov 2026 11:33:32 GMT and should not be manually modified. -->
 
 <!-- Start content -->
+
+## 0.1.3
+
+Tue, 03 Nov 2026 11:33:32 GMT
+
+### Patches
+
+- fix: pass the anti-slop lint rules (ajcraswell@gmail.com)
+- Bump @buildkitgg/theme-core to v0.1.3
 
 ## 0.1.2
 

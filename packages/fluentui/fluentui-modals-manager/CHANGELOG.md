@@ -1,8 +1,17 @@
 # Change Log - @buildkitgg/fluentui-modals-manager
 
-<!-- This log was last generated on Tue, 03 Nov 2026 01:39:16 GMT and should not be manually modified. -->
+<!-- This log was last generated on Tue, 03 Nov 2026 11:33:33 GMT and should not be manually modified. -->
 
 <!-- Start content -->
+
+## 1.0.3
+
+Tue, 03 Nov 2026 11:33:33 GMT
+
+### Patches
+
+- fix: pass the anti-slop lint rules (ajcraswell@gmail.com)
+- Bump @buildkitgg/react-modals to v1.0.1
 
 ## 1.0.2
 

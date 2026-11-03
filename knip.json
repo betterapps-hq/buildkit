@@ -1,6 +1,6 @@
 {
   "ignoreExportsUsedInFile": true,
-  "ignore": ["**/src/vendor/**"],
+  "ignore": ["**/src/vendor/**", ".agents/skills/**", ".claude/skills/**"],
   "workspaces": {
     "apps/docs": {
       "entry": ["scripts/generate.ts", "content/.vitepress/config.ts", "content/.vitepress/theme/index.ts"]

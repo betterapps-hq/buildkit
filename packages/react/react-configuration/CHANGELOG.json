@@ -1,0 +1,34 @@
+{
+  "name": "@buildkitgg/react-configuration",
+  "entries": [
+    {
+      "date": "Tue, 03 Nov 2026 11:33:32 GMT",
+      "version": "0.1.0",
+      "tag": "@buildkitgg/react-configuration_v0.1.0",
+      "comments": {
+        "none": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/react-configuration",
+            "commit": "82b35a41ef7ccbc4f8da11ff844cc681cdc04699",
+            "comment": "Point repository, bugs and homepage at betterapps-hq/buildkit"
+          }
+        ],
+        "minor": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/react-configuration",
+            "commit": "50980e4fd8407174ce7d5990e146a1f20db2b470",
+            "comment": "feat(react-configuration): publish to npm"
+          },
+          {
+            "author": "beachball",
+            "package": "@buildkitgg/react-configuration",
+            "comment": "Bump @buildkitgg/configuration-core to v0.1.0",
+            "commit": "not available"
+          }
+        ]
+      }
+    }
+  ]
+}

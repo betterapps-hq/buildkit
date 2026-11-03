@@ -1,6 +1,6 @@
 {
   "name": "@buildkitgg/oxlint-config",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Shared Oxlint configuration: the Buildkit base rules, including the anti-slop plugin.",
   "license": "MIT",
   "type": "module",
@@ -38,12 +38,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AndrewCraswell/buildkit.git",
+    "url": "git+https://github.com/betterapps-hq/buildkit.git",
     "directory": "packages/tooling/oxlint-config"
   },
-  "homepage": "https://github.com/AndrewCraswell/buildkit/tree/main/packages/tooling/oxlint-config#readme",
+  "homepage": "https://github.com/betterapps-hq/buildkit/tree/main/packages/tooling/oxlint-config#readme",
   "bugs": {
-    "url": "https://github.com/AndrewCraswell/buildkit/issues"
+    "url": "https://github.com/betterapps-hq/buildkit/issues"
   },
   "publishConfig": {
     "access": "public",

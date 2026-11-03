@@ -161,5 +161,5 @@ Buildkit Storybook documents style selection and manager integrations.
 
 - [Documentation and maintenance](maintenance.md)
 - [Release checklist and version policy](releasing.md)
-- [Report an issue](https://github.com/AndrewCraswell/buildkit/issues)
+- [Report an issue](https://github.com/betterapps-hq/buildkit/issues)
 - [MIT license](../../LICENSE)

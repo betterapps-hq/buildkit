@@ -2,6 +2,47 @@
   "name": "@buildkitgg/catalog",
   "entries": [
     {
+      "date": "Tue, 03 Nov 2026 11:33:32 GMT",
+      "version": "0.4.1",
+      "tag": "@buildkitgg/catalog_v0.4.1",
+      "comments": {
+        "none": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/catalog",
+            "commit": "82b35a41ef7ccbc4f8da11ff844cc681cdc04699",
+            "comment": "Point repository, bugs and homepage at betterapps-hq/buildkit"
+          },
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/catalog",
+            "commit": "cb28c32943eb51eb486131148d0e2ef49bc148c7",
+            "comment": "chore: depend on @buildkitgg/typescript-config"
+          },
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/catalog",
+            "commit": "ea1f7de730e5e115af10b0a06ebacce395e77339",
+            "comment": "Write the repository URL in the git+ form npm expects"
+          }
+        ],
+        "patch": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/catalog",
+            "commit": "f068bd0f1e7f36bc301a369e722e79ac9360b6e2",
+            "comment": "fix: pass the anti-slop lint rules"
+          },
+          {
+            "author": "beachball",
+            "package": "@buildkitgg/catalog",
+            "comment": "Bump @buildkitgg/scaffolder to v0.9.0",
+            "commit": "not available"
+          }
+        ]
+      }
+    },
+    {
       "date": "Tue, 03 Nov 2026 03:52:39 GMT",
       "version": "0.4.0",
       "tag": "@buildkitgg/catalog_v0.4.0",

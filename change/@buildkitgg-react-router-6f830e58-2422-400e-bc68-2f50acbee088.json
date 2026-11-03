@@ -1,7 +1,0 @@
-{
-  "type": "minor",
-  "comment": "feat(react-router): publish to npm",
-  "packageName": "@buildkitgg/react-router",
-  "email": "ajcraswell@gmail.com",
-  "dependentChangeType": "patch"
-}

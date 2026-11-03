@@ -6,7 +6,7 @@ export const links = {
   reference: `${docs}reference/`,
   routing: `${docs}routing/`,
   storybook: __STORYBOOK_URL__,
-  github: "https://github.com/AndrewCraswell/buildkit",
+  github: "https://github.com/betterapps-hq/buildkit",
   portless: "https://github.com/vercel-labs/portless"
 }
 

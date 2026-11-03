@@ -1,7 +1,0 @@
-{
-  "type": "none",
-  "comment": "chore: depend on @buildkitgg/typescript-config",
-  "packageName": "@buildkitgg/catalog",
-  "email": "ajcraswell@gmail.com",
-  "dependentChangeType": "none"
-}

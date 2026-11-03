@@ -1,7 +1,0 @@
-{
-  "type": "minor",
-  "comment": "feat(storybook-config): publish the shared Storybook config",
-  "packageName": "@buildkitgg/storybook-config",
-  "email": "ajcraswell@gmail.com",
-  "dependentChangeType": "patch"
-}

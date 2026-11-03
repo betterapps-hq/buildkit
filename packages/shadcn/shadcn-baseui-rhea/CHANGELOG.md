@@ -1,8 +1,16 @@
 # Change Log - @buildkitgg/shadcn-baseui-rhea
 
-<!-- This log was last generated on Tue, 03 Nov 2026 01:39:16 GMT and should not be manually modified. -->
+<!-- This log was last generated on Tue, 03 Nov 2026 11:33:32 GMT and should not be manually modified. -->
 
 <!-- Start content -->
+
+## 0.4.4
+
+Tue, 03 Nov 2026 11:33:32 GMT
+
+### Patches
+
+- Bump @buildkitgg/shadcn-runtime to v0.1.2
 
 ## 0.4.3
 

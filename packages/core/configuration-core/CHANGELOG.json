@@ -1,0 +1,34 @@
+{
+  "name": "@buildkitgg/configuration-core",
+  "entries": [
+    {
+      "date": "Tue, 03 Nov 2026 11:33:33 GMT",
+      "version": "0.1.0",
+      "tag": "@buildkitgg/configuration-core_v0.1.0",
+      "comments": {
+        "minor": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/configuration-core",
+            "commit": "50980e4fd8407174ce7d5990e146a1f20db2b470",
+            "comment": "feat(configuration-core): publish to npm"
+          },
+          {
+            "author": "beachball",
+            "package": "@buildkitgg/configuration-core",
+            "comment": "Bump @buildkitgg/preferences-core to v0.1.3",
+            "commit": "not available"
+          }
+        ],
+        "none": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/configuration-core",
+            "commit": "82b35a41ef7ccbc4f8da11ff844cc681cdc04699",
+            "comment": "Point repository, bugs and homepage at betterapps-hq/buildkit"
+          }
+        ]
+      }
+    }
+  ]
+}
