@@ -59,6 +59,7 @@ export type {
   TemplatePack
 } from "./manifest/types.js"
 export { checkCatalog, pairwiseAnswers } from "./resolve/check.js"
+export type { CheckOptions } from "./resolve/check.js"
 export {
   availableChoices,
   describeCatalog,

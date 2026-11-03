@@ -229,7 +229,11 @@ secrets that file doesn't have yet. Required add-ons are never asked about, so t
 
 Answers hold each question's add-ons, `[]` for no, and `extra` for add-ons no question offers. A required question with
 no default and more than one available choice is a decision. The config's `declined` records `question:<id>` for each
-no, and the choices a `many` question's answer left out.
+no, and the choices a `many` question's answer left out. A config or lock from before questions records `slot:<id>`,
+which is read as `question:<id>` and written in the new form on the next apply.
+
+An upgrade doesn't ask the questions a template gains. Its plan has a `new-question` notice for each one the project has
+no answer to, such as "The template now asks: Add telemetry? Run `acme add telemetry` to answer it."
 
 Every question has a flag: `--<question> <add-on>[,<add-on>]`, `--no-<question>`, `--with <add-on>` (added to the
 question that offers it, from its default, or to `extra`), `--without <add-on>`, `--mode`,
@@ -379,6 +383,10 @@ their `question` or `choose`, defaults a question doesn't offer, an add-on offer
 add-ons that conflict, a choice that needs what only a later question provides, bare add-ons without a pin, required
 add-ons with options that lack defaults, unregistered facets, pins that aren't versions or ranges, add-ons whose
 `packages` a pin doesn't fit, gallery tags and links, and any pair of answers that fails to plan.
+
+A template's gallery `image` is an https URL or a path in the catalog's or pack's package, such as `gallery/saas.png`.
+Pass `files: (path, template) => boolean` to confirm each path is in the package. `catalog check` does that for a
+template package's folder.
 
 `catalog check --registry` runs the installed catalog's checks, then asks npm for each pin. It fails when nothing
 published matches a pin, when the newest match is younger than `--min-age` days (default 1), and when an add-on's

@@ -1,7 +1,0 @@
-{
-  "type": "patch",
-  "comment": "Use @better-apps/identity-better-auth, the Better Auth identity adapter's new name, in the better-auth add-on",
-  "packageName": "@buildkitgg/catalog",
-  "email": "ajcraswell@gmail.com",
-  "dependentChangeType": "patch"
-}

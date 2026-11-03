@@ -55,7 +55,7 @@ export const EXAMPLES: Example[] = [
     description:
       "Open a modal and await its typed result. Ask before discarding unsaved changes, then act on the answer.",
     hint: "Edit the name, then press Cancel",
-    files: [{ name: "ProjectNameForm.tsx", source: source("modals/ProjectNameForm.tsx"), highlight: lines(13, 23) }],
+    files: [{ name: "ProjectNameForm.tsx", source: source("modals/ProjectNameForm.tsx"), highlight: lines(12, 22) }],
     active: "ProjectNameForm.tsx",
     wire: [{ label: "confirm()", value: "not called yet", tone: "muted" }]
   },

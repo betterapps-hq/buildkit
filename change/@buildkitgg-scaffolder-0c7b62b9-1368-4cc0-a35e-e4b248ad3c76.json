@@ -1,7 +1,0 @@
-{
-  "type": "minor",
-  "comment": "Breaking: templates ask an ordered list of questions instead of slots and optional add-ons. Questions can be shared by the catalog, templates can extend each other, bare npm: add-ons need no defineAddon, choices show why they can't be picked, and a required question with no default is a choose decision. defineSlot, slot, slot: requirements, Answers.slots and Answers.optional are removed.",
-  "packageName": "@buildkitgg/scaffolder",
-  "email": "ajcraswell@gmail.com",
-  "dependentChangeType": "patch"
-}
