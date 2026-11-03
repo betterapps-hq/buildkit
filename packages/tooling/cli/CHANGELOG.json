@@ -2,6 +2,35 @@
   "name": "@buildkitgg/cli",
   "entries": [
     {
+      "date": "Tue, 03 Nov 2026 01:31:23 GMT",
+      "version": "0.3.0",
+      "tag": "@buildkitgg/cli_v0.3.0",
+      "comments": {
+        "none": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/cli",
+            "commit": "063d609caa08375fd9bc535186db4d5e38a4cf79",
+            "comment": "Build, lint and test with Vite+; published code is unchanged"
+          }
+        ],
+        "minor": [
+          {
+            "author": "beachball",
+            "package": "@buildkitgg/cli",
+            "comment": "Bump @buildkitgg/catalog to v0.3.0",
+            "commit": "not available"
+          },
+          {
+            "author": "beachball",
+            "package": "@buildkitgg/cli",
+            "comment": "Bump @buildkitgg/scaffolder to v0.7.0",
+            "commit": "not available"
+          }
+        ]
+      }
+    },
+    {
       "date": "Fri, 30 Oct 2026 08:23:50 GMT",
       "version": "0.2.1",
       "tag": "@buildkitgg/cli_v0.2.1",

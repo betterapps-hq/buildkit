@@ -1,8 +1,16 @@
 # Change Log - @buildkitgg/shadcn-baseui-sera
 
-<!-- This log was last generated on Thu, 29 Oct 2026 04:54:16 GMT and should not be manually modified. -->
+<!-- This log was last generated on Tue, 03 Nov 2026 01:31:23 GMT and should not be manually modified. -->
 
 <!-- Start content -->
+
+## 0.4.3
+
+Tue, 03 Nov 2026 01:31:23 GMT
+
+### Patches
+
+- Update dependencies and regenerate Base UI sources with the current shadcn generator. (noreply@anthropic.com)
 
 ## 0.4.2
 

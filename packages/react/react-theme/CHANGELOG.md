@@ -1,8 +1,16 @@
 # Change Log - @buildkitgg/react-theme
 
-<!-- This log was last generated on Thu, 22 Oct 2026 20:48:41 GMT and should not be manually modified. -->
+<!-- This log was last generated on Tue, 03 Nov 2026 01:31:23 GMT and should not be manually modified. -->
 
 <!-- Start content -->
+
+## 0.2.0
+
+Tue, 03 Nov 2026 01:31:23 GMT
+
+### Minor changes
+
+- Export createThemeStore, so React apps create and read a theme store from this package alone (ajcraswell@gmail.com)
 
 ## 0.1.2
 
