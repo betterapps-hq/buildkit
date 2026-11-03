@@ -2,6 +2,21 @@
   "name": "@buildkitgg/catalog",
   "entries": [
     {
+      "date": "Tue, 03 Nov 2026 11:50:50 GMT",
+      "version": "0.5.0",
+      "tag": "@buildkitgg/catalog_v0.5.0",
+      "comments": {
+        "minor": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/catalog",
+            "commit": "97382c3c079500a36f153780c30260316da52700",
+            "comment": "The app template offers pnpm install and pnpm build as setup steps after create, with pnpm whichever package manager ran the CLI, and describes itself for a gallery with tags and links. The localization choice has a hint, and the i18n add-on says which Lingui versions it's written for."
+          }
+        ]
+      }
+    },
+    {
       "date": "Tue, 03 Nov 2026 11:33:32 GMT",
       "version": "0.4.1",
       "tag": "@buildkitgg/catalog_v0.4.1",
