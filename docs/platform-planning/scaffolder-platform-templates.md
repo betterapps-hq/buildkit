@@ -6,10 +6,9 @@ recommended stack. The engine itself is described in [scaffolder-research.md](sc
 [scaffolder-phase-0.md](scaffolder-phase-0.md). Third-party templates started in
 [scaffolder-template-packages.md](scaffolder-template-packages.md).
 
-**Status (2026-11-03):** phases A to D are built, and E1. Main is versioned 0.8.0 with 0.9.0's change files pending, but
-npm still has 0.6.0: releases fail until npm's trusted publishers name `betterapps-hq/buildkit` instead of the old
-`AndrewCraswell/buildkit`. E2 and E3 wait for that release. The `groups` work on `claude/scaffolder-picks` (e5a118a) was
-superseded by questions and never merged.
+**Status (2026-11-03):** built. Phases A to D shipped in `@buildkitgg/scaffolder` 0.9.0, Buildkit's catalog and
+SpawnKit's catalog are on questions, and the site shows the released API. The `groups` work on `claude/scaffolder-picks`
+(e5a118a) was superseded by questions and never merged.
 
 ## Why
 
@@ -1215,9 +1214,20 @@ steps, with `setup.packageManager: "pnpm"` in Buildkit's settings because apps p
 `pick: "many"` if Sentry and platform telemetry can run together (see [Open questions](#open-questions)). The kits stay
 presets. Tests: SpawnKit's matrix, smoke and browser suites.
 
+Done on 2026-11-03 in [spawnkit#16](https://github.com/AndrewCraswell/spawnkit/pull/16) and
+[spawnkit#17](https://github.com/AndrewCraswell/spawnkit/pull/17). Telemetry is `pick: "one"`: Sentry or SpawnKit
+telemetry, not both. Each physics, UI, simulation and telemetry add-on provides its question's capability and conflicts
+with any other that provides it. The tools are a `many` question, `tools`, and `--with` still adds them. SpawnKit's
+settings install with pnpm, as Buildkit's do.
+
 **E3. The site.** `apps/site/src/sections/tooling/Scaffolder.tsx`: the template sample shows the released API: a
 template with `required`, a shared question by id and one defined inline, and the wizard's lines for them. Needs the
 phase B to D release on npm.
+
+Done before the release, in [#112](https://github.com/betterapps-hq/buildkit/pull/112) and
+[#124](https://github.com/betterapps-hq/buildkit/pull/124): Acme's `app` template requires two bare add-ons, asks two
+catalog questions by id and changes a third's default with `use`, and defines a `many` telemetry question inline. The
+wizard's lines show Better Auth unavailable after Convex, with its reason. Every field is in 0.9.0's types.
 
 ### Order
 
@@ -1233,4 +1243,3 @@ phase B to D release on npm.
 
 - **Buildkit's range style.** E1 keeps exact pins, as phase 2 decided for reproducible apps. A starter for vibe coders
   might want `caret`, so their apps take fixes without an upgrade.
-- **SpawnKit's telemetry question,** `one` or `many`, in E2.
