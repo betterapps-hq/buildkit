@@ -147,15 +147,6 @@ export function createCli(options: CliOptions): CommandDef {
     ])
   )
 
-  // init was create's name before 0.6. It still works, unlisted, for a release.
-  subCommands.init = defineCommand({
-    meta: { name: "init", description: descriptions.create, hidden: true },
-    args: { ...extra.get("create"), ...shared },
-    async run({ rawArgs }) {
-      process.exitCode = await runtime.run("create", rawArgs)
-    }
-  })
-
   return defineCommand({
     meta: {
       name: options.name,

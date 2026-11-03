@@ -1,0 +1,7 @@
+{
+  "type": "minor",
+  "comment": "Breaking: init, create's name before 0.6, is removed. The README has a Migrating from slots section for catalogs moving to questions.",
+  "packageName": "@buildkitgg/scaffolder",
+  "email": "ajcraswell@gmail.com",
+  "dependentChangeType": "patch"
+}

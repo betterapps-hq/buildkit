@@ -55,7 +55,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "build": "node ../../tooling/shadcn-generator/src/build.mjs maia",
+    "build": "node ../../tooling/shadcn-generator/src/sources.mjs maia && node ../../tooling/shadcn-generator/src/build.mjs maia",
     "prepack": "pnpm build"
   },
   "dependencies": {

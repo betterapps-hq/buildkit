@@ -182,7 +182,6 @@ export class CliRuntime {
   async run(command: string, argv: string[]): Promise<number> {
     const handlers = new Map<string, (args: string[]) => Promise<number>>([
       ["create", (args) => this.create(args)],
-      ["init", (args) => this.create(args)],
       ["add", (args) => this.add(args)],
       ["config", (args) => this.config(args)],
       ["upgrade", (args) => this.upgrade(args)],

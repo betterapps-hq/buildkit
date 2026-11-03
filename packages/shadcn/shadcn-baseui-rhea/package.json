@@ -55,7 +55,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "build": "node ../../tooling/shadcn-generator/src/build.mjs rhea",
+    "build": "node ../../tooling/shadcn-generator/src/sources.mjs rhea && node ../../tooling/shadcn-generator/src/build.mjs rhea",
     "prepack": "pnpm build"
   },
   "dependencies": {

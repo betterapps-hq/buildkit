@@ -70,7 +70,9 @@ async function themeData() {
   }
 }
 
-export async function generateSources(style, directory) {
+// A package build passes clean: false: deleting lists the old files, and a build that reads files it then writes never
+// caches. Regenerating every style from this script cleans instead, so components removed upstream don't linger.
+export async function generateSources(style, directory, { clean = true } = {}) {
   if (!Object.hasOwn(data.styles, style)) {
     throw new Error(`Unknown upstream style: ${style}`)
   }
@@ -84,7 +86,10 @@ export async function generateSources(style, directory) {
     throw new Error("Generation must stay inside packages/shadcn")
   }
 
-  rmSync(output, { recursive: true, force: true })
+  if (clean) {
+    rmSync(output, { recursive: true, force: true })
+  }
+
   const styleMap = createStyleMap(data.styles[style])
   const exports = []
 
@@ -214,7 +219,7 @@ export function generateManifests() {
       license: "MIT",
       description: `Upstream shadcn Base UI components in the ${style} style, with compiled CSS and TypeScript declarations.`,
       scripts: {
-        build: `node ../../tooling/shadcn-generator/src/build.mjs ${style}`,
+        build: `node ../../tooling/shadcn-generator/src/sources.mjs ${style} && node ../../tooling/shadcn-generator/src/build.mjs ${style}`,
         prepack: "pnpm build"
       },
       peerDependencies: template.peerDependencies,
@@ -295,6 +300,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
   generateDocumentation()
 
   for (const { style, directory } of variants(data)) {
+    rmSync(resolve(directory, "dist"), { recursive: true, force: true })
     await generateSources(style, directory)
     process.stdout.write(`Generated ${style}: ${directory}`)
   }

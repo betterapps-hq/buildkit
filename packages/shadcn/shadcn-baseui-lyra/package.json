@@ -55,7 +55,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "build": "node ../../tooling/shadcn-generator/src/build.mjs lyra",
+    "build": "node ../../tooling/shadcn-generator/src/sources.mjs lyra && node ../../tooling/shadcn-generator/src/build.mjs lyra",
     "prepack": "pnpm build"
   },
   "dependencies": {

@@ -1109,19 +1109,7 @@ describe("add and other commands", () => {
       "plan",
       "catalog",
       "schema",
-      "recover",
-      "init"
+      "recover"
     ])
-  })
-
-  it("keeps init as a hidden name for create", async () => {
-    const { cli } = options()
-    const subCommands = await resolved(createCli(cli).subCommands)
-    const init = await resolved(subCommands?.init)
-    const meta = await resolved(init?.meta)
-    expect(meta).toMatchObject({ name: "init", hidden: true })
-    const result = await run(["init", "app", "demo", "--mode", "ssr", "--yes", "--json"])
-    expect(result.code).toBe(0)
-    expect(existsSync(join(root, "demo/fixture.jsonc"))).toBe(true)
   })
 })
