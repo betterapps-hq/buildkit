@@ -1,8 +1,5 @@
 # Engineering docs
 
-- [Better Apps object storage](../packages/better-apps/storage/README.md)
-- [Better Apps realtime rooms](../packages/better-apps/realtime/README.md)
-
 - [Conventions](conventions.md)
 - [TypeScript](typescript.md)
 - [React](react.md)
@@ -31,14 +28,22 @@ The unified package documentation and component workshop lives in `apps/behavior
 Preferences packages: [core](../packages/core/preferences-core/README.md),
 [React](../packages/react/react-preferences/README.md).
 
+[TypeScript utilities](../packages/core/typescript-utils/README.md): es-toolkit, ts-extras, ts-pattern, type-fest and
+tiny-invariant behind one import, with ts-reset. Shared configs: [Oxlint](../packages/tooling/oxlint-config/README.md),
+with the [anti-slop plugin](../packages/tooling/oxlint-plugin-anti-slop/README.md) as its own package, and
+[Storybook](../packages/tooling/storybook-config/README.md).
+
 Package-specific docs live in each package’s `docs/README.md`. Start with
 [dev-domains](../packages/tooling/dev-domains/docs/README.md).
+
+[API Mocker](../packages/tooling/api-mocker/README.md) registers MSW endpoints for Storybook and tests.
 
 [Scaffolder](../packages/tooling/scaffolder/README.md): the plan-first scaffolding engine behind product CLIs, with its
 [architecture guide](../packages/tooling/scaffolder/docs/README.md). Buildkit's own
 [catalog](../packages/tooling/catalog/README.md) and [`buildkit` CLI](../packages/tooling/cli/README.md) run on it.
 [Template packages](platform-planning/scaffolder-template-packages.md): templates anyone can publish to npm for a
-product's catalog, installed by name.
+product's catalog, installed by name. [Templates for platforms](platform-planning/scaffolder-platform-templates.md): the
+planned move to questions, bare add-ons, version ranges and combination add-ons, so a platform can ship many starters.
 
 [shadcn component styles](shadcn/README.md) documents installation, styling, and maintenance of the generated Base UI
 packages.
@@ -52,17 +57,5 @@ Configuration: [core and provider contract](../packages/core/configuration-core/
 
 [Shadcn localization, RTL, and class merging](shadcn/localization.md).
 
-[Better Apps](../packages/better-apps/better-apps/README.md): app features with their own tables, actions and events.
-Its [CLI](../packages/better-apps/cli/README.md) generates the schema for your ORM, using
-[vendored Better Auth source](../packages/better-apps/cli/docs/vendoring.md), and its
-[Drizzle adapter](../packages/better-apps/drizzle/README.md) reads and writes the tables, using
-[forked Better Auth source](../packages/better-apps/drizzle/docs/fork.md).
-[`@better-apps/testing`](../packages/better-apps/testing/README.md) runs features against in-memory SQLite. Identity
-adapters read users from [Better Auth](../packages/better-apps/better-auth/README.md),
-[Clerk](../packages/better-apps/clerk/README.md) and [WorkOS](../packages/better-apps/workos/README.md).
-[`@better-apps/comments`](../packages/better-apps/comments/README.md) adds comment threads to any record an app owns,
-pinned to spots from [`@better-apps/anchors`](../packages/better-apps/anchors/README.md), and
-[`@better-apps/mentions`](../packages/better-apps/mentions/README.md) lists where each user was mentioned.
-[`@better-apps/react`](../packages/better-apps/react/README.md) binds the Better Apps client and its stores to React.
-[`@better-apps/tanstack-start`](../packages/better-apps/tanstack-start/README.md) serves an app from TanStack Start, and
-the [example app](../apps/better-apps-example/README.md) runs features on SQLite with it.
+[Better Apps](https://github.com/betterapps-hq/better-apps), the app features the scaffolder's add-ons use, lives in its
+own repository.

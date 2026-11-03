@@ -11,20 +11,25 @@ import { ensureProxy } from "./proxy.js"
 import { routeStore } from "./state.js"
 
 vi.mock("./process.js", () => ({ runProcess: vi.fn<typeof runProcess>() }))
+
 vi.mock("./proxy.js", async (original) => ({
   ...(await original<typeof import("./proxy.js")>()),
   ensureProxy: vi.fn<typeof ensureProxy>()
 }))
+
 let state: string
+
 beforeEach(async () => {
   state = await mkdtemp(path.join(os.tmpdir(), "buildkit-routes-"))
   vi.stubEnv("PORTLESS_STATE_DIR", state)
 })
+
 afterEach(async () => {
   vi.resetAllMocks()
   vi.unstubAllEnvs()
   await rm(state, { recursive: true, force: true })
 })
+
 const config = configSchema.parse({ project: "demo", endpoints: { app: { command: ["node"] } } })
 const project = { config, root: process.cwd(), worktree: null, file: undefined }
 const endpoint = resolveEndpoints(project)[0]!
@@ -43,12 +48,14 @@ it("retries only explicit bind failures and stops at the bounded limit", async (
   expect(runProcess).toHaveBeenCalledTimes(1)
   expect(routeStore().loadRoutesRaw()).toEqual([])
 })
+
 it("registers before launch, releases the socket, and cleans only its exact route", async () => {
   routeStore().addRoute("other.localhost", 4011, process.pid)
   vi.mocked(runProcess).mockImplementation(async (_command, options) => {
     const route = routeStore()
       .loadRoutes()
       .find((item) => item.hostname === endpoint.hostname)!
+
     expect(options.env).toMatchObject({ PORT: String(route.port), PORTLESS_URL: endpoint.origin })
     const server = createServer()
     await new Promise<void>((resolve, reject) => {
@@ -56,6 +63,7 @@ it("registers before launch, releases the socket, and cleans only its exact rout
       server.listen(route.port, "127.0.0.1", resolve)
     })
     await new Promise<void>((resolve) => server.close(() => resolve()))
+
     return { code: 0, stderr: "" }
   })
   await runEndpoint(project, endpoint)
@@ -67,11 +75,13 @@ it("registers before launch, releases the socket, and cleans only its exact rout
   vi.stubEnv("BUILDKIT_ACTIVE", "1")
   await expect(runEndpoint(project, endpoint)).rejects.toThrow("Recursive")
 })
+
 it("rolls back partial aliases and never replaces an occupied name", async () => {
   const aliased = {
     ...project,
     config: configSchema.parse({ ...config, proxy: { domains: ["localhost", "example.test"] } })
   }
+
   routeStore().addRoute(`${endpoint.name}.example.test`, 4050, process.pid)
   await expect(runEndpoint(aliased, endpoint)).rejects.toThrow("already in use")
   expect(runProcess).not.toHaveBeenCalled()
@@ -79,6 +89,7 @@ it("rolls back partial aliases and never replaces an occupied name", async () =>
     expect.objectContaining({ hostname: `${endpoint.name}.example.test`, port: 4050, pid: process.pid })
   ])
 })
+
 it("cleans routes when spawning fails and does not start after cancellation or proxy failure", async () => {
   vi.mocked(runProcess).mockRejectedValue(new Error("spawn failed"))
   await expect(runEndpoint(project, endpoint)).rejects.toThrow("spawn failed")
@@ -89,11 +100,13 @@ it("cleans routes when spawning fails and does not start after cancellation or p
   await expect(runEndpoint(project, endpoint)).rejects.toThrow("proxy failed")
   expect(runProcess).not.toHaveBeenCalled()
 })
+
 it("preserves explicit aliases without inheriting another project's domains", async () => {
   const aliased = {
     ...project,
     config: configSchema.parse({ ...config, proxy: { domains: ["localhost", "example.test"] } })
   }
+
   vi.mocked(runProcess).mockImplementation(async (_command, options) => {
     expect(options.env?.__VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS).toBe(
       `${endpoint.hostname},${endpoint.name}.example.test`
@@ -103,6 +116,7 @@ it("preserves explicit aliases without inheriting another project's domains", as
         .loadRoutes()
         .map((route) => route.hostname)
     ).toEqual([endpoint.hostname, `${endpoint.name}.example.test`])
+
     return { code: 0, stderr: "" }
   })
   await runEndpoint(aliased, endpoint)

@@ -69,6 +69,7 @@ function localesModule(options: I18nOptions): string {
  */
 function catalogsModule(options: I18nOptions): string {
   const source = `../locales/${options.sourceLocale}.po`
+
   return [
     "// Buildkit writes this from the i18n options. Lingui's Vite plugin compiles each catalog when it's imported.",
     'import type { Messages } from "@lingui/core"',
@@ -117,6 +118,13 @@ export const i18n = defineAddon({
   title: "Localization",
   description: "Lingui, wired into the app as code you own: locale detection, catalogs and localized URLs.",
   provides: { i18n: { library: "lingui" } },
+  // The Lingui majors its config, macros and Vite plugin are written for. Catalog CI checks the pins fit.
+  packages: {
+    "@lingui/core": ">=6.10 <7",
+    "@lingui/react": ">=6.10 <7",
+    "@lingui/cli": ">=6.10 <7",
+    "@lingui/vite-plugin": ">=6.10 <7"
+  },
   after: ["@buildkit/ci"],
   options,
   ask: ["locales"],
@@ -125,6 +133,7 @@ export const i18n = defineAddon({
   contribute(ctx): Contribution[] {
     const { options, target } = ctx
     const common = (path: string) => fromTemplate("i18n/common", path)
+
     const contributions: Contribution[] = [
       dependency(ctx, "@lingui/core"),
       dependency(ctx, "@lingui/react"),
@@ -163,6 +172,7 @@ export const i18n = defineAddon({
         value: { ref: { module: "./src/i18n/provider", export: "useLocaleAttributes" } }
       }
     ]
+
     contributions.push(
       ...match(target.renderModel, {
         "ssr-loader": (): Contribution[] => [
@@ -187,6 +197,7 @@ export const i18n = defineAddon({
         ]
       })
     )
+
     if (options.localizedUrls) {
       if (target.has("router-rewrite")) {
         contributions.push(common("src/i18n/rewrite.ts"), {
@@ -199,6 +210,7 @@ export const i18n = defineAddon({
         ctx.ignored("localizedUrls", "This target's router has no URL rewrite.")
       }
     }
+
     if (ctx.selected("@buildkit/ci")) {
       // The check reads only the source and catalogs, so it runs with the quick checks, before the build.
       contributions.push(
@@ -208,6 +220,7 @@ export const i18n = defineAddon({
         )
       )
     }
+
     return contributions
   },
   nextSteps: () => [

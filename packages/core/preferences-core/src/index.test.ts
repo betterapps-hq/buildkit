@@ -55,6 +55,7 @@ it("exports overrides and imports merge/replace atomically with one notification
   expect(store.getSnapshot()).toEqual({ page: 25, compact: true })
   expect(listener).toHaveBeenCalledTimes(1)
   const snapshot = store.getSnapshot()
+
   for (const input of [
     "{",
     "null",
@@ -66,6 +67,7 @@ it("exports overrides and imports merge/replace atomically with one notification
     expect(() => store.importJson(input)).toThrow(Error)
     expect(store.getSnapshot()).toBe(snapshot)
   }
+
   // @ts-expect-error Invalid mode is rejected for JavaScript consumers too.
   expect(() => store.importJson("{}", { mode: "invalid" })).toThrow(Error)
   store.importJson('{"page":50}', { mode: "replace" })
@@ -90,9 +92,12 @@ it("copies and deeply freezes values without retaining caller-owned references",
 })
 
 it("rejects values that JSON would lose or silently transform", () => {
+  type Circular = { self?: Circular }
+
   const store = createPreferences<{ value: unknown }>()
-  const circular: Record<string, unknown> = {}
+  const circular: Circular = {}
   circular.self = circular
+
   for (const value of [
     undefined,
     NaN,
@@ -108,6 +113,7 @@ it("rejects values that JSON would lose or silently transform", () => {
   ]) {
     expect(() => store.set("value", value)).toThrow(TypeError)
   }
+
   store.set("value", null)
   store.set("value", [false, 2, "value", { a: null }])
   expect(JSON.parse(store.exportJson())).toEqual({ value: [false, 2, "value", { a: null }] })
@@ -122,9 +128,11 @@ it("checks basic default types but cannot infer missing types or enum members", 
     nullable: string | null
     extra: boolean
   }>({ defaults: { list: [], count: 1, theme: "light", nullable: null } })
+
   for (const json of ['{"list":{}}', '{"count":[]}', '{"count":null}']) {
     expect(() => store.importJson(json)).toThrow(Error)
   }
+
   store.importJson('{"theme":"unknown","extra":true,"nullable":"value"}')
   expect(store.getSnapshot()).toMatchObject({ theme: "unknown", extra: true, nullable: "value" })
   store.importJson('{"additional":42}')

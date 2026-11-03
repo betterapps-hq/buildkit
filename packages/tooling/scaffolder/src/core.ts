@@ -2,40 +2,63 @@
 export {
   defineAddon,
   defineCatalog,
+  defineAddonPack,
   definePack,
   definePoint,
   definePreset,
-  defineSlot,
+  defineQuestion,
   defineTarget,
   defineTemplate
 } from "./manifest/define.js"
-export { findAddon, findPreset, findTemplate, lookupAddon, shortName, slotAddons } from "./manifest/catalog.js"
-export type { NameLookup } from "./manifest/catalog.js"
+
+export {
+  expandTemplate,
+  findAddon,
+  findPreset,
+  findQuestion,
+  findTemplate,
+  lookupAddon,
+  shortName
+} from "./manifest/catalog.js"
+
+export type { ExpandedChoice, ExpandedQuestion, ExpandedTemplate, NameLookup } from "./manifest/catalog.js"
+
 export { match } from "./manifest/match.js"
+
 export { mergePacks, templateSource } from "./manifest/packs.js"
+
 export type { LoadedPack, TemplateSource } from "./manifest/packs.js"
+
 export type {
   AddonManifest,
+  AddonPack,
+  AddonRef,
+  AddonReference,
   Answers,
   Band,
   CatalogManifest,
+  Choice,
+  Condition,
   ContributeContext,
   Contribution,
   EntryValue,
   FileClass,
+  Gallery,
   ItemOrder,
   JsonOp,
   Migration,
   MutableTree,
   Order,
   Ownership,
+  PackageAddon,
   PackRecord,
   PointDefinition,
   PointKind,
   PresetManifest,
+  QuestionDefinition,
+  QuestionUse,
+  RangeStyle,
   ResolveContext,
-  SlotDefinition,
-  SlotPolicy,
   TargetContext,
   TargetInfo,
   TargetManifest,
@@ -43,28 +66,56 @@ export type {
   TemplateManifest,
   TemplatePack
 } from "./manifest/types.js"
+
 export { checkCatalog, pairwiseAnswers } from "./resolve/check.js"
-export { describeCatalog, optionQuestions, optionsSchema, templateQuestions } from "./resolve/questions.js"
-export type {
-  CatalogDescription,
-  Choice,
-  OptionQuestion,
-  SlotQuestion,
-  TemplateQuestions
+
+export type { CheckOptions } from "./resolve/check.js"
+
+export {
+  availableChoices,
+  describeCatalog,
+  describeTemplate,
+  optionQuestions,
+  optionsSchema,
+  templateQuestions
 } from "./resolve/questions.js"
+
+export type {
+  AvailableChoice,
+  CatalogDescription,
+  ChoiceDescription,
+  OptionQuestion,
+  QuestionAvailability,
+  QuestionDescription,
+  TemplateDescription
+} from "./resolve/questions.js"
+
 export { projectNameProblem } from "./resolve/resolve.js"
+
 export { requestArgv } from "./plan/argv.js"
+
 export { artifactName, exitCode, toEnvelope } from "./plan/envelope.js"
-export type { Envelope, EnvelopeStatus } from "./plan/envelope.js"
+
+export type { Envelope, EnvelopeStatus, SetupReport } from "./plan/envelope.js"
+
 export { PlanError } from "./plan/errors.js"
+
 export { explain } from "./plan/explain.js"
+
 export type { Explanation } from "./plan/explain.js"
+
 export { pathProblem } from "./plan/paths.js"
+
 export { plan } from "./plan/plan.js"
+
 export { planRequestSchema } from "./plan/request-schema.js"
+
 export type { PlanInput } from "./plan/plan.js"
+
 export { memoryTree } from "./plan/tree.js"
+
 export type { FileState, VirtualTree } from "./plan/tree.js"
+
 export type {
   CommandHint,
   ConflictKind,
@@ -87,11 +138,19 @@ export type {
   Resolution,
   UpgradeSummary
 } from "./plan/types.js"
+
 export { hashText, normalizeText } from "./ownership/text.js"
+
 export { readConfig, readLock } from "./state/files.js"
+
 export { lockFileEntrySchema, lockSchema, projectConfigSchema } from "./state/schemas.js"
+
 export type { Lock, LockFileEntry, ProjectConfig } from "./state/schemas.js"
+
 export { defineSettings, lockPath } from "./state/settings.js"
-export type { ProductSettings } from "./state/settings.js"
-export { compareVersions } from "./upgrade/semver.js"
+
+export type { ProductSettings, SetupSettings } from "./state/settings.js"
+
+export { compareVersions, isValidRange, lowestVersion, satisfiesRange } from "./upgrade/semver.js"
+
 export { engineVersion } from "./version.js"

@@ -1,4 +1,5 @@
 "use client"
+
 import type { ConfigurationClient, SettingKey, SettingState } from "@buildkitgg/configuration-core"
 import { useSyncExternalStore } from "react"
 

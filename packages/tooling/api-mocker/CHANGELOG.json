@@ -1,0 +1,58 @@
+{
+  "name": "@buildkitgg/api-mocker",
+  "entries": [
+    {
+      "date": "Tue, 03 Nov 2026 11:33:32 GMT",
+      "version": "0.1.1",
+      "tag": "@buildkitgg/api-mocker_v0.1.1",
+      "comments": {
+        "patch": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/api-mocker",
+            "commit": "f068bd0f1e7f36bc301a369e722e79ac9360b6e2",
+            "comment": "fix: pass the anti-slop lint rules"
+          }
+        ],
+        "none": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/api-mocker",
+            "commit": "cb28c32943eb51eb486131148d0e2ef49bc148c7",
+            "comment": "chore: depend on @buildkitgg/typescript-config"
+          }
+        ]
+      }
+    },
+    {
+      "date": "Tue, 03 Nov 2026 01:39:16 GMT",
+      "version": "0.1.0",
+      "tag": "@buildkitgg/api-mocker_v0.1.0",
+      "comments": {
+        "none": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/api-mocker",
+            "commit": "e6ec944b8b307c3c61af7ba2e1dff44d08b3c5e4",
+            "comment": "First public release is prepared at 0.1.0."
+          }
+        ]
+      }
+    },
+    {
+      "date": "Mon, 02 Nov 2026 10:23:54 GMT",
+      "version": "0.1.0",
+      "tag": "@buildkitgg/api-mocker_v0.1.0",
+      "comments": {
+        "minor": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/api-mocker",
+            "commit": "5a2d86f74e9dae3e940ff8941dccf07739266628",
+            "comment": "Register mock HTTP endpoints on an MSW worker or server and observe requests from Storybook, Vitest, or Jest."
+          }
+        ]
+      }
+    }
+  ]
+}

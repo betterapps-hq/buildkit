@@ -5,9 +5,13 @@ import { PackageOverview } from "./PackageOverview.js"
 function OverviewPage() {
   return <PackageOverview name="cli" />
 }
+
 const meta = { title: "Tooling/cli", parameters: { buildkitDocumentation: true } } satisfies Meta
+
 export default meta
+
 export const Overview: StoryObj<typeof meta> = { render: () => <OverviewPage /> }
+
 export const CreateAnApp: StoryObj<typeof meta> = {
   name: "Create an app",
   render: () => (
@@ -18,42 +22,33 @@ export const CreateAnApp: StoryObj<typeof meta> = {
       <h2>Answer the questions</h2>
       <Code>{"npx @buildkitgg/cli create app my-app"}</Code>
       <p>
-        The CLI asks for the mode, a database, sign-in and localization, shows the plan, and asks once before it writes
-        anything. Installed globally with <code>npm install -g @buildkitgg/cli</code>, the command is{" "}
+        The CLI asks for the mode and localization, shows the plan, and asks once before it writes anything. Installed
+        globally with <code>npm install -g @buildkitgg/cli</code>, the command is{" "}
         <code>buildkit create app my-app</code>.
       </p>
       <h2>Or pass the answers as flags</h2>
-      <Code>
-        {
-          "npx @buildkitgg/cli create app my-app --mode ssr --with i18n --set i18n.locales=en,fr --yes\nnpx @buildkitgg/cli create app my-app --preset saas --yes"
-        }
-      </Code>
+      <Code>{"npx @buildkitgg/cli create app my-app --mode ssr --with i18n --set i18n.locales=en,fr --yes"}</Code>
       <p>
         <code>--yes</code> accepts every default but never makes a decision for you. <code>--json</code> prints one JSON
         envelope without prompting.
       </p>
       <h2>Change the app later</h2>
-      <Code>{"pnpm buildkit add database\npnpm buildkit config set i18n.locales=en,fr,de\npnpm buildkit upgrade"}</Code>
+      <Code>{"pnpm buildkit add i18n\npnpm buildkit config set i18n.locales=en,fr,de\npnpm buildkit upgrade"}</Code>
       <p>
         New apps pin the CLI as a dev dependency. To upgrade, install the newer CLI with{" "}
         <code>pnpm add -D @buildkitgg/cli@latest</code>, then run <code>upgrade</code>, which merges template fixes into
         your code.
       </p>
-      <a href="https://github.com/AndrewCraswell/buildkit/tree/main/packages/tooling/cli#readme">Full command list ↗</a>
+      <a href="https://github.com/betterapps-hq/buildkit/tree/main/packages/tooling/cli#readme">Full command list ↗</a>
     </Documentation>
   )
 }
+
 const addons = [
   ["ci", "Always included", "A GitHub Actions workflow: buildkit check, lint, format, build and type-check"],
-  [
-    "sql",
-    "Add a database?",
-    "The main database with Drizzle, its schema and drizzle.config.ts. Run pnpm db:generate to write migrations"
-  ],
-  ["better-auth", "Add sign-in?", "Better Auth on the main database, its routes and a sign-in page"],
-  ["i18n", "Optional add-on", "Lingui catalogs, localized URLs and the html lang and dir attributes"],
-  ["better-apps-deploy", "buildkit add only", "The Better Apps Vite plugin and a staging deploy workflow"]
+  ["i18n", "Optional add-on", "Lingui catalogs, localized URLs and the html lang and dir attributes"]
 ] as const
+
 export const WhatCreateAsks: StoryObj<typeof meta> = {
   name: "What create asks",
   render: () => (
@@ -84,23 +79,18 @@ export const WhatCreateAsks: StoryObj<typeof meta> = {
           </tbody>
         </table>
       </div>
-      <p>
-        Both questions default to no, and sign-in needs a database. The <code>saas</code> preset answers ssr with a
-        database, sign-in and localization.
-      </p>
       <h2>No cloud in the app</h2>
       <p>
         Apps have no Wrangler config, bindings or cloud names. Starter files import generated glue from{" "}
         <code>src/generated/buildkit/</code> once, so adding an add-on never rewrites them. It changes the generated
-        files and adds what it needs, such as dependencies, settings, its own source files and workflows. The database,
-        sign-in and deploy add-ons use Better Apps packages that aren’t on npm yet.
+        files and adds what it needs, such as dependencies, settings, its own source files and workflows.
       </p>
       <h2>Where the template comes from</h2>
       <p>
         The template and add-ons are <code>@buildkitgg/catalog</code>, which the CLI installs for you. Import it only to
         plan Buildkit apps from your own tools, or to publish templates that extend it.
       </p>
-      <a href="https://github.com/AndrewCraswell/buildkit/tree/main/packages/tooling/catalog#readme">
+      <a href="https://github.com/betterapps-hq/buildkit/tree/main/packages/tooling/catalog#readme">
         The catalog’s extension points and starter files ↗
       </a>
     </Documentation>

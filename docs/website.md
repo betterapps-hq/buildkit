@@ -1,8 +1,9 @@
 # Buildkit.gg website
 
 The static landing page lives in `apps/site`. VitePress renders guides and API reference at `/docs/`; Storybook is
-deployed at `/storybook/`. The landing page shares its package catalog with Storybook. API Extractor discovers typed
-exports; API Documenter renders their signatures and source comments. VitePress renders the generated Markdown.
+deployed at `/storybook/`. The landing page links each package to its guide in the reference docs. API Extractor
+discovers typed exports; API Documenter renders their signatures and source comments. VitePress renders the generated
+Markdown.
 
 ## Local development
 
@@ -47,5 +48,21 @@ exists. Configure the custom domain in GitHub, then point the apex and `www` rec
 Keep records DNS-only during GitHub domain and certificate verification, then verify HTTPS and the canonical redirect.
 Use the Cloudflare `cf` CLI for configuration in this repository. A local build does not change DNS.
 
-The marketing app uses shadcn Vega components with a blue theme; the reference site uses matching blue accents. The
-marketing page is prerendered to static HTML and includes a live, isolated example of the Buildkit theme packages.
+The marketing page has its own dark blue design, set in Geist and Geist Mono, with the Stack mark as its logo; the
+reference site uses matching blue accents. The page is prerendered to static HTML, animated with GSAP, and keeps its
+final state when reduced motion is requested.
+
+The page's design lives in `design/buildkit.pen`, a [Pen](https://pen.dev) file with the desktop and phone layouts side
+by side. Change the design there first, then match the page to it.
+
+## Interactive examples
+
+Each example on the page runs in its own frame, `apps/site/example.html`, so the shadcn kit's styles, the preferences
+example's root font size and the routing example's router stay out of the page. The frame runs the files in
+`apps/site/src/examples` on the real packages, and the editor beside it shows those same files, so the code and the
+running example can't drift apart. The formatter skips that folder, since its files are wrapped to fit the editor.
+
+The frame code in `apps/site/src/frame` supplies what the examples assume: an `/api` that answers inside the frame (and
+fails while the preview is offline), the state each example's wire line reports, and two build changes in
+`vite.config.ts`. The routing example's `createBrowserRouter` keeps its history in memory, so it never adds to the
+visitor's Back button, and the configuration example keeps its development-only overrides on in the production build.

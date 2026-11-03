@@ -5,9 +5,13 @@ import { PackageOverview } from "./PackageOverview.js"
 function OverviewPage() {
   return <PackageOverview name="dev-domains" />
 }
+
 const meta = { title: "Tooling/dev-domains", parameters: { buildkitDocumentation: true } } satisfies Meta
+
 export default meta
+
 export const Overview: StoryObj<typeof meta> = { render: () => <OverviewPage /> }
+
 export const Setup: StoryObj<typeof meta> = {
   render: () => (
     <Documentation
@@ -36,12 +40,13 @@ export const Setup: StoryObj<typeof meta> = {
         The guided setup lets you select endpoints and saves configuration after review. Existing configuration is never
         overwritten.
       </p>
-      <a href="https://github.com/AndrewCraswell/buildkit/tree/main/packages/tooling/dev-domains#command-reference">
+      <a href="https://github.com/betterapps-hq/buildkit/tree/main/packages/tooling/dev-domains#command-reference">
         Full command reference ↗
       </a>
     </Documentation>
   )
 }
+
 export const WorktreeUrls: StoryObj<typeof meta> = {
   name: "Worktree URLs",
   render: () => (
@@ -88,6 +93,7 @@ export const WorktreeUrls: StoryObj<typeof meta> = {
     </Documentation>
   )
 }
+
 export const Playwright: StoryObj<typeof meta> = {
   render: () => (
     <Documentation

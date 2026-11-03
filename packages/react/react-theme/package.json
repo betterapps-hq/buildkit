@@ -28,12 +28,12 @@
     "test": "vp test run",
     "build": "tsc -p tsconfig.build.json"
   },
-  "version": "0.1.2",
+  "version": "0.2.1",
   "type": "module",
   "devDependencies": {
     "react-dom": "19.3.1",
     "@testing-library/react": "^16.3.3",
-    "@repo/typescript-config": "workspace:*",
+    "@buildkitgg/typescript-config": "workspace:*",
     "@vitest/coverage-v8": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:",
@@ -47,12 +47,12 @@
   "types": "./dist/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AndrewCraswell/buildkit.git",
+    "url": "git+https://github.com/betterapps-hq/buildkit.git",
     "directory": "packages/react/react-theme"
   },
-  "homepage": "https://github.com/AndrewCraswell/buildkit/tree/main/packages/react/react-theme#readme",
+  "homepage": "https://github.com/betterapps-hq/buildkit/tree/main/packages/react/react-theme#readme",
   "bugs": {
-    "url": "https://github.com/AndrewCraswell/buildkit/issues"
+    "url": "https://github.com/betterapps-hq/buildkit/issues"
   },
   "publishConfig": {
     "access": "public",

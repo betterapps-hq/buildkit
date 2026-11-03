@@ -19,9 +19,11 @@ function animationCss() {
     .paths("tw-animate-css")
     .map((path) => resolve(path, "tw-animate-css"))
     .find((path) => existsSync(resolve(path, "package.json")))
+
   if (!directory) {
     throw new Error("Missing tw-animate-css")
   }
+
   return (
     `/*! ${readFileSync(resolve(directory, "LICENSE"), "utf8")} */\n` +
     readFileSync(resolve(directory, "dist/tw-animate.css"), "utf8")
@@ -32,14 +34,18 @@ async function themeData() {
   const js = ts.transpileModule(data.themes, { compilerOptions: { module: ts.ModuleKind.ESNext } }).outputText
   const { THEMES } = await import(`data:text/javascript;base64,${Buffer.from(js).toString("base64")}`)
   const neutral = THEMES.find((theme) => theme.name === "neutral")
+
   if (!neutral?.cssVars?.light || !neutral.cssVars.dark) {
     throw new Error("Upstream neutral theme missing")
   }
+
   const ast = postcss.parse(data.globals)
   const theme = ast.nodes.find((node) => node.type === "atrule" && node.name === "theme" && node.params === "inline")
+
   if (!theme) {
     throw new Error("Upstream Tailwind token mapping missing")
   }
+
   // Keep upstream token mappings, but exclude website-specific font/breakpoint customizations.
   const mappings = theme.nodes.filter(
     (node) =>
@@ -49,10 +55,12 @@ async function themeData() {
           (Object.hasOwn(neutral.cssVars.light, node.prop.slice(8)) ||
             Object.hasOwn(neutral.cssVars.dark, node.prop.slice(8)))))
   )
+
   const vars = (values) =>
     Object.entries(values)
       .map(([key, value]) => `--${key}: ${value};`)
       .join("\n")
+
   return {
     palette: neutral.name,
     cssVariables: neutral.cssVars,
@@ -62,60 +70,85 @@ async function themeData() {
   }
 }
 
-export async function generateSources(style, directory) {
+// A package build passes clean: false: deleting lists the old files, and a build that reads files it then writes never
+// caches. Regenerating every style from this script cleans instead, so components removed upstream don't linger.
+export async function generateSources(style, directory, { clean = true } = {}) {
   if (!Object.hasOwn(data.styles, style)) {
     throw new Error(`Unknown upstream style: ${style}`)
   }
+
   const output = resolve(directory, ".generated")
+
   if (
     !directory.startsWith(resolve(root, "packages/shadcn") + "/") &&
     !directory.startsWith(resolve(root, "packages/shadcn") + "\\")
   ) {
     throw new Error("Generation must stay inside packages/shadcn")
   }
-  rmSync(output, { recursive: true, force: true })
+
+  if (clean) {
+    rmSync(output, { recursive: true, force: true })
+  }
+
   const styleMap = createStyleMap(data.styles[style])
   const exports = []
+
   for (const [filename, source] of Object.entries(data.sources)) {
     let content = await transformStyle(source, { styleMap })
     content = await transformDirection(content, true)
     const file = project.createSourceFile(filename, content, { overwrite: true })
+
     if (content.includes("IconPlaceholder")) {
       await transformIcons({ sourceFile: file, filename, raw: content, config: { iconLibrary: "lucide" } })
     }
+
     transformRuntime(file)
+
     for (const declaration of file.getImportDeclarations()) {
       const specifier = declaration.getModuleSpecifierValue()
+
       if (!specifier.startsWith("@/")) {
         continue
       }
+
       const prefix = "@/registry/bases/base/"
+
       if (!specifier.startsWith(prefix)) {
         throw new Error(`Unresolved upstream import: ${filename}: ${specifier}`)
       }
+
       const target = specifier.slice(prefix.length)
       const importedSource = [target + ".ts", target + ".tsx"].find((name) => Object.hasOwn(data.sources, name))
+
       if (!importedSource) {
         throw new Error(`Missing upstream module: ${specifier}`)
       }
+
       let path = posix.relative(posix.dirname(filename), target)
+
       if (!path.startsWith(".")) {
         path = "./" + path
       }
+
       declaration.setModuleSpecifier(path + ".js")
     }
+
     content = file.getText()
+
     if (content.includes("IconPlaceholder")) {
       throw new Error(`Unresolved icon in ${filename}`)
     }
+
     write(resolve(output, filename), content)
     const modulePath = "./" + filename.replace(/\.tsx?$/, ".js")
+
     if (filename === "ui/sonner.tsx") {
       exports.push(`export { Toaster as SonnerToaster } from "${modulePath}"`)
     } else {
       exports.push(`export * from "${modulePath}"`)
     }
   }
+
   write(
     resolve(output, "index.ts"),
     '"use client"\nexport * from "@buildkitgg/shadcn-runtime"\n' + exports.join("\n") + "\n"
@@ -178,19 +211,20 @@ export function generateManifests() {
     const existing = existsSync(manifestPath) ? readJson(manifestPath) : undefined
     const name = `@buildkitgg/shadcn-baseui-${style}`
     const location = relative(root, directory).replaceAll("\\", "/")
-    writeJson(manifestPath, {
+
+    const manifest = {
       name,
       version: existing?.version ?? template.version,
       type: "module",
       license: "MIT",
       description: `Upstream shadcn Base UI components in the ${style} style, with compiled CSS and TypeScript declarations.`,
       scripts: {
-        build: `node ../../tooling/shadcn-generator/src/build.mjs ${style}`,
+        build: `node ../../tooling/shadcn-generator/src/sources.mjs ${style} && node ../../tooling/shadcn-generator/src/build.mjs ${style}`,
         prepack: "pnpm build"
       },
       peerDependencies: template.peerDependencies,
       dependencies: template.dependencies,
-      devDependencies: { "@repo/shadcn-generator": "workspace:*" },
+      devDependencies: { "@buildkitgg/shadcn-generator": "workspace:*" },
       files: [
         "dist/**/*.js",
         "dist/**/*.d.ts",
@@ -205,15 +239,20 @@ export function generateManifests() {
       types: template.types,
       sideEffects: template.sideEffects,
       repository: { ...template.repository, directory: location },
-      homepage: `https://github.com/AndrewCraswell/buildkit/tree/main/${location}#readme`,
+      homepage: `https://github.com/betterapps-hq/buildkit/tree/main/${location}#readme`,
       bugs: template.bugs,
-      publishConfig: template.publishConfig,
-      ...(existing?.private ? { private: true } : {})
-    })
+      publishConfig: template.publishConfig
+    }
+
+    if (existing?.private) {
+      manifest.private = true
+    }
+
+    writeJson(manifestPath, manifest)
     write(resolve(directory, "LICENSE"), readFileSync(resolve(tool, "LICENSE"), "utf8"))
     write(
       resolve(directory, "README.md"),
-      `# ${name}\n\nGenerated from the pinned upstream shadcn Base UI catalog. Do not edit generated components.\n\nSelect this style once using a dependency alias:\n\n\`\`\`sh\npnpm add @buildkitgg/shadcn-baseui-kit@npm:${name}\n\`\`\`\n\n\`\`\`tsx\nimport { Button } from "@buildkitgg/shadcn-baseui-kit"\nimport "@buildkitgg/shadcn-baseui-kit/styles.css"\n\`\`\`\n\nBuildkit's shadcn managers use the same peer dependency and inherit this selection.\nImport styles once at the app entry. Use \`styles-no-reset.css\` when the app already supplies Tailwind's reset.\nColors and light/dark mode remain customizable through CSS variables. Style selection is installation-time, not runtime.\n\nTailwind 4 apps import \`tailwind.css\` alongside Tailwind instead of compiled styles; it registers component scanning automatically. Apps without Tailwind import \`styles.css\`. Do not combine these paths or import manager stylesheets with the Tailwind source entry.\n\nThe root exports \`ShadcnLocalizationProvider\` (English defaults), \`useShadcnLocalization\`, and \`setCn\`. See [localization and RTL](https://github.com/AndrewCraswell/buildkit/blob/main/docs/shadcn/localization.md) and [styling](https://github.com/AndrewCraswell/buildkit/blob/main/docs/shadcn/theming.md).\n\n## Design tokens\n\nRead the selected style's defaults through the same alias:\n\n\`\`\`js\nimport { readFile } from "node:fs/promises"\nconst url = import.meta.resolve("@buildkitgg/shadcn-baseui-kit/tokens.json")\nconst tokens = JSON.parse(await readFile(new URL(url), "utf8"))\n// tokens.light["radius-sm"].resolvedValue: concrete value\n// tokens.light["radius-sm"].sourceValue: upstream CSS expression\n\`\`\`\n\nThe export includes light and dark defaults, the upstream revision, and resolution metadata. Application CSS overrides are not included.\n\n[Migrate from the standalone kit](https://github.com/AndrewCraswell/buildkit/blob/main/docs/shadcn/migration.md).\n\n[Setup, maintenance, and release checks](https://github.com/AndrewCraswell/buildkit/blob/main/docs/shadcn/styles.md).\n`
+      `# ${name}\n\nGenerated from the pinned upstream shadcn Base UI catalog. Do not edit generated components.\n\nSelect this style once using a dependency alias:\n\n\`\`\`sh\npnpm add @buildkitgg/shadcn-baseui-kit@npm:${name}\n\`\`\`\n\n\`\`\`tsx\nimport { Button } from "@buildkitgg/shadcn-baseui-kit"\nimport "@buildkitgg/shadcn-baseui-kit/styles.css"\n\`\`\`\n\nBuildkit's shadcn managers use the same peer dependency and inherit this selection.\nImport styles once at the app entry. Use \`styles-no-reset.css\` when the app already supplies Tailwind's reset.\nColors and light/dark mode remain customizable through CSS variables. Style selection is installation-time, not runtime.\n\nTailwind 4 apps import \`tailwind.css\` alongside Tailwind instead of compiled styles; it registers component scanning automatically. Apps without Tailwind import \`styles.css\`. Do not combine these paths or import manager stylesheets with the Tailwind source entry.\n\nThe root exports \`ShadcnLocalizationProvider\` (English defaults), \`useShadcnLocalization\`, and \`setCn\`. See [localization and RTL](https://github.com/betterapps-hq/buildkit/blob/main/docs/shadcn/localization.md) and [styling](https://github.com/betterapps-hq/buildkit/blob/main/docs/shadcn/theming.md).\n\n## Design tokens\n\nRead the selected style's defaults through the same alias:\n\n\`\`\`js\nimport { readFile } from "node:fs/promises"\nconst url = import.meta.resolve("@buildkitgg/shadcn-baseui-kit/tokens.json")\nconst tokens = JSON.parse(await readFile(new URL(url), "utf8"))\n// tokens.light["radius-sm"].resolvedValue: concrete value\n// tokens.light["radius-sm"].sourceValue: upstream CSS expression\n\`\`\`\n\nThe export includes light and dark defaults, the upstream revision, and resolution metadata. Application CSS overrides are not included.\n\n[Migrate from the standalone kit](https://github.com/betterapps-hq/buildkit/blob/main/docs/shadcn/migration.md).\n\n[Setup, maintenance, and release checks](https://github.com/betterapps-hq/buildkit/blob/main/docs/shadcn/styles.md).\n`
     )
   }
 }
@@ -237,6 +276,7 @@ function generateDocumentation() {
       "The shared kit name is a dependency alias, not an additional package. Modal and alert managers use that peer dependency. Select a style at installation; customize colors and light/dark mode through CSS variables. See the upstream shadcn documentation for individual components.",
     example: "shadcn-shadcn-modals-manager--confirmation"
   }))
+
   const documentation = resolve(root, "apps/behavior-storybook/src/documentation")
   write(
     resolve(documentation, "shadcnStyles.ts"),
@@ -258,10 +298,13 @@ function generateDocumentation() {
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   generateManifests()
   generateDocumentation()
+
   for (const { style, directory } of variants(data)) {
+    rmSync(resolve(directory, "dist"), { recursive: true, force: true })
     await generateSources(style, directory)
     process.stdout.write(`Generated ${style}: ${directory}`)
   }
+
   pnpm([
     "exec",
     "oxfmt",

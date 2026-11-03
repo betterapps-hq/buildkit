@@ -10,24 +10,24 @@ import { z } from 'zod';
 export interface AddonManifest<S extends z.ZodType = z.ZodType> {
     after?: string[];
     ask?: string[];
-    // (undocumented)
-    conflicts?: string[];
+    conflicts?: AddonReference[];
     // (undocumented)
     contribute(ctx: ContributeContext<z.infer<S>>): Contribution[];
     // (undocumented)
     description: string;
     id: string;
+    joins?: AddonReference[];
     // (undocumented)
     migrations?: Migration[];
     // (undocumented)
     nextSteps?(ctx: ContributeContext<z.infer<S>>): string[];
     // (undocumented)
     options?: S;
+    packages?: Record<string, string>;
     // (undocumented)
     points?: PointDefinition[];
     provides?: Record<string, unknown>;
-    requires?: string[];
-    slot?: string;
+    requires?: AddonReference[];
     // (undocumented)
     supports?(ctx: ResolveContext<z.infer<S>>): true | string;
     // (undocumented)
@@ -36,15 +36,31 @@ export interface AddonManifest<S extends z.ZodType = z.ZodType> {
     version: string;
 }
 
+// @public
+export interface AddonPack {
+    addons: AddonManifest[];
+    extends: {
+        catalog: string;
+        versions: string;
+    };
+    versions?: Record<string, string>;
+}
+
+// @public
+export type AddonRef = string | PackageAddon;
+
+// @public
+export type AddonReference = string;
+
 // @public (undocumented)
 export interface Answers {
     adopt?: boolean;
+    extra?: string[];
     // (undocumented)
     mode?: string;
     name?: string;
-    optional?: string[];
     options?: Record<string, Record<string, unknown>>;
-    slots?: Record<string, string | null>;
+    questions?: Record<string, string[]>;
     // (undocumented)
     template: string;
 }
@@ -53,17 +69,27 @@ export interface Answers {
 export function artifactName(id: string): string;
 
 // @public (undocumented)
+export interface AvailableChoice extends ChoiceDescription {
+    disabled?: string;
+}
+
+// @public
+export function availableChoices(catalog: CatalogManifest, answers: Answers, question: string): QuestionAvailability;
+
+// @public (undocumented)
 export type Band = "pre" | "framework" | "post";
 
 // @public (undocumented)
 export interface CatalogDescription {
-    // (undocumented)
     addons: {
         id: string;
         title: string;
         description: string;
         version: string;
-        slot?: string;
+        provides: string[];
+        requires: string[];
+        conflicts: string[];
+        joins?: string[];
         ask: OptionQuestion[];
         options: Record<string, unknown>;
     }[];
@@ -79,16 +105,7 @@ export interface CatalogDescription {
         answers: Omit<Answers, "name">;
     }[];
     // (undocumented)
-    slots: {
-        id: string;
-        title: string;
-        question: string;
-        choose: string;
-    }[];
-    // (undocumented)
-    templates: (Omit<TemplateQuestions, "mode"> & {
-        questionsByMode: Record<string, Omit<TemplateQuestions, "modes">>;
-    })[];
+    templates: TemplateDescription[];
 }
 
 // @public (undocumented)
@@ -100,8 +117,8 @@ export interface CatalogManifest {
     packs?: Record<string, PackRecord>;
     // (undocumented)
     presets?: PresetManifest[];
-    // (undocumented)
-    slots: SlotDefinition[];
+    questions?: QuestionDefinition[];
+    range?: RangeStyle;
     // (undocumented)
     targets: TargetManifest[];
     // (undocumented)
@@ -112,25 +129,38 @@ export interface CatalogManifest {
 }
 
 // @public
-export function checkCatalog(catalog: CatalogManifest, options?: {
-    matrix?: boolean;
-    templates?: readonly string[];
-}): string[];
+export function checkCatalog(catalog: CatalogManifest, options?: CheckOptions): string[];
 
 // @public (undocumented)
-export interface Choice {
+export interface CheckOptions {
+    files?: (path: string, template: string) => boolean;
+    matrix?: boolean;
+    templates?: readonly string[];
+}
+
+// @public
+export type Choice = string | {
+    addon: string;
+    label?: string;
+    hint?: string;
+} | (PackageAddon & {
+    hint?: string;
+});
+
+// @public (undocumented)
+export interface ChoiceDescription {
     // (undocumented)
-    description: string;
-    // (undocumented)
+    hint?: string;
     id: string;
     // (undocumented)
-    title: string;
+    label: string;
 }
 
 // @public (undocumented)
 export interface CommandHint {
     // (undocumented)
     run: string;
+    setup?: true;
     // (undocumented)
     when: "after-apply" | "after-install";
     // (undocumented)
@@ -139,6 +169,12 @@ export interface CommandHint {
 
 // @public
 export function compareVersions(left: string, right: string): number;
+
+// @public
+export interface Condition {
+    notSelected?: AddonReference[];
+    selected?: AddonReference[];
+}
 
 // @public (undocumented)
 export type ConflictKind = "exists" | "edited" | "deleted" | "both-changed" | "orphan-edited" | "invalid" | "moved" | "class-change" | "secret-pattern" | "merge" | "baseline-unverified" | "type";
@@ -173,6 +209,7 @@ export type Contribution = {
     required: boolean;
     description: string;
     example?: string;
+    help?: string;
 } | {
     kind: "file";
     path: string;
@@ -210,6 +247,7 @@ export type Contribution = {
     run: string;
     when: "after-install" | "after-apply";
     why: string;
+    setup?: boolean;
 } | {
     kind: "notice";
     code: string;
@@ -229,6 +267,9 @@ export interface DecisionChoice {
 // @public
 export function defineAddon<S extends z.ZodType = z.ZodObject<Record<string, never>>>(manifest: AddonManifest<S>): AddonManifest<S>;
 
+// @public
+export function defineAddonPack(pack: AddonPack): AddonPack;
+
 // @public (undocumented)
 export function defineCatalog(manifest: CatalogManifest): CatalogManifest;
 
@@ -242,10 +283,10 @@ export function definePoint(definition: PointDefinition): PointDefinition;
 export function definePreset(manifest: PresetManifest): PresetManifest;
 
 // @public (undocumented)
-export function defineSettings(settings: Pick<ProductSettings, "product"> & Partial<ProductSettings>): ProductSettings;
+export function defineQuestion(question: QuestionDefinition): QuestionDefinition;
 
 // @public (undocumented)
-export function defineSlot(manifest: SlotDefinition): SlotDefinition;
+export function defineSettings(settings: Pick<ProductSettings, "product"> & Partial<ProductSettings>): ProductSettings;
 
 // @public (undocumented)
 export function defineTarget(manifest: TargetManifest): TargetManifest;
@@ -255,6 +296,9 @@ export function defineTemplate(manifest: TemplateManifest): TemplateManifest;
 
 // @public
 export function describeCatalog(catalog: CatalogManifest): CatalogDescription;
+
+// @public
+export function describeTemplate(catalog: CatalogManifest, id: string): TemplateDescription;
 
 // @public
 export const engineVersion: string;
@@ -337,6 +381,7 @@ export interface Envelope {
     pulled?: Plan["pulled"];
     // (undocumented)
     required?: string[];
+    setup?: SetupReport;
     // (undocumented)
     status: EnvelopeStatus;
     // (undocumented)
@@ -352,6 +397,7 @@ export interface EnvVar {
     description: string;
     // (undocumented)
     example?: string;
+    help?: string;
     // (undocumented)
     name: string;
     // (undocumented)
@@ -363,10 +409,63 @@ export interface EnvVar {
 }
 
 // @public (undocumented)
-export type ErrorCode = "E_DRIFT" | "E_LOCKED" | "E_INTERRUPTED" | "E_BASELINE_UNAVAILABLE" | "E_UNSUPPORTED" | "E_INVALID_OPTIONS" | "E_UNKNOWN_ADDON" | "E_UNKNOWN_TEMPLATE" | "E_PACKAGE_UNAVAILABLE" | "E_INVALID_PACK" | "E_UNKNOWN_TARGET" | "E_CATALOG_MISMATCH" | "E_CONTRIBUTION" | "E_UNSAFE_PATH" | "E_UNSAFE_KEY" | "E_LOCK_VERSION" | "E_INVALID_STATE" | "E_NOT_INITIALIZED" | "E_ALREADY_INITIALIZED" | "E_DESTINATION" | "E_CONFLICT_MARKERS" | "E_CYCLE" | "E_USAGE" | "E_CANCELLED" | "E_INTERNAL";
+export type ErrorCode = "E_DRIFT" | "E_LOCKED" | "E_INTERRUPTED" | "E_BASELINE_UNAVAILABLE" | "E_UNSUPPORTED" | "E_INVALID_OPTIONS" | "E_UNKNOWN_ADDON" | "E_UNKNOWN_TEMPLATE" | "E_PACKAGE_UNAVAILABLE" | "E_INVALID_PACK" | "E_INVALID_CATALOG" | "E_UNKNOWN_TARGET" | "E_CATALOG_MISMATCH" | "E_CONTRIBUTION" | "E_UNSAFE_PATH" | "E_UNSAFE_KEY" | "E_LOCK_VERSION" | "E_INVALID_STATE" | "E_NOT_INITIALIZED" | "E_ALREADY_INITIALIZED" | "E_DESTINATION" | "E_CONFLICT_MARKERS" | "E_CYCLE" | "E_USAGE" | "E_CANCELLED" | "E_INTERNAL";
 
 // @public
-export function exitCode(envelope: Pick<Envelope, "status" | "error">): number;
+export function exitCode(envelope: Pick<Envelope, "status" | "error" | "setup">): number;
+
+// @public
+export interface ExpandedChoice {
+    // (undocumented)
+    hint?: string;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    label?: string;
+}
+
+// @public
+export interface ExpandedQuestion {
+    // (undocumented)
+    choices: ExpandedChoice[];
+    // (undocumented)
+    choose?: string;
+    default: string[];
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    pick: "one" | "many";
+    // (undocumented)
+    question?: string;
+    // (undocumented)
+    required: boolean;
+    // (undocumented)
+    title: string;
+    // (undocumented)
+    when?: Condition;
+}
+
+// @public
+export interface ExpandedTemplate {
+    // (undocumented)
+    description: string;
+    // (undocumented)
+    extends?: string;
+    // (undocumented)
+    gallery?: Gallery;
+    // (undocumented)
+    id: string;
+    modes: string[];
+    questions: ExpandedQuestion[];
+    required: string[];
+    // (undocumented)
+    target: string;
+    // (undocumented)
+    title: string;
+}
+
+// @public
+export function expandTemplate(catalog: CatalogManifest, id: string): ExpandedTemplate | undefined;
 
 // @public
 export function explain(input: {
@@ -397,7 +496,6 @@ export type Explanation = {
     by: string[];
     requires: string[];
     requiredBy: string[];
-    slot?: string;
     options: Record<string, unknown>;
 } | {
     kind: "entry";
@@ -434,7 +532,22 @@ export function findAddon(catalog: CatalogManifest, id: string): AddonManifest |
 export function findPreset(catalog: CatalogManifest, id: string): PresetManifest | undefined;
 
 // @public (undocumented)
+export function findQuestion(catalog: CatalogManifest, id: string): QuestionDefinition | undefined;
+
+// @public (undocumented)
 export function findTemplate(catalog: CatalogManifest, id: string): TemplateManifest | undefined;
+
+// @public (undocumented)
+export interface Gallery {
+    image?: string;
+    // (undocumented)
+    links?: {
+        docs?: string;
+        demo?: string;
+        source?: string;
+    };
+    tags?: string[];
+}
 
 // @public
 export function hashText(text: string): Promise<string>;
@@ -451,7 +564,7 @@ export type Intent = {
 }
 /**
 * `addons` on config, upgrade and sync are add-on ids to add with the change. A decision's choice uses them to stay
-* the same command, such as an upgrade whose new catalog makes an installed add-on need a slot.
+* the same command, such as an upgrade whose new catalog makes an installed add-on need a capability.
 */
 | {
     command: "config";
@@ -464,6 +577,9 @@ export type Intent = {
     command: "sync";
     addons?: string[];
 };
+
+// @public
+export function isValidRange(range: string): boolean;
 
 // @public
 export interface ItemOrder {
@@ -481,7 +597,7 @@ export interface LoadedPack extends PackRecord {
     // (undocumented)
     name: string;
     // (undocumented)
-    pack: TemplatePack;
+    pack: TemplatePack | AddonPack;
 }
 
 // @public (undocumented)
@@ -606,6 +722,9 @@ export const lockSchema: z.ZodObject<{
 export function lookupAddon(catalog: CatalogManifest, name: string): NameLookup;
 
 // @public
+export function lowestVersion(range: string): string | undefined;
+
+// @public
 export function match<V extends string, R>(value: V, cases: {
     readonly [K in V]: () => R;
 }): R;
@@ -723,6 +842,17 @@ export interface Order {
 
 // @public
 export type Ownership = "owned" | "seed" | "sample";
+
+// @public
+export interface PackageAddon {
+    // (undocumented)
+    description?: string;
+    // (undocumented)
+    dev?: boolean;
+    // (undocumented)
+    npm: string;
+    title?: string;
+}
 
 // @public (undocumented)
 export interface PackageChange {
@@ -928,6 +1058,7 @@ export interface ProductSettings {
     schemaUrl?: string;
     secretsFile: string;
     seedBases?: "regenerate" | "stored";
+    setup?: SetupSettings;
     stateDir: string;
 }
 
@@ -953,11 +1084,64 @@ export function projectNameProblem(name: string): string | undefined;
 
 // @public (undocumented)
 export interface PulledAddon {
-    // (undocumented)
     by: string[];
     // (undocumented)
     id: string;
+    joins?: true;
 }
+
+// @public
+export interface QuestionAvailability {
+    // (undocumented)
+    asked: boolean;
+    // (undocumented)
+    choices: AvailableChoice[];
+}
+
+// Warning: (ae-forgotten-export) The symbol "QuestionFields" needs to be exported by the entry point core.d.ts
+// Warning: (ae-forgotten-export) The symbol "Asking" needs to be exported by the entry point core.d.ts
+// Warning: (ae-forgotten-export) The symbol "Picking" needs to be exported by the entry point core.d.ts
+//
+// @public
+export type QuestionDefinition = QuestionFields & Asking & Picking;
+
+// @public (undocumented)
+export interface QuestionDescription {
+    choices: ChoiceDescription[];
+    // (undocumented)
+    choose?: string;
+    // (undocumented)
+    default: string[];
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    pick: "one" | "many";
+    // (undocumented)
+    question?: string;
+    // (undocumented)
+    required: boolean;
+    // (undocumented)
+    title: string;
+    // (undocumented)
+    when?: Condition;
+}
+
+// @public
+export interface QuestionUse {
+    // (undocumented)
+    choices?: Choice[];
+    // (undocumented)
+    default?: string | string[];
+    // (undocumented)
+    required?: boolean;
+    // (undocumented)
+    use: string;
+    // (undocumented)
+    when?: Condition;
+}
+
+// @public
+export type RangeStyle = "exact" | "caret" | "tilde";
 
 // @public (undocumented)
 export function readConfig(path: string, text: string): ProjectConfig;
@@ -987,45 +1171,29 @@ export interface ResolveContext<O> {
 }
 
 // @public
+export function satisfiesRange(version: string, range: string): boolean;
+
+// @public (undocumented)
+export interface SetupReport {
+    // (undocumented)
+    failed?: {
+        label: string;
+        run: string;
+        output: string;
+    };
+    // (undocumented)
+    ran: string[];
+}
+
+// @public (undocumented)
+export interface SetupSettings {
+    git?: boolean;
+    install?: boolean;
+    packageManager?: "pnpm" | "npm" | "yarn" | "bun";
+}
+
+// @public
 export function shortName(id: string): string;
-
-// @public (undocumented)
-export function slotAddons(catalog: CatalogManifest, slot: string): AddonManifest[];
-
-// @public (undocumented)
-export interface SlotDefinition {
-    choose: string;
-    // (undocumented)
-    id: string;
-    question: string;
-    // (undocumented)
-    title: string;
-}
-
-// @public (undocumented)
-export type SlotPolicy = {
-    required: true;
-    default?: string;
-} | {
-    required: false;
-    default?: string;
-};
-
-// @public (undocumented)
-export interface SlotQuestion {
-    choices: Choice[];
-    // (undocumented)
-    choose: string;
-    // (undocumented)
-    default?: string;
-    question?: string;
-    // (undocumented)
-    required: boolean;
-    // (undocumented)
-    slot: string;
-    // (undocumented)
-    title: string;
-}
 
 // @public (undocumented)
 export interface TargetContext {
@@ -1084,22 +1252,38 @@ export interface TargetMode {
 }
 
 // @public (undocumented)
-export interface TemplateManifest {
+export interface TemplateDescription {
     // (undocumented)
     description: string;
     // (undocumented)
-    id: string;
-    modes?: string[];
-    optional?: Record<string, {
-        default: boolean;
-    }>;
-    required?: string[];
-    slots?: Record<string, SlotPolicy>;
+    extends?: string;
+    gallery: Gallery & {
+        stack: string[];
+    };
     // (undocumented)
-    target: string;
+    id: string;
+    // (undocumented)
+    modes: {
+        id: string;
+        title: string;
+    }[];
+    // (undocumented)
+    questionsByMode: Record<string, QuestionDescription[]>;
+    required: ChoiceDescription[];
     // (undocumented)
     title: string;
 }
+
+// Warning: (ae-forgotten-export) The symbol "TemplateFields" needs to be exported by the entry point core.d.ts
+//
+// @public
+export type TemplateManifest = TemplateFields & ({
+    target: string;
+    extends?: undefined;
+} | {
+    extends: string;
+    target?: undefined;
+});
 
 // @public
 export interface TemplatePack {
@@ -1108,32 +1292,13 @@ export interface TemplatePack {
         catalog: string;
         versions: string;
     };
+    questions?: QuestionDefinition[];
     templates: TemplateManifest[];
-}
-
-// @public (undocumented)
-export interface TemplateQuestions {
-    // (undocumented)
-    description: string;
-    // (undocumented)
-    mode: string;
-    // (undocumented)
-    modes: Choice[];
-    // (undocumented)
-    optional: (Choice & {
-        default: boolean;
-    })[];
-    required: Choice[];
-    // (undocumented)
-    slots: SlotQuestion[];
-    // (undocumented)
-    template: string;
-    // (undocumented)
-    title: string;
+    versions?: Record<string, string>;
 }
 
 // @public
-export function templateQuestions(catalog: CatalogManifest, template: TemplateManifest, modeId: string): TemplateQuestions;
+export function templateQuestions(catalog: CatalogManifest, template: string, mode: string): QuestionDescription[];
 
 // @public
 export interface TemplateSource {

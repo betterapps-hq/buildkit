@@ -1,7 +1,8 @@
 # Scaffolder research: `@buildkitgg/scaffolder`
 
 Research and a proposed design for the shared scaffolder engine that Buildkit and SpawnKit both use. How apps get their
-cloud resources and deploy is in [better-apps-deploy.md](better-apps-deploy.md).
+cloud resources and deploy is in
+[the Better Apps deploy plan](https://github.com/betterapps-hq/better-apps/blob/main/docs/deploy-plan.md).
 
 **Status (2026-10-28):**
 
@@ -27,8 +28,8 @@ Working notes with full detail and a URL for each claim are in the side-session 
 | #          | Decision (2026-10-28)                                                                                                                                                  | What changes                                                                                                                       |
 | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | D1         | **No backwards compatibility for SpawnKit.** It has never been released, so state formats, generated games and catalog URLs can change freely                          | There is no state conversion, no byte-identical migration phase and no fixture games. SpawnKit moves straight onto the engine (§6) |
-| D4         | **No `@buildkitgg/i18n` package.** Localization is Lingui only. The localization add-on writes its wiring into the app as code you own, and `upgrade` keeps it current | §4.7 and §3.2. The per-request rule ships as the `i18n` rule set in `@buildkitgg/oxlint-config`                                    |
-| D2, D3, D5 | **Deploys.** Moved to [better-apps-deploy.md](better-apps-deploy.md), which also holds D6                                                                              | §5                                                                                                                                 |
+| D4         | **No `@buildkitgg/i18n` package.** Localization is Lingui only. The localization add-on writes its wiring into the app as code you own, and `upgrade` keeps it current | §4.7 and §3.2                                                                                                                      |
+| D2, D3, D5 | **Deploys.** Moved to [the Better Apps deploy plan](https://github.com/betterapps-hq/better-apps/blob/main/docs/deploy-plan.md), which also holds D6                   | §5                                                                                                                                 |
 
 ## Review
 
@@ -66,9 +67,10 @@ once, promote" (D3). The strongest medium findings are folded in too. Detail is 
   `.buildkit/lock.json` (derived, regenerable with `buildkit sync`).
 - **Entry point:** `buildkit init`. Making `vp create @buildkitgg` (Vite+) an entry point is deferred. If it comes back,
   it is a thin front door that hands off to `init` (§4.10).
-- **Deployment:** the design is in [better-apps-deploy.md](better-apps-deploy.md). The scaffolder adds capability
-  packages and their declarations as app code, wires the Better Apps Vite plugin and CI, and picks no host and writes no
-  cloud config (§5).
+- **Deployment:** the design is in
+  [the Better Apps deploy plan](https://github.com/betterapps-hq/better-apps/blob/main/docs/deploy-plan.md). The
+  scaffolder adds capability packages and their declarations as app code, wires the Better Apps Vite plugin and CI, and
+  picks no host and writes no cloud config (§5).
 
 ---
 
@@ -347,8 +349,7 @@ a browser design on an SPA. So:
     "@buildkit/auth-better-auth": {},
     "@buildkit/db-d1": {}
   },
-  "declined": ["slot:jobs", "@buildkit/storybook"], // answered "no"; `upgrade` won't ask again (§4.11)
-  "environments": "better-apps.environments.jsonc" // read by Better Apps' deploy service
+  "declined": ["slot:jobs", "@buildkit/storybook"] // answered "no"; `upgrade` won't ask again (§4.11)
 }
 ```
 
@@ -603,10 +604,13 @@ export interface PresetManifest {
 presets are data (`defineTemplate`, `defineSlot`, `definePreset`); §4.11 describes how they drive `init`.
 
 **No hosts, integrations or deploy engines (D5).** Add-ons don't declare `needs()` or resources. Cloud resources come
-from capability declarations in code ([better-apps-deploy.md](better-apps-deploy.md) §2), runtime glue for a cloud lives
-in Better Apps ([better-apps-deploy.md](better-apps-deploy.md) §4), and deploys belong to the deploy service
-([better-apps-deploy.md](better-apps-deploy.md) §5). `provides` is typed data passed between add-ons; it has nothing to
-do with capability packages.
+from capability declarations in code
+([the Better Apps deploy plan](https://github.com/betterapps-hq/better-apps/blob/main/docs/deploy-plan.md) §2), runtime
+glue for a cloud lives in Better Apps
+([the Better Apps deploy plan](https://github.com/betterapps-hq/better-apps/blob/main/docs/deploy-plan.md) §4), and
+deploys belong to the deploy service
+([the Better Apps deploy plan](https://github.com/betterapps-hq/better-apps/blob/main/docs/deploy-plan.md) §5).
+`provides` is typed data passed between add-ons; it has nothing to do with capability packages.
 
 **Resolution runs in fixed phases:**
 
@@ -643,13 +647,9 @@ There is no `@buildkitgg/i18n` package (D4). The add-on writes the Lingui wiring
   - the native `macroTransform` (the example uses Babel);
   - the Workers specifics.
 
-- **The per-request rule is a lint rule, not a runtime guard.**
-  - A Worker serves concurrent requests, so the global Lingui `i18n` or the core `t` macro on the server leaks one
-    user's locale to another. The `i18n` rule set of `@buildkitgg/oxlint-config` bans both, and the add-on adds that
-    rule set to the lint config.
-  - `.oxlintrc.json` can't extend a package: "Package imports are not supported". So the add-on contributes a
-    `lint.extends` entry, which the target spreads into a TypeScript lint config: the `lint` block of `vite.config.ts`
-    under Vite+, or `oxlint.config.ts`.
+- **The per-request rule is a convention, not a lint rule.** A Worker serves concurrent requests, so the global Lingui
+  `i18n` or the core `t` macro on the server leaks one user's locale to another. The add-on's seed code creates an
+  instance per request, and its generated docs explain why the global one must stay unused on the server.
 - **Tradeoff:** Renovate can't deliver a wiring fix. It reaches an app only when the app runs `buildkit upgrade`, and
   heavy local edits make that merge a conflict to resolve. A fix that a text merge can't carry ships as a `codemod` or
   `agent` migration (§4.6).
@@ -702,13 +702,6 @@ export default defineAddon({
         content: emptyCatalog(l),
         ownership: "sample"
       })),
-      // The per-request rule. The target already depends on @buildkitgg/oxlint-config for its base rules.
-      {
-        kind: "entry",
-        point: "lint.extends",
-        id: "i18n",
-        value: { ref: { module: "@buildkitgg/oxlint-config/i18n", export: "default" } }
-      },
       // Wrap renders I18nProvider; dehydrate and hydrate carry the locale and messages to the client.
       {
         kind: "entry",
@@ -820,7 +813,6 @@ SpawnKit columns show how other add-ons' entries land.
 | `app.providers`            | `client.tsx`, used in `__root.tsx`                                                                                                                                                                      | same                                                     | `app/_generated/buildkit/client.tsx` (`"use client"`) in `app/layout.tsx` | unsupported (no React)            |
 | `server.requestMiddleware` | `server.ts`, imported by `src/start.ts` `createStart(() => ({ requestMiddleware }))`. The target's `start.ts` lists Start's CSRF middleware first, because Start stops adding it once `start.ts` exists | unsupported: page requests are static                    | `proxy.ts` chain (Next 16 renamed `middleware.ts`)                        | unsupported                       |
 | `router.wrappers`          | `client.tsx`, applied in `getRouter()` in `src/router.tsx`                                                                                                                                              | same                                                     | n/a                                                                       | n/a                               |
-| `lint.extends`             | `config.ts`, spread into `lint.extends` in `vite.config.ts` (Vite+) [U: the `lint` block's `extends` accepting imported configs]                                                                        | same                                                     | same, or `oxlint.config.ts` without Vite+                                 | same                              |
 | `root.loaderData`          | `server.ts`, called from the root loader                                                                                                                                                                | runs at prerender (build) time, so not usable for locale | n/a                                                                       | n/a                               |
 | `html.attributes`          | root `shellComponent`                                                                                                                                                                                   | prerendered shell                                        | `<html>` in `app/layout.tsx`                                              | `index.html` (static values only) |
 | `router.rewrite`           | router `rewrite` option                                                                                                                                                                                 | same                                                     | n/a                                                                       | n/a                               |
@@ -831,12 +823,8 @@ SpawnKit columns show how other add-ons' entries land.
 - **TanStack Start SSR and SPA:** one adapter with two modes.
   - The target writes `src/start.ts`. Once that file exists, Start no longer adds its CSRF middleware, so the target
     lists `createCsrfMiddleware({ filter: (ctx) => ctx.handlerType === "serverFn" })` first.
-  - **No cloud in the target (D5).** `vite.config.ts` gets the Better Apps plugin, `betterApps()` from the Better Apps
-    TanStack Start integration [U: package name], in band `framework` before `tanstackStart()`.
-    - The plugin names no cloud. For the build's backend it adds the runtime glue
-      ([better-apps-deploy.md](better-apps-deploy.md) §4). In v1 that is the Cloudflare Vite plugin with Start's server
-      entry, plus the #7740 workaround in SPA mode.
-    - The target writes no Wrangler config, no `cloudflare.config.ts` and no bindings file.
+  - **No cloud in the target (D5).** The target writes no Wrangler config, no `cloudflare.config.ts` and no bindings
+    file.
   - SPA mode emits `/_shell.html` by default. The target always sets `spa.prerender.outputPath: "/index.html"`. That is
     the path Cloudflare's SPA fallback serves, and the usual fallback on other static hosts, so the target needs no
     cloud branch. A maintainer confirmed that this works (TanStack/router#5619). [U: whether prerendering `/` collides
@@ -846,7 +834,8 @@ SpawnKit columns show how other add-ons' entries land.
     hook: `define: { "process.env.TSS_PRERENDERING": '"true"', "process.env.TSS_SHELL": '"true"' }`.
   - Server functions in SPA mode reach the Worker only if the assets config routes `/_serverFn/*` and `/api/*` to it.
     With a compatibility date of 2025-04-01 or later, navigation requests skip the Worker unless `run_worker_first`
-    lists them. The deploy service renders that config ([better-apps-deploy.md](better-apps-deploy.md) §5).
+    lists them. The deploy service renders that config
+    ([the Better Apps deploy plan](https://github.com/betterapps-hq/better-apps/blob/main/docs/deploy-plan.md) §5).
   - SPA lacks `request-middleware` and has no request-time `root-loader`.
 - **Next.js:**
   - Its own adapter, with render model `rsc`.
@@ -877,7 +866,8 @@ SpawnKit columns show how other add-ons' entries land.
 - Third-party catalogs. Template packages came forward: see
   [scaffolder-template-packages.md](scaffolder-template-packages.md).
 - Monorepo targets (but reserve `workspace` scope in the config schema now).
-- Other clouds ([better-apps-deploy.md](better-apps-deploy.md) §7).
+- Other clouds
+  ([the Better Apps deploy plan](https://github.com/betterapps-hq/better-apps/blob/main/docs/deploy-plan.md) §7).
 - Next.js add-ons beyond the base target.
 - `vp create` as an entry point (§4.10).
 
@@ -959,28 +949,27 @@ The wizard is generated from the catalog. Adding an add-on to a slot adds it to 
 
 ## 5. Deploys
 
-The deploy design moved to [better-apps-deploy.md](better-apps-deploy.md) on 2026-10-28: capability packages, how the
-build finds them, how the backend is chosen, and Better Apps' deploy service, with decisions D2, D3, D5 and D6. This
-section keeps the scaffolder's side.
+The deploy design moved to
+[the Better Apps deploy plan](https://github.com/betterapps-hq/better-apps/blob/main/docs/deploy-plan.md) on 2026-10-28:
+capability packages, how the build finds them, how the backend is chosen, and Better Apps' deploy service, with
+decisions D2, D3, D5 and D6. This section keeps the scaffolder's side.
 
 - Add-ons add capability packages as dependencies, and write the declarations as seed files. Third-party services stay
   env vars.
-- The Start target wires the Better Apps Vite plugin into `vite.plugins` (§4.8).
-- `init` writes `better-apps.environments.jsonc`. The CI add-on writes the workflows. `ci.yml`'s app-code checks are
-  Buildkit's; the preview, deploy and cleanup workflows call Better Apps' versioned actions and `better-apps deploy`.
+- The CI add-on writes `ci.yml`, whose app-code checks are Buildkit's.
 - There are no hosts, no `needs()`, no generated bindings and no cloud config. `check` flags a Wrangler config or a
   `cloudflare.config.ts`, because the deploy service ignores both.
 
-| Add-on                                    | Uses                                                                | Notes                                                                                                            |
-| ----------------------------------------- | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| Database (default)                        | `@better-apps/sql`, with a seed `src/server/db.ts` declaring `main` | D1 has no interactive transactions: Better Auth's SCIM plugin is out, and reset flows aren't atomic              |
-| Database: Neon, Convex                    | Env vars; Convex adds a deploy step                                 | Third-party services aren't capabilities. Postgres through Hyperdrive, behind `@better-apps/sql`, can come later |
-| Jobs (built in)                           | `@better-apps/queue`, `/workflow` and `/cron`                       | Queue consumers and cron on user Workers are spike #4 in [better-apps-deploy.md](better-apps-deploy.md) §6       |
-| Jobs: Trigger.dev, Temporal               | Env vars; deployed separately                                       | Temporal workers run outside Workers                                                                             |
-| Uploads                                   | `@better-apps/storage`                                              |                                                                                                                  |
-| Auth: Better Auth                         | The database add-on's `main`                                        |                                                                                                                  |
-| Auth: Clerk, WorkOS                       | Env vars                                                            | Clerk runs on Workers but doesn't document it: pass the keys to `clerkMiddleware` explicitly, and smoke-test it  |
-| Better Apps features (presence, comments) | Their own declarations, inside the feature packages                 | How a feature reaches the app's database is open ([better-apps-deploy.md](better-apps-deploy.md) §8)             |
+| Add-on                                    | Uses                                                                | Notes                                                                                                                                                                 |
+| ----------------------------------------- | ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Database (default)                        | `@better-apps/sql`, with a seed `src/server/db.ts` declaring `main` | D1 has no interactive transactions: Better Auth's SCIM plugin is out, and reset flows aren't atomic                                                                   |
+| Database: Neon, Convex                    | Env vars; Convex adds a deploy step                                 | Third-party services aren't capabilities. Postgres through Hyperdrive, behind `@better-apps/sql`, can come later                                                      |
+| Jobs (built in)                           | `@better-apps/queue`, `/workflow` and `/cron`                       | Queue consumers and cron on user Workers are spike #4 in [the Better Apps deploy plan](https://github.com/betterapps-hq/better-apps/blob/main/docs/deploy-plan.md) §6 |
+| Jobs: Trigger.dev, Temporal               | Env vars; deployed separately                                       | Temporal workers run outside Workers                                                                                                                                  |
+| Uploads                                   | `void/storage`, from Void's open-source packages                    |                                                                                                                                                                       |
+| Auth: Better Auth                         | The database add-on's `main`                                        |                                                                                                                                                                       |
+| Auth: Clerk, WorkOS                       | Env vars                                                            | Clerk runs on Workers but doesn't document it: pass the keys to `clerkMiddleware` explicitly, and smoke-test it                                                       |
+| Better Apps features (presence, comments) | Their own declarations, inside the feature packages                 | How a feature reaches the app's database is open ([the Better Apps deploy plan](https://github.com/betterapps-hq/better-apps/blob/main/docs/deploy-plan.md) §8)       |
 
 ---
 
@@ -1037,11 +1026,11 @@ Phase 0 is planned in detail in [scaffolder-phase-0.md](scaffolder-phase-0.md), 
 [scaffolder-phase-1.md](scaffolder-phase-1.md), and phase 2 in [scaffolder-phase-2.md](scaffolder-phase-2.md). Phase 2
 defers the staging deploy until Better Apps' deploy packages exist (owner, 2026-10-29).
 
-| Phase               | Work                                                                                                                                                                                                          | Done when                                                                                                                                  |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| 0. Engine           | Build `@buildkitgg/scaffolder` in Buildkit; port SpawnKit's composition, addition and CLI tests as engine tests                                                                                               | Engine tests pass                                                                                                                          |
-| 1. SpawnKit catalog | Rewrite it as manifests on the engine: renderer as target mode, categories as slots, `game.systems`, replace-within-slot. Switch the CLI and the dashboard Worker together. Replace `/catalog/v1.json` freely | Every option set generates, typechecks and builds in catalog CI (sampled per PR, all nightly); `add`, `--replace` and `upgrade` tests pass |
-| 2. Buildkit catalog | TanStack Start SSR target with the Better Apps Vite plugin, the first add-ons, and a first deploy through the deploy service (after the spike in [better-apps-deploy.md](better-apps-deploy.md) §6)           | A Buildkit app inits, adds auth and i18n, upgrades, and deploys to staging                                                                 |
+| Phase               | Work                                                                                                                                                                                                                                                           | Done when                                                                                                                                  |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| 0. Engine           | Build `@buildkitgg/scaffolder` in Buildkit; port SpawnKit's composition, addition and CLI tests as engine tests                                                                                                                                                | Engine tests pass                                                                                                                          |
+| 1. SpawnKit catalog | Rewrite it as manifests on the engine: renderer as target mode, categories as slots, `game.systems`, replace-within-slot. Switch the CLI and the dashboard Worker together. Replace `/catalog/v1.json` freely                                                  | Every option set generates, typechecks and builds in catalog CI (sampled per PR, all nightly); `add`, `--replace` and `upgrade` tests pass |
+| 2. Buildkit catalog | TanStack Start SSR target with the Better Apps Vite plugin, the first add-ons, and a first deploy through the deploy service (after the spike in [the Better Apps deploy plan](https://github.com/betterapps-hq/better-apps/blob/main/docs/deploy-plan.md) §6) | A Buildkit app inits, adds auth and i18n, upgrades, and deploys to staging                                                                 |
 
 **Release coupling:**
 

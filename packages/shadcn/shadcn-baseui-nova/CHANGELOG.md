@@ -1,8 +1,24 @@
 # Change Log - @buildkitgg/shadcn-baseui-nova
 
-<!-- This log was last generated on Thu, 29 Oct 2026 04:54:16 GMT and should not be manually modified. -->
+<!-- This log was last generated on Tue, 03 Nov 2026 11:33:32 GMT and should not be manually modified. -->
 
 <!-- Start content -->
+
+## 0.4.4
+
+Tue, 03 Nov 2026 11:33:32 GMT
+
+### Patches
+
+- Bump @buildkitgg/shadcn-runtime to v0.1.2
+
+## 0.4.3
+
+Tue, 03 Nov 2026 01:39:16 GMT
+
+### Patches
+
+- Update dependencies and regenerate Base UI sources with the current shadcn generator. (noreply@anthropic.com)
 
 ## 0.4.2
 

@@ -1,12 +1,13 @@
 # Architecture and contribution guide
 
 The [package README](../README.md) is the user-facing contract. The design and its decisions are in the Buildkit
-planning docs (`scaffolder-research.md` and `scaffolder-phase-0.md`).
+planning docs: `scaffolder-research.md`, `scaffolder-phase-0.md`, and `scaffolder-platform-templates.md` for questions,
+template inheritance, setup steps and add-on packages.
 
 | Module          | Responsibility                                                                                   |
 | --------------- | ------------------------------------------------------------------------------------------------ |
-| `src/manifest`  | Manifest types, `define*` helpers and catalog lookups, including short add-on names              |
-| `src/resolve`   | Answers to a selection, `requires`, slots, conflicts, ordering, options, `supports()`, questions |
+| `src/manifest`  | Manifest types, `define*` helpers, catalog lookups, and merging template and add-on packages     |
+| `src/resolve`   | Questions and their availability, answers to a selection, `requires`, conflicts, ordering        |
 | `src/plan`      | The pure `plan()`, rendering contributions, decisions, argv, the envelope, fingerprints          |
 | `src/ownership` | The write rule per file class, and text normalization and hashing                                |
 | `src/merge`     | Three-way merges: shared files by key, and seeds by line                                         |
@@ -14,8 +15,8 @@ planning docs (`scaffolder-research.md` and `scaffolder-phase-0.md`).
 | `src/state`     | Config and lock schemas, reading them, and writing the config without losing comments            |
 | `src/upgrade`   | Semantic versions and migrations                                                                 |
 | `src/edit`      | Pure text transforms. `code.ts` is the oxc codemods, exported separately                         |
-| `src/node`      | The disk snapshot, apply with its lock, journal and backups, `recover`, artifacts, catalog cache |
-| `src/cli`       | Command handlers, the generated wizard, flag parsing and readable output                         |
+| `src/node`      | The disk snapshot, apply with its lock, journal and backups, `recover`, artifacts, package store |
+| `src/cli`       | Command handlers, the generated wizard, flag parsing, setup steps and readable output            |
 | `src/testing`   | The fixture catalog and a scripted prompter, used by the tests and not built                     |
 
 ## Rules that keep it safe
@@ -30,6 +31,8 @@ planning docs (`scaffolder-research.md` and `scaffolder-phase-0.md`).
 - **Apply re-plans.** A reviewed plan is untrusted: `applyReviewed` plans its request again and applies only on the same
   fingerprint. `applyPlan` then checks each file against the plan before writing, journals every step, backs up what it
   replaces, and writes the lock last.
+- **Packages are untrusted until confirmed.** A template or add-on package is merged into the catalog and checked before
+  planning, and its setup commands run only after the user confirms a plan that names it.
 - **Nothing is sorted by locale.** Keys and paths sort by code unit, so plans are identical on every machine.
 
 ## Tests
@@ -39,5 +42,6 @@ and macOS with `pnpm --filter @buildkitgg/scaffolder test:integration`, because 
 case-insensitive file systems change the path checks.
 
 Most tests use the fixture catalog in `src/testing/fixture.ts`: a target with two modes, a template with a required
-add-on, optional add-ons, an optional database slot with a default and a required UI slot, an add-on that requires
-another, and a version 2 with migrations for upgrade tests.
+add-on, an optional database question with a default, a required UI question and optional questions, an add-on that
+requires another, and a version 2 with migrations for upgrade tests. `src/testing/example.ts` is a platform's catalog,
+with a template that extends another, shared questions, combination and bare add-ons, for the acceptance cases.

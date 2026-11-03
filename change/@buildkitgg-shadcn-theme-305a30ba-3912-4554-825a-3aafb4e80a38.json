@@ -1,0 +1,7 @@
+{
+  "email": "ajcraswell@gmail.com",
+  "comment": "Export useTheme alongside createShadcnTheme from the package root.",
+  "packageName": "@buildkitgg/shadcn-theme",
+  "type": "minor",
+  "dependentChangeType": "patch"
+}

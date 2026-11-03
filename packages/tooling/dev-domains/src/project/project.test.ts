@@ -10,15 +10,29 @@ import { readManifest } from "./manifest.js"
 import { detectPackageManager } from "./package-manager.js"
 
 const directories: string[] = []
+
 async function directory() {
   const value = await mkdtemp(path.join(os.tmpdir(), "buildkit-detect-"))
   directories.push(value)
+
   return value
 }
+
 afterEach(async () => {
   await Promise.all(directories.splice(0).map((dir) => rm(dir, { recursive: true, force: true })))
 })
-async function manifest(root: string, value: unknown) {
+
+type Manifest = {
+  name?: string
+  packageManager?: string
+  devEngines?: { packageManager: { name: string; version: string } }
+  workspaces?: string[] | { packages: string[] }
+  scripts?: Record<string, string>
+  dependencies?: Record<string, string>
+  devDependencies?: Record<string, string>
+}
+
+async function manifest(root: string, value: Manifest) {
   await mkdir(root, { recursive: true })
   await writeFile(path.join(root, "package.json"), JSON.stringify(value))
 }
@@ -96,9 +110,11 @@ describe("project conventions", () => {
   })
   it("rejects ambiguous workspace endpoint names", async () => {
     const root = await directory()
+
     for (const child of ["apps/a", "apps/b"]) {
       await manifest(path.join(root, child), { name: "same", scripts: { dev: "vite" } })
     }
+
     await expect(detectConfig(root)).rejects.toThrow("duplicate endpoint")
   })
   it("honors declared pnpm workspace packages and exclusions", async () => {
@@ -183,6 +199,7 @@ describe("project conventions", () => {
     await manifest(root, { workspaces: { packages: ["sites/*", "!sites/ignored"] } })
     await manifest(path.join(root, "sites/web"), { scripts: { dev: "vite" } })
     await configFile(root, "sites/web/playwright.config.ts")
+
     for (const name of [
       "node_modules",
       "dist",
@@ -202,6 +219,7 @@ describe("project conventions", () => {
       await configFile(root, `${name}/.storybook/main.ts`)
       await configFile(root, `${name}/playwright.config.ts`)
     }
+
     await symlink(root, path.join(root, "cycle"), process.platform === "win32" ? "junction" : "dir")
     expect(Object.keys((await detectConfig(root)).endpoints)).toEqual(["web-app", "web-app-e2e"])
   })

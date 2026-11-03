@@ -6,8 +6,10 @@ import { documentationSections, packagePages, type PackageEntry } from "../../na
 const catalogFile = new URL("../catalog.json", import.meta.url)
 const catalog: PackageEntry[] = existsSync(catalogFile) ? JSON.parse(readFileSync(catalogFile, "utf8")) : []
 const base = `${process.env.PAGES_BASE ?? "/"}docs/`
+
 const origin =
   process.env.PAGES_ORIGIN ?? (process.env.NODE_ENV === "production" ? "https://buildkit.gg" : "http://127.0.0.1:4178")
+
 export default defineConfig({
   title: "Buildkit",
   description: "Package guides and generated TypeScript API reference.",
@@ -32,7 +34,7 @@ export default defineConfig({
       },
       { text: "Buildkit.gg", link: `${origin}${process.env.PAGES_BASE ?? "/"}` }
     ],
-    socialLinks: [{ icon: "github", link: "https://github.com/AndrewCraswell/buildkit" }],
+    socialLinks: [{ icon: "github", link: "https://github.com/betterapps-hq/buildkit" }],
     search: { provider: "local" },
     sidebar: [
       {

@@ -2,6 +2,64 @@
   "name": "@buildkitgg/shadcn-baseui-nova",
   "entries": [
     {
+      "date": "Tue, 03 Nov 2026 11:33:32 GMT",
+      "version": "0.4.4",
+      "tag": "@buildkitgg/shadcn-baseui-nova_v0.4.4",
+      "comments": {
+        "none": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/shadcn-baseui-nova",
+            "commit": "cb28c32943eb51eb486131148d0e2ef49bc148c7",
+            "comment": "chore: depend on @buildkitgg/typescript-config"
+          },
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/shadcn-baseui-nova",
+            "commit": "9a090806f3ffce624e83a97a70e6d601ad824ccd",
+            "comment": "Build in two cached steps, generating sources and then compiling them"
+          },
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/shadcn-baseui-nova",
+            "commit": "82b35a41ef7ccbc4f8da11ff844cc681cdc04699",
+            "comment": "Point repository, bugs and homepage at betterapps-hq/buildkit"
+          }
+        ],
+        "patch": [
+          {
+            "author": "beachball",
+            "package": "@buildkitgg/shadcn-baseui-nova",
+            "comment": "Bump @buildkitgg/shadcn-runtime to v0.1.2",
+            "commit": "not available"
+          }
+        ]
+      }
+    },
+    {
+      "date": "Tue, 03 Nov 2026 01:39:16 GMT",
+      "version": "0.4.3",
+      "tag": "@buildkitgg/shadcn-baseui-nova_v0.4.3",
+      "comments": {
+        "patch": [
+          {
+            "author": "noreply@anthropic.com",
+            "package": "@buildkitgg/shadcn-baseui-nova",
+            "commit": "a64cc47404931bc1c62a89f7782ecbe8a03849b7",
+            "comment": "Update dependencies and regenerate Base UI sources with the current shadcn generator."
+          }
+        ],
+        "none": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/shadcn-baseui-nova",
+            "commit": "063d609caa08375fd9bc535186db4d5e38a4cf79",
+            "comment": "Build, lint and test with Vite+; published code is unchanged"
+          }
+        ]
+      }
+    },
+    {
       "date": "Thu, 29 Oct 2026 04:54:16 GMT",
       "version": "0.4.2",
       "tag": "@buildkitgg/shadcn-baseui-nova_v0.4.2",

@@ -16,6 +16,7 @@ function NativeSurface({ entry, title, body, footer, children }: ModalSurfacePro
       entry.finishExit()
     }
   }, [entry])
+
   return (
     <dialog
       ref={ref}
@@ -26,6 +27,7 @@ function NativeSurface({ entry, title, body, footer, children }: ModalSurfacePro
       onCancel={(event) => {
         event.stopPropagation()
         event.preventDefault()
+
         if (entry.content.dismissible !== false) {
           entry.dismiss()
         }
@@ -39,22 +41,29 @@ function NativeSurface({ entry, title, body, footer, children }: ModalSurfacePro
     </dialog>
   )
 }
+
 function NativeButton({ variant, ...props }: ExampleButtonProps) {
   return <button {...props} data-variant={variant} />
 }
+
 function NativeInput({ onChange, ...props }: ExampleInputProps) {
   return <input {...props} onChange={(event) => onChange(event.target.value)} />
 }
+
 function ReactModalsExample() {
   const [manager] = useState(() => createModalManager({ adapter: { Surface: NativeSurface } }))
+
   return (
     <ModalExamples manager={manager} Button={NativeButton} Input={NativeInput}>
       <ModalRenderer manager={manager} />
     </ModalExamples>
   )
 }
+
 const meta = { title: "React/react-modals", component: ReactModalsExample } satisfies Meta<typeof ReactModalsExample>
+
 export default meta
+
 export const NativeDialog: StoryObj<typeof meta> = {
   name: "Native dialog",
   parameters: {

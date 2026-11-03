@@ -1,26 +1,25 @@
-import { defineCatalog, definePreset, defineSlot, defineTemplate } from "@buildkitgg/scaffolder"
-import { betterAppsDeploy } from "./addons/better-apps-deploy.js"
-import { betterAuth } from "./addons/better-auth.js"
+import { defineCatalog, defineQuestion, defineTemplate } from "@buildkitgg/scaffolder"
 import { ci } from "./addons/ci.js"
 import { i18n } from "./addons/i18n.js"
-import { sql } from "./addons/sql.js"
 import { tanstackStart } from "./target.js"
 import { catalogVersion } from "./version.js"
 import { versions } from "./versions.js"
 
-/**
- * Buildkit's catalog: what `buildkit create` can make, and what `buildkit add` can add. The database and sign-in slots
- * default to "no" while the Better Apps packages they use are unpublished, so a new app installs from npm today.
- */
+/** Buildkit's catalog: what `buildkit create` can make, and what `buildkit add` can add. */
 export const catalog = defineCatalog({
   id: "@buildkitgg/catalog",
   version: catalogVersion,
   facets: ["react", "vite", "ssr", "spa", "request-middleware", "root-loader", "router-rewrite", "server-functions"],
   versions,
   targets: [tanstackStart],
-  slots: [
-    defineSlot({ id: "database", title: "Database", question: "Add a database?", choose: "Which database?" }),
-    defineSlot({ id: "auth", title: "Sign-in", question: "Add sign-in?", choose: "Which sign-in?" })
+  questions: [
+    defineQuestion({
+      id: "i18n",
+      title: "Localization",
+      question: "Add localization?",
+      pick: "one",
+      choices: [{ addon: "@buildkit/i18n", hint: "Lingui, with locale detection and localized URLs" }]
+    })
   ],
   templates: [
     defineTemplate({
@@ -29,21 +28,15 @@ export const catalog = defineCatalog({
       description: "A React app on TanStack Start, server-rendered or as a single-page app.",
       target: "tanstack-start",
       required: ["@buildkit/ci"],
-      optional: { "@buildkit/i18n": { default: false } },
-      slots: { database: { required: false }, auth: { required: false } }
-    })
-  ],
-  addons: [ci, sql, betterAuth, i18n, betterAppsDeploy],
-  presets: [
-    definePreset({
-      id: "saas",
-      title: "Server-rendered app with a database, sign-in and localization",
-      answers: {
-        template: "app",
-        mode: "ssr",
-        slots: { database: "@buildkit/sql", auth: "@buildkit/better-auth" },
-        optional: ["@buildkit/i18n"]
+      questions: ["i18n"],
+      gallery: {
+        tags: ["react", "tanstack-start", "ssr", "spa"],
+        links: {
+          docs: "https://github.com/betterapps-hq/buildkit/tree/main/packages/tooling/catalog#readme",
+          source: "https://github.com/betterapps-hq/buildkit/tree/main/packages/tooling/catalog"
+        }
       }
     })
-  ]
+  ],
+  addons: [ci, i18n]
 })

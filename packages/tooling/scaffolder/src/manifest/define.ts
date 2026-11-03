@@ -1,10 +1,11 @@
 import type { z } from "zod"
 import type {
   AddonManifest,
+  AddonPack,
   CatalogManifest,
   PointDefinition,
   PresetManifest,
-  SlotDefinition,
+  QuestionDefinition,
   TargetManifest,
   TemplateManifest,
   TemplatePack
@@ -25,8 +26,8 @@ export function defineTemplate(manifest: TemplateManifest): TemplateManifest {
   return manifest
 }
 
-export function defineSlot(manifest: SlotDefinition): SlotDefinition {
-  return manifest
+export function defineQuestion(question: QuestionDefinition): QuestionDefinition {
+  return question
 }
 
 export function definePreset(manifest: PresetManifest): PresetManifest {
@@ -43,5 +44,10 @@ export function defineCatalog(manifest: CatalogManifest): CatalogManifest {
 
 /** A template package's default export. The engine checks it against the product catalog when it loads it. */
 export function definePack(pack: TemplatePack): TemplatePack {
+  return pack
+}
+
+/** An add-on package's default export. The engine checks it against the product catalog when `add` loads it. */
+export function defineAddonPack(pack: AddonPack): AddonPack {
   return pack
 }

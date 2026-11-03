@@ -5,7 +5,7 @@ export default defineConfig({
     fsModuleCachePath: "node_modules/.vitest-cache",
     coverage: {
       provider: "v8",
-      include: ["utils/merge.ts"],
+      include: ["src/utils/merge.ts"],
       thresholds: { statements: 100, lines: 100, functions: 100, branches: 90 }
     }
   }

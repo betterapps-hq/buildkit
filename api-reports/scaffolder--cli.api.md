@@ -25,6 +25,7 @@ export const clackPrompter: Prompter;
 export interface CliIo {
     // (undocumented)
     cwd: string;
+    env: Record<string, string | undefined>;
     isTTY: boolean;
     // (undocumented)
     prompter: Prompter;
@@ -54,6 +55,7 @@ export interface CliOptions {
     name: string;
     // Warning: (ae-forgotten-export) The symbol "CommandRunner" needs to be exported by the entry point cli.d.ts
     runCommand?: CommandRunner;
+    runSetup?: SetupRunner;
     // Warning: (ae-forgotten-export) The symbol "ProductSettings" needs to be exported by the entry point cli.d.ts
     //
     // (undocumented)
@@ -113,6 +115,7 @@ export function emptyAnswers(): PartialAnswers;
 
 // @public (undocumented)
 export interface FlagSpec {
+    anyDynamic?: boolean;
     booleans?: readonly string[];
     dynamic?: readonly string[];
     lists?: readonly string[];
@@ -148,20 +151,17 @@ export function parseSet(entries: readonly string[]): {
 export interface PartialAnswers {
     // (undocumented)
     adopt?: boolean;
+    extra?: string[];
     // (undocumented)
     mode?: string;
     // (undocumented)
     name?: string;
-    optional?: string[];
     // (undocumented)
     options: Record<string, Record<string, unknown>>;
-    // (undocumented)
-    slots: Record<string, string | null>;
+    questions: Record<string, string[]>;
     // (undocumented)
     template?: string;
-    // (undocumented)
     with: string[];
-    // (undocumented)
     without: string[];
 }
 
@@ -177,6 +177,7 @@ export interface Prompter {
         message: string;
         options: SelectOption[];
         initialValues: string[];
+        required?: boolean;
     }): Promise<string[] | Cancelled>;
     // (undocumented)
     note(message: string, title: string): void;
@@ -191,6 +192,7 @@ export interface Prompter {
         options: SelectOption[];
         initialValue?: string;
     }): Promise<string | Cancelled>;
+    tasks?(tasks: PromptTask[]): Promise<void>;
     // (undocumented)
     text(question: {
         message: string;
@@ -198,6 +200,14 @@ export interface Prompter {
         initialValue?: string;
         validate?: (value: string) => string | undefined;
     }): Promise<string | Cancelled>;
+}
+
+// @public
+export interface PromptTask {
+    // (undocumented)
+    run: () => Promise<boolean>;
+    // (undocumented)
+    title: string;
 }
 
 // @public
@@ -221,12 +231,14 @@ export interface ScaffoldOptions {
     // (undocumented)
     io?: Partial<CliIo>;
     runCommand?: CommandRunner;
+    runSetup?: SetupRunner;
     // (undocumented)
     version: string;
 }
 
 // @public (undocumented)
 export interface SelectOption {
+    disabled?: boolean;
     // (undocumented)
     hint?: string;
     // (undocumented)
@@ -234,6 +246,12 @@ export interface SelectOption {
     // (undocumented)
     value: string;
 }
+
+// @public
+export type SetupRunner = (command: string, cwd: string) => Promise<{
+    code: number;
+    output: string;
+}>;
 
 // (No @packageDocumentation comment for this package)
 

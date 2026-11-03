@@ -6,76 +6,135 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+# pnpm validate runs as four jobs side by side, each on a Blacksmith runner, and each keeps Vite+'s task cache between
+# runs under a key of its own, so vp run can replay the tasks whose inputs haven't changed. Each also needs a
+# concurrency key of its own, or the four calls share a group and cancel each other. The key replaces the branch in
+# ci-verify's group, so it starts with the branch, or every branch's runs would cancel each other. Filtered commands
+# fail when their filter matches nothing, which pnpm otherwise passes, as it did when a package was renamed.
 jobs:
-  ci-verify:
-    uses: betterapps-hq/pipelines/.github/workflows/ci-verify.yml@8b4311a69b28ad7423898dceda366cee6644f92c # v1.1.1
+  check:
+    uses: betterapps-hq/pipelines/.github/workflows/ci-verify.yml@main
     with:
+      os: '["blacksmith-4vcpu-ubuntu-2404"]'
+      vite-task-cache: true
+      vite-task-cache-key: check
+      concurrency-key: ${{ github.ref }}-check
       # The release notes check diffs a pull request against its base branch, so it needs the whole history.
       fetch-depth: 0
       command: |
         if [ "$GITHUB_EVENT_NAME" = pull_request ]; then
-          BASE_BRANCH="$GITHUB_BASE_REF" pnpm --filter @repo/api-tools release:check
+          BASE_BRANCH="$GITHUB_BASE_REF" pnpm --fail-if-no-match --filter @buildkitgg/api-tools release:check
         fi
-        pnpm validate
-  # Branch protection and merge-release.yml expect a check named verify, and a reusable workflow's checks are named after
-  # the calling job, such as "ci-verify / Verify (ubuntu-latest)". This job reports ci-verify's result as verify.
+        pnpm check && pnpm check:unused
+  test:
+    uses: betterapps-hq/pipelines/.github/workflows/ci-verify.yml@main
+    with:
+      os: '["blacksmith-4vcpu-ubuntu-2404"]'
+      vite-task-cache: true
+      vite-task-cache-key: test
+      concurrency-key: ${{ github.ref }}-test
+      command: pnpm test:coverage
+  # The docs read the API models check:api writes, so the API check and the build share a job.
+  build:
+    uses: betterapps-hq/pipelines/.github/workflows/ci-verify.yml@main
+    with:
+      os: '["blacksmith-4vcpu-ubuntu-2404"]'
+      vite-task-cache: true
+      vite-task-cache-key: build
+      concurrency-key: ${{ github.ref }}-build
+      command: pnpm check:api && pnpm build
+  shadcn:
+    uses: betterapps-hq/pipelines/.github/workflows/ci-verify.yml@main
+    with:
+      os: '["blacksmith-4vcpu-ubuntu-2404"]'
+      vite-task-cache: true
+      vite-task-cache-key: shadcn
+      concurrency-key: ${{ github.ref }}-shadcn
+      command: pnpm build:packages && pnpm --fail-if-no-match --filter @buildkitgg/shadcn-generator validate
+  # main's ruleset requires a check named verify, and a reusable workflow's checks are named after the calling job, such
+  # as "check / Verify (blacksmith-4vcpu-ubuntu-2404)". This job reports the four jobs' results as verify.
   verify:
-    needs: ci-verify
+    needs: [check, test, build, shadcn]
     if: always()
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     timeout-minutes: 5
     steps:
-      - name: Require ci-verify to pass
+      - name: Require check, test, build and shadcn to pass
         env:
-          RESULT: ${{ needs.ci-verify.result }}
-        run: test "$RESULT" = success
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          for result in $RESULTS; do
+            test "$result" = success
+          done
   integration:
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
+    # main's ruleset requires these checks by name, such as "integration (ubuntu-latest)", so Linux keeps its name and
+    # runs on Blacksmith.
+    runs-on: ${{ matrix.os == 'ubuntu-latest' && 'blacksmith-4vcpu-ubuntu-2404' || matrix.os }}
     timeout-minutes: 10
     steps:
-      - uses: betterapps-hq/pipelines/github/actions/setup@8b4311a69b28ad7423898dceda366cee6644f92c # v1.1.1
-      - run: pnpm --filter @buildkitgg/dev-domains test:integration
-      - run: pnpm --filter @buildkitgg/scaffolder test:integration
+      - uses: betterapps-hq/pipelines/github/actions/setup@main
+      - uses: betterapps-hq/pipelines/github/actions/vite-task-cache@main
+        with:
+          key: integration
+      - run: pnpm --fail-if-no-match --filter @buildkitgg/dev-domains test:integration
+      - run: pnpm --fail-if-no-match --filter @buildkitgg/scaffolder test:integration
       - run: pnpm exec vp run --cache --filter "@buildkitgg/cli^..." build
-      - run: pnpm --filter @buildkitgg/cli test:integration
-  databases:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: betterapps-hq/pipelines/github/actions/setup@8b4311a69b28ad7423898dceda366cee6644f92c # v1.1.1
-      - name: Test the Drizzle adapter on PostgreSQL, Neon and MySQL servers
-        run:
-          pnpm exec vp run --cache --filter "@better-apps/drizzle^..." build && pnpm --filter @better-apps/drizzle
-          test:servers
+      - run: pnpm --fail-if-no-match --filter @buildkitgg/cli test:integration
   templates:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     timeout-minutes: 20
     steps:
-      - uses: betterapps-hq/pipelines/github/actions/setup@8b4311a69b28ad7423898dceda366cee6644f92c # v1.1.1
+      - uses: betterapps-hq/pipelines/github/actions/setup@main
+      - uses: betterapps-hq/pipelines/github/actions/vite-task-cache@main
+        with:
+          key: templates
       - run: pnpm exec vp run --cache --filter "@buildkitgg/cli..." build
       - name: Generate Buildkit apps, then install, check, lint, build and type-check each one
-        run: pnpm --filter @buildkitgg/cli test:smoke
+        run: pnpm --fail-if-no-match --filter @buildkitgg/cli test:smoke
+  # Releases main's change files once main passes, through the shared beachball-publish-npm template: Beachball bumps
+  # the versions and changelogs, publishes the new versions through npm trusted publishing, then commits, tags and
+  # pushes them to main with the npm environment's RELEASE_DEPLOY_KEY, the one actor main's ruleset lets skip a pull
+  # request. npm's trusted publishers name this file and the npm environment.
   release:
-    needs: [verify, integration, databases, templates]
-    if: >-
-      github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    needs: [verify, integration, templates]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     permissions:
       contents: read
-      actions: write
-    uses: ./.github/workflows/publish-after-ci.yml
-  merge-release:
-    needs: [verify, integration, databases, templates]
-    if: >-
-      github.event_name == 'workflow_dispatch' && (startsWith(github.ref, 'refs/heads/codex/release-') ||
-      startsWith(github.ref, 'refs/heads/codex/shadcn-update-'))
+      id-token: write
+    uses: betterapps-hq/pipelines/.github/workflows/beachball-publish-npm.yml@main
+    # The template reads RELEASE_DEPLOY_KEY from the npm environment, which a called workflow sees only when the caller
+    # inherits secrets.
+    secrets: inherit
+    with:
+      build-command: pnpm build:packages
+  # Run CI by hand on main to publish any public version npm doesn't have yet, such as after a release that failed
+  # partway. pnpm skips versions already on npm and publishes the rest in dependency order. It lives in this file because
+  # npm's trusted publishers name it.
+  publish-missing:
+    needs: [verify, integration, templates]
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    runs-on: blacksmith-4vcpu-ubuntu-2404
+    timeout-minutes: 45
+    environment:
+      name: npm
+      deployment: false
     permissions:
-      contents: write
-      pull-requests: write
-      actions: write
-      statuses: write
-    # Run the reviewed implementation, never a workflow from the dispatched branch.
-    uses: betterapps-hq/buildkit/.github/workflows/merge-release.yml@8cd3e0a83dbc90525a22d96b83bd17ae3cf69c78
+      contents: read
+      id-token: write
+    steps:
+      - uses: betterapps-hq/pipelines/github/actions/setup@main
+      - run: pnpm build:packages
+      - name: Publish the versions npm doesn't have
+        run: |
+          git switch -C main "$GITHUB_SHA"
+          pnpm --filter-prod "./packages/**" --sort -r publish --access public --provenance --report-summary --publish-wait-timeout 600000
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: published-packages
+          path: pnpm-publish-summary.json
+          if-no-files-found: ignore

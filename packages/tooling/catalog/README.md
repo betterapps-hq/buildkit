@@ -43,26 +43,16 @@ Every app also gets lint, format, build and type-check scripts, a `.gitattribute
 
 ## The `app` template
 
-The wizard asks for the mode (`ssr` or `spa`), then "Add a database?" (`sql`), then "Add sign-in?" (`better-auth`, which
-needs a database), then the optional `i18n`. Both questions default to no, and `i18n` starts unchecked. `ci` is always
-included, and `better-apps-deploy` is added only with `buildkit add`. The `saas` preset answers `ssr` with `sql`,
-`better-auth` and `i18n`.
+The wizard asks for the mode (`ssr` or `spa`), then "Add localization?", which defaults to no. `ci` is always included,
+and `--i18n i18n` or `--no-i18n` answers the question from the command line. `catalog --json` describes the template
+with its gallery tags (`react`, `tanstack-start`, `ssr`, `spa`) and links to this README and its source.
 
-| Add-on                         | What it writes                                                                                                                                                                                                          |
-| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `@buildkit/ci`                 | `.github/workflows/ci.yml`: `buildkit check`, lint, format, build and type-check on every push and pull request. Steps are keyed by `id`, so add-ons add their own                                                      |
-| `@buildkit/sql`                | `src/db/db.server.ts`, which declares the `main` database with `defineDatabase` from `@better-apps/sql` and queries it with Drizzle; `src/db/schema.ts`; `drizzle.config.ts`, writing migrations to `migrations/main`   |
-| `@buildkit/better-auth`        | Better Auth in `src/auth/auth.server.ts` on the `main` database, its tables in `src/db/auth-schema.ts`, the `/api/auth/$` route, a browser client, `getViewer()` read through Better Apps' identity, and a sign-in page |
-| `@buildkit/i18n`               | Lingui as app code in `src/i18n/`: request middleware on `ssr`, browser detection on `spa`, a router wrapper, localized URLs through the router's rewrite, `<html lang dir>`, catalogs in `src/locales`                 |
-| `@buildkit/better-apps-deploy` | The Better Apps Vite plugin in the `framework` band, `better-apps.environments.jsonc`, and a workflow that runs `better-apps deploy --env staging` on every push to `main`                                              |
+Once the app is applied, `buildkit create` offers the setup steps: `pnpm install`, then `pnpm build`, which writes
+`src/routeTree.gen.ts` for the type check, then a git repository with a first commit. Apps pin pnpm in `packageManager`,
+so setup installs with pnpm whichever package manager ran the CLI. `--setup` runs them without asking, and `--no-setup`
+lists them in the next steps instead.
 
-## Better Apps packages
-
-The database, sign-in and deploy add-ons use Better Apps packages that aren't on npm yet. The catalog pins them at
-`0.1.0`, the first version Better Apps' platform packages are planned to release together, and every plan that adds one
-carries an `unpublished-package` notice. Until they publish, an app that uses them can't install.
-
-## Starter files
-
-Starter files are real files in `templates/`, formatted like the app they become. Upgrades merge template fixes into the
-copies in your app. Options shape only a few small files, such as `src/i18n/locales.ts`.
+| Add-on           | What it writes                                                                                                                                                                                            |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@buildkit/ci`   | `.github/workflows/ci.yml`: `buildkit check`, lint, format, build and type-check on every push and pull request. Steps are keyed by `id`, so add-ons add their own                                        |
+| `@buildkit/i18n` | Lingui 6 as app code in `src/i18n/`: request middleware on `ssr`, browser detection on `spa`, a router wrapper, localized URLs through the router's rewrite, `<html lang dir>`, catalogs in `src/locales` |

@@ -1,2 +1,3 @@
 /** The engine's version, recorded in every lock. A test keeps it equal to package.json. */
-export const engineVersion = "0.6.0" as string
+// SAFETY: widening a string literal to string always holds, and keeps each release's number out of the public type.
+export const engineVersion = "0.9.0" as string

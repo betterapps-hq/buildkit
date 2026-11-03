@@ -1,13 +1,52 @@
 {
-  "name": "@repo/oxlint-config",
-  "version": "0.0.0",
-  "private": true,
+  "name": "@buildkitgg/oxlint-config",
+  "version": "0.1.0",
+  "description": "Shared Oxlint configuration: the Buildkit base rules, including the anti-slop plugin.",
   "license": "MIT",
-  "files": [
-    "base.ts"
-  ],
+  "type": "module",
+  "sideEffects": false,
   "exports": {
-    "./base": "./base.ts"
+    "./base": {
+      "types": "./dist/base.d.ts",
+      "import": "./dist/base.js"
+    }
   },
-  "scripts": {}
+  "files": [
+    "dist/**/*.js",
+    "dist/**/*.d.ts",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "pnpm build && vp test run",
+    "prepack": "pnpm build"
+  },
+  "dependencies": {
+    "@buildkitgg/oxlint-plugin-anti-slop": "workspace:*"
+  },
+  "peerDependencies": {
+    "oxlint": "^1.89.0"
+  },
+  "devDependencies": {
+    "@buildkitgg/typescript-config": "workspace:*",
+    "@types/node": "24.19.2",
+    "oxlint": "1.89.0",
+    "typescript": "catalog:",
+    "vite-plus": "catalog:"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/betterapps-hq/buildkit.git",
+    "directory": "packages/tooling/oxlint-config"
+  },
+  "homepage": "https://github.com/betterapps-hq/buildkit/tree/main/packages/tooling/oxlint-config#readme",
+  "bugs": {
+    "url": "https://github.com/betterapps-hq/buildkit/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
 }

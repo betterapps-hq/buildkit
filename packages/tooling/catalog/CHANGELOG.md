@@ -1,8 +1,49 @@
 # Change Log - @buildkitgg/catalog
 
-<!-- This log was last generated on Fri, 30 Oct 2026 08:23:50 GMT and should not be manually modified. -->
+<!-- This log was last generated on Tue, 03 Nov 2026 11:33:32 GMT and should not be manually modified. -->
 
 <!-- Start content -->
+
+## 0.4.1
+
+Tue, 03 Nov 2026 11:33:32 GMT
+
+### Patches
+
+- fix: pass the anti-slop lint rules (ajcraswell@gmail.com)
+- Bump @buildkitgg/scaffolder to v0.9.0
+
+## 0.4.0
+
+Tue, 03 Nov 2026 03:52:39 GMT
+
+### Minor changes
+
+- Remove the better-apps-deploy, sql and better-auth add-ons and the saas preset, so the catalog uses no Better Apps
+  packages (ajcraswell@gmail.com)
+
+## 0.3.1
+
+Tue, 03 Nov 2026 02:41:57 GMT
+
+### Patches
+
+- Bump @buildkitgg/scaffolder to v0.8.0
+
+## 0.3.0
+
+Tue, 03 Nov 2026 01:39:16 GMT
+
+### Minor changes
+
+- Ask the database, sign-in and localization as questions with the same ids, so --database, --auth and --no-auth keep
+  working. The SQL add-on conflicts with other database add-ons, and Better Auth needs one. (ajcraswell@gmail.com)
+- Bump @buildkitgg/scaffolder to v0.7.0
+
+### Patches
+
+- Use @better-apps/identity-better-auth, the Better Auth identity adapter's new name, in the better-auth add-on
+  (ajcraswell@gmail.com)
 
 ## 0.2.1
 

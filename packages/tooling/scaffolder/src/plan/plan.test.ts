@@ -30,7 +30,7 @@ describe("planning", () => {
     const second = await planFixture({}, initRequest())
     expect(JSON.stringify(second)).toBe(JSON.stringify(first))
     expect(first.fingerprint).toMatch(/^[0-9a-f]{64}$/)
-    const other = await planFixture({}, initRequest({ optional: ["@fixture/i18n"] }))
+    const other = await planFixture({}, initRequest({ extra: ["@fixture/i18n"] }))
     expect(other.fingerprint).not.toBe(first.fingerprint)
   })
 
@@ -94,10 +94,12 @@ describe("ownership", () => {
     expect(clash.status).toBe("conflict")
     expect(clash.conflicts[0]).toMatchObject({ id: "src/sessions.ts", kind: "exists" })
     expect(clash.operations.find((operation) => operation.path === "src/sessions.ts")).toBeUndefined()
+
     const same = await planFixture(
       { ...files, "src/sessions.ts": "export const sessions = true\r\n" },
       addRequest(["auth"])
     )
+
     expect(same.status).toBe("planned")
     expect(same.operations.find((operation) => operation.path === "src/sessions.ts")).toBeUndefined()
   })
@@ -111,10 +113,12 @@ describe("ownership", () => {
     const config = (files["fixture.jsonc"] ?? "").replace('"@fixture/auth": {},\n', "")
     const removed = await planFixture({ ...files, "fixture.jsonc": config }, { intent: { command: "sync" } })
     expect(removed.operations.find((operation) => operation.path === "src/sessions.ts")?.action).toBe("delete")
+
     const editedOrphan = await planFixture(
       { ...files, "fixture.jsonc": config, "src/sessions.ts": "edited\n" },
       { intent: { command: "sync" } }
     )
+
     expect(editedOrphan.conflicts).toEqual([expect.objectContaining({ id: "src/sessions.ts", kind: "orphan-edited" })])
   })
 
@@ -122,15 +126,19 @@ describe("ownership", () => {
     const files = await applyFixture(await project(), addRequest(["auth"]))
     const lock = lockOf(files)
     const entry = lock.files["src/sessions.ts"]
+
     if (entry?.class !== "owned") {
       throw new Error("expected an owned entry")
     }
+
     lock.files["src/sessions.ts"] = { ...entry, genHash: "0".repeat(64), diskHash: "0".repeat(64) }
     const config = (files["fixture.jsonc"] ?? "").replace('"@fixture/auth": {},\n', "")
+
     const planned = await planFixture(
       { ...files, [lockFile]: JSON.stringify(lock), "fixture.jsonc": config },
       { intent: { command: "sync" } }
     )
+
     expect(planned.operations.find((operation) => operation.path === "src/sessions.ts")).toBeUndefined()
     expect(planned.notices).toContainEqual(expect.objectContaining({ code: "orphan-kept", path: "src/sessions.ts" }))
   })
@@ -148,10 +156,12 @@ describe("ownership", () => {
     expect(take.operations.find((operation) => operation.path === ".oxlintrc.json")?.content).toContain(
       '"strict": false'
     )
+
     const keep = applyInMemory(
       edited,
       await planFixture(edited, { ...request, resolve: { ".oxlintrc.json": "keep-current" } })
     )
+
     expect(keep[".oxlintrc.json"]).toBe(edited[".oxlintrc.json"])
     expect((await planFixture(keep, { intent: { command: "sync" } })).status).toBe("unchanged")
     const file = await planFixture(edited, { ...request, resolve: { ".oxlintrc.json": { content: "{}\n" } } })
@@ -167,10 +177,12 @@ describe("ownership", () => {
     expect(asked.conflicts).toEqual([expect.objectContaining({ id: ".oxlintrc.json", kind: "deleted" })])
     const recreated = await planFixture(deleted, { ...request, resolve: { ".oxlintrc.json": "take-incoming" } })
     expect(recreated.operations.find((operation) => operation.path === ".oxlintrc.json")?.action).toBe("create")
+
     const kept = applyInMemory(
       deleted,
       await planFixture(deleted, { ...request, resolve: { ".oxlintrc.json": "keep-current" } })
     )
+
     expect(lockOf(kept).deleted).toContain(".oxlintrc.json")
     expect((await planFixture(kept, { intent: { command: "sync" } })).notices).toContainEqual(
       expect.objectContaining({ code: "stays-deleted" })
@@ -189,9 +201,11 @@ describe("ownership", () => {
     const files = await project()
     const catalog = fixtureCatalog()
     const lint = catalog.addons.find((addon) => addon.id === "@fixture/lint")
+
     if (!lint) {
       throw new Error("missing lint")
     }
+
     const seeded = {
       ...catalog,
       addons: catalog.addons.map((addon) =>
@@ -208,28 +222,34 @@ describe("ownership", () => {
           : addon
       )
     }
+
     const clean = await plan({
       catalog: seeded,
       settings,
       tree: memoryTree(files),
       request: { intent: { command: "sync" } }
     })
+
     expect(clean.status).toBe("planned")
     expect(clean.operations.map((operation) => operation.path)).toEqual([lockFile])
+
     const edited = await plan({
       catalog: seeded,
       settings,
       tree: memoryTree({ ...files, ".oxlintrc.json": "{}\n" }),
       request: { intent: { command: "sync" } }
     })
+
     expect(edited.conflicts).toEqual([expect.objectContaining({ kind: "class-change" })])
   })
 
   it("normalizes line endings, a BOM and the final newline before comparing", async () => {
     const files = await project()
+
     const crlf = Object.fromEntries(
       Object.entries(files).map(([path, content]) => [path, `﻿${content.replaceAll("\n", "\r\n")}\r\n\r\n`])
     )
+
     crlf[lockFile] = files[lockFile] ?? ""
     crlf["fixture.jsonc"] = files["fixture.jsonc"] ?? ""
     const sync = await planFixture(crlf, { intent: { command: "sync" } })
@@ -265,15 +285,19 @@ describe("shared JSON files", () => {
     const files = await project()
     const lock = lockOf(files)
     const entry = lock.files["package.json"]
+
     if (entry?.class !== "shared") {
       throw new Error("expected shared")
     }
+
     entry.keys["/devDependencies/vite"] = { base: "7.0.0", provenance: "introduced" }
+
     const edited = {
       ...files,
       [lockFile]: JSON.stringify(lock),
       "package.json": (files["package.json"] ?? "").replace('"vite": "8.0.0"', '"vite": "9.0.0"')
     }
+
     const planned = await planFixture(edited, { intent: { command: "sync" } })
     expect(planned.status).toBe("conflict")
     expect(planned.conflicts[0]).toMatchObject({ id: "package.json#/devDependencies/vite", kind: "both-changed" })
@@ -287,22 +311,26 @@ describe("shared JSON files", () => {
     expect(entry?.class === "shared" && entry.keys["/dependencies/react"]?.provenance).toBe("adopted")
   })
 
-  it("replacing within a slot removes the introduced dependency, adds the new one, and keeps your script", async () => {
+  it("replacing a conflicting add-on removes the introduced dependency, adds the new one, and keeps your script", async () => {
     const files = await project()
     const mine = JSON.parse(files["package.json"] ?? "{}")
     mine.scripts.db = "drizzle-kit studio"
     const edited = { ...files, "package.json": `${JSON.stringify(mine, null, 2)}\n` }
     const replaced = await planFixture(edited, addRequest(["db-postgres"], ["db-sqlite"]))
+
     const merged = JSON.parse(
       replaced.operations.find((operation) => operation.path === "package.json")?.content ?? "{}"
     )
+
     expect(merged.dependencies).toMatchObject({ pg: "8.16.0", "drizzle-orm": "0.45.4" })
     expect(merged.scripts.db).toBe("drizzle-kit studio")
+
     const lint = JSON.parse(
       (await planFixture(edited, addRequest(["ui-fancy"], ["ui-basic"]))).operations.find(
         (operation) => operation.path === "package.json"
       )?.content ?? "null"
     )
+
     expect(lint).toBeNull()
   })
 
@@ -325,12 +353,14 @@ describe("shared JSON files", () => {
         contribute: () => [{ kind: "script", name: "lint", command: "eslint" }]
       })
     )
+
     const planned = await plan({
       catalog,
       settings,
       tree: memoryTree({}),
-      request: initRequest({ optional: ["@fixture/other-lint"] })
+      request: initRequest({ extra: ["@fixture/other-lint"] })
     })
+
     expect(planned.error?.code).toBe("E_CONTRIBUTION")
     expect(planned.error?.message).toContain("@fixture/lint")
     expect(planned.error?.message).toContain("@fixture/other-lint")
@@ -338,10 +368,12 @@ describe("shared JSON files", () => {
 
   it("an unsafe key in a JSON file is an error naming the file", async () => {
     const files = await project()
+
     const planned = await planFixture(
       { ...files, "package.json": '{ "__proto__": { "polluted": true } }\n' },
       addRequest(["i18n"])
     )
+
     expect(planned.error).toMatchObject({ code: "E_UNSAFE_KEY", paths: ["package.json"] })
   })
 
@@ -370,10 +402,12 @@ describe("shared JSON files", () => {
     expect(fresh.conflicts).toContainEqual(
       expect.objectContaining({ id: "package.json#/dependencies/react", kind: "moved" })
     )
+
     const taken = await planFixture(
       { ...edited, [lockFile]: JSON.stringify(lock) },
       { intent: { command: "sync" }, resolve: { "package.json#/dependencies/react": "take-incoming" } }
     )
+
     const result = JSON.parse(taken.operations.find((operation) => operation.path === "package.json")?.content ?? "{}")
     expect(result.dependencies.react).toBe("19.3.1")
     expect(result.devDependencies.react).toBeUndefined()
@@ -386,9 +420,11 @@ describe("shared JSON files", () => {
     expect((await planFixture(deleted, { intent: { command: "sync" } })).status).toBe("unchanged")
     const lock = lockOf(files)
     const entry = lock.files["package.json"]
+
     if (entry?.class !== "shared") {
       throw new Error("expected shared")
     }
+
     entry.keys["/dependencies/react"] = { base: "18.0.0", provenance: "introduced" }
     const planned = await planFixture({ ...deleted, [lockFile]: JSON.stringify(lock) }, { intent: { command: "sync" } })
     expect(planned.conflicts).toContainEqual(
@@ -405,10 +441,12 @@ describe("shared JSON files", () => {
     const added = applyInMemory(edited, await planFixture(edited, addRequest(["i18n"])))
     expect(JSON.parse(added["tsconfig.json"] ?? "{}").include).toEqual(["src", "tests", "locales"])
     const config = (added["fixture.jsonc"] ?? "").replace('"@fixture/i18n": {},\n', "")
+
     const removed = applyInMemory(
       added,
       await planFixture({ ...added, "fixture.jsonc": config }, { intent: { command: "sync" } })
     )
+
     expect(JSON.parse(removed["tsconfig.json"] ?? "{}").include).toEqual(["src", "tests"])
     const catalog = fixtureCatalog()
     catalog.addons.push(
@@ -432,20 +470,24 @@ describe("shared JSON files", () => {
         ]
       })
     )
+
     const ci = applyInMemory(
       {},
-      await plan({ catalog, settings, tree: memoryTree({}), request: initRequest({ optional: ["@fixture/ci"] }) })
+      await plan({ catalog, settings, tree: memoryTree({}), request: initRequest({ extra: ["@fixture/ci"] }) })
     )
+
     const steps = JSON.parse(ci["ci.json"] ?? "{}")
     steps.steps[1].run = "pnpm test --coverage"
     steps.steps.push({ id: "mine", run: "echo" })
     const editedCi = { ...ci, "ci.json": JSON.stringify(steps) }
+
     const synced = await plan({
       catalog,
       settings,
       tree: memoryTree(editedCi),
       request: { intent: { command: "sync" } }
     })
+
     expect(synced.status).toBe("unchanged")
   })
 
@@ -458,9 +500,11 @@ describe("shared JSON files", () => {
     expect(files[".gitignore"]).toBe("node_modules\n.DS_Store\ndist\n.env\nstorybook-static\n")
     const catalog = fixtureCatalog()
     const target = catalog.targets[0]
+
     if (!target) {
       throw new Error("missing target")
     }
+
     const without = {
       ...catalog,
       targets: [
@@ -471,19 +515,23 @@ describe("shared JSON files", () => {
         }
       ]
     }
+
     const planned = await plan({
       catalog: without,
       settings,
       tree: memoryTree(files),
       request: { intent: { command: "sync" } }
     })
+
     expect(planned.conflicts).toEqual([expect.objectContaining({ id: ".gitignore#.env", kind: "secret-pattern" })])
+
     const removed = await plan({
       catalog: without,
       settings,
       tree: memoryTree(files),
       request: { intent: { command: "sync" }, resolve: { ".gitignore#.env": "take-incoming" } }
     })
+
     expect(removed.operations.find((operation) => operation.path === ".gitignore")?.content).toBe(
       "node_modules\n.DS_Store\nstorybook-static\n"
     )
@@ -512,16 +560,19 @@ describe("YAML and adoption", () => {
         ]
       })
     )
+
     const existing = {
       ".github/workflows/ci.yml":
         "# Our CI\non: push\njobs:\n  verify:\n    steps:\n      - id: checkout # keep\n        uses: actions/checkout@v4\n"
     }
+
     const planned = await plan({
       catalog,
       settings,
       tree: memoryTree(existing),
-      request: initRequest({ optional: ["@fixture/ci"], adopt: true })
+      request: initRequest({ extra: ["@fixture/ci"], adopt: true })
     })
+
     const files = applyInMemory(existing, planned)
     expect(files[".github/workflows/ci.yml"]).toContain("# keep")
     expect(files[".github/workflows/ci.yml"]).toContain("- id: lint\n        run: pnpm lint")
@@ -534,15 +585,19 @@ describe("YAML and adoption", () => {
   it("puts an ordered item after the item it follows, in a new file and in yours", async () => {
     const workflow = ".github/workflows/ci.yml"
     const catalog = fixtureCatalog()
-    const steps = (value: unknown, order?: { after?: string[]; before?: string[] }): Contribution => ({
-      kind: "yaml",
-      path: workflow,
-      pointer: "/jobs/verify/steps",
-      op: "append",
-      key: "id",
-      value,
-      ...(order ? { order } : {})
-    })
+
+    type Step = Extract<Contribution, { kind: "yaml" }>
+
+    const steps = (value: Step["value"], order?: Step["order"]): Contribution => {
+      const step: Step = { kind: "yaml", path: workflow, pointer: "/jobs/verify/steps", op: "append", key: "id", value }
+
+      if (order) {
+        step.order = order
+      }
+
+      return step
+    }
+
     catalog.addons.push(
       defineAddon({
         id: "@fixture/ci",
@@ -570,19 +625,21 @@ describe("YAML and adoption", () => {
       })
     )
     const ids = (text: string | undefined) => [...(text ?? "").matchAll(/- id: (\w+)/g)].map((found) => found[1])
-    const request = initRequest({ optional: ["@fixture/ci", "@fixture/translations"] })
+    const request = initRequest({ extra: ["@fixture/ci", "@fixture/translations"] })
     const created = applyInMemory({}, await plan({ catalog, settings, tree: memoryTree({}), request }))
     expect(ids(created[workflow])).toEqual(["first", "lint", "translations", "build", "last"])
     const yours = { [workflow]: "jobs:\n  verify:\n    steps:\n      - id: build\n        run: pnpm build\n" }
+
     const adopted = applyInMemory(
       yours,
       await plan({
         catalog,
         settings,
         tree: memoryTree(yours),
-        request: initRequest({ optional: ["@fixture/ci", "@fixture/translations"], adopt: true })
+        request: initRequest({ extra: ["@fixture/ci", "@fixture/translations"], adopt: true })
       })
     )
+
     expect(ids(adopted[workflow])).toEqual(["first", "build", "lint", "translations", "last"])
 
     const unkeyed = fixtureCatalog()
@@ -597,12 +654,14 @@ describe("YAML and adoption", () => {
         ]
       })
     )
+
     const refused = await plan({
       catalog: unkeyed,
       settings,
       tree: memoryTree({}),
-      request: initRequest({ optional: ["@fixture/ci"] })
+      request: initRequest({ extra: ["@fixture/ci"] })
     })
+
     expect(refused.error?.message).toContain("only items of a keyed array can be ordered")
   })
 
@@ -623,27 +682,32 @@ describe("YAML and adoption", () => {
 describe("state", () => {
   it("refuses an unsupported lock schema version", async () => {
     const files = await project()
+
     const planned = await planFixture(
       { ...files, [lockFile]: '{ "schemaVersion": 2 }' },
       { intent: { command: "sync" } }
     )
+
     expect(planned.error?.code).toBe("E_LOCK_VERSION")
   })
 
   it("refuses to plan while the config or lock has conflict markers", async () => {
     const files = await project()
+
     const planned = await planFixture(
       { ...files, "fixture.jsonc": `<<<<<<< ours\n${files["fixture.jsonc"]}=======\n>>>>>>> theirs\n` },
       { intent: { command: "sync" } }
     )
+
     expect(planned.error?.code).toBe("E_CONFLICT_MARKERS")
   })
 
   it("the config round-trips: what's written resolves back to the same selection", async () => {
     const files = await project({
-      optional: ["@fixture/i18n"],
+      extra: ["@fixture/i18n"],
       options: { "@fixture/i18n": { locales: ["en", "fr"] } }
     })
+
     expect(files["fixture.jsonc"]).toContain('"@fixture/i18n": { "locales": ["en", "fr"] }')
     expect((await planFixture(files, { intent: { command: "sync" } })).status).toBe("unchanged")
     const lock = lockOf(files)
@@ -672,12 +736,14 @@ describe("state", () => {
         contribute: () => [{ kind: "file", path: ".env", content: "TOKEN=\n", ownership: "sample" }]
       })
     )
+
     const planned = await plan({
       catalog,
       settings,
       tree: memoryTree({}),
-      request: initRequest({ optional: ["@fixture/dotenv", "@fixture/sentry"] })
+      request: initRequest({ extra: ["@fixture/dotenv", "@fixture/sentry"] })
     })
+
     expect(planned.operations.find((operation) => operation.path === ".env")?.secret).toBe(true)
     expect(planned.operations.find((operation) => operation.path === ".env.example")?.secret).toBeUndefined()
     expect(planned.env).toContainEqual(expect.objectContaining({ name: "SENTRY_DSN", secret: true }))
@@ -691,22 +757,101 @@ describe("upgrade", () => {
   const v1 = fixtureCatalog(1)
   const catalogs = (version: string) => (version === "1.0.0" ? v1 : undefined)
 
-  it("a choice an upgrade needs stays an upgrade, so it finishes", async () => {
-    const files = await project({ slots: { database: null } })
+  it("says which questions the template now asks, without asking them", async () => {
+    const files = await project()
     const v2 = fixtureCatalog(2)
+
+    const metrics = defineAddon({
+      id: "@fixture/metrics",
+      version: "1.0.0",
+      title: "Metrics",
+      description: "Counters and timers",
+      contribute: () => []
+    })
+
+    const asking = {
+      ...v2,
+      addons: [...v2.addons, metrics],
+      templates: v2.templates.map((template) =>
+        template.id === "app"
+          ? {
+              ...template,
+              questions: [
+                ...(template.questions ?? []),
+                {
+                  id: "metrics",
+                  title: "Metrics",
+                  question: "Add metrics?",
+                  pick: "one" as const,
+                  choices: ["@fixture/metrics"]
+                },
+                // The project already has Storybook, so this one is answered.
+                {
+                  id: "workshop",
+                  title: "Workshop",
+                  question: "Add a workshop?",
+                  pick: "one" as const,
+                  choices: ["@fixture/storybook"]
+                }
+              ]
+            }
+          : template
+      )
+    }
+
+    const planned = await planFixture(files, { intent: { command: "upgrade" } }, { catalog: asking, catalogs })
+    expect(planned.status).toBe("planned")
+    expect(planned.notices.filter((notice) => notice.code === "new-question")).toEqual([
+      { code: "new-question", text: "The template now asks: Add metrics? Run `fixture add metrics` to answer it." }
+    ])
+    expect(planned.operations.find((operation) => operation.path === "fixture.jsonc")?.content ?? "").not.toContain(
+      "@fixture/metrics"
+    )
+    // Without the old catalog, which questions are new isn't known.
+    const unknown = await planFixture(files, { intent: { command: "upgrade" } }, { catalog: asking })
+    expect(unknown.notices.map((notice) => notice.code)).not.toContain("new-question")
+  })
+
+  it("reads slot: from an old config and lock as question:, and writes the new form", async () => {
+    const files = await project({ questions: { database: [] } })
+
+    const old = Object.fromEntries(
+      Object.entries(files).map(([path, content]) => [path, content.replaceAll("question:database", "slot:database")])
+    )
+
+    expect(old["fixture.jsonc"]).toContain('"slot:database"')
+    expect(lockOf(old).project.declined).toContain("slot:database")
+    const synced = await applyFixture(old, { intent: { command: "sync" } })
+    expect(synced["fixture.jsonc"]).toContain('"question:database"')
+    expect(synced["fixture.jsonc"]).not.toContain("slot:")
+    expect(lockOf(synced).project.declined).toContain("question:database")
+    expect(lockOf(synced).project.declined).not.toContain("slot:database")
+    // Answering the question later clears the old form too.
+    const added = await applyFixture(old, addRequest(["db-sqlite"]))
+    expect(added["fixture.jsonc"]).not.toContain("slot:database")
+    expect(added["fixture.jsonc"]).not.toContain("question:database")
+  })
+
+  it("a choice an upgrade needs stays an upgrade, so it finishes", async () => {
+    const files = await project({ questions: { database: [] } })
+    const v2 = fixtureCatalog(2)
+
     const strict = {
       ...v2,
       addons: v2.addons.map((addon) =>
-        addon.id === "@fixture/lint" ? { ...addon, requires: ["slot:database"] } : addon
+        addon.id === "@fixture/lint" ? { ...addon, requires: ["provides:database"] } : addon
       )
     }
+
     const planned = await planFixture(files, { intent: { command: "upgrade" } }, { catalog: strict, catalogs })
     expect(planned.status).toBe("needs-decision")
     const [first] = planned.decisions[0]?.choices ?? []
     expect(first?.request).toEqual({ intent: { command: "upgrade", addons: ["@fixture/db-sqlite"] } })
+
     if (!first) {
       throw new Error("missing choice")
     }
+
     const upgraded = await planFixture(files, first.request, { catalog: strict, catalogs })
     expect(upgraded.status).toBe("planned")
     expect(upgraded.operations.find((operation) => operation.path === "fixture.jsonc")?.content).toContain(
@@ -717,11 +862,13 @@ describe("upgrade", () => {
   it("merges your seed edits with the new version, runs migrations and lists agent tasks", async () => {
     const files = await project()
     const edited = { ...files, "src/main.ts": `// note\n${files["src/main.ts"]}`, "scripts/ci.sh": "npm run lint\n" }
+
     const planned = await planFixture(
       edited,
       { intent: { command: "upgrade" } },
       { catalog: fixtureCatalog(2), catalogs }
     )
+
     expect(planned.status).toBe("planned")
     expect(planned.baseline).toEqual({ source: "cache", catalogVersion: "1.0.0" })
     expect(planned.merged).toEqual([{ path: "src/main.ts", hunks: 1 }])
@@ -743,22 +890,27 @@ describe("upgrade", () => {
 
   it("a seed edit on the same lines is a conflict, or conflict markers when asked", async () => {
     const files = await project()
+
     const edited = {
       ...files,
       "src/main.ts": (files["src/main.ts"] ?? "").replace("}\n", "}\n\nexport const ready = false\n")
     }
+
     const conflict = await planFixture(
       edited,
       { intent: { command: "upgrade" } },
       { catalog: fixtureCatalog(2), catalogs }
     )
+
     expect(conflict.conflicts).toEqual([expect.objectContaining({ id: "src/main.ts", kind: "merge" })])
     expect(conflict.conflicts[0]?.base).toBe(files["src/main.ts"])
+
     const markers = await planFixture(
       edited,
       { intent: { command: "upgrade" }, conflictStyle: "markers" },
       { catalog: fixtureCatalog(2), catalogs }
     )
+
     expect(markers.status).toBe("planned")
     expect(markers.operations.find((operation) => operation.path === "src/main.ts")?.content).toContain("<<<<<<< yours")
   })
@@ -778,11 +930,13 @@ describe("upgrade", () => {
     const files = await applyFixture({}, initRequest(), { settings: stored })
     expect(lockOf(files).files["src/main.ts"]).toEqual(expect.objectContaining({ base: files["src/main.ts"] }))
     const edited = { ...files, "src/main.ts": `// note\n${files["src/main.ts"]}` }
+
     const planned = await planFixture(
       edited,
       { intent: { command: "upgrade" } },
       { catalog: fixtureCatalog(2), settings: stored }
     )
+
     expect(planned.baseline).toEqual({ source: "stored", catalogVersion: "1.0.0" })
     expect(planned.conflicts).toEqual([])
     expect(planned.merged).toEqual([{ path: "src/main.ts", hunks: 1 }])
@@ -801,11 +955,13 @@ describe("upgrade", () => {
     const lock = JSON.parse(synced[lockFile] ?? "{}")
     lock.files["src/main.ts"].base = "export const forged = true\n"
     const forged = { ...synced, [lockFile]: JSON.stringify(lock), "src/main.ts": `// note\n${files["src/main.ts"]}` }
+
     const planned = await planFixture(
       forged,
       { intent: { command: "upgrade" } },
       { catalog: fixtureCatalog(2), settings: stored }
     )
+
     expect(planned.conflicts).toEqual([expect.objectContaining({ id: "src/main.ts", kind: "baseline-unverified" })])
   })
 
@@ -817,30 +973,94 @@ describe("upgrade", () => {
     const upgrade = planned.decisions[0]?.choices[0]
     expect(upgrade?.label).toBe("Upgrade to 2.0.0 and add Localization")
     expect(upgrade?.request).toEqual({ intent: { command: "upgrade", addons: ["@fixture/i18n"] } })
+
     if (!upgrade) {
       throw new Error("missing choice")
     }
+
     const upgraded = await planFixture(files, upgrade.request, { catalog: fixtureCatalog(2), catalogs })
     expect(upgraded.status).toBe("planned")
     expect(upgraded.operations.map((operation) => operation.path)).toContain("src/i18n/setup.ts")
+
     const replacing = await planFixture(files, addRequest(["ui-fancy"], ["ui-basic"]), {
       catalog: fixtureCatalog(2),
       catalogs
     })
+
     expect(replacing.decisions[0]?.choices[0]?.request).toEqual({ intent: { command: "upgrade" } })
     const recorded = planned.decisions[0]?.choices[1]?.request
+
     if (!recorded) {
       throw new Error("missing choice")
     }
+
     const pinned = await planFixture(files, recorded, { catalog: fixtureCatalog(2), catalogs })
     expect(pinned.status).toBe("planned")
     expect(pinned.catalog.version).toBe("1.0.0")
+
     const missing = await planFixture(
       files,
       { ...recorded, catalogVersion: "0.9.0" },
       { catalog: fixtureCatalog(2), catalogs }
     )
+
     expect(missing.error?.code).toBe("E_BASELINE_UNAVAILABLE")
+  })
+})
+
+describe("version ranges", () => {
+  const packageJson = (files: Record<string, string>): Record<string, Record<string, string>> =>
+    // SAFETY: the planner writes package.json from these fixtures, whose sections all map package names to versions.
+    JSON.parse(files["package.json"] ?? "{}") as Record<string, Record<string, string>>
+
+  it("writes exact pins in the catalog's range style, and pins that are ranges as they're written", async () => {
+    const exact = packageJson(await project())
+    expect(exact.dependencies).toMatchObject({ react: "19.3.1", "drizzle-orm": "0.45.4" })
+    const v1 = fixtureCatalog()
+
+    for (const [range, react] of [
+      ["caret", "^19.3.1"],
+      ["tilde", "~19.3.1"],
+      ["exact", "19.3.1"]
+    ] as const) {
+      const catalog = { ...v1, range, versions: { ...v1.versions, "drizzle-orm": "~0.45.4", storybook: ">=10.1 <11" } }
+      const written = packageJson(await applyFixture({}, initRequest(), { catalog }))
+      expect(written.dependencies).toMatchObject({ react, "drizzle-orm": "~0.45.4" })
+      expect(written.devDependencies).toMatchObject({ storybook: ">=10.1 <11" })
+    }
+  })
+
+  it("an upgrade moves the pins the engine wrote, and one you changed is a conflict that keep-current keeps", async () => {
+    const files = await project()
+
+    const edited = {
+      ...files,
+      "package.json": (files["package.json"] ?? "").replace('"vite": "8.0.0"', '"vite": "8.1.0"')
+    }
+
+    const v2 = fixtureCatalog(2)
+    const catalog = { ...v2, range: "caret" as const, versions: { ...v2.versions, react: "19.4.0" } }
+    const catalogs = (version: string) => (version === "1.0.0" ? fixtureCatalog(1) : undefined)
+    const request = { intent: { command: "upgrade" as const } }
+    const conflict = await planFixture(edited, request, { catalog, catalogs })
+    expect(conflict.conflicts).toEqual([
+      expect.objectContaining({ id: "package.json#/devDependencies/vite", kind: "both-changed" })
+    ])
+
+    const upgraded = applyInMemory(
+      edited,
+      await planFixture(
+        edited,
+        { ...request, resolve: { "package.json#/devDependencies/vite": "keep-current" } },
+        {
+          catalog,
+          catalogs
+        }
+      )
+    )
+
+    expect(packageJson(upgraded).dependencies).toMatchObject({ react: "^19.4.0", "drizzle-orm": "^0.45.4" })
+    expect(packageJson(upgraded).devDependencies).toMatchObject({ vite: "8.1.0", oxlint: "^1.72.0" })
   })
 })
 
@@ -848,10 +1068,12 @@ describe("fingerprints", () => {
   it("change when a file the plan read changes", async () => {
     const files = await project()
     const before = await planFixture(files, addRequest(["i18n"]))
+
     const after = await planFixture(
       { ...files, "package.json": (files["package.json"] ?? "").replace("vite", "vite ") },
       addRequest(["i18n"])
     )
+
     expect(after.fingerprint).not.toBe(before.fingerprint)
   })
 })

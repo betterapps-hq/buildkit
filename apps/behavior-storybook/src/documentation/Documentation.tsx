@@ -11,12 +11,13 @@ export function Documentation({ title, summary, children }: { title: string; sum
       </header>
       {children}
       <footer>
-        <a href="https://github.com/AndrewCraswell/buildkit">Source on GitHub</a>
-        <a href="https://github.com/AndrewCraswell/buildkit/issues">Report an issue</a>
+        <a href="https://github.com/betterapps-hq/buildkit">Source on GitHub</a>
+        <a href="https://github.com/betterapps-hq/buildkit/issues">Report an issue</a>
       </footer>
     </article>
   )
 }
+
 export function Code({ children }: { children: string }) {
   return (
     <pre>
@@ -24,6 +25,7 @@ export function Code({ children }: { children: string }) {
     </pre>
   )
 }
+
 export function StoryLink({ id, children }: { id: string; children: ReactNode }) {
   return (
     <a href={`./?path=/story/${id}`} target="_top">

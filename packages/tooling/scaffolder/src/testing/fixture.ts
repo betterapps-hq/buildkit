@@ -3,7 +3,7 @@ import {
   defineAddon,
   defineCatalog,
   definePoint,
-  defineSlot,
+  defineQuestion,
   defineTarget,
   defineTemplate
 } from "../manifest/define.js"
@@ -11,7 +11,7 @@ import type { CatalogManifest, Contribution } from "../manifest/types.js"
 import type { Answers } from "../manifest/types.js"
 import { plan, type PlanInput } from "../plan/plan.js"
 import { memoryTree } from "../plan/tree.js"
-import type { Plan, PlanRequest } from "../plan/types.js"
+import type { Intent, Plan, PlanRequest } from "../plan/types.js"
 import { defineSettings } from "../state/settings.js"
 
 export const settings = defineSettings({ product: "fixture", schemaUrl: "https://example.test/fixture.json" })
@@ -24,6 +24,7 @@ const vitePlugins = definePoint({
   export: "vitePlugins",
   title: "Vite plugins"
 })
+
 const providers = definePoint({
   id: "app.providers",
   version: 1,
@@ -31,6 +32,7 @@ const providers = definePoint({
   file: "src/generated/fixture/client.ts",
   export: "providers"
 })
+
 const envSchema = definePoint({
   id: "env.schema",
   version: 1,
@@ -48,6 +50,7 @@ const mainV1 = [
   "}",
   ""
 ].join("\n")
+
 const mainV2 = [
   'import { providers } from "./generated/fixture/client"',
   "",
@@ -60,8 +63,9 @@ const mainV2 = [
 ].join("\n")
 
 /**
- * The fixture catalog: a base target with two modes; a template with a required add-on, an optional add-on, an
- * optional database slot with two choices and a default, and a required UI slot; and an add-on that requires another.
+ * The fixture catalog: a base target with two modes; a template with a required add-on, an optional database question
+ * with two choices and a default, a required UI question, and optional localization, developer tools and telemetry
+ * questions; and an add-on that requires another and needs a database.
  * Version 2 changes the target's starter file, renames an option with a migration, and adds a codemod and an agent task.
  */
 export function fixtureCatalog(version: 1 | 2 = 1): CatalogManifest {
@@ -108,6 +112,7 @@ export function fixtureCatalog(version: 1 | 2 = 1): CatalogManifest {
         { kind: "lines", path: ".gitignore", lines: ["node_modules", "dist", ".env"] },
         { kind: "command", run: "pnpm install", when: "after-apply", why: "Installs the new dependencies." }
       ]
+
       if (ctx.target.has("ssr")) {
         contributions.push({
           kind: "file",
@@ -116,19 +121,23 @@ export function fixtureCatalog(version: 1 | 2 = 1): CatalogManifest {
           ownership: "owned"
         })
       }
+
       return contributions
     },
     adopt(tree) {
       const existing = tree.read("README.md")
+
       if (existing !== undefined && !existing.includes("Managed by fixture")) {
         tree.write("README.md", `${existing.trimEnd()}\n\nManaged by fixture.\n`)
       }
     }
   })
+
   const lintOptions =
     version === 1
       ? z.object({ strict: z.boolean().default(true) })
       : z.object({ level: z.enum(["recommended", "strict"]).default("strict") })
+
   const lint = defineAddon({
     id: "@fixture/lint",
     version: version === 1 ? "1.0.0" : "1.1.0",
@@ -156,6 +165,7 @@ export function fixtureCatalog(version: 1 | 2 = 1): CatalogManifest {
               description: "Renames the lint script in your own scripts file.",
               run(tree) {
                 const text = tree.read("scripts/ci.sh")
+
                 if (text !== undefined) {
                   tree.write("scripts/ci.sh", text.replaceAll("npm run lint", "pnpm lint"))
                 }
@@ -169,13 +179,14 @@ export function fixtureCatalog(version: 1 | 2 = 1): CatalogManifest {
             }
           ]
   })
+
   const sqlite = defineAddon({
     id: "@fixture/db-sqlite",
     version: "1.0.0",
     title: "SQLite",
     description: "A local SQLite database",
-    slot: "database",
     provides: { database: { dialect: "sqlite" } },
+    conflicts: ["provides:database"],
     contribute: (ctx) => [
       { kind: "dependency", name: "drizzle-orm", version: ctx.version("drizzle-orm") },
       {
@@ -191,13 +202,14 @@ export function fixtureCatalog(version: 1 | 2 = 1): CatalogManifest {
       { kind: "entry", point: "env.schema", id: "DATABASE_URL", value: { value: { type: "string" } } }
     ]
   })
+
   const postgres = defineAddon({
     id: "@fixture/db-postgres",
     version: "1.0.0",
     title: "Postgres",
     description: "A hosted Postgres database",
-    slot: "database",
     provides: { database: { dialect: "postgres" } },
+    conflicts: ["provides:database"],
     supports: (ctx) => (ctx.target.has("ssr") ? true : "Postgres needs a server."),
     contribute: (ctx) => [
       { kind: "dependency", name: "drizzle-orm", version: ctx.version("drizzle-orm") },
@@ -218,12 +230,14 @@ export function fixtureCatalog(version: 1 | 2 = 1): CatalogManifest {
       }
     ]
   })
+
   const uiBasic = defineAddon({
     id: "@fixture/ui-basic",
     version: "1.0.0",
     title: "Basic UI",
     description: "Plain components",
-    slot: "ui",
+    provides: { ui: {} },
+    conflicts: ["provides:ui"],
     contribute: () => [
       {
         kind: "entry",
@@ -233,12 +247,14 @@ export function fixtureCatalog(version: 1 | 2 = 1): CatalogManifest {
       }
     ]
   })
+
   const uiFancy = defineAddon({
     id: "@fixture/ui-fancy",
     version: "1.0.0",
     title: "Fancy UI",
     description: "Animated components",
-    slot: "ui",
+    provides: { ui: {} },
+    conflicts: ["provides:ui"],
     options: z.object({ theme: z.enum(["light", "dark"]).default("light").describe("Theme") }),
     ask: ["theme"],
     contribute: (ctx) => [
@@ -250,6 +266,7 @@ export function fixtureCatalog(version: 1 | 2 = 1): CatalogManifest {
       }
     ]
   })
+
   const i18n = defineAddon({
     id: "@fixture/i18n",
     version: "1.0.0",
@@ -282,6 +299,7 @@ export function fixtureCatalog(version: 1 | 2 = 1): CatalogManifest {
       { kind: "json", path: "tsconfig.json", pointer: "/include", op: "append", value: "locales" }
     ]
   })
+
   const storybook = defineAddon({
     id: "@fixture/storybook",
     version: "1.0.0",
@@ -293,6 +311,7 @@ export function fixtureCatalog(version: 1 | 2 = 1): CatalogManifest {
       { kind: "lines", path: ".gitignore", lines: ["storybook-static"] }
     ]
   })
+
   const sessions = defineAddon({
     id: "@fixture/sessions",
     version: "1.0.0",
@@ -302,12 +321,13 @@ export function fixtureCatalog(version: 1 | 2 = 1): CatalogManifest {
       { kind: "file", path: "src/sessions.ts", content: "export const sessions = true\n", ownership: "owned" }
     ]
   })
+
   const auth = defineAddon({
     id: "@fixture/auth",
     version: "1.0.0",
     title: "Auth",
     description: "Sign-in",
-    requires: ["@fixture/sessions", "slot:database"],
+    requires: ["@fixture/sessions", "provides:database"],
     after: ["@fixture/i18n"],
     contribute: (ctx) => [
       {
@@ -318,6 +338,7 @@ export function fixtureCatalog(version: 1 | 2 = 1): CatalogManifest {
       }
     ]
   })
+
   const sentry = defineAddon({
     id: "@fixture/sentry",
     version: "1.0.0",
@@ -330,11 +351,13 @@ export function fixtureCatalog(version: 1 | 2 = 1): CatalogManifest {
         scope: "server",
         secret: true,
         required: true,
-        description: "Your Sentry DSN"
+        description: "Your Sentry DSN",
+        help: "https://sentry.example/settings/keys"
       },
       { kind: "notice", code: "sentry", text: "Errors are sent to Sentry." }
     ]
   })
+
   return defineCatalog({
     id: "@fixture/catalog",
     version: version === 1 ? "1.0.0" : "2.0.0",
@@ -349,9 +372,23 @@ export function fixtureCatalog(version: 1 | 2 = 1): CatalogManifest {
       storybook: "10.1.0"
     },
     targets: [web],
-    slots: [
-      defineSlot({ id: "database", title: "Database", question: "Add a database?", choose: "Which database?" }),
-      defineSlot({ id: "ui", title: "UI kit", question: "Add a UI kit?", choose: "Which UI kit?" })
+    questions: [
+      defineQuestion({
+        id: "database",
+        title: "Database",
+        question: "Add a database?",
+        choose: "Which database?",
+        pick: "one",
+        choices: ["@fixture/db-sqlite", "@fixture/db-postgres"]
+      }),
+      defineQuestion({
+        id: "ui",
+        title: "UI kit",
+        question: "Add a UI kit?",
+        choose: "Which UI kit?",
+        pick: "one",
+        choices: ["@fixture/ui-basic", "@fixture/ui-fancy"]
+      })
     ],
     templates: [
       defineTemplate({
@@ -360,15 +397,26 @@ export function fixtureCatalog(version: 1 | 2 = 1): CatalogManifest {
         description: "A web app",
         target: "web",
         required: ["@fixture/lint"],
-        optional: {
-          "@fixture/i18n": { default: false },
-          "@fixture/storybook": { default: true },
-          "@fixture/sentry": { default: false }
-        },
-        slots: {
-          database: { required: false, default: "@fixture/db-sqlite" },
-          ui: { required: true, default: "@fixture/ui-basic" }
-        }
+        questions: [
+          { use: "database", default: "@fixture/db-sqlite" },
+          { use: "ui", required: true, default: "@fixture/ui-basic" },
+          {
+            id: "localization",
+            title: "Localization",
+            question: "Add localization?",
+            pick: "one",
+            choices: ["@fixture/i18n"]
+          },
+          {
+            id: "devtools",
+            title: "Developer tools",
+            question: "Add developer tools?",
+            pick: "many",
+            default: ["@fixture/storybook"],
+            choices: ["@fixture/storybook"]
+          },
+          { id: "telemetry", title: "Telemetry", question: "Add telemetry?", pick: "one", choices: ["@fixture/sentry"] }
+        ]
       }),
       defineTemplate({
         id: "bare",
@@ -376,7 +424,7 @@ export function fixtureCatalog(version: 1 | 2 = 1): CatalogManifest {
         description: "The smallest app",
         target: "web",
         modes: ["ssr"],
-        slots: { ui: { required: true } }
+        questions: [{ use: "ui", required: true }]
       })
     ],
     addons: [lint, sqlite, postgres, uiBasic, uiFancy, i18n, storybook, sessions, auth, sentry],
@@ -387,8 +435,7 @@ export function fixtureCatalog(version: 1 | 2 = 1): CatalogManifest {
         answers: {
           template: "app",
           mode: "ssr",
-          slots: { database: "@fixture/db-postgres" },
-          optional: ["@fixture/i18n"]
+          questions: { database: ["@fixture/db-postgres"], localization: ["@fixture/i18n"] }
         }
       }
     ]
@@ -396,8 +443,9 @@ export function fixtureCatalog(version: 1 | 2 = 1): CatalogManifest {
 }
 
 /** Applies a planned plan to an in-memory record, the way `applyPlan` does on disk. */
-export function applyInMemory(files: Record<string, string>, planned: Plan): Record<string, string> {
+export function applyInMemory(files: Record<string, string>, planned: Plan) {
   const next = { ...files }
+
   for (const operation of planned.operations) {
     if (operation.action === "delete") {
       delete next[operation.path]
@@ -405,6 +453,7 @@ export function applyInMemory(files: Record<string, string>, planned: Plan): Rec
       next[operation.path] = operation.content
     }
   }
+
   return next
 }
 
@@ -415,7 +464,7 @@ export function initRequest(answers: Partial<Answers> = {}): PlanRequest {
 export function addRequest(
   addons: string[],
   replace: string[] = [],
-  options: Record<string, Record<string, unknown>> = {}
+  options: Extract<Intent, { command: "add" }>["options"] = {}
 ): PlanRequest {
   return { intent: { command: "add", addons, replace, options } }
 }
@@ -436,10 +485,12 @@ export async function applyFixture(
   extra: Partial<PlanInput> = {}
 ): Promise<Record<string, string>> {
   const planned = await planFixture(files, request, extra)
+
   if (planned.status !== "planned" && planned.status !== "unchanged") {
     throw new Error(
       `Expected a plan, got ${planned.status}: ${JSON.stringify(planned.error ?? planned.decisions ?? planned.conflicts)}`
     )
   }
+
   return applyInMemory(files, planned)
 }

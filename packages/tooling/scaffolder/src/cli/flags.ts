@@ -1,3 +1,4 @@
+import type { JsonValue } from "../edit/json.js"
 import { PlanError } from "../plan/errors.js"
 
 export interface FlagSpec {
@@ -11,8 +12,13 @@ export interface FlagSpec {
   repeats?: readonly string[]
   /** Flags whose value is optional: `--out` or `--out <folder>`. */
   optionalValues?: readonly string[]
-  /** Catalog-defined flags, such as one per slot. Each accepts `--name <value>` and `--no-name`. */
+  /** Catalog-defined flags, one per question. Each accepts `--name <value>` and `--no-name`. */
   dynamic?: readonly string[]
+  /**
+   * Read any other flag as catalog-defined, for a command whose template package defines more questions. The command
+   * checks them once the package is loaded.
+   */
+  anyDynamic?: boolean
 }
 
 export interface ParsedFlags {
@@ -33,52 +39,68 @@ export function parseFlags(argv: readonly string[], spec: FlagSpec): ParsedFlags
     lists: new Map(),
     dynamic: new Map()
   }
+
   const has = (list: readonly string[] | undefined, name: string) => list?.includes(name) ?? false
+
   for (let index = 0; index < argv.length; index++) {
     const argument = argv[index] ?? ""
+
     if (argument === "--") {
       result.positionals.push(...argv.slice(index + 1))
       break
     }
+
     if (!argument.startsWith("--")) {
       if (argument.startsWith("-") && argument.length > 1) {
         if (argument === "-y") {
           result.booleans.add("yes")
           continue
         }
+
         throw new PlanError("E_USAGE", `Unknown option ${argument}.`)
       }
+
       result.positionals.push(argument)
       continue
     }
+
     const equals = argument.indexOf("=")
     const name = equals === -1 ? argument.slice(2) : argument.slice(2, equals)
     const inline = equals === -1 ? undefined : argument.slice(equals + 1)
+
     const value = () => {
       if (inline !== undefined) {
         return inline
       }
+
       const next = argv[index + 1]
+
       if (next === undefined || next.startsWith("--")) {
         throw new PlanError("E_USAGE", `--${name} needs a value.`)
       }
+
       index++
+
       return next
     }
+
     if (name.startsWith("no-") && has(spec.dynamic, name.slice(3))) {
       result.dynamic.set(name.slice(3), null)
     } else if (has(spec.booleans, name)) {
       if (inline !== undefined) {
         throw new PlanError("E_USAGE", `--${name} doesn't take a value.`)
       }
+
       result.booleans.add(name)
     } else if (has(spec.optionalValues, name)) {
       let given = inline
       const next = argv[index + 1]
+
       if (given === undefined && next !== undefined && !next.startsWith("-")) {
         given = next
         index++
       }
+
       result.strings.set(name, given ?? "")
     } else if (has(spec.strings, name)) {
       result.strings.set(name, value())
@@ -87,15 +109,21 @@ export function parseFlags(argv: readonly string[], spec: FlagSpec): ParsedFlags
         .split(",")
         .map((entry) => entry.trim())
         .filter(Boolean)
+
       result.lists.set(name, [...(result.lists.get(name) ?? []), ...values])
     } else if (has(spec.repeats, name)) {
       result.lists.set(name, [...(result.lists.get(name) ?? []), value()])
     } else if (has(spec.dynamic, name)) {
       result.dynamic.set(name, value())
+    } else if (spec.anyDynamic && name.startsWith("no-")) {
+      result.dynamic.set(name.slice(3), null)
+    } else if (spec.anyDynamic) {
+      result.dynamic.set(name, value())
     } else {
       throw new PlanError("E_USAGE", `Unknown option --${name}.`)
     }
   }
+
   return result
 }
 
@@ -105,19 +133,22 @@ export function parseSet(entries: readonly string[]): { addon: string; key: stri
     const equals = entry.indexOf("=")
     const path = equals === -1 ? "" : entry.slice(0, equals)
     const dot = path.indexOf(".")
+
     if (equals === -1 || dot <= 0 || dot === path.length - 1) {
       throw new PlanError(
         "E_USAGE",
         `--set takes <add-on>.<option>=<value>, such as i18n.locales=en,fr. "${entry}" isn't that.`
       )
     }
+
     return { addon: path.slice(0, dot), key: path.slice(dot + 1), value: parseValue(entry.slice(equals + 1)) }
   })
 }
 
-function parseValue(raw: string): unknown {
+function parseValue(raw: string): JsonValue {
   try {
-    const value: unknown = JSON.parse(raw)
+    const value: JsonValue = JSON.parse(raw)
+
     return value
   } catch {
     return raw.includes(",") ? raw.split(",").map((part) => part.trim()) : raw

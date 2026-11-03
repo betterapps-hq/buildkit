@@ -1,0 +1,48 @@
+{
+  "name": "@buildkitgg/storybook-config",
+  "entries": [
+    {
+      "date": "Tue, 03 Nov 2026 11:33:32 GMT",
+      "version": "0.1.0",
+      "tag": "@buildkitgg/storybook-config_v0.1.0",
+      "comments": {
+        "none": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/storybook-config",
+            "commit": "cb28c32943eb51eb486131148d0e2ef49bc148c7",
+            "comment": "chore: depend on @buildkitgg/typescript-config"
+          },
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/storybook-config",
+            "commit": "82b35a41ef7ccbc4f8da11ff844cc681cdc04699",
+            "comment": "Point repository, bugs and homepage at betterapps-hq/buildkit"
+          },
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/storybook-config",
+            "commit": "9a090806f3ffce624e83a97a70e6d601ad824ccd",
+            "comment": "Build in two cached steps, generating sources and then compiling them"
+          }
+        ],
+        "patch": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/storybook-config",
+            "commit": "f068bd0f1e7f36bc301a369e722e79ac9360b6e2",
+            "comment": "fix: pass the anti-slop lint rules"
+          }
+        ],
+        "minor": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/storybook-config",
+            "commit": "f068bd0f1e7f36bc301a369e722e79ac9360b6e2",
+            "comment": "feat(storybook-config): publish the shared Storybook config"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -22,6 +22,17 @@ export interface ProductSettings {
    * formatters' default.
    */
   printWidth?: number
+  /** What `create` offers to run once the project is applied, beside the add-ons' setup commands. */
+  setup?: SetupSettings
+}
+
+export interface SetupSettings {
+  /** Offer to install the dependencies. Defaults to true. */
+  install?: boolean
+  /** Offer to create a git repository with a first commit, when the project isn't in one. Defaults to true. */
+  git?: boolean
+  /** The package manager that installs. Defaults to the one that ran the CLI, then pnpm. */
+  packageManager?: "pnpm" | "npm" | "yarn" | "bun"
 }
 
 export function defineSettings(settings: Pick<ProductSettings, "product"> & Partial<ProductSettings>): ProductSettings {
@@ -37,8 +48,14 @@ export function lockPath(settings: ProductSettings): string {
   return `${settings.stateDir}/lock.json`
 }
 
+/** A file the engine writes under the state folder. */
+interface StateFile {
+  path: string
+  content: string
+}
+
 /** Paths under the state folder that never belong in git. */
-export function stateIgnoreFile(settings: ProductSettings): { path: string; content: string } {
+export function stateIgnoreFile(settings: ProductSettings): StateFile {
   return {
     path: `${settings.stateDir}/.gitignore`,
     content: ["apply.lock", "journal.json", "backup/", "plans/", ""].join("\n")

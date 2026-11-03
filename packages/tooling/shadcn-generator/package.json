@@ -1,5 +1,5 @@
 {
-  "name": "@repo/shadcn-generator",
+  "name": "@buildkitgg/shadcn-generator",
   "private": true,
   "type": "module",
   "scripts": {

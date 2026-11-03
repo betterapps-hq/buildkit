@@ -5,15 +5,19 @@ import { PackageOverview } from "./PackageOverview.js"
 function OverviewPage() {
   return <PackageOverview name="scaffolder" />
 }
+
 const meta = { title: "Tooling/scaffolder", parameters: { buildkitDocumentation: true } } satisfies Meta
+
 export default meta
+
 export const Overview: StoryObj<typeof meta> = { render: () => <OverviewPage /> }
+
 export const WritingACatalog: StoryObj<typeof meta> = {
   name: "Writing a catalog",
   render: () => (
     <Documentation
       title="Describe what projects can be made of"
-      summary="A catalog lists targets, templates, slots and add-ons. The CLI's questions are generated from it."
+      summary="A catalog lists targets, add-ons, questions and templates. The CLI's wizard is generated from it."
     >
       <h2>An add-on returns data</h2>
       <Code>
@@ -25,16 +29,17 @@ export const WritingACatalog: StoryObj<typeof meta> = {
         Contributions are dependencies, scripts, environment variables, files, entries in extension points, JSON and
         YAML edits, line lists, listed commands and notices. The engine applies them; add-ons never touch the disk.
       </p>
-      <h2>A template picks the add-ons</h2>
+      <h2>A template asks questions</h2>
       <Code>
         {
-          'import { defineTemplate } from "@buildkitgg/scaffolder"\n\nexport const app = defineTemplate({\n  id: "app",\n  title: "App",\n  description: "A web app",\n  target: "web",\n  required: ["@acme/lint"],\n  optional: { "@acme/i18n": { default: false } },\n  slots: { database: { required: false, default: "@acme/db-sqlite" } }\n})'
+          'import { defineTemplate } from "@buildkitgg/scaffolder"\n\nexport const app = defineTemplate({\n  id: "app",\n  title: "App",\n  description: "A web app",\n  target: "web",\n  required: ["@acme/lint"],\n  questions: [\n    {\n      id: "database",\n      title: "Database",\n      question: "Add a database?",\n      choose: "Which one?",\n      pick: "one",\n      default: "@acme/db-sqlite",\n      choices: ["@acme/db-sqlite", "@acme/db-postgres"]\n    },\n    { id: "i18n", title: "Localization", question: "Add localization?", pick: "one", choices: ["@acme/i18n"] }\n  ]\n})'
         }
       </Code>
       <p>
-        Required add-ons are never asked about. Optional add-ons share one multi-select. An optional slot, such as the
-        database, first asks whether you want one, then which add-on when more than one fits. It isn’t asked when no
-        add-on fits. Every question also has a flag, so the same answers work without a terminal.
+        Required add-ons are never asked about. The questions are asked in order. An optional one, such as the database,
+        first asks whether you want one, then which add-on when more than one can be picked. A choice that another
+        answer rules out is shown with the reason. Every question also has a flag, so the same answers work without a
+        terminal.
       </p>
       <h2>Check it in CI</h2>
       <Code>
@@ -44,10 +49,10 @@ export const WritingACatalog: StoryObj<typeof meta> = {
       </Code>
       <p>
         The check returns a list of problems and doesn’t fail by itself, so throw when the list isn’t empty. It reports
-        broken references and slot defaults that aren’t the slot’s add-ons. Once those checks pass, it plans every pair
-        of answers. These examples describe code to run in Node; nothing here writes files.
+        broken references and defaults a question doesn’t offer. Once those checks pass, it plans every pair of answers.
+        These examples describe code to run in Node; nothing here writes files.
       </p>
-      <a href="https://github.com/AndrewCraswell/buildkit/tree/main/packages/tooling/scaffolder#readme">
+      <a href="https://github.com/betterapps-hq/buildkit/tree/main/packages/tooling/scaffolder#readme">
         Full guide: commands, file ownership, upgrades and template packages ↗
       </a>
     </Documentation>

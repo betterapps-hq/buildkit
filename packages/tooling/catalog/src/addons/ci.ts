@@ -21,15 +21,20 @@ export function ciStep(
   step: CiStep,
   { path = ciWorkflow, job = "verify", order }: { path?: string; job?: string; order?: ItemOrder } = {}
 ): Contribution {
-  return {
+  const contribution: Contribution = {
     kind: "yaml",
     path,
     pointer: `/jobs/${job}/steps`,
     op: "append",
     key: "id",
-    value: step,
-    ...(order ? { order } : {})
+    value: step
   }
+
+  if (order) {
+    contribution.order = order
+  }
+
+  return contribution
 }
 
 /** The steps every Buildkit workflow starts with: check out, then install with the app's pinned pnpm and Node 24. */
@@ -42,10 +47,7 @@ export function setupSteps(): CiStep[] {
   ]
 }
 
-/**
- * The app-code checks, as a GitHub Actions workflow. They're Buildkit's: deploys belong to Better Apps' deploy service,
- * whose workflow the Better Apps deploys add-on writes.
- */
+/** The app-code checks, as a GitHub Actions workflow. */
 export const ci = defineAddon({
   id: "@buildkit/ci",
   version: "1.0.0",

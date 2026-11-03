@@ -9,9 +9,11 @@ afterEach(cleanup)
 it("preserves symbol-keyed custom data in partial updates", async () => {
   const revision = Symbol("revision")
   const manager = createModalManager()
+
   const modal = manager
     .createModal({ title: "Draft", initialState: { name: "Draft", [revision]: 0 }, defaultResult: null })
     .open()
+
   modal.update({ data: { [revision]: 1 } })
   await modal.submit((data) => data)
   expect(await modal).toEqual({ name: "Draft", [revision]: 1 })
@@ -24,6 +26,7 @@ function Surface({ title, body }: ModalSurfaceProps<object>) {
 
 it("publishes presentation and partial data together, including colliding names", async () => {
   const manager = createModalManager({ adapter: { Surface } })
+
   const handle = manager
     .createModal({
       title: "Dialog title",
@@ -38,11 +41,14 @@ it("publishes presentation and partial data together, including colliding names"
       }
     })
     .open()
+
   const observed: string[] = []
+
   const unsubscribe = manager.subscribe(() => {
     const entry = manager.getSnapshot()[0]
     observed.push(String(entry.content.renderSlots(entry).title))
   })
+
   render(<ModalRenderer manager={manager} />)
   act(() =>
     handle.update((current) => {
@@ -50,6 +56,7 @@ it("publishes presentation and partial data together, including colliding names"
       expect(current.data.title).toBe("Draft title")
       expect(Object.isFrozen(current)).toBe(true)
       expect(Object.isFrozen(current.data)).toBe(true)
+
       return { title: "Review", data: { title: "Final title", step: current.data.step + 1 } }
     })
   )
@@ -67,6 +74,7 @@ it("publishes presentation and partial data together, including colliding names"
 it("changes multistep content, button labels and actions without losing form values", async () => {
   const user = userEvent.setup()
   const manager = createModalManager({ adapter: { Surface } })
+
   const handle = manager
     .createModal({
       title: "Name",
@@ -100,6 +108,7 @@ it("changes multistep content, button labels and actions without losing form val
       }
     })
     .open()
+
   render(<ModalRenderer manager={manager} />)
   await user.clear(screen.getByRole("textbox", { name: "Name" }))
   await user.type(screen.getByRole("textbox", { name: "Name" }), "Grace")
@@ -113,6 +122,7 @@ it("changes multistep content, button labels and actions without losing form val
 
 it("does not commit an update that throws or closes the modal", () => {
   const manager = createModalManager()
+
   const handle = manager
     .createModal({
       title: "Original",
@@ -121,6 +131,7 @@ it("does not commit an update that throws or closes the modal", () => {
       body: { component: () => null }
     })
     .open()
+
   const snapshot = manager.getSnapshot()
   expect(() =>
     handle.update(() => {
@@ -130,6 +141,7 @@ it("does not commit an update that throws or closes the modal", () => {
   expect(manager.getSnapshot()).toBe(snapshot)
   handle.update(() => {
     handle.close(null)
+
     return { title: "Ignored", data: { count: 1 } }
   })
   expect(manager.getSnapshot()[0].content.renderSlots(manager.getSnapshot()[0]).title).toBe("Original")

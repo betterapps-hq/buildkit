@@ -3,6 +3,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { catalog } from "@buildkitgg/catalog"
 import type { CatalogManifest, Envelope } from "@buildkitgg/scaffolder"
+import type { CliOptions } from "@buildkitgg/scaffolder/cli"
 import { afterEach, beforeEach, describe, expect, it } from "vite-plus/test"
 import { runBuildkit } from "./index.js"
 
@@ -19,16 +20,24 @@ afterEach(() => {
 async function run(argv: string[], options: { catalog?: CatalogManifest } = {}) {
   const stdout: string[] = []
   const stderr: string[] = []
-  const code = await runBuildkit(argv, {
+
+  const overrides: Partial<CliOptions> = {
     io: { stdout: (text) => stdout.push(text), stderr: (text) => stderr.push(text), isTTY: false, cwd: root },
-    cacheDir: join(root, "cache"),
-    ...(options.catalog ? { catalog: options.catalog } : {})
-  })
+    cacheDir: join(root, "cache")
+  }
+
+  if (options.catalog) {
+    overrides.catalog = options.catalog
+  }
+
+  const code = await runBuildkit(argv, overrides)
+
   return { code, out: stdout.join(""), err: stderr.join("") }
 }
 
 function envelope(out: string): Envelope {
   const value: Envelope = JSON.parse(out)
+
   return value
 }
 
@@ -84,34 +93,13 @@ describe("buildkit create", () => {
     const result = await run(["catalog", "--json"])
     expect(result.code).toBe(0)
     const description = JSON.parse(result.out)
-    expect(description.templates.map((template: { template: string }) => template.template)).toEqual(["app"])
-    expect(description.slots.map((slot: { id: string }) => slot.id)).toEqual(["database", "auth"])
+    expect(description.templates.map((template: { id: string }) => template.id)).toEqual(["app"])
+    const questions = description.templates[0].questionsByMode.ssr.map((question: { id: string }) => question.id)
+    expect(questions).toEqual(["i18n"])
   })
 })
 
 describe("buildkit add", () => {
-  it("asks for a database before sign-in, and adds both when the choice is given", async () => {
-    await run(create)
-    const asked = await run(["add", "auth", "--cwd", "demo", "--yes", "--json"])
-    expect(asked.code).toBe(1)
-    const [decision] = envelope(asked.out).decisions ?? []
-    expect(decision?.id).toBe("slot:database")
-    const argv = decision?.choices[0]?.argv ?? []
-    expect(argv.slice(0, 2)).toEqual(["buildkit", "add"])
-    const added = await run([...argv.slice(1), "--cwd", "demo", "--yes", "--json"])
-    expect(added.code).toBe(0)
-    const result = envelope(added.out)
-    expect(result.status).toBe("applied")
-    const expected = ["src/auth/auth.server.ts", "src/auth/identity.server.ts", "src/db/db.server.ts", ".env.example"]
-    expect(expected.filter((path) => !existsSync(project(path)))).toEqual([])
-    expect(read(".env.example")).toContain("BETTER_AUTH_SECRET=")
-    expect(result.nextSteps?.join("\n")).toContain("BETTER_AUTH_SECRET")
-    expect(result.notices?.filter((notice) => notice.code === "unpublished-package").length).toBeGreaterThan(0)
-    const config = read("buildkit.jsonc")
-    expect(config).toContain("@buildkit/better-auth")
-    expect(config).toContain("@buildkit/sql")
-  })
-
   it("adds localization without touching your starter files or your package.json keys", async () => {
     await run(create)
     const router = `${read("src/router.tsx")}\n// My note.\n`
@@ -161,10 +149,12 @@ describe("buildkit upgrade", () => {
   it("never overwrites a starter file you edited when the old version can't be rendered", async () => {
     const previous = previousCatalog()
     await run(create, { catalog: previous })
+
     const router = read("src/router.tsx").replace(
       "export function getRouter() {",
       "// Mine.\nexport function getRouter() {"
     )
+
     write("src/router.tsx", router)
     const upgraded = await run(["upgrade", "--cwd", "demo", "--yes", "--json"])
     const result = envelope(upgraded.out)

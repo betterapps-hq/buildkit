@@ -2,6 +2,56 @@
   "name": "@buildkitgg/react-modals",
   "entries": [
     {
+      "date": "Tue, 03 Nov 2026 11:33:32 GMT",
+      "version": "1.0.1",
+      "tag": "@buildkitgg/react-modals_v1.0.1",
+      "comments": {
+        "patch": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/react-modals",
+            "commit": "f068bd0f1e7f36bc301a369e722e79ac9360b6e2",
+            "comment": "fix: pass the anti-slop lint rules"
+          },
+          {
+            "author": "beachball",
+            "package": "@buildkitgg/react-modals",
+            "comment": "Bump @buildkitgg/modal-core to v0.2.1",
+            "commit": "not available"
+          }
+        ],
+        "none": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/react-modals",
+            "commit": "82b35a41ef7ccbc4f8da11ff844cc681cdc04699",
+            "comment": "Point repository, bugs and homepage at betterapps-hq/buildkit"
+          },
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/react-modals",
+            "commit": "cb28c32943eb51eb486131148d0e2ef49bc148c7",
+            "comment": "chore: depend on @buildkitgg/typescript-config"
+          }
+        ]
+      }
+    },
+    {
+      "date": "Tue, 03 Nov 2026 01:39:16 GMT",
+      "version": "1.0.0",
+      "tag": "@buildkitgg/react-modals_v1.0.0",
+      "comments": {
+        "none": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/react-modals",
+            "commit": "063d609caa08375fd9bc535186db4d5e38a4cf79",
+            "comment": "Build, lint and test with Vite+; published code is unchanged"
+          }
+        ]
+      }
+    },
+    {
       "date": "Fri, 30 Oct 2026 04:56:17 GMT",
       "version": "1.0.0",
       "tag": "@buildkitgg/react-modals_v1.0.0",

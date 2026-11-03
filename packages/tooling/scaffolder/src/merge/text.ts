@@ -13,6 +13,7 @@ export interface TextMerge {
 
 function lines(text: string): string[] {
   const normalized = normalizeText(text)
+
   return normalized === "" ? [] : normalized.slice(0, -1).split("\n")
 }
 
@@ -24,6 +25,7 @@ export function mergeText(current: string, base: string, incoming: string): Text
   const regions = diff3Merge(ours, original, theirs, { excludeFalseConflicts: true })
   const output: string[] = []
   let conflicts = 0
+
   for (const region of regions) {
     if (region.ok) {
       output.push(...region.ok)
@@ -32,6 +34,7 @@ export function mergeText(current: string, base: string, incoming: string): Text
       output.push("<<<<<<< yours", ...region.conflict.a, "=======", ...region.conflict.b, ">>>>>>> incoming")
     }
   }
+
   return {
     clean: conflicts === 0,
     content: output.length === 0 ? "" : `${output.join("\n")}\n`,

@@ -1,5 +1,5 @@
 {
-  "name": "@repo/api-tools",
+  "name": "@buildkitgg/api-tools",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,7 +9,7 @@
   },
   "devDependencies": {
     "@microsoft/api-extractor": "^7.60.0",
-    "@repo/typescript-config": "workspace:*",
+    "@buildkitgg/typescript-config": "workspace:*",
     "@types/node": "24.19.2",
     "typescript": "catalog:"
   }

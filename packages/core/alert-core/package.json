@@ -23,11 +23,11 @@
     "test": "vp test run",
     "build": "tsc -p tsconfig.build.json"
   },
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "devDependencies": {
     "@types/node": "^24.19.2",
-    "@repo/typescript-config": "workspace:*",
+    "@buildkitgg/typescript-config": "workspace:*",
     "vitest": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "typescript": "catalog:",
@@ -37,12 +37,12 @@
   "types": "./dist/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AndrewCraswell/buildkit.git",
+    "url": "git+https://github.com/betterapps-hq/buildkit.git",
     "directory": "packages/core/alert-core"
   },
-  "homepage": "https://github.com/AndrewCraswell/buildkit/tree/main/packages/core/alert-core#readme",
+  "homepage": "https://github.com/betterapps-hq/buildkit/tree/main/packages/core/alert-core#readme",
   "bugs": {
-    "url": "https://github.com/AndrewCraswell/buildkit/issues"
+    "url": "https://github.com/betterapps-hq/buildkit/issues"
   },
   "publishConfig": {
     "access": "public",
@@ -53,6 +53,5 @@
     "notifications",
     "typescript",
     "buildkit"
-  ],
-  "private": true
+  ]
 }

@@ -1,5 +1,5 @@
 {
-  "extends": "@repo/typescript-config/react-library.json",
-  "include": ["."],
-  "exclude": ["node_modules"]
+  "extends": "@buildkitgg/typescript-config/react-library.json",
+  "compilerOptions": { "target": "ES2022", "lib": ["ES2022", "DOM", "DOM.Iterable"] },
+  "include": ["src", "vitest.config.ts"]
 }

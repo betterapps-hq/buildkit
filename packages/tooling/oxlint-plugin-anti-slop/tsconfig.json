@@ -1,0 +1,12 @@
+{
+  "extends": "@buildkitgg/typescript-config/base.json",
+  "compilerOptions": {
+    "target": "ES2024",
+    "lib": ["ES2024"],
+    "types": ["node"],
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true
+  },
+  "include": ["src", "scripts", "vitest.config.ts", "test/**/*.ts"]
+}

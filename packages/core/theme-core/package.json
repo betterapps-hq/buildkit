@@ -26,12 +26,12 @@
     "test": "vp test run",
     "build": "tsc -p tsconfig.build.json"
   },
-  "version": "0.1.2",
+  "version": "0.1.3",
   "type": "module",
   "devDependencies": {
     "happy-dom": "^21.0.4",
     "@types/node": "^24.19.2",
-    "@repo/typescript-config": "workspace:*",
+    "@buildkitgg/typescript-config": "workspace:*",
     "vitest": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "typescript": "catalog:",
@@ -43,12 +43,12 @@
   "types": "./dist/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AndrewCraswell/buildkit.git",
+    "url": "git+https://github.com/betterapps-hq/buildkit.git",
     "directory": "packages/core/theme-core"
   },
-  "homepage": "https://github.com/AndrewCraswell/buildkit/tree/main/packages/core/theme-core#readme",
+  "homepage": "https://github.com/betterapps-hq/buildkit/tree/main/packages/core/theme-core#readme",
   "bugs": {
-    "url": "https://github.com/AndrewCraswell/buildkit/issues"
+    "url": "https://github.com/betterapps-hq/buildkit/issues"
   },
   "publishConfig": {
     "access": "public",

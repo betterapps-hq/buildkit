@@ -1,33 +1,18 @@
 // @ts-check
-const { writeFileSync } = require("node:fs")
-const { join } = require("node:path")
+/// <reference types="node" />
+import { writeFileSync } from "node:fs"
+import { join } from "node:path"
 
 /**
  * Beachball manages versioning and changelogs for the workspace packages.
- * Contributors run `pnpm change`; GitHub prepares release PRs and publishes reviewed versions.
+ * Contributors run `pnpm change`; once main passes CI, its release job publishes the versions and pushes them to main.
  *
  * @type {import("beachball").BeachballConfig}
  */
-module.exports = {
+const config = {
   branch: "origin/main",
   access: "public",
-  // Better Apps platform packages share inferred types, so they release together at one version. Features don't join.
   groups: [
-    {
-      name: "better-apps-platform",
-      include: [
-        "packages/better-apps/better-apps",
-        "packages/better-apps/better-auth",
-        "packages/better-apps/clerk",
-        "packages/better-apps/cli",
-        "packages/better-apps/drizzle",
-        "packages/better-apps/react",
-        "packages/better-apps/tanstack-start",
-        "packages/better-apps/testing",
-        "packages/better-apps/workos"
-      ],
-      disallowedChangeTypes: null
-    },
     // The buildkit CLI and its catalog release together, so a new app pins the CLI at the catalog's own version.
     {
       name: "buildkit-cli",
@@ -41,9 +26,13 @@ module.exports = {
     postbump(packagePath, name, version) {
       if (name === "@buildkitgg/scaffolder") {
         const comment = "/** The engine's version, recorded in every lock. A test keeps it equal to package.json. */"
+
+        const safety =
+          "// SAFETY: widening a string literal to string always holds, and keeps each release's number out of the public type."
+
         writeFileSync(
           join(packagePath, "src/version.ts"),
-          `${comment}\nexport const engineVersion = ${JSON.stringify(version)} as string\n`
+          `${comment}\n${safety}\nexport const engineVersion = ${JSON.stringify(version)} as string\n`
         )
       }
     }
@@ -58,3 +47,8 @@ module.exports = {
     "**/.oxlintrc.json"
   ]
 }
+
+export default config
+
+// Beachball loads its config with `require`, which returns this export rather than the frozen module namespace.
+export { config as "module.exports" }

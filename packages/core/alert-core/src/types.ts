@@ -1,5 +1,7 @@
 export type AlertIntent = "info" | "success" | "warning" | "error"
+
 export type AlertAction<T> = Readonly<{ label: T; onClick(): void }>
+
 export type AlertOptions<T = string> = {
   id?: string
   title?: T
@@ -9,7 +11,9 @@ export type AlertOptions<T = string> = {
   dismissible?: boolean
   onDismiss?(): void
 }
+
 export type AlertPatch<T = string> = Partial<Omit<AlertOptions<T>, "id">>
+
 export type AlertEntry<T = string> = Readonly<
   Omit<AlertOptions<T>, "id" | "intent" | "dismissible"> & {
     id: string
@@ -19,6 +23,7 @@ export type AlertEntry<T = string> = Readonly<
     dismissible: boolean
   }
 >
+
 export type AlertHandle<T = string> = {
   readonly id: string
   readonly region: string
@@ -26,6 +31,7 @@ export type AlertHandle<T = string> = {
   update(patch: AlertPatch<T>): void
   dismiss(): void
 }
+
 export type AlertStore<T = string> = {
   add(options: AlertOptions<T>, region?: string): AlertHandle<T>
   info(options: Omit<AlertOptions<T>, "intent">, region?: string): AlertHandle<T>

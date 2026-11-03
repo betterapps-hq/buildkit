@@ -27,15 +27,17 @@ function render(points = [list], entries: PointEntry[] = []) {
   return renderPoints({ points: points.map((definition) => ({ definition, owner: "target" })), entries, product: "x" })
 }
 
-function failure(run: () => unknown): PlanError {
+function failure(run: () => void): PlanError {
   try {
     run()
   } catch (error) {
     if (error instanceof PlanError) {
       return error
     }
+
     throw error
   }
+
   throw new Error("expected a PlanError")
 }
 
@@ -71,6 +73,7 @@ describe("renderPoints", () => {
         entry("last", { order: { band: "post" } })
       ]
     )
+
     const content = files.get("src/generated/x/config.ts")?.content ?? ""
     expect(content).toContain(
       '  framework: [vitePluginsById["@x/a/c"], vitePluginsById["@x/a/b"], vitePluginsById["@x/a/a"]],'
@@ -97,6 +100,7 @@ describe("renderPoints", () => {
       export: "envSchema",
       payload: z.object({ type: z.string() })
     })
+
     const single = definePoint({
       id: "router.rewrite",
       version: 1,
@@ -104,6 +108,7 @@ describe("renderPoints", () => {
       file: "src/generated/x/server.ts",
       export: "rewrite"
     })
+
     const { files } = render(
       [map, single],
       [
@@ -116,6 +121,7 @@ describe("renderPoints", () => {
         }
       ]
     )
+
     const content = files.get("src/generated/x/server.ts")?.content ?? ""
     expect(content).toContain('import { rewrite as rewrite_2 } from "../../i18n/rewrite"')
     expect(content).toContain('  "API_URL": {"type":"url"},')
@@ -169,7 +175,7 @@ describe("renderPoints", () => {
   })
 
   it("is wired at init: generated files exist and the target's seeds import them", async () => {
-    const files = await applyFixture({}, initRequest({ optional: ["@fixture/i18n"] }))
+    const files = await applyFixture({}, initRequest({ extra: ["@fixture/i18n"] }))
     expect(files["src/generated/fixture/client.ts"]).toContain('import { I18nProvider } from "../../i18n/setup"')
     expect(files["vite.config.ts"]).toContain("./src/generated/fixture/config")
     expect(files["src/generated/fixture/server.ts"]).toContain('"DATABASE_URL": {"type":"string"}')
@@ -179,9 +185,11 @@ describe("renderPoints", () => {
     const catalog = fixtureCatalog()
     const [target] = catalog.targets
     const [first] = target?.points ?? []
+
     if (!target || !first) {
       throw new Error("The fixture target has points.")
     }
+
     const unsafe = { ...catalog, targets: [{ ...target, points: [{ ...first, file: "src/a/../b.ts" }] }] }
     const planned = await planFixture({}, initRequest(), { catalog: unsafe })
     expect(planned.error).toMatchObject({ code: "E_UNSAFE_PATH", paths: ["src/a/../b.ts"] })

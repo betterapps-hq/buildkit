@@ -1,4 +1,5 @@
 import { shadcnStylePackages } from "./shadcnStyles.js"
+
 export const packages = [
   {
     name: "configuration-core",
@@ -49,7 +50,7 @@ export const packages = [
     name: "cli",
     group: "Tooling",
     summary: "The buildkit CLI: create, extend and upgrade Buildkit apps.",
-    code: "npx @buildkitgg/cli create app my-app\n\n# Inside the app\npnpm buildkit add i18n\npnpm buildkit add database\npnpm buildkit upgrade\npnpm buildkit check",
+    code: "npx @buildkitgg/cli create app my-app\n\n# Inside the app\npnpm buildkit add i18n\npnpm buildkit upgrade\npnpm buildkit check",
     api: [
       "create [template] [folder]: in a terminal, ask the questions, show the plan, and write after one confirmation. --yes skips the prompts.",
       "add / config set: add an add-on, answer a question later, or change an option.",
@@ -66,7 +67,7 @@ export const packages = [
     summary: "Review planned changes before applying them, and upgrade generated projects while preserving your edits.",
     code: 'import catalog from "@acme/catalog"\nimport { defineSettings } from "@buildkitgg/scaffolder"\nimport { createCli } from "@buildkitgg/scaffolder/cli"\nimport { runMain } from "citty"\n\nawait runMain(createCli({\n  name: "acme",\n  version: "1.0.0",\n  catalog,\n  settings: defineSettings({ product: "acme" })\n}))',
     api: [
-      "defineCatalog: targets, templates, slots and add-ons, each with its own define helper.",
+      "defineCatalog: targets, add-ons, questions and templates, each with its own define helper.",
       "plan(options): turn answers into operations, decisions and conflicts, with a fingerprint.",
       "scaffold <package> [folder]: after npm install -g @buildkitgg/scaffolder, create a project from any catalog or template package.",
       "createCli / runCli: create, add, config, upgrade, sync, check and more, with a wizard generated from the catalog.",
@@ -132,15 +133,16 @@ export const packages = [
     name: "shadcn-theme",
     group: "shadcn",
     summary: "Theme selection for registry-installed shadcn components or the Buildkit component kit.",
-    code: 'import { createShadcnTheme } from "@buildkitgg/shadcn-theme"\n\nexport const theme = createShadcnTheme({\n  defaultTheme: "system",\n  storageKey: "my-app-theme"\n})\nconst stop = theme.start() // At browser startup.\ntheme.setTheme("dark")\ntheme.reset()\n// Call stop() at teardown.',
+    code: 'import { createShadcnTheme, useTheme } from "@buildkitgg/shadcn-theme"\n\nexport const theme = createShadcnTheme({\n  defaultTheme: "system",\n  storageKey: "my-app-theme"\n})\nconst stop = theme.start() // At browser startup.\n// Call stop() at teardown.\n\nfunction ThemeLabel() {\n  const { resolvedTheme } = useTheme(theme)\n  return <span>{resolvedTheme}</span>\n}',
     api: [
       "createShadcnTheme(options): isolated theme with optional persistence.",
+      "useTheme(store): read the current theme and update it from a React component.",
       "start(): apply .dark and color-scheme; returns cleanup.",
       "setTheme / reset: choose appearance or restore the default.",
       "getThemeInitScript(options): first-paint script; use matching options and a CSP nonce."
     ],
     notes:
-      "No dependency on React or our component kit. Supply your own CSS and tokens using the .dark convention. Use one instance per document. Construction has no browser effects.",
+      "React is a peer dependency. Supply your own CSS and tokens using the .dark convention. Use one instance per document. Construction has no browser effects.",
     example: "shadcn-shadcn-theme--appearance"
   },
   {
@@ -346,11 +348,12 @@ export const packages = [
 
 /** Shared navigation for package directories and the public site. */
 export function packageOverviewId(entry: { name: string; group: string }) {
-  const routing: Record<string, string> = {
-    "router-core": "routing-core",
-    "react-routing": "routing-react-bindings",
-    "react-router": "routing-react-router",
-    "tanstack-router": "routing-tanstack-router"
-  }
-  return `${routing[entry.name] ?? `${entry.group.toLowerCase().replaceAll(" ", "-")}-${entry.name}`}--overview`
+  const routing = new Map([
+    ["router-core", "routing-core"],
+    ["react-routing", "routing-react-bindings"],
+    ["react-router", "routing-react-router"],
+    ["tanstack-router", "routing-tanstack-router"]
+  ])
+
+  return `${routing.get(entry.name) ?? `${entry.group.toLowerCase().replaceAll(" ", "-")}-${entry.name}`}--overview`
 }

@@ -8,13 +8,17 @@ permissions:
   pull-requests: write
   actions: write
 concurrency:
-  group: prepare-release
+  group: shadcn-update
   cancel-in-progress: false
 jobs:
   update:
     if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     timeout-minutes: 60
+    # The npm environment holds RELEASE_DEPLOY_KEY, the one actor main's ruleset lets skip a pull request.
+    environment:
+      name: npm
+      deployment: false
     steps:
       - uses: actions/checkout@v7
         with:
@@ -41,34 +45,34 @@ jobs:
       - name: Check public APIs without accepting new baselines
         if: steps.changes.outputs.changed == 'true'
         run: pnpm check:api
-      - name: Prepare compatible patch releases
+      - name: Write patch change files for the regenerated styles
         if: steps.changes.outputs.changed == 'true'
         run: |
           pnpm exec node packages/tooling/shadcn-generator/src/release.mjs
-          pnpm exec beachball bump
-          pnpm install
           pnpm format
-          pnpm install --frozen-lockfile
       - name: Validate release artifacts and npm aliases
         if: steps.changes.outputs.changed == 'true'
         run: pnpm validate
-      - name: Open update pull request
-        if: always() && steps.changes.outputs.changed == 'true'
+      # The key is written only for the push, so nothing fetched from upstream runs with it. main's CI then verifies the
+      # commit and releases its change files.
+      - name: Commit the update to main
+        if: steps.changes.outputs.changed == 'true'
         env:
-          GH_TOKEN: ${{ github.token }}
-          RESULT: ${{ job.status }}
+          RELEASE_DEPLOY_KEY: ${{ secrets.RELEASE_DEPLOY_KEY }}
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          branch="codex/shadcn-update-${GITHUB_RUN_ID}"
-          git switch -c "$branch"
           git add --all
           git commit -m 'chore: update generated shadcn styles'
-          gh auth setup-git
-          git push origin "$branch"
-          printf '%s\n' "Upstream shadcn update. Validation result: $RESULT." '' 'This pipeline PR merges automatically after required CI checks pass. API baselines are never accepted automatically. Failed updates need repair and release preparation before merging. Packages publish automatically after main CI succeeds.' > "$RUNNER_TEMP/shadcn-pr.md"
-          gh pr create --base main --head "$branch" --title 'chore: update generated shadcn styles' --body-file "$RUNNER_TEMP/shadcn-pr.md"
-          gh workflow run ci.yml --ref "$branch"
+          key="$RUNNER_TEMP/release-deploy-key"
+          (umask 077 && printf '%s\n' "$RELEASE_DEPLOY_KEY" > "$key")
+          export GIT_SSH_COMMAND="ssh -i $key -o IdentitiesOnly=yes"
+          remote="git@github.com:$GITHUB_REPOSITORY.git"
+          # main may have moved on while the styles regenerated.
+          git fetch "$remote" main
+          git rebase FETCH_HEAD
+          git push "$remote" HEAD:main
+          rm -f "$key"
       - uses: actions/upload-artifact@v7
         if: failure()
         with:

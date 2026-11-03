@@ -16,10 +16,13 @@ export async function runProcess(
   }
 ) {
   const [executable, ...args] = command
+
   if (!executable) {
     throw new Error("A command is required")
   }
+
   options.signal?.throwIfAborted()
+
   return new Promise<{ code: number; stderr: string; pid?: number }>((resolve, reject) => {
     const child = spawn(executable, args, {
       cwd: options.cwd,
@@ -28,13 +31,16 @@ export async function runProcess(
       detached: process.platform !== "win32",
       windowsHide: true
     })
+
     let stderr = ""
     let timer: NodeJS.Timeout | undefined
     let isDone = false
+
     const kill = async (force: boolean) => {
       if (!child.pid || isDone) {
         return
       }
+
       try {
         if (process.platform === "win32") {
           await exec("taskkill", ["/PID", String(child.pid), "/T", "/F"], { windowsHide: true, timeout: 5000 })
@@ -51,6 +57,7 @@ export async function runProcess(
         }
       }
     }
+
     const abort = () => {
       void kill(false)
       timer ??= setTimeout(() => {
@@ -58,13 +65,17 @@ export async function runProcess(
       }, 5000)
       timer.unref()
     }
+
     const finish = () => {
       isDone = true
+
       if (timer) {
         clearTimeout(timer)
       }
+
       options.signal?.removeEventListener("abort", abort)
     }
+
     child.stdout?.on("data", (chunk: Buffer) => {
       if (!options.quiet) {
         process.stdout.write(chunk)
@@ -72,6 +83,7 @@ export async function runProcess(
     })
     child.stderr?.on("data", (chunk: Buffer) => {
       stderr = (stderr + chunk.toString()).slice(-8192)
+
       if (!options.quiet) {
         process.stderr.write(chunk)
       }
@@ -90,6 +102,7 @@ export async function runProcess(
       resolve({ code: code ?? (signal === "SIGINT" ? 130 : 143), stderr, pid: child.pid })
     })
     options.signal?.addEventListener("abort", abort, { once: true })
+
     if (options.signal?.aborted) {
       abort()
     }
@@ -102,6 +115,7 @@ export async function withSignals<T>(operation: (signal: AbortSignal) => Promise
   process.on("SIGINT", abort)
   process.on("SIGTERM", abort)
   process.on("SIGHUP", abort)
+
   try {
     return await operation(controller.signal)
   } finally {

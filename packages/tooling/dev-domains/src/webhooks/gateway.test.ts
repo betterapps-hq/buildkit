@@ -1,36 +1,47 @@
 import { createServer } from "node:http"
 import { expect, it } from "vite-plus/test"
+import { listeningPort } from "../runtime/port.js"
 import { startGateway } from "./gateway.js"
 
 it("forwards exact POST paths and unmodified bytes, rejects other exposure, and closes its listener", async () => {
   const received: { body: Buffer; signature: string | string[] | undefined }[] = []
+
   const target = createServer(async (req, res) => {
     const chunks = []
+
     for await (const chunk of req) {
       chunks.push(Buffer.from(chunk))
     }
+
     received.push({ body: Buffer.concat(chunks), signature: req.headers["x-signature"] })
     res.writeHead(202).end("accepted")
   })
+
   await new Promise<void>((resolve) => target.listen(0, "127.0.0.1", resolve))
-  const address = target.address()
-  if (!address || typeof address === "string") {
+  const port = listeningPort(target)
+
+  if (port === undefined) {
     throw new Error("Missing test address")
   }
+
   let isLive = true
+
   const gateway = await startGateway({
     paths: ["/hooks"],
     hostname: "app.localhost",
-    target: () => (isLive ? address.port : undefined),
+    target: () => (isLive ? port : undefined),
     maxBytes: 20
   })
+
   try {
     const body = Buffer.from([0, 1, 2, 255])
+
     const result = await fetch(`${gateway.url}/hooks?event=1`, {
       method: "POST",
       body,
       headers: { "x-signature": "signed" }
     })
+
     expect(result.status).toBe(202)
     expect(received).toEqual([{ body, signature: "signed" }])
     expect((await fetch(`${gateway.url}/hooks`)).status).toBe(404)
@@ -44,5 +55,6 @@ it("forwards exact POST paths and unmodified bytes, rejects other exposure, and 
     target.closeAllConnections()
     await new Promise<void>((resolve) => target.close(() => resolve()))
   }
+
   await expect(fetch(gateway.url)).rejects.toThrow(Error)
 })

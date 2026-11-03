@@ -1,0 +1,194 @@
+/* The examples' markup has no classes, so this lays it out the way an app's own stylesheet would. */
+
+:root {
+  --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono Variable", ui-monospace, monospace;
+  color-scheme: dark;
+}
+
+/* Transparent, so the preview panel's own background shows through */
+body {
+  margin: 0;
+  background: transparent;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  padding: 18px 24px;
+}
+
+/* Modal results: the Cancel button keeps its own width under the field */
+[data-example="modals"] [data-slot="field"] > [data-slot="button"] {
+  align-self: flex-start;
+  width: auto;
+}
+
+/* Stored preferences: the page's text takes the size the reader picks, and the picker keeps its own */
+[data-example="preferences"] p {
+  max-width: 32em;
+  margin: 20px 0 0;
+  color: var(--foreground);
+  font-size: var(--text-size, 16px);
+  line-height: 1.5;
+}
+
+/* Inline alerts */
+[data-example="alerts"] form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+[data-example="alerts"] form > [data-slot="button"] {
+  align-self: flex-start;
+}
+
+/* The alert region stays mounted, and only takes space once it holds an alert */
+[data-example="alerts"] form > section:empty {
+  display: none;
+}
+
+/* Route panels */
+[data-example="routing"] [data-slot="tabs"] {
+  gap: 18px;
+}
+
+[data-example="routing"] ul {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Each person is a row that opens their panel: the link covers the whole row, and a chevron points into it */
+[data-example="routing"] li {
+  position: relative;
+  padding: 10px 40px 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: background-color 0.15s;
+}
+
+[data-example="routing"] li:hover {
+  background: var(--muted);
+}
+
+[data-example="routing"] li::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  width: 7px;
+  height: 7px;
+  border-top: 1.5px solid var(--muted-foreground);
+  border-right: 1.5px solid var(--muted-foreground);
+  translate: 0 -50%;
+  rotate: 45deg;
+}
+
+[data-example="routing"] li a {
+  color: var(--foreground);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  outline: none;
+}
+
+[data-example="routing"] li a::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+[data-example="routing"] li a:focus-visible::before {
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 50%, transparent);
+}
+
+[data-example="routing"] li p {
+  margin: 2px 0 0;
+  color: var(--muted-foreground);
+  font-size: 13px;
+}
+
+[data-example="routing"] h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* Config overrides: the invoices on top, the development panel below */
+.frame-part + .frame-part {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+
+.frame-caption {
+  margin: 0 0 12px;
+  color: var(--muted-foreground);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+[data-example="configuration"] ul {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* The header is as tall as Export CSV, so the button can appear without moving the list */
+[data-example="configuration"] header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 32px;
+  margin-bottom: 12px;
+}
+
+[data-example="configuration"] h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+[data-example="configuration"] .frame-part:first-child ul {
+  gap: 10px;
+  font-size: 14px;
+}
+
+[data-example="configuration"] .frame-part:first-child li {
+  display: flex;
+  justify-content: space-between;
+  font-variant-numeric: tabular-nums;
+}
+
+[data-example="configuration"] .frame-part:first-child li span:first-child {
+  color: var(--muted-foreground);
+}
+
+/* Every row shares the panel's columns, and Reset keeps its slot even while it's hidden */
+[data-example="configuration"] .frame-part:last-child ul {
+  grid-template-columns: max-content minmax(84px, 128px) max-content 32px;
+  justify-content: start;
+  align-items: center;
+  gap: 10px 12px;
+}
+
+[data-example="configuration"] .frame-part:last-child li {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: center;
+}
+
+[data-example="configuration"] [data-slot="select-trigger"] {
+  width: 100%;
+}
+
+[data-example="configuration"] code {
+  font-family: var(--font-mono);
+  font-size: 13px;
+}

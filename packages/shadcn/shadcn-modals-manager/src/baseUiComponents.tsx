@@ -8,10 +8,12 @@ import type { BaseUiModalComponents, ModalAdapter } from "./types.js"
 
 export function baseUiComponents(components: BaseUiModalComponents): ModalAdapter {
   const { Dialog, DialogContent } = components
+
   function Surface(props: ModalSurfaceProps<ModalSurfaceOptions>) {
     const { entry } = props
     const view = entry.content
     useModalExit(entry)
+
     return (
       <Dialog
         open={entry.status === "open"}
@@ -39,5 +41,6 @@ export function baseUiComponents(components: BaseUiModalComponents): ModalAdapte
       </Dialog>
     )
   }
+
   return { Surface, DefaultFooter: createDefaultFooter(components.Button) }
 }

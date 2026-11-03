@@ -1,11 +1,14 @@
 import type { ReactNode } from "react"
 import { Documentation, Code, StoryLink } from "./Documentation.js"
 import { packages } from "./packages.js"
+
 export function PackageOverview({ name, children }: { name: (typeof packages)[number]["name"]; children?: ReactNode }) {
   const entry = packages.find((item) => item.name === name)
+
   if (!entry) {
     throw new Error("Unknown package")
   }
+
   return (
     <Documentation title={`@buildkitgg/${entry.name}`} summary={entry.summary}>
       <div className="bk-doc-links">
@@ -13,7 +16,7 @@ export function PackageOverview({ name, children }: { name: (typeof packages)[nu
           Open example <span aria-hidden="true">↗</span>
         </StoryLink>
         <a
-          href={`https://github.com/AndrewCraswell/buildkit/tree/main/packages/${{ Core: "core", React: "react", shadcn: "shadcn", "Fluent UI": "fluentui", Tooling: "tooling" }[entry.group]}/${entry.name}`}
+          href={`https://github.com/betterapps-hq/buildkit/tree/main/packages/${{ Core: "core", React: "react", shadcn: "shadcn", "Fluent UI": "fluentui", Tooling: "tooling" }[entry.group]}/${entry.name}`}
         >
           Source & README
         </a>
@@ -24,6 +27,7 @@ export function PackageOverview({ name, children }: { name: (typeof packages)[nu
       <dl className="bk-api-list">
         {entry.api.map((item) => {
           const split = item.indexOf(":")
+
           return (
             <div key={item}>
               <dt>{split < 0 ? item : item.slice(0, split)}</dt>

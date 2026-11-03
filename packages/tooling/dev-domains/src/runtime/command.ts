@@ -13,35 +13,46 @@ export async function serverCommand(
 ) {
   const values = { ...variables, port: String(port) }
   let command: string[]
+
   if (endpoint.script) {
     const manifest = await readManifest(cwd)
     const source = manifest.scripts[endpoint.script]
+
     if (!source) {
       throw new Error(`Script ${endpoint.script} does not exist in ${cwd}`)
     }
+
     if (/\b(dev-domains|portless)\b/.test(source)) {
       throw new Error(`Script ${endpoint.script} wraps a domain CLI. Point to the underlying server script instead.`)
     }
+
     command = []
   } else {
     command = (endpoint.command ?? []).map((arg) => interpolate(arg, values))
   }
+
   if (endpoint.framework === "next") {
     command.push("--hostname", "127.0.0.1", "--port", String(port))
   }
+
   if (endpoint.framework === "vite") {
     command.push("--host", "127.0.0.1", "--port", String(port), "--strictPort")
   }
+
   if (endpoint.framework === "storybook") {
     command.push("--host", "127.0.0.1", "--port", String(port), "--exact-port", "--no-open", "--ci")
   }
+
   if (endpoint.script) {
     const resolved = resolveCommand(packageManager, "run", [endpoint.script, ...command])
+
     if (!resolved) {
       throw new Error(`Cannot run scripts with ${packageManager}`)
     }
+
     return [resolved.command, ...resolved.args]
   }
+
   return command
 }
 
@@ -60,23 +71,30 @@ export function serverEnvironment(
       ])
     )
   }
+
   // Package-local binaries take precedence, followed by workspace ancestors and the current Node runtime.
   const bins = []
   let directory = endpoint.cwd
+
   while (true) {
     bins.push(path.join(directory, "node_modules", ".bin"))
     const parent = path.dirname(directory)
+
     if (directory === parent) {
       break
     }
+
     directory = parent
   }
+
   const existingPath = Object.entries(env).find(([key]) => key.toUpperCase() === "PATH")?.[1] || ""
+
   for (const key of Object.keys(env)) {
     if (key.toUpperCase() === "PATH") {
       delete env[key]
     }
   }
+
   return {
     ...env,
     PATH: [...bins, path.dirname(process.execPath), existingPath].join(path.delimiter),

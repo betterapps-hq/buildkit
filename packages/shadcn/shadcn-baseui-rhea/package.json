@@ -1,15 +1,15 @@
 {
   "name": "@buildkitgg/shadcn-baseui-rhea",
-  "version": "0.4.2",
+  "version": "0.4.4",
   "description": "Upstream shadcn Base UI components in the rhea style, with compiled CSS and TypeScript declarations.",
-  "homepage": "https://github.com/AndrewCraswell/buildkit/tree/main/packages/shadcn/shadcn-baseui-rhea#readme",
+  "homepage": "https://github.com/betterapps-hq/buildkit/tree/main/packages/shadcn/shadcn-baseui-rhea#readme",
   "bugs": {
-    "url": "https://github.com/AndrewCraswell/buildkit/issues"
+    "url": "https://github.com/betterapps-hq/buildkit/issues"
   },
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AndrewCraswell/buildkit.git",
+    "url": "git+https://github.com/betterapps-hq/buildkit.git",
     "directory": "packages/shadcn/shadcn-baseui-rhea"
   },
   "files": [
@@ -55,7 +55,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "build": "node ../../tooling/shadcn-generator/src/build.mjs rhea",
+    "build": "node ../../tooling/shadcn-generator/src/sources.mjs rhea && node ../../tooling/shadcn-generator/src/build.mjs rhea",
     "prepack": "pnpm build"
   },
   "dependencies": {
@@ -76,7 +76,7 @@
     "sonner": "^2.0.8"
   },
   "devDependencies": {
-    "@repo/shadcn-generator": "workspace:*"
+    "@buildkitgg/shadcn-generator": "workspace:*"
   },
   "peerDependencies": {
     "react": "^19.2.0",

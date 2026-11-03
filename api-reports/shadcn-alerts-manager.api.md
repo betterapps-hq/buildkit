@@ -36,10 +36,14 @@ export type AlertComponents = {
     AlertDescription: ComponentType<{
         children?: ReactNode;
     }>;
+    AlertAction?: ComponentType<{
+        children?: ReactNode;
+    }>;
     Button: ComponentType<{
         children?: ReactNode;
         type?: "button";
         variant?: "outline" | "ghost";
+        size?: "sm" | "icon-sm";
         onClick?(): void;
         "aria-label"?: string;
     }>;

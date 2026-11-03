@@ -43,8 +43,11 @@ const journalEntrySchema = z.object({
   backup: z.string().optional(),
   createdFolders: z.array(z.string())
 })
+
 const journalSchema = z.object({ fingerprint: z.string(), started: z.string(), entries: z.array(journalEntrySchema) })
+
 type Journal = z.infer<typeof journalSchema>
+
 type JournalEntry = z.infer<typeof journalEntrySchema>
 
 export interface ApplyHooks {
@@ -70,6 +73,7 @@ export interface RollbackReport {
 
 function statePaths(root: string, settings: ProductSettings) {
   const stateDir = join(root, settings.stateDir)
+
   return {
     stateDir,
     lock: join(stateDir, "apply.lock"),
@@ -81,6 +85,7 @@ function statePaths(root: string, settings: ProductSettings) {
 function readJson<T>(path: string, schema: z.ZodType<T>): T | undefined {
   try {
     const result = schema.safeParse(JSON.parse(readFileSync(path, "utf8")))
+
     return result.success ? result.data : undefined
   } catch {
     return undefined
@@ -90,6 +95,7 @@ function readJson<T>(path: string, schema: z.ZodType<T>): T | undefined {
 function processAlive(pid: number): boolean {
   try {
     process.kill(pid, 0)
+
     return true
   } catch (error) {
     return errorCode(error) === "EPERM"
@@ -101,6 +107,7 @@ export function isStaleLock(info: ApplyLockInfo): boolean {
   if (info.host === hostname()) {
     return info.pid !== process.pid && !processAlive(info.pid)
   }
+
   return Date.now() - Date.parse(info.time) > 60 * 60 * 1000
 }
 
@@ -115,7 +122,9 @@ function lockedError(path: string, info: ApplyLockInfo | undefined, product: str
       }
     )
   }
+
   const holder = info ? `process ${info.pid} on ${info.host}, since ${info.time}` : "another process"
+
   return new PlanError("E_LOCKED", `Another apply is running (${holder}). Try again when it finishes.`, {
     paths: [path]
   })
@@ -123,6 +132,7 @@ function lockedError(path: string, info: ApplyLockInfo | undefined, product: str
 
 function acquireLock(root: string, settings: ProductSettings, fingerprint: string): string[] {
   const paths = statePaths(root, settings)
+
   if (statSync(paths.journal, { throwIfNoEntry: false })) {
     throw new PlanError(
       "E_INTERRUPTED",
@@ -133,16 +143,20 @@ function acquireLock(root: string, settings: ProductSettings, fingerprint: strin
       }
     )
   }
+
   const created = ensureParent(paths.lock)
   const info: ApplyLockInfo = { pid: process.pid, host: hostname(), time: new Date().toISOString(), fingerprint }
+
   try {
     writeFileSync(paths.lock, `${JSON.stringify(info)}\n`, { flag: "wx" })
   } catch (error) {
     if (errorCode(error) === "EEXIST") {
       throw lockedError(paths.lock, readJson(paths.lock, lockInfoSchema), settings.product)
     }
+
     throw error
   }
+
   return created
 }
 
@@ -156,16 +170,23 @@ async function releaseLock(root: string, settings: ProductSettings): Promise<voi
 
 function currentContent(root: string, path: string): string | undefined {
   const state = readSafely(root, path)
+
   if (state.kind === "unsafe") {
     throw new PlanError("E_UNSAFE_PATH", `${path} can't be written: ${state.reason}`, { paths: [path] })
   }
+
   return state.kind === "file" ? state.content : undefined
 }
 
 /** Lock last, config before it: if a run stops early, the lock never describes files that weren't written. */
 function applyOrder(operations: Operation[]): Operation[] {
-  const ranks: Partial<Record<string, number>> = { config: 1, lock: 2 }
-  const rank = (operation: Operation) => ranks[operation.class] ?? 0
+  const ranks = new Map([
+    ["config", 1],
+    ["lock", 2]
+  ])
+
+  const rank = (operation: Operation) => ranks.get(operation.class) ?? 0
+
   return [...operations].sort((left, right) => rank(left) - rank(right))
 }
 
@@ -181,9 +202,11 @@ export async function applyPlan(
   if (plan.status === "unchanged") {
     return { status: "unchanged", written: [], notices: [] }
   }
+
   if (plan.status !== "planned") {
     throw new PlanError("E_USAGE", `Only a planned plan can be applied, and this one is ${plan.status}.`)
   }
+
   const { root, settings } = options
   const rootFolders = ensureFolder(root)
   const lockFolders = acquireLock(root, settings, plan.fingerprint)
@@ -192,8 +215,10 @@ export async function applyPlan(
   const journal: Journal = { fingerprint: plan.fingerprint, started: new Date().toISOString(), entries: [] }
   const written: string[] = []
   const backupRoot = backupFolder(paths.backups, plan.fingerprint)
+
   try {
     const drifted = operations.filter((operation) => currentContent(root, operation.path) !== operation.before)
+
     if (drifted.length > 0) {
       throw new PlanError(
         "E_DRIFT",
@@ -203,8 +228,10 @@ export async function applyPlan(
         }
       )
     }
+
     for (const operation of operations) {
       const target = join(root, operation.path)
+
       const entry: JournalEntry = {
         path: operation.path,
         action: operation.action,
@@ -212,17 +239,21 @@ export async function applyPlan(
         afterHash: rawHash(operation.content),
         createdFolders: []
       }
+
       if (operation.before !== undefined && !operation.secret) {
         const backup = join(backupRoot, operation.path)
         ensureParent(backup)
         await writeAtomic(backup, operation.before)
         entry.backup = backup
       }
+
       if (operation.action === "create") {
         entry.createdFolders = ensureParent(target)
       }
+
       journal.entries.push(entry)
       await writeAtomic(paths.journal, `${JSON.stringify(journal)}\n`)
+
       if (operation.action === "delete") {
         await removeFile(target)
       } else if (operation.content !== undefined) {
@@ -232,32 +263,40 @@ export async function applyPlan(
           await writeAtomic(target, operation.content)
         }
       }
+
       written.push(operation.path)
       options.hooks?.afterWrite?.(operation.path)
     }
   } catch (error) {
     if (journal.entries.length > 0) {
       const report = await rollback(root, journal)
+
       // A file someone else changed was left as it is, so its backup stays for them.
       if (report.changed.length === 0) {
         removeTree(backupRoot)
       }
     }
+
     await removeFile(paths.journal).catch(() => undefined)
     await releaseLock(root, settings)
     removeEmptyFolders([...rootFolders, ...lockFolders])
+
     if (error instanceof PlanError) {
       throw error
     }
+
     throw new PlanError(
       "E_INTERNAL",
       `Apply failed and was rolled back: ${error instanceof Error ? error.message : String(error)}`
     )
   }
+
   const notices: Notice[] = []
+
   try {
     await removeFile(paths.journal)
     removeTree(backupRoot)
+
     if (options.secrets && Object.keys(options.secrets).length > 0) {
       try {
         await writeSecretsFile(root, settings, options.secrets)
@@ -273,6 +312,7 @@ export async function applyPlan(
   } finally {
     await releaseLock(root, settings)
   }
+
   return { status: "applied", written, notices }
 }
 
@@ -283,9 +323,11 @@ function backupFolder(backups: string, fingerprint: string): string {
 async function writeSecretsFile(root: string, settings: ProductSettings, secrets: Record<string, string>) {
   const path = join(root, settings.secretsFile)
   let text = currentContent(root, settings.secretsFile)
+
   for (const [name, value] of Object.entries(secrets)) {
     text = setEnvValue(text, name, value)
   }
+
   if (text !== undefined) {
     ensureParent(path)
     await writeAtomic(path, text, 0o600)
@@ -294,14 +336,18 @@ async function writeSecretsFile(root: string, settings: ProductSettings, secrets
 
 async function rollback(root: string, journal: Journal): Promise<RollbackReport> {
   const report: RollbackReport = { restored: [], unchanged: [], changed: [], removedFolders: [] }
+
   for (const entry of [...journal.entries].reverse()) {
     const target = join(root, entry.path)
     const state = readSafely(root, entry.path)
+
     if (state.kind === "unsafe") {
       report.changed.push(entry.path)
       continue
     }
+
     const hash = rawHash(state.kind === "file" ? state.content : undefined)
+
     if (hash === entry.afterHash && hash !== entry.beforeHash) {
       if (entry.action === "create") {
         await removeFile(target)
@@ -318,8 +364,10 @@ async function rollback(root: string, journal: Journal): Promise<RollbackReport>
     } else {
       report.changed.push(entry.path)
     }
+
     report.removedFolders.push(...removeEmptyFolders(entry.createdFolders))
   }
+
   return report
 }
 
@@ -331,21 +379,28 @@ export async function recover(
   const paths = statePaths(root, settings)
   const empty: RollbackReport = { restored: [], unchanged: [], changed: [], removedFolders: [] }
   const info = statSync(paths.lock, { throwIfNoEntry: false }) ? readJson(paths.lock, lockInfoSchema) : undefined
+
   if (info && !isStaleLock(info)) {
     throw lockedError(paths.lock, info, settings.product)
   }
+
   const journal = statSync(paths.journal, { throwIfNoEntry: false })
     ? readJson(paths.journal, journalSchema)
     : undefined
+
   if (!journal) {
     const hadState =
       statSync(paths.journal, { throwIfNoEntry: false }) !== undefined ||
       statSync(paths.lock, { throwIfNoEntry: false }) !== undefined
+
     await removeFile(paths.journal).catch(() => undefined)
     await releaseLock(root, settings)
+
     return { status: hadState ? "recovered" : "unchanged", report: empty }
   }
+
   const problem = journalProblem(root, paths.backups, journal)
+
   if (problem) {
     throw new PlanError(
       "E_INVALID_STATE",
@@ -353,12 +408,16 @@ export async function recover(
       { paths: [`${settings.stateDir}/journal.json`] }
     )
   }
+
   const report = await rollback(root, journal)
+
   if (report.changed.length === 0) {
     removeTree(backupFolder(paths.backups, journal.fingerprint))
   }
+
   await removeFile(paths.journal)
   await releaseLock(root, settings)
+
   return { status: "recovered", report }
 }
 
@@ -370,20 +429,27 @@ function journalProblem(root: string, backups: string, journal: Journal): string
   if (!/^[0-9a-f]{16,}$/.test(journal.fingerprint)) {
     return "Its fingerprint isn't a hash."
   }
+
   const backupRoot = backupFolder(backups, journal.fingerprint)
+
   for (const entry of journal.entries) {
     const problem = pathProblem(entry.path)
+
     if (problem) {
       return `${JSON.stringify(entry.path)}: ${problem}`
     }
+
     const backup = entry.backup === undefined ? undefined : backupProblem(root, backupRoot, entry.backup)
+
     if (backup) {
       return `The backup of ${entry.path} ${backup}.`
     }
+
     if (entry.createdFolders.some((folder) => !inside(root, folder))) {
       return `${entry.path} lists a created folder outside the project.`
     }
   }
+
   return undefined
 }
 
@@ -395,18 +461,24 @@ function backupProblem(root: string, backupRoot: string, backup: string): string
   if (!inside(backupRoot, backup)) {
     return "is outside its backup folder"
   }
+
   let current = root
+
   for (const part of relative(root, backup).split(sep)) {
     current = join(current, part)
     const stat = lstatSync(current, { throwIfNoEntry: false })
+
     if (!stat) {
       return "is missing"
     }
+
     if (stat.isSymbolicLink()) {
       return "is reached through a link"
     }
   }
+
   const stat = lstatSync(backup)
+
   return stat.isFile() && stat.nlink === 1 ? undefined : "isn't a plain file"
 }
 
@@ -414,5 +486,6 @@ function backupProblem(root: string, backupRoot: string, backup: string): string
 // path is relative to the current folder, not to the parent.
 function inside(parent: string, path: string): boolean {
   const relation = relative(parent, path)
+
   return relation !== "" && relation !== ".." && !relation.startsWith(`..${sep}`) && !isAbsolute(relation)
 }

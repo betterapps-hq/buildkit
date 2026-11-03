@@ -99,11 +99,25 @@ A template package is code from its author, running on your computer, like any p
   the project was made with. Its dependencies aren't pinned: npm resolves their ranges again when it installs the
   package into a new cache, unless the package publishes an `npm-shrinkwrap.json`.
 
+## Add-on packages
+
+Added after v1. An add-on package's default export is `defineAddonPack({ extends, addons, versions? })`, and `add`
+installs it by name: `spawn add @acme/turrets`, or `spawn add @acme/defenses#walls` to pick one of several.
+
+- **Found like a template package.** A scoped name, or a name after `npm:`, that isn't an add-on in the catalog is a
+  package. `add` installs it into the user cache with its integrity, merges it into the catalog, and checks it before
+  planning. The plan says where it came from, and the CLI asks before applying.
+- **Add-ons only.** Ids start with `<package>/`. It can't add targets, points, questions or templates, or pin a package
+  the catalog pins.
+- **Later commands** load it from the lock's `packs`, as they load template packages, and `upgrade` moves it to its
+  newest version whose `extends` range includes the installed catalog.
+- **A new package isn't a catalog change.** The planner compares the catalog to the lock's packages only, so a package
+  `add` brings in doesn't ask for an upgrade first.
+
 ## Not in v1
 
 - **The dashboard** lists built-in templates only. Previewing a package there would mean running its code in the
   browser.
-- **Add-on packages** (`spawn add @acme/turrets`). They need the same loader, and come next.
 - **Package targets, slots, points and presets.**
 - **npm provenance** in the plan, for packages published with it.
 - **Search or a registry.** Packages are found on npm, for example by the `spawnkit-template` keyword.

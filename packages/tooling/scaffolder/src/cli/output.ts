@@ -1,23 +1,26 @@
 import type { Envelope } from "../plan/envelope.js"
 
-const classLabels: Record<string, string> = {
-  owned: "generated",
-  seed: "starter, merged on upgrade",
-  sample: "starter, written once",
-  shared: "config, edited by key",
-  user: "yours",
-  config: "project config",
-  lock: "lock"
-}
+const classLabels = new Map([
+  ["owned", "generated"],
+  ["seed", "starter, merged on upgrade"],
+  ["sample", "starter, written once"],
+  ["shared", "config, edited by key"],
+  ["user", "yours"],
+  ["config", "project config"],
+  ["lock", "lock"]
+])
 
 function headline(envelope: Envelope): string {
   const count = envelope.operations?.length ?? 0
   const changes = `${count} ${count === 1 ? "change" : "changes"}`
+
   switch (envelope.status) {
     case "planned":
       return `Planned ${changes}. Nothing has been written yet.`
     case "applied":
-      return `Applied ${changes}.`
+      return envelope.setup?.failed
+        ? `Applied ${changes}. Setup stopped: ${envelope.setup.failed.label} failed.`
+        : `Applied ${changes}.`
     case "unchanged":
       return "Everything is up to date. Nothing to change."
     case "needs-decision":
@@ -37,9 +40,11 @@ function describePackage(change: NonNullable<Envelope["packages"]>[number]): str
   if (change.to === undefined) {
     return `remove ${change.name} from ${change.section}`
   }
+
   if (change.from === undefined) {
     return `add ${change.name}@${change.to} to ${change.section}`
   }
+
   return `update ${change.name} from ${change.from} to ${change.to}`
 }
 
@@ -51,13 +56,18 @@ export function describeEnvelope(envelope: Envelope): string {
       "Changes",
       (envelope.operations ?? []).map((operation) => {
         const counts = operation.secret ? "contents hidden" : `+${operation.linesAdded} -${operation.linesRemoved}`
-        return `${operation.action.padEnd(6)} ${operation.path} (${classLabels[operation.class] ?? operation.class}, ${counts})`
+
+        return `${operation.action.padEnd(6)} ${operation.path} (${classLabels.get(operation.class) ?? operation.class}, ${counts})`
       })
     ),
     ...section("Always included", envelope.required ?? []),
     ...section(
       "Also adds",
-      (envelope.pulled ?? []).map((pulled) => `${pulled.id}, needed by ${pulled.by.join(", ")}`)
+      (envelope.pulled ?? []).map((pulled) =>
+        pulled.joins
+          ? `${pulled.id}, with ${pulled.by.join(" and ")}`
+          : `${pulled.id}, needed by ${pulled.by.join(", ")}`
+      )
     ),
     ...section(
       "Packages",
@@ -120,8 +130,22 @@ export function describeEnvelope(envelope: Envelope): string {
       "Notes",
       (envelope.notices ?? []).map((notice) => notice.text)
     ),
+    ...section("Setup", [
+      ...(envelope.setup?.ran ?? []).map((label) => `Done: ${label}`),
+      ...(envelope.setup?.failed
+        ? [
+            `Failed: ${envelope.setup.failed.label} (${envelope.setup.failed.run})`,
+            ...envelope.setup.failed.output
+              .trimEnd()
+              .split(/\r?\n/)
+              .filter((line) => line.trim() !== "")
+              .map((line) => `  ${line}`)
+          ]
+        : [])
+    ]),
     ...section("Next steps", [...(envelope.nextSteps ?? []), ...(envelope.error?.next ?? [])]),
     ...(envelope.artifacts ? ["", `Plan files: ${envelope.artifacts}`] : [])
   )
+
   return `${lines.join("\n")}\n`
 }

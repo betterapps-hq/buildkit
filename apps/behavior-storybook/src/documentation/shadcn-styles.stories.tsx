@@ -1,9 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { Code, Documentation } from "./Documentation.js"
+
 const meta = {
   title: "shadcn/Style selection",
   parameters: { layout: "fullscreen", controls: { disable: true } }
 } satisfies Meta
+
 export default meta
 
 export const Overview: StoryObj<typeof meta> = {

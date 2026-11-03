@@ -1,0 +1,458 @@
+.kit-narrow {
+  display: none;
+}
+
+/* Head and install card */
+
+.kit-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 64px;
+}
+
+.kit-heading {
+  display: flex;
+  flex: 0 1 580px;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+
+.kit-install {
+  flex: 0 0 620px;
+  min-width: 0;
+  padding: 15px 17px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #0b1020;
+  box-shadow: 0 18px 40px #0b12242e;
+  font: 400 12.5px/16.5px var(--font-mono);
+  color: var(--text);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.kit-install code {
+  display: grid;
+  gap: 18px;
+}
+
+.kit-install-line {
+  display: block;
+  white-space: pre;
+}
+
+.kit-prompt {
+  color: var(--blue-soft);
+}
+
+.kit-token {
+  padding: 0 3px;
+  border-radius: 4px;
+  background: #3370ff33;
+  color: var(--blue-soft);
+}
+
+/* Comparison panels */
+
+.kit-compare {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.kit-panel {
+  --panel-accent: #ff8a9b;
+  --panel-line: #ff8a9b40;
+  --panel-tint: #2a1218;
+  display: flex;
+  flex-direction: column;
+  height: 300px;
+  border: 1px solid var(--panel-line);
+  border-radius: 18px;
+  background: #0e1428;
+  box-shadow: 0 16px 40px #0b12241a;
+  overflow: hidden;
+}
+
+.kit-panel-installed {
+  --panel-accent: var(--blue-soft);
+  --panel-line: #3370ff66;
+  --panel-tint: #101a36;
+}
+
+.kit-panel-head {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--line);
+}
+
+.kit-panel-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: var(--panel-tint);
+  color: var(--panel-accent);
+}
+
+.kit-panel-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.kit-panel-titles {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.kit-panel-title {
+  font-size: 16px;
+  line-height: 1.2;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.kit-panel-sub {
+  font-size: 13px;
+  line-height: 1.25;
+  color: var(--text-2);
+}
+
+.kit-panel-tag {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 9px;
+  border: 1px solid var(--panel-line);
+  border-radius: 999px;
+  background: var(--panel-tint);
+  color: var(--panel-accent);
+  font: 400 11px/1.2 var(--font-mono);
+}
+
+.kit-panel-tag svg {
+  width: 13px;
+  height: 13px;
+}
+
+.kit-panel-installed .kit-panel-tag svg {
+  width: 12px;
+  height: 12px;
+}
+
+.kit-panel-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;
+  padding: 14px 0;
+  background: #0a0f1e;
+}
+
+.kit-diff-file {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 22px 10px;
+  color: var(--text-3);
+  font: 400 12px/1.25 var(--font-mono);
+}
+
+.kit-diff-file svg {
+  width: 13px;
+  height: 13px;
+}
+
+.kit-diff-code {
+  font: 400 12.5px/1.2 var(--font-mono);
+  overflow: hidden;
+}
+
+.kit-diff-code code {
+  display: block;
+}
+
+.kit-diff-line {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 24px;
+  padding: 0 22px;
+  color: var(--text-2);
+  white-space: pre;
+}
+
+.kit-diff-sign {
+  flex: none;
+  width: 10px;
+}
+
+.kit-diff-line.is-removed {
+  background: #2a1218;
+  color: #ff8a9b;
+}
+
+.kit-diff-line.is-added {
+  background: #0f2a1e;
+  color: #5ee0a0;
+}
+
+.kit-file {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 40px;
+  padding: 0 22px;
+}
+
+.kit-file svg {
+  width: 14px;
+  height: 14px;
+  color: var(--text-3);
+}
+
+.kit-file.is-sealed svg {
+  color: var(--blue-soft);
+}
+
+.kit-file-path {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text);
+  font: 400 12.5px/1.2 var(--font-mono);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.kit-file-note {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-3);
+  font: 400 11.5px/1.2 var(--font-mono);
+  white-space: pre;
+  text-overflow: ellipsis;
+}
+
+.kit-panel-foot {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 22px;
+  border-top: 1px solid var(--panel-line);
+  background: #1a0f14;
+  color: #ff8a9b;
+  font-size: 13.5px;
+  line-height: 1.3;
+  font-weight: 500;
+}
+
+.kit-panel-installed .kit-panel-foot {
+  background: #0e1630;
+  color: #a9c4ff;
+}
+
+.kit-panel-foot svg {
+  width: 15px;
+  height: 15px;
+  color: var(--panel-accent);
+}
+
+/* Styles */
+
+.kit-styles {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px 32px;
+}
+
+.kit-styles-head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.kit-styles-note {
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--text-2);
+}
+
+.kit-style-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.kit-style-list li {
+  display: flex;
+  align-items: center;
+  height: 30px;
+  padding: 0 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  color: var(--text-2);
+  font: 400 12px/1 var(--font-mono);
+}
+
+/* The style the install command above uses */
+.kit-style-list .is-shown {
+  border-color: #3370ff80;
+  background: #3370ff14;
+  color: var(--text);
+}
+
+@media (max-width: 1340px) {
+  .kit-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 32px;
+  }
+
+  .kit-heading {
+    flex: none;
+    max-width: 640px;
+  }
+
+  .kit-install {
+    flex: none;
+    width: min(100%, 620px);
+  }
+}
+
+/* Tablets: the title and lede side by side, with the install card full width below them */
+@media (min-width: 761px) and (max-width: 1340px) {
+  .kit-head {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: end;
+    gap: 20px 56px;
+  }
+
+  .kit-heading {
+    display: contents;
+  }
+
+  .kit-heading .tl-heading {
+    grid-row: 2;
+  }
+
+  .kit-heading .tl-body {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    justify-self: end;
+  }
+
+  .kit-install {
+    grid-column: 1 / -1;
+    width: auto;
+    margin-top: 12px;
+  }
+}
+
+@media (max-width: 1080px) {
+  .kit-compare {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .kit-wide {
+    display: none;
+  }
+
+  .kit-narrow {
+    display: revert;
+  }
+
+  .kit-compare {
+    gap: 12px;
+  }
+
+  .kit-panel {
+    height: auto;
+    border-radius: 14px;
+    box-shadow: none;
+  }
+
+  .kit-panel-head {
+    gap: 10px;
+    padding: 14px 16px;
+  }
+
+  .kit-panel-glyph {
+    width: 15px;
+    height: 15px;
+    color: var(--panel-accent);
+  }
+
+  .kit-panel-title {
+    font-size: 14px;
+  }
+
+  .kit-panel-body {
+    padding: 10px 0;
+  }
+
+  .kit-diff-code {
+    font-size: 11.5px;
+  }
+
+  .kit-diff-line {
+    gap: 10px;
+    padding: 0 14px;
+  }
+
+  .kit-diff-sign {
+    width: auto;
+  }
+
+  .kit-panel-installed .kit-panel-body {
+    padding: 8px 0;
+  }
+
+  .kit-file {
+    gap: 9px;
+    height: 34px;
+    padding: 0 16px;
+  }
+
+  .kit-file svg,
+  .kit-file.is-theme svg {
+    width: 13px;
+    height: 13px;
+    color: var(--blue-soft);
+  }
+
+  .kit-file-path {
+    font-size: 11px;
+  }
+
+  .kit-panel-foot {
+    gap: 8px;
+    padding: 12px 16px;
+    border-top: 0;
+    font-size: 13px;
+  }
+
+  .kit-panel-foot svg {
+    width: 14px;
+    height: 14px;
+  }
+}

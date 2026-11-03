@@ -1,8 +1,61 @@
 # Change Log - @buildkitgg/scaffolder
 
-<!-- This log was last generated on Fri, 30 Oct 2026 08:23:50 GMT and should not be manually modified. -->
+<!-- This log was last generated on Tue, 03 Nov 2026 11:33:32 GMT and should not be manually modified. -->
 
 <!-- Start content -->
+
+## 0.9.0
+
+Tue, 03 Nov 2026 11:33:32 GMT
+
+### Minor changes
+
+- Template packages can extend the catalog's templates and their own, ask the catalog's questions, and bring questions
+  and pins of their own. create takes a package's question flags once the package is loaded. (ajcraswell@gmail.com)
+- Add-on packages: defineAddonPack({ extends, addons, versions }) publishes add-ons for a catalog, add installs one by
+  its package name, the lock records it in packs, and later commands and upgrade load it as they load template packages.
+  (ajcraswell@gmail.com)
+- Breaking: init, create's name before 0.6, is removed. The README has a Migrating from slots section for catalogs
+  moving to questions. (ajcraswell@gmail.com)
+- create offers setup steps once the project is applied: the add-ons' commands with setup: true, the install and a git
+  repository with a first commit. --setup runs them without asking, --no-setup skips them, a failing step exits 6, and
+  settings.setup picks the package manager and turns the install or git step off. (ajcraswell@gmail.com)
+
+### Patches
+
+- Keep the command when publishing: npm dropped a bin path that started with ./ (ajcraswell@gmail.com)
+- fix: pass the anti-slop lint rules (ajcraswell@gmail.com)
+
+## 0.8.0
+
+Tue, 03 Nov 2026 02:41:57 GMT
+
+### Minor changes
+
+- Read slot:\<id> in an old config or lock as question:\<id>, and write the new form on the next apply. An upgrade lists
+  each question the template gains as a new-question notice instead of asking it. (ajcraswell@gmail.com)
+- checkCatalog checks gallery images: an https URL, or a path inside the package that the new files option confirms.
+  catalog check confirms a template package's images are in its folder. (ajcraswell@gmail.com)
+
+## 0.7.0
+
+Tue, 03 Nov 2026 01:39:16 GMT
+
+### Minor changes
+
+- Breaking: templates ask an ordered list of questions instead of slots and optional add-ons. Questions can be shared by
+  the catalog, templates can extend each other, bare npm: add-ons need no defineAddon, choices show why they can't be
+  picked, and a required question with no default is a choose decision. defineSlot, slot, slot: requirements,
+  Answers.slots and Answers.optional are removed. (ajcraswell@gmail.com)
+- Env contributions take a `help` link, such as the provider's dashboard, which the wizard and the next steps show as
+  "Get one at <url>". Catalog CI checks it's https (ajcraswell@gmail.com)
+- Add-ons can conflict with any other add-on that provides a capability, with `conflicts: ["provides:orm"]`, and adding
+  one that conflicts this way offers to replace the installed one (ajcraswell@gmail.com)
+- Combination add-ons hold the glue between two choices, such as an auth library's adapter for an ORM: `joins` selects
+  one when every add-on it names is selected, and removes it when one isn't (ajcraswell@gmail.com)
+- Catalogs pin packages to exact versions or npm ranges, and write exact pins as exact, caret or tilde ranges. Add-ons
+  say which package ranges they're written for, catalog CI checks the pins fit, and `catalog check --registry` checks
+  each pin against npm (ajcraswell@gmail.com)
 
 ## 0.6.0
 

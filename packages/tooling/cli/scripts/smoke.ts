@@ -28,9 +28,6 @@ interface SmokeCase {
   skip?: string
 }
 
-const waitsOnBetterApps =
-  "it needs @better-apps/sql, which isn't published or in this checkout yet (the Better Apps Features session builds it)"
-
 const cases: SmokeCase[] = [
   {
     name: "ssr",
@@ -54,15 +51,7 @@ const cases: SmokeCase[] = [
       { path: "/", headers: { "accept-language": "fr-CA,fr;q=0.9" }, status: 307 }
     ]
   },
-  { name: "spa-add-i18n", create: ["--mode", "spa"], after: [["add", "i18n"]], scripts: ["i18n:check"] },
-  {
-    name: "ssr-database",
-    create: ["--mode", "ssr", "--database", "sql"],
-    after: [],
-    scripts: [],
-    skip: waitsOnBetterApps
-  },
-  { name: "ssr-auth", create: ["--preset", "saas"], after: [], scripts: [], skip: waitsOnBetterApps }
+  { name: "spa-add-i18n", create: ["--mode", "spa"], after: [["add", "i18n"]], scripts: ["i18n:check"] }
 ]
 
 const { values: flags } = parseArgs({
@@ -72,32 +61,42 @@ const { values: flags } = parseArgs({
     list: { type: "boolean", default: false }
   }
 })
+
 const wanted = flags.case.flatMap((entry) => entry.split(",")).filter(Boolean)
 const selected = cases.filter((entry) => wanted.length === 0 || wanted.includes(entry.name))
+
 if (selected.length === 0) {
   throw new Error(`No smoke case is named ${wanted.join(", ")}. Cases: ${cases.map((entry) => entry.name).join(", ")}.`)
 }
+
 if (flags.list) {
   for (const entry of selected) {
     print(
       `${entry.name.padEnd(14)} buildkit create app ${entry.create.join(" ")}${entry.skip ? ` (skipped: ${entry.skip})` : ""}`
     )
   }
+
   process.exit(0)
 }
 
 const cliFolder = fileURLToPath(new URL("../", import.meta.url))
 const tooling = resolve(cliFolder, "..")
 const bin = join(cliFolder, "dist/bin.js")
+
 if (!existsSync(bin)) {
   throw new Error("Build the CLI first: pnpm exec vp run --cache --filter @buildkitgg/cli... build")
 }
+
 const pnpmScript = process.env.npm_execpath
+
 if (!pnpmScript) {
   throw new Error("Run the smoke test through pnpm: pnpm --filter @buildkitgg/cli test:smoke")
 }
+
 const outRoot = resolve(flags.out ?? join(tmpdir(), "buildkit-smoke"))
+
 mkdirSync(outRoot, { recursive: true })
+
 const work = mkdtempSync(join(outRoot, "run-"))
 
 /** Runs a command and resolves with its output, or rejects with the output when it fails. */
@@ -115,6 +114,7 @@ function run(label: string, executable: string, args: string[], cwd: string, log
     child.on("close", (status) => {
       clearTimeout(timer)
       log.push(`$ ${label}\n${output}`)
+
       if (status === 0) {
         done(output)
       } else {
@@ -126,6 +126,7 @@ function run(label: string, executable: string, args: string[], cwd: string, log
 
 function pnpm(args: string[], cwd: string, log: string[]): Promise<string> {
   const script = pnpmScript ?? ""
+
   return /\.[cm]?js$/.test(script)
     ? run(`pnpm ${args.join(" ")}`, process.execPath, [script, ...args], cwd, log)
     : run(`pnpm ${args.join(" ")}`, script, args, cwd, log)
@@ -133,8 +134,11 @@ function pnpm(args: string[], cwd: string, log: string[]): Promise<string> {
 
 // Pack the Buildkit packages the app depends on, as npm would ship them.
 const tarballs = join(work, "packages")
+
 mkdirSync(tarballs)
+
 const packed: Record<string, string> = {}
+
 for (const [name, folder] of [
   ["@buildkitgg/scaffolder", "scaffolder"],
   ["@buildkitgg/catalog", "catalog"],
@@ -143,11 +147,14 @@ for (const [name, folder] of [
   const before = new Set(readdirSync(tarballs))
   await pnpm(["pack", "--pack-destination", tarballs], join(tooling, folder), [])
   const file = readdirSync(tarballs).find((entry) => !before.has(entry))
+
   if (!file) {
     throw new Error(`pnpm pack wrote no tarball for ${name}.`)
   }
+
   packed[name] = join(tarballs, file)
 }
+
 const overrides = [
   "",
   "# Added by Buildkit's smoke test: the Buildkit packages packed from the checkout under test.",
@@ -169,27 +176,34 @@ async function check(entry: SmokeCase): Promise<Result> {
   if (entry.skip) {
     return { name: entry.name, status: "skipped", detail: entry.skip, seconds: 0 }
   }
+
   const started = performance.now()
   const project = join(work, entry.name)
   const log: string[] = []
   const steps: string[] = []
+
   const buildkit = (args: string[], cwd: string) =>
     run(`buildkit ${args.join(" ")}`, process.execPath, [bin, ...args, "--yes", "--json"], cwd, log)
+
   try {
     await buildkit(["create", "app", project, "--name", entry.name, ...entry.create], work)
+
     for (const args of entry.after) {
       await buildkit([...args, "--cwd", project], work)
     }
+
     steps.push("generate")
     appendFileSync(join(project, "pnpm-workspace.yaml"), overrides)
     await pnpm(["install"], project, log)
     // The overrides are the harness's own lines, so they follow the app's formatter like the rest.
     await pnpm(["exec", "oxfmt", "pnpm-workspace.yaml"], project, log)
     steps.push("install")
+
     for (const script of ["buildkit check", "lint", "format:check", "build", "typecheck", ...entry.scripts]) {
       await pnpm(script.split(" "), project, log)
       steps.push(script)
     }
+
     if (entry.probes) {
       await run(
         "probe the built server",
@@ -200,10 +214,12 @@ async function check(entry: SmokeCase): Promise<Result> {
       )
       steps.push(`${entry.probes.length} server requests`)
     }
+
     return { name: entry.name, status: "passed", detail: steps.join(", "), seconds: elapsed(started) }
   } catch (error) {
     writeFileSync(join(project, "smoke.log"), log.join("\n"))
     const message = error instanceof Error ? error.message : String(error)
+
     return {
       name: entry.name,
       status: "failed",
@@ -232,17 +248,23 @@ function elapsed(since: number): number {
 }
 
 print(`Smoke-testing ${selected.length} case(s) in ${work}`)
+
 const results: Result[] = []
+
 for (const entry of selected) {
   const result = await check(entry)
   results.push(result)
   print(`${result.status.padEnd(8)} ${result.name} (${result.seconds}s): ${result.detail}`)
 }
+
 writeFileSync(join(work, "results.json"), `${JSON.stringify(results, null, 2)}\n`)
+
 const failed = results.filter((result) => result.status === "failed")
+
 print(
   `${results.filter((result) => result.status === "passed").length} passed, ${failed.length} failed, ${results.filter((result) => result.status === "skipped").length} skipped.`
 )
+
 if (failed.length > 0) {
   process.exitCode = 1
 }

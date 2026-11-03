@@ -8,14 +8,16 @@ export type Intent =
       command: "add"
       /** Add-on ids to add. */
       addons: string[]
-      /** Installed add-on ids to remove, replacing them within their slot. */
+      /** Installed add-on ids to remove, replacing them with add-ons they conflict with. */
       replace: string[]
+      // oxlint-disable-next-line anti-slop/no-unsafe-dictionary-type -- options keyed by add-on id, as in Answers; each add-on's schema types its values
       options: Record<string, Record<string, unknown>>
     }
   /**
    * `addons` on config, upgrade and sync are add-on ids to add with the change. A decision's choice uses them to stay
-   * the same command, such as an upgrade whose new catalog makes an installed add-on need a slot.
+   * the same command, such as an upgrade whose new catalog makes an installed add-on need a capability.
    */
+  // oxlint-disable-next-line anti-slop/no-unsafe-dictionary-type -- options keyed by add-on id, as in Answers; each add-on's schema types its values
   | { command: "config"; options: Record<string, Record<string, unknown>>; addons?: string[] }
   | { command: "upgrade"; addons?: string[] }
   | { command: "sync"; addons?: string[] }
@@ -102,6 +104,8 @@ export interface EnvVar {
   required: boolean
   description: string
   example?: string
+  /** Where to get a value, an https URL. The wizard and the next steps say `Get one at <url>`. */
+  help?: string
 }
 
 export interface PackageChange {
@@ -115,6 +119,8 @@ export interface CommandHint {
   run: string
   when: "after-apply" | "after-install"
   why: string
+  /** A setup step, which `create` offers to run after applying. */
+  setup?: true
 }
 
 export interface MigrationNote {
@@ -126,7 +132,10 @@ export interface MigrationNote {
 
 export interface PulledAddon {
   id: string
+  /** What pulled it in through `requires`, or, for a combination add-on, what it joins. */
   by: string[]
+  /** Set for a combination add-on. */
+  joins?: true
 }
 
 export type ErrorCode =
@@ -140,6 +149,7 @@ export type ErrorCode =
   | "E_UNKNOWN_TEMPLATE"
   | "E_PACKAGE_UNAVAILABLE"
   | "E_INVALID_PACK"
+  | "E_INVALID_CATALOG"
   | "E_UNKNOWN_TARGET"
   | "E_CATALOG_MISMATCH"
   | "E_CONTRIBUTION"

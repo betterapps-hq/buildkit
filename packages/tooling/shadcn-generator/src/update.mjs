@@ -3,23 +3,32 @@ import { resolve } from "node:path"
 import { root, tool, templatePath, readJson, writeJson, pnpm } from "./shared.mjs"
 
 const requestedRevision = process.argv[2]
+
 async function get(url) {
   const response = await fetch(url, { headers: { "User-Agent": "buildkit-upstream-update" } })
+
   if (!response.ok) {
     throw new Error(`${response.status}: ${url}`)
   }
+
   return response
 }
+
 const revision =
   requestedRevision ?? (await (await get("https://api.github.com/repos/shadcn-ui/ui/commits/main")).json()).sha
+
 if (!/^[a-f0-9]{40}$/.test(revision)) {
   throw new Error("Expected a full upstream commit SHA")
 }
+
 const tree = await (await get(`https://api.github.com/repos/shadcn-ui/ui/git/trees/${revision}?recursive=1`)).json()
+
 if (tree.truncated) {
   throw new Error("Upstream tree is truncated")
 }
+
 const base = "apps/v4/registry/bases/base/"
+
 const paths = tree.tree
   .filter(
     ({ path, type }) =>
@@ -30,7 +39,9 @@ const paths = tree.tree
   )
   .map(({ path }) => path)
   .sort()
+
 const files = {}
+
 // Bound requests to avoid exhausting GitHub connections.
 for (let i = 0; i < paths.length; i += 8) {
   await Promise.all(
@@ -39,21 +50,25 @@ for (let i = 0; i < paths.length; i += 8) {
     })
   )
 }
+
 const sources = Object.fromEntries(
   Object.keys(files)
     .filter((p) => p.startsWith(base))
     .sort()
     .map((p) => [p.slice(base.length), files[p]])
 )
+
 const styles = Object.fromEntries(
   Object.keys(files)
     .filter((p) => /\/style-[a-z]+\.css$/.test(p))
     .sort()
     .map((p) => [p.match(/style-([a-z]+)\.css$/)[1], files[p]])
 )
+
 if (!sources["ui/button.tsx"] || !styles.nova || !files["apps/v4/registry/themes.ts"]) {
   throw new Error("Incomplete upstream snapshot")
 }
+
 writeJson(resolve(tool, "upstream/snapshot.json"), {
   repository: "https://github.com/shadcn-ui/ui",
   revision,
@@ -67,8 +82,9 @@ writeJson(resolve(tool, "upstream/snapshot.json"), {
   themes: files["apps/v4/registry/themes.ts"],
   globals: files["apps/v4/app/globals.css"]
 })
+
 if (!requestedRevision) {
-  pnpm(["--filter", "@repo/shadcn-generator", "update", "shadcn", "--latest", "--save-exact"], root)
+  pnpm(["--filter", "@buildkitgg/shadcn-generator", "update", "shadcn", "--latest", "--save-exact"], root)
   pnpm(
     [
       "--filter",
@@ -86,6 +102,7 @@ if (!requestedRevision) {
   template.dependencies = readJson(resolve(root, "packages/shadcn/shadcn-baseui-nova/package.json")).dependencies
   writeJson(templatePath, template)
 }
+
 process.stdout.write(
   `Pinned shadcn ${revision}: ${Object.keys(styles).length} styles, ${Object.keys(sources).length} source files. Run pnpm generate next.`
 )

@@ -23,8 +23,8 @@ alerts.warning({ id: "billing", title: "Update your payment method" })
 
 Alerts are persistent. Use the native toast manager for timed feedback. Reusing an ID replaces in place without invoking
 dismissal; old handles become inactive. Mount once per region. Import styles.css once for the default kit. For registry
-components, pass adapter: alertComponents({ Alert, AlertTitle, AlertDescription, Button }); no Base UI/Radix switch is
-needed.
+components, pass adapter: alertComponents({ Alert, AlertTitle, AlertDescription, AlertAction, Button }); no Base
+UI/Radix switch is needed. Without `AlertAction`, the dismiss control sits beside the alert's action.
 
 IDs are scoped to a region (default: `default`). All alerts are rendered; there is no hidden backlog or automatic
 timeout. `dismissible: false` hides the dismiss control but does not prevent programmatic dismissal. Actions do not
@@ -39,7 +39,7 @@ data; create stores per request, not as server singletons.
 Import `@buildkitgg/shadcn-alerts-manager/styles.css` once, or use the kit stylesheet already loaded by the app. Custom
 registry components use their application CSS.
 
-See [alert architecture and native toast guidance](https://github.com/AndrewCraswell/buildkit/blob/main/docs/alerts.md).
+See [alert architecture and native toast guidance](https://github.com/betterapps-hq/buildkit/blob/main/docs/alerts.md).
 
 ## Component style
 
