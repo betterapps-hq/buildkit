@@ -58,14 +58,14 @@ interface FakeNpm {
   calls: string[][]
 }
 
-function fakeNpm(published: Record<string, string>): FakeNpm {
+function fakeNpm(published: Record<string, string>, name = "@acme/tower"): FakeNpm {
   const calls: string[][] = []
 
   const run: CommandRunner = async (_command, args, cwd) => {
     calls.push(args)
     const [verb, spec = "", field] = args
 
-    if (!spec.startsWith("@acme/tower")) {
+    if (spec !== name && !spec.startsWith(`${name}@`)) {
       return { code: 1, output: "npm ERR! 404 Not Found" }
     }
 
@@ -76,7 +76,7 @@ function fakeNpm(published: Record<string, string>): FakeNpm {
         return { code: 0, output: JSON.stringify(versions) }
       }
 
-      const range = spec.slice("@acme/tower@".length)
+      const range = spec.slice(name.length + 1)
 
       const matching =
         range === "latest" ? versions.slice(-1) : versions.filter((version) => satisfiesRange(version, range))
@@ -91,16 +91,16 @@ function fakeNpm(published: Record<string, string>): FakeNpm {
       return { code: 1, output: "npm ERR! notarget" }
     }
 
-    const folder = join(cwd, "node_modules/@acme/tower")
+    const folder = join(cwd, `node_modules/${name}`)
     mkdirSync(folder, { recursive: true })
     writeFileSync(
       join(folder, "package.json"),
-      JSON.stringify({ name: "@acme/tower", version, type: "module", exports: "./index.js" })
+      JSON.stringify({ name, version, type: "module", exports: "./index.js" })
     )
     writeFileSync(join(folder, "index.js"), source)
     writeFileSync(
       join(cwd, "package-lock.json"),
-      JSON.stringify({ packages: { "node_modules/@acme/tower": { integrity: `sha512-${version}` } } })
+      JSON.stringify({ packages: { [`node_modules/${name}`]: { integrity: `sha512-${version}` } } })
     )
 
     return { code: 0, output: "" }
@@ -286,7 +286,9 @@ describe("template packages", () => {
       expect(envelope(listed.out).upgrade?.packs).toEqual([{ name: "@acme/tower", from: "1.0.0", to: "1.1.0" }])
       expect(envelope(listed.out).notices).toContainEqual({
         code: "template-package-skipped",
-        text: expect.stringContaining("@acme/tower@1.3.0 was skipped: @acme/tower@1.3.0 isn't a template package")
+        text: expect.stringContaining(
+          "@acme/tower@1.3.0 was skipped: @acme/tower@1.3.0 isn't a template or add-on package"
+        )
       })
     }
 
@@ -469,7 +471,7 @@ describe("template packages", () => {
     )
     writeFileSync(join(folder, "other.js"), "export default { templates: [] }\n")
     expect(envelope((await run(["catalog", "check", "tower", "--json"], npm)).out).error?.message).toContain(
-      "isn't a template package"
+      "isn't a template or add-on package"
     )
     expect(envelope((await run(["catalog", "frob", "--json"], npm)).out).error?.code).toBe("E_USAGE")
 
@@ -513,6 +515,159 @@ describe("template packages", () => {
     expect(envelope((await run(["catalog", "check", "tower", "--json"], npm)).out).notices?.[0]?.text).toContain(
       "@acme/tower@0.1.5 works with @fixture/catalog@1.0.0"
     )
+  })
+})
+
+/** An add-on package's index.js: add-ons for the fixture catalog, each writing a file with the version. */
+function addonPackSource(version: string, options: { range?: string; addons?: string[]; extra?: string } = {}): string {
+  const addons = (options.addons ?? ["turrets"]).map(
+    (id) => `{
+    id: "@acme/turrets/${id}",
+    version: ${JSON.stringify(version)},
+    title: ${JSON.stringify(id[0]!.toUpperCase() + id.slice(1))},
+    description: "Defenses",
+    contribute: () => [{ kind: "file", path: "src/${id}.ts", content: ${JSON.stringify(`export const ${id} = "${version}"\n`)}, ownership: "seed" }]
+  }`
+  )
+
+  return `export default {
+  extends: { catalog: "@fixture/catalog", versions: ${JSON.stringify(options.range ?? "^1.0.0")} },
+  addons: [${addons.join(", ")}]${options.extra ?? ""}
+}
+`
+}
+
+const turrets = (published: Record<string, string>) => fakeNpm(published, "@acme/turrets")
+const createApp = ["create", "app", "demo", "--mode", "ssr", "--yes", "--json"]
+
+describe("add-on packages", () => {
+  it("adds a package's add-on by the package's name, and later commands load the copy the lock records", async () => {
+    const npm = turrets({ "1.0.0": addonPackSource("1.0.0") })
+    expect((await run(createApp, npm)).code).toBe(0)
+    const planned = await run(["add", "@acme/turrets", "--cwd", "demo", "--json"], npm)
+    expect(envelope(planned.out).status).toBe("planned")
+    expect(envelope(planned.out).notices?.[0]?.text).toBe(
+      "The add-on comes from @acme/turrets@1.0.0 on npm, not from fixture. Applying it runs code from its author."
+    )
+    expect(existsSync(join(root, "demo/src/turrets.ts"))).toBe(false)
+
+    const added = await run(["add", "@acme/turrets", "--cwd", "demo", "--yes", "--json"], npm)
+    expect(envelope(added.out).status).toBe("applied")
+    expect(readFileSync(join(root, "demo/src/turrets.ts"), "utf8")).toBe('export const turrets = "1.0.0"\n')
+    expect(lock().catalog.packs).toEqual({ "@acme/turrets": { version: "1.0.0", integrity: "sha512-1.0.0" } })
+    expect(readFileSync(join(root, "demo/fixture.jsonc"), "utf8")).toContain('"@acme/turrets/turrets"')
+
+    // sync and check load the version the lock records, without asking npm which is newest.
+    const views = () => npm.calls.filter(([verb]) => verb === "view").length
+    const before = views()
+    expect(envelope((await run(["sync", "--cwd", "demo", "--json"], npm)).out).status).toBe("unchanged")
+    expect((await run(["check", "--cwd", "demo", "--json"], npm)).code).toBe(0)
+    expect(views()).toBe(before)
+    // A missing copy is fetched again, at that version.
+    rmSync(join(root, "cache/packs/@acme/turrets"), { recursive: true, force: true })
+    expect(envelope((await run(["sync", "--cwd", "demo", "--json"], npm)).out).status).toBe("unchanged")
+    expect(npm.calls.at(-1)).toContain("@acme/turrets@1.0.0")
+  })
+
+  it("refuses a cached copy whose integrity doesn't match the lock", async () => {
+    const npm = turrets({ "1.0.0": addonPackSource("1.0.0") })
+    await run(createApp, npm)
+    await run(["add", "@acme/turrets", "--cwd", "demo", "--yes", "--json"], npm)
+    const record = join(root, "cache/packs/@acme/turrets/1.0.0/integrity.json")
+    writeFileSync(record, JSON.stringify({ name: "@acme/turrets", version: "1.0.0", integrity: "sha512-other" }))
+    const result = await run(["sync", "--cwd", "demo", "--json"], npm)
+    expect(result.code).toBe(2)
+    expect(envelope(result.out).error).toMatchObject({ code: "E_PACKAGE_UNAVAILABLE" })
+    expect(envelope(result.out).error?.message).toContain("failed its integrity check")
+  })
+
+  it("upgrade moves it to its newest version that works with the installed catalog", async () => {
+    await run(createApp, turrets({}))
+    await run(
+      ["add", "@acme/turrets", "--cwd", "demo", "--yes", "--json"],
+      turrets({ "1.0.0": addonPackSource("1.0.0") })
+    )
+
+    const npm = turrets({
+      "1.0.0": addonPackSource("1.0.0"),
+      "1.1.0": addonPackSource("1.1.0"),
+      "2.0.0": addonPackSource("2.0.0", { range: "^2.0.0" })
+    })
+
+    const upgraded = await run(["upgrade", "--cwd", "demo", "--yes", "--json"], npm)
+    expect(envelope(upgraded.out).status).toBe("applied")
+    expect(envelope(upgraded.out).upgrade?.packs).toEqual([{ name: "@acme/turrets", from: "1.0.0", to: "1.1.0" }])
+    expect(readFileSync(join(root, "demo/src/turrets.ts"), "utf8")).toBe('export const turrets = "1.1.0"\n')
+    expect(lock().catalog.packs["@acme/turrets"].version).toBe("1.1.0")
+  })
+
+  it("applies a saved plan that adds a package's add-on, with the version it was made with", async () => {
+    await run(createApp, turrets({}))
+
+    const saved = await run(
+      ["add", "@acme/turrets", "--cwd", "demo", "--json", "--out", "plans"],
+      turrets({ "1.0.0": addonPackSource("1.0.0") })
+    )
+
+    expect(envelope(saved.out).status).toBe("planned")
+    const newer = turrets({ "1.0.0": addonPackSource("1.0.0"), "1.1.0": 'throw new Error("1.1.0 ran")\n' })
+    const applied = await run(["add", "--plan", "plans/plan.json", "--cwd", "demo", "--json"], newer)
+    expect(envelope(applied.out).status).toBe("applied")
+    expect(newer.calls).toEqual([])
+    expect(readFileSync(join(root, "demo/src/turrets.ts"), "utf8")).toBe('export const turrets = "1.0.0"\n')
+  })
+
+  it("picks one of several add-ons with #, and refuses what an add-on package can't be", async () => {
+    await run(createApp, turrets({}))
+    const several = turrets({ "1.0.0": addonPackSource("1.0.0", { addons: ["turrets", "walls"] }) })
+    const ambiguous = await run(["add", "@acme/turrets", "--cwd", "demo", "--yes", "--json"], several)
+    expect(envelope(ambiguous.out).error?.message).toBe(
+      "@acme/turrets@1.0.0 has more than one add-on. Pick one: @acme/turrets#turrets, @acme/turrets#walls."
+    )
+    const walls = await run(["add", "@acme/turrets#walls", "--cwd", "demo", "--yes", "--json"], several)
+    expect(envelope(walls.out).status).toBe("applied")
+    expect(existsSync(join(root, "demo/src/walls.ts"))).toBe(true)
+    expect(existsSync(join(root, "demo/src/turrets.ts"))).toBe(false)
+
+    const template = await run(
+      ["add", "@acme/tower", "--cwd", "demo", "--yes", "--json"],
+      fakeNpm({ "1.0.0": packSource("1.0.0") })
+    )
+
+    expect(envelope(template.out).error?.message).toBe(
+      "@acme/tower@1.0.0 is a template package, not an add-on package. Create a project from it with fixture create @acme/tower."
+    )
+    const created = await run(["create", "@acme/turrets", "other", "--yes", "--json"], several)
+    expect(envelope(created.out).error?.message).toBe(
+      "@acme/turrets@1.0.0 is an add-on package, not a template package. Add it to a project with fixture add @acme/turrets."
+    )
+  })
+
+  it("refuses an add-on package that breaks the rules before planning", async () => {
+    await run(createApp, turrets({}))
+
+    const cases: [string, string, string][] = [
+      ["2.0.0", addonPackSource("2.0.0", { addons: [] }), "has no add-ons"],
+      [
+        "2.0.1",
+        addonPackSource("2.0.1").replace('id: "@acme/turrets/turrets"', 'id: "turrets"'),
+        "Its ids start with @acme/turrets/."
+      ],
+      ["2.0.2", addonPackSource("2.0.2", { extra: ", questions: []" }), "isn't a template or add-on package"],
+      ["2.0.3", addonPackSource("2.0.3", { extra: ', versions: { react: "19.0.0" }' }), "which @fixture/catalog pins"]
+    ]
+
+    for (const [version, source, message] of cases) {
+      const result = await run(
+        ["add", `@acme/turrets@${version}`, "--cwd", "demo", "--yes", "--json"],
+        turrets({ [version]: source })
+      )
+
+      expect(result.code).toBe(2)
+      expect(envelope(result.out).error?.message).toContain(message)
+    }
+
+    expect(lock().catalog.packs).toBeUndefined()
   })
 })
 

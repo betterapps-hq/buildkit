@@ -28,6 +28,7 @@ as Buildkit build their own CLI on the engine instead, and create projects with 
 - [The JSON envelope and exit codes](#the-json-envelope-and-exit-codes)
 - [Upgrades](#upgrades)
 - [Template packages](#template-packages)
+- [Add-on packages](#add-on-packages)
 - [Catalog CI](#catalog-ci)
 
 ## The scaffold command
@@ -315,7 +316,7 @@ exclude them. `printJson` and `jsonLayoutFor` in `@buildkitgg/scaffolder/edit` p
 | Command                                       | What it does                                                         |
 | --------------------------------------------- | -------------------------------------------------------------------- |
 | `create [template] [folder]`                  | Create a project, from a template or a package. `--adopt` adopts one |
-| `add <add-on or question…>`                   | Add add-ons, or answer a question: `add database`. `--replace`       |
+| `add <add-on or question…>`                   | Add add-ons or a package, or answer a question: `add database`       |
 | `config`, `config get`, `config set`          | Show the config, get an option, or set options                       |
 | `upgrade [--list]`                            | Move to the installed catalog version, running migrations            |
 | `sync`                                        | Bring generated files and the lock in line with the config           |
@@ -428,6 +429,34 @@ package itself is pinned: npm resolves its dependencies' ranges again when it in
 that needs exact dependencies publishes an `npm-shrinkwrap.json`, which npm follows. `upgrade` moves each package to its
 newest version that works with the installed catalog. The plan says the template comes from a package and not from the
 product, because applying it runs the package author's code.
+
+## Add-on packages
+
+Add-ons can be published the same way, for any project made with the product's catalog: `npx <cli> add @acme/turrets`. A
+scoped name, or any name after `npm:`, that isn't an add-on in the catalog is a package. Add a version or a range
+(`@acme/turrets@^2`), and `#<id>` to pick one of several add-ons (`@acme/defenses#walls`).
+
+```ts
+import { defineAddonPack } from "@buildkitgg/scaffolder"
+
+export default defineAddonPack({
+  extends: { catalog: "@acme/catalog", versions: "^1.0.0" },
+  versions: { "turret-physics": "2.1.0" },
+  addons: [/* ids start with "@acme/turrets/" */]
+})
+```
+
+- **It only adds add-ons.** It can't add targets, points, questions or templates, and the rules template packages follow
+  hold: ids start with `<package>/`, its `versions` can't pin what the catalog pins, and the engine refuses it when its
+  range doesn't include the installed catalog.
+- **Installing.** `add` installs it into the user cache like a template package, merges it into the catalog, checks it,
+  and plans. The plan says "The add-on comes from @acme/turrets@1.0.0 on npm, not from acme. Applying it runs code from
+  its author.", and in a terminal `add` asks before applying.
+- **Later commands.** The lock records it in `packs` with its version and integrity, so `sync`, `check`, `config`,
+  `explain` and `schema` load that copy and refuse one that doesn't match. `upgrade` moves it to its newest version
+  whose `extends` range includes the installed catalog.
+- **Checks.** Run `catalog check` in the package's folder, after building it, to run the catalog's checks on its add-ons
+  before you publish.
 
 ## Catalog CI
 

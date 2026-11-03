@@ -37,6 +37,16 @@ export interface AddonManifest<S extends z.ZodType = z.ZodType> {
 }
 
 // @public
+export interface AddonPack {
+    addons: AddonManifest[];
+    extends: {
+        catalog: string;
+        versions: string;
+    };
+    versions?: Record<string, string>;
+}
+
+// @public
 export type AddonRef = string | PackageAddon;
 
 // @public
@@ -256,6 +266,9 @@ export interface DecisionChoice {
 
 // @public
 export function defineAddon<S extends z.ZodType = z.ZodObject<Record<string, never>>>(manifest: AddonManifest<S>): AddonManifest<S>;
+
+// @public
+export function defineAddonPack(pack: AddonPack): AddonPack;
 
 // @public (undocumented)
 export function defineCatalog(manifest: CatalogManifest): CatalogManifest;
@@ -584,7 +597,7 @@ export interface LoadedPack extends PackRecord {
     // (undocumented)
     name: string;
     // (undocumented)
-    pack: TemplatePack;
+    pack: TemplatePack | AddonPack;
 }
 
 // @public (undocumented)
@@ -719,7 +732,7 @@ export function match<V extends string, R>(value: V, cases: {
 // @public (undocumented)
 export function memoryTree(files: Readonly<Record<string, string>>): VirtualTree;
 
-// @public (undocumented)
+// @public
 export function mergePacks(catalog: CatalogManifest, packs: readonly LoadedPack[]): CatalogManifest;
 
 // @public (undocumented)
