@@ -348,8 +348,9 @@ export interface PackRecord {
 }
 
 /**
- * A template package's default export: templates, and the add-ons they need, for the targets and points of the product
- * catalog it extends. It can't add targets or points, or replace anything the catalog defines.
+ * A template package's default export: templates, and the add-ons and questions they need, for the targets and points
+ * of the product catalog it extends. Its templates can extend the catalog's and ask its questions. It can't add targets
+ * or points, or replace anything the catalog defines.
  */
 export interface TemplatePack {
   /** The product catalog's id, and the catalog versions this pack works with, as an npm range such as `^1.0.0`. */
@@ -358,4 +359,8 @@ export interface TemplatePack {
   templates: TemplateManifest[]
   /** Ids start with `<package>/`, so they never collide with the catalog's or another pack's. */
   addons?: AddonManifest[]
+  /** Questions the pack's templates use by id. An id can't be a catalog question's id or one of the CLI's flags. */
+  questions?: QuestionDefinition[]
+  /** Pins for packages the catalog doesn't pin, used by the pack's add-ons and bare add-ons. It can't change the catalog's. */
+  versions?: Record<string, string>
 }

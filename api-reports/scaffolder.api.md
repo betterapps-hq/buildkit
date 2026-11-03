@@ -716,7 +716,7 @@ export function match<V extends string, R>(value: V, cases: {
 // @public (undocumented)
 export function memoryTree(files: Readonly<Record<string, string>>): VirtualTree;
 
-// @public
+// @public (undocumented)
 export function mergePacks(catalog: CatalogManifest, packs: readonly LoadedPack[]): CatalogManifest;
 
 // @public (undocumented)
@@ -1256,7 +1256,9 @@ export interface TemplatePack {
         catalog: string;
         versions: string;
     };
+    questions?: QuestionDefinition[];
     templates: TemplateManifest[];
+    versions?: Record<string, string>;
 }
 
 // @public

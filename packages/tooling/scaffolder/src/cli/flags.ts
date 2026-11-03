@@ -12,8 +12,13 @@ export interface FlagSpec {
   repeats?: readonly string[]
   /** Flags whose value is optional: `--out` or `--out <folder>`. */
   optionalValues?: readonly string[]
-  /** Catalog-defined flags, such as one per slot. Each accepts `--name <value>` and `--no-name`. */
+  /** Catalog-defined flags, one per question. Each accepts `--name <value>` and `--no-name`. */
   dynamic?: readonly string[]
+  /**
+   * Read any other flag as catalog-defined, for a command whose template package defines more questions. The command
+   * checks them once the package is loaded.
+   */
+  anyDynamic?: boolean
 }
 
 export interface ParsedFlags {
@@ -109,6 +114,10 @@ export function parseFlags(argv: readonly string[], spec: FlagSpec): ParsedFlags
     } else if (has(spec.repeats, name)) {
       result.lists.set(name, [...(result.lists.get(name) ?? []), value()])
     } else if (has(spec.dynamic, name)) {
+      result.dynamic.set(name, value())
+    } else if (spec.anyDynamic && name.startsWith("no-")) {
+      result.dynamic.set(name.slice(3), null)
+    } else if (spec.anyDynamic) {
       result.dynamic.set(name, value())
     } else {
       throw new PlanError("E_USAGE", `Unknown option --${name}.`)

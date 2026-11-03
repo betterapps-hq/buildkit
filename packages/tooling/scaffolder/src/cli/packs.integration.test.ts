@@ -177,6 +177,39 @@ describe("template packages", () => {
     expect(envelope(unchecked.out).notices?.[0]?.text).toContain("@acme/tower stays at 1.1.0")
   })
 
+  it("creates from a package template that extends the catalog's, with a question and a pin of its own", async () => {
+    const source = `export default {
+  extends: { catalog: "@fixture/catalog", versions: "^1.0.0" },
+  versions: { phaser: "3.90.0" },
+  questions: [{ id: "engine", title: "Game engine", question: "Add a game engine?", pick: "one", choices: ["npm:phaser"] }],
+  templates: [{ id: "tower", title: "Tower", description: "The app, as a game", extends: "app", questions: ["engine"] }]
+}
+`
+
+    const npm = fakeNpm({ "1.0.0": source })
+
+    const created = await run(
+      ["create", "@acme/tower", "demo", "--mode", "ssr", "--engine", "phaser", "--yes", "--json"],
+      npm
+    )
+
+    expect(envelope(created.out).error).toBeUndefined()
+    expect(envelope(created.out).status).toBe("applied")
+    const manifest = JSON.parse(readFileSync(join(root, "demo/package.json"), "utf8"))
+    expect(manifest.dependencies).toMatchObject({ phaser: "3.90.0" })
+    // The template inherits the catalog template's required add-on and questions.
+    expect(manifest.devDependencies).toMatchObject({ oxlint: "1.72.0" })
+    expect(readFileSync(join(root, "demo/fixture.jsonc"), "utf8")).toContain('"template": "@acme/tower#tower"')
+
+    // A flag no question of the catalog or the package has is still unknown.
+    const unknown = await run(
+      ["create", "@acme/tower", "other", "--mode", "ssr", "--nope", "x", "--yes", "--json"],
+      npm
+    )
+
+    expect(envelope(unknown.out).error).toMatchObject({ code: "E_USAGE", message: "Unknown option --nope." })
+  })
+
   it("upgrades past prereleases and versions it can't load", async () => {
     await run(["create", "@acme/tower", "demo", "--yes", "--json"], fakeNpm({ "1.0.0": packSource("1.0.0") }))
 

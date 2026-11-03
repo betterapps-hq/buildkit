@@ -93,7 +93,7 @@ interface PlanCatalogs {
 }
 
 function spec(extra: FlagSpec): FlagSpec {
-  return {
+  const flags: FlagSpec = {
     booleans: [...sharedFlags.booleans, ...(extra.booleans ?? [])],
     strings: [...sharedFlags.strings, ...(extra.strings ?? [])],
     optionalValues: [...sharedFlags.optionalValues, ...(extra.optionalValues ?? [])],
@@ -101,6 +101,12 @@ function spec(extra: FlagSpec): FlagSpec {
     lists: [...(extra.lists ?? [])],
     dynamic: [...(extra.dynamic ?? [])]
   }
+
+  if (extra.anyDynamic) {
+    flags.anyDynamic = true
+  }
+
+  return flags
 }
 
 /** A flag's comma-separated value: `--telemetry sentry,posthog`. */
@@ -723,7 +729,9 @@ export class CliRuntime {
         strings: ["mode", "preset", "name"],
         lists: ["with", "without"],
         repeats: ["set"],
-        dynamic: this.#questionIds()
+        dynamic: this.#questionIds(),
+        // A template package can ask questions of its own, so their flags are checked once it's loaded.
+        anyDynamic: true
       })
     )
 
@@ -755,6 +763,13 @@ export class CliRuntime {
     }
 
     const catalog = this.#catalog
+    const questions = new Set(this.#questionIds())
+
+    for (const name of flags.dynamic.keys()) {
+      if (!questions.has(name)) {
+        throw new PlanError("E_USAGE", `Unknown option --${flags.dynamic.get(name) === null ? "no-" : ""}${name}.`)
+      }
+    }
 
     if (flags.strings.get("plan") !== undefined) {
       const reviewed = readPlanFile(resolve(this.io.cwd, flags.strings.get("plan") ?? ""))

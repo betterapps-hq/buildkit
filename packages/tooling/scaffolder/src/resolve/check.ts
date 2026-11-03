@@ -310,7 +310,7 @@ export function checkCatalog(catalog: CatalogManifest, options: CheckOptions = {
 }
 
 /** The CLI's own flags, which a question id can't be, since the id is a flag too. */
-const cliFlags = new Set([
+export const cliFlags: ReadonlySet<string> = new Set([
   "adopt",
   "catalog-version",
   "conflict",
@@ -333,7 +333,8 @@ const cliFlags = new Set([
   "yes"
 ])
 
-const questionIdPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+/** Lowercase letters, digits and hyphens: a question id, which is also a flag, or a gallery tag. */
+export const questionIdPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 
 /** Problems with a template's questions, its parent and its gallery, found on the template as it's expanded. */
 function templateProblems(
