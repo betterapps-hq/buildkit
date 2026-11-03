@@ -1,0 +1,7 @@
+{
+  "type": "minor",
+  "comment": "feat(configuration-core): publish to npm",
+  "packageName": "@buildkitgg/configuration-core",
+  "email": "ajcraswell@gmail.com",
+  "dependentChangeType": "patch"
+}

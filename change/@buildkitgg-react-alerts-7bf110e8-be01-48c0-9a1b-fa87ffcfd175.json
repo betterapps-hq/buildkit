@@ -1,0 +1,7 @@
+{
+  "type": "minor",
+  "comment": "feat(react-alerts): publish to npm",
+  "packageName": "@buildkitgg/react-alerts",
+  "email": "ajcraswell@gmail.com",
+  "dependentChangeType": "patch"
+}

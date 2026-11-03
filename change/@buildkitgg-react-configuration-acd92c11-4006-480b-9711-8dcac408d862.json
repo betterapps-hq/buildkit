@@ -1,0 +1,7 @@
+{
+  "type": "minor",
+  "comment": "feat(react-configuration): publish to npm",
+  "packageName": "@buildkitgg/react-configuration",
+  "email": "ajcraswell@gmail.com",
+  "dependentChangeType": "patch"
+}

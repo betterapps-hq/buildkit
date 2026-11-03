@@ -54,6 +54,5 @@
     "configuration",
     "typescript",
     "buildkit"
-  ],
-  "private": true
+  ]
 }

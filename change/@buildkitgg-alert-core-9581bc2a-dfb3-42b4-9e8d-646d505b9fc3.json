@@ -1,0 +1,7 @@
+{
+  "type": "minor",
+  "comment": "feat(alert-core): publish to npm",
+  "packageName": "@buildkitgg/alert-core",
+  "email": "ajcraswell@gmail.com",
+  "dependentChangeType": "patch"
+}

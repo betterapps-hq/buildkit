@@ -67,6 +67,5 @@
     "notifications",
     "typescript",
     "buildkit"
-  ],
-  "private": true
+  ]
 }
