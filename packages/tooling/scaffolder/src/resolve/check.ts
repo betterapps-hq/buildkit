@@ -35,14 +35,23 @@ function duplicates(ids: readonly string[]): string[] {
   return [...repeated]
 }
 
+export interface CheckOptions {
+  /** Plan every pair of answers for each template and mode. */
+  matrix?: boolean
+  /** The templates the matrix plans. Defaults to every one. */
+  templates?: readonly string[]
+  /**
+   * Whether a file is in the package a template comes from, such as a gallery image. Without it, a gallery image
+   * that's a path is only checked to stay inside the package.
+   */
+  files?: (path: string, template: string) => boolean
+}
+
 /**
  * Catalog CI: checks references, questions, required add-on options, facets and version pins. With `matrix`, it
  * also plans every pair of answers for each template and mode, or for the `templates` listed, and reports any that fail.
  */
-export function checkCatalog(
-  catalog: CatalogManifest,
-  options: { matrix?: boolean; templates?: readonly string[] } = {}
-): string[] {
+export function checkCatalog(catalog: CatalogManifest, options: CheckOptions = {}): string[] {
   const problems: string[] = []
   if (!isValidVersion(catalog.version)) {
     problems.push(`Catalog version "${catalog.version}" isn't a semantic version.`)
@@ -179,7 +188,7 @@ export function checkCatalog(
     if (!expanded) {
       continue
     }
-    problems.push(...templateProblems(catalog, template, expanded))
+    problems.push(...templateProblems(catalog, template, expanded, options.files))
     const target = findTarget(catalog, expanded.target)
     if (!target) {
       problems.push(`Template ${template.id} uses target ${expanded.target}, which isn't in the catalog.`)
@@ -280,7 +289,12 @@ export const cliFlags: ReadonlySet<string> = new Set([
 export const questionIdPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 
 /** Problems with a template's questions, its parent and its gallery, found on the template as it's expanded. */
-function templateProblems(catalog: CatalogManifest, template: TemplateManifest, expanded: ExpandedTemplate): string[] {
+function templateProblems(
+  catalog: CatalogManifest,
+  template: TemplateManifest,
+  expanded: ExpandedTemplate,
+  files: CheckOptions["files"]
+): string[] {
   const problems: string[] = []
   const label = `Template ${template.id}`
   const combination = (id: string) => findAddon(catalog, id)?.joins !== undefined
@@ -389,7 +403,26 @@ function templateProblems(catalog: CatalogManifest, template: TemplateManifest, 
       problems.push(`${label} has the ${name} link "${url}", which isn't an https URL.`)
     }
   }
+  const image = gallery?.image
+  if (image !== undefined && !isHttps(image)) {
+    const problem = imageProblem(image, (path) => files?.(path, template.id) ?? true)
+    if (problem) {
+      problems.push(`${label} has the gallery image "${image}", which ${problem}.`)
+    }
+  }
   return problems
+}
+
+/** Why a gallery image that isn't an https URL can't be used: it's another kind of URL, leaves the package, or is missing. */
+function imageProblem(image: string, exists: (path: string) => boolean): string | undefined {
+  if (URL.canParse(image)) {
+    return "isn't an https URL or a path in the package"
+  }
+  const parts = image.split(/[\\/]/)
+  if (image.startsWith("/") || /^[a-z]:/i.test(image) || parts.includes("..")) {
+    return "isn't a path inside the package"
+  }
+  return exists(image) ? undefined : "isn't in the package"
 }
 
 /** Bare add-ons need a pin, and every place that names one has to agree on its details. */

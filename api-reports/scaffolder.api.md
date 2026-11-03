@@ -122,10 +122,14 @@ export interface CatalogManifest {
 }
 
 // @public
-export function checkCatalog(catalog: CatalogManifest, options?: {
+export function checkCatalog(catalog: CatalogManifest, options?: CheckOptions): string[];
+
+// @public (undocumented)
+export interface CheckOptions {
+    files?: (path: string, template: string) => boolean;
     matrix?: boolean;
     templates?: readonly string[];
-}): string[];
+}
 
 // @public
 export type Choice = string | {
