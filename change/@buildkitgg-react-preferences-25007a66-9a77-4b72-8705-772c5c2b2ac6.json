@@ -1,7 +1,0 @@
-{
-  "type": "minor",
-  "comment": "Export createPreferences, so React apps create and read preferences from this package alone",
-  "packageName": "@buildkitgg/react-preferences",
-  "email": "ajcraswell@gmail.com",
-  "dependentChangeType": "patch"
-}

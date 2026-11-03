@@ -2,6 +2,21 @@
   "name": "@buildkitgg/api-mocker",
   "entries": [
     {
+      "date": "Tue, 03 Nov 2026 01:16:10 GMT",
+      "version": "0.1.0",
+      "tag": "@buildkitgg/api-mocker_v0.1.0",
+      "comments": {
+        "none": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/api-mocker",
+            "commit": "e6ec944b8b307c3c61af7ba2e1dff44d08b3c5e4",
+            "comment": "First public release is prepared at 0.1.0."
+          }
+        ]
+      }
+    },
+    {
       "date": "Mon, 02 Nov 2026 10:23:54 GMT",
       "version": "0.1.0",
       "tag": "@buildkitgg/api-mocker_v0.1.0",

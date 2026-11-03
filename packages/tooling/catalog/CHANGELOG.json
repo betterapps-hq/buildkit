@@ -2,6 +2,35 @@
   "name": "@buildkitgg/catalog",
   "entries": [
     {
+      "date": "Tue, 03 Nov 2026 01:16:10 GMT",
+      "version": "0.2.2",
+      "tag": "@buildkitgg/catalog_v0.2.2",
+      "comments": {
+        "patch": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/catalog",
+            "commit": "98653caf92b4a01ab82f8ae76b38b78dd9332d61",
+            "comment": "Use @better-apps/identity-better-auth, the Better Auth identity adapter's new name, in the better-auth add-on"
+          },
+          {
+            "author": "beachball",
+            "package": "@buildkitgg/catalog",
+            "comment": "Bump @buildkitgg/scaffolder to v0.7.0",
+            "commit": "not available"
+          }
+        ],
+        "none": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/catalog",
+            "commit": "063d609caa08375fd9bc535186db4d5e38a4cf79",
+            "comment": "Build, lint and test with Vite+; published code is unchanged"
+          }
+        ]
+      }
+    },
+    {
       "date": "Fri, 30 Oct 2026 08:23:50 GMT",
       "version": "0.2.1",
       "tag": "@buildkitgg/catalog_v0.2.1",
