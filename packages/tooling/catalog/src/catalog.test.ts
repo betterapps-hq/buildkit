@@ -13,7 +13,6 @@ import {
   written
 } from "./testing/plan.js"
 import { catalogVersion } from "./version.js"
-import { betterAppsVersion } from "./versions.js"
 
 const generated = {
   config: "src/generated/buildkit/config.ts",
@@ -45,10 +44,10 @@ describe("the catalog", () => {
     expect(loose).toEqual([])
   })
 
-  it("asks about the database, then sign-in, then localization", () => {
+  it("asks about localization", () => {
     const [template] = describeCatalog(catalog).templates
     expect(template?.id).toBe("app")
-    expect(template?.questionsByMode.ssr?.map((question) => question.id)).toEqual(["database", "auth", "i18n"])
+    expect(template?.questionsByMode.ssr?.map((question) => question.id)).toEqual(["i18n"])
     expect(template?.required.map((addon) => addon.id)).toEqual(["@buildkit/ci"])
   })
 })
@@ -123,54 +122,9 @@ describe("the TanStack Start target", () => {
     expect(formatter.ignorePatterns).not.toEqual(expect.arrayContaining(["tsconfig.json"]))
     // The engine lays these out as the formatter does: short lists on one line, package.json as JSON.stringify writes it.
     expect(written(planned, "tsconfig.json")).toContain('"include": ["src", "vite.config.ts", "lingui.config.ts"]')
-    // Without a database, sign-in has nothing available, so it isn't asked and isn't declined.
-    expect(written(planned, "buildkit.jsonc")).toContain('"declined": ["question:database"]')
     expect(written(planned, "package.json")).toBe(
       `${JSON.stringify(JSON.parse(written(planned, "package.json")), null, 2)}\n`
     )
-  })
-})
-
-describe("the SQL database add-on", () => {
-  it("declares the main database with Better Apps' SQL capability, queried with Drizzle", async () => {
-    const planned = await init({ questions: { database: ["@buildkit/sql"] } })
-    const db = written(planned, "src/db/db.server.ts")
-    expect(db).toContain('defineDatabase("main", { dialect: "sqlite", migrations: "./migrations/main" })')
-    expect(db).toContain("export const db = drizzle(main, { schema })")
-    expect(written(planned, "drizzle.config.ts")).toContain('out: "./migrations/main"')
-    const { dependencies, devDependencies } = packageJson(planned)
-    expect(dependencies["@better-apps/sql"]).toBe(betterAppsVersion)
-    expect(dependencies["drizzle-orm"]).toBe(catalog.versions?.["drizzle-orm"])
-    expect(devDependencies["drizzle-kit"]).toBe(catalog.versions?.["drizzle-kit"])
-    expect(planned.notices.map((notice) => notice.code)).toContain("unpublished-package")
-    expect(JSON.stringify(planned.notices)).toContain("@better-apps/sql@0.1.0 isn't on npm yet")
-  })
-})
-
-describe("the Better Auth add-on", () => {
-  it("needs a database", async () => {
-    const planned = await planProject({}, initRequest({ questions: { auth: ["@buildkit/better-auth"] } }))
-    expect(planned.status).toBe("needs-decision")
-    expect(planned.decisions[0]?.id).toBe("provides:database")
-    expect(planned.decisions[0]?.choices.map((choice) => choice.id)).toContain("@buildkit/sql")
-  })
-
-  it("signs in with Better Auth in the app's database, read through Better Apps' identity", async () => {
-    const planned = await init({ questions: { database: ["@buildkit/sql"], auth: ["@buildkit/better-auth"] } })
-    expect(written(planned, "src/auth/auth.server.ts")).toContain(
-      'drizzleAdapter(db, { provider: "sqlite", schema: authSchema })'
-    )
-    expect(written(planned, "src/auth/identity.server.ts")).toContain("betterAuthIdentity(auth)")
-    expect(written(planned, "src/auth/viewer.functions.ts")).toContain("identity.getActor(getRequest())")
-    expect(written(planned, "src/routes/api/auth/$.ts")).toContain("auth.handler(request)")
-    expect(written(planned, "src/db/auth-schema.ts")).toContain("export const session = sqliteTable(")
-    expect(planned.operations.find((operation) => operation.path === "src/routes/sign-in.tsx")?.class).toBe("sample")
-    expect(planned.env).toEqual(
-      expect.arrayContaining([expect.objectContaining({ name: "BETTER_AUTH_SECRET", secret: true, required: true })])
-    )
-    expect(written(planned, ".env.example")).toContain("BETTER_AUTH_SECRET=")
-    expect(packageJson(planned).dependencies["@better-apps/identity-better-auth"]).toBe(betterAppsVersion)
-    expect(planned.commands.map((command) => command.run)).toContain("pnpm db:generate")
   })
 })
 

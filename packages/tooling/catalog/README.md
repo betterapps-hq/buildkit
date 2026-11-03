@@ -43,24 +43,10 @@ Every app also gets lint, format, build and type-check scripts, a `.gitattribute
 
 ## The `app` template
 
-The wizard asks for the mode (`ssr` or `spa`), then "Add a database?" (`sql`), then "Add sign-in?" (`better-auth`, which
-needs a database), then the optional `i18n`. Both questions default to no, and `i18n` starts unchecked. `ci` is always
-included. The `saas` preset answers `ssr` with `sql`, `better-auth` and `i18n`.
+The wizard asks for the mode (`ssr` or `spa`), then whether to add `i18n`, which starts unchecked. `ci` is always
+included.
 
-| Add-on                  | What it writes                                                                                                                                                                                                          |
-| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `@buildkit/ci`          | `.github/workflows/ci.yml`: `buildkit check`, lint, format, build and type-check on every push and pull request. Steps are keyed by `id`, so add-ons add their own                                                      |
-| `@buildkit/sql`         | `src/db/db.server.ts`, which declares the `main` database with `defineDatabase` from `@better-apps/sql` and queries it with Drizzle; `src/db/schema.ts`; `drizzle.config.ts`, writing migrations to `migrations/main`   |
-| `@buildkit/better-auth` | Better Auth in `src/auth/auth.server.ts` on the `main` database, its tables in `src/db/auth-schema.ts`, the `/api/auth/$` route, a browser client, `getViewer()` read through Better Apps' identity, and a sign-in page |
-| `@buildkit/i18n`        | Lingui as app code in `src/i18n/`: request middleware on `ssr`, browser detection on `spa`, a router wrapper, localized URLs through the router's rewrite, `<html lang dir>`, catalogs in `src/locales`                 |
-
-## Better Apps packages
-
-The database and sign-in add-ons use Better Apps packages that aren't on npm yet. The catalog pins them at `0.1.0`, the
-first version Better Apps' platform packages are planned to release together, and every plan that adds one carries an
-`unpublished-package` notice. Until they publish, an app that uses them can't install.
-
-## Starter files
-
-Starter files are real files in `templates/`, formatted like the app they become. Upgrades merge template fixes into the
-copies in your app. Options shape only a few small files, such as `src/i18n/locales.ts`.
+| Add-on           | What it writes                                                                                                                                                                                          |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@buildkit/ci`   | `.github/workflows/ci.yml`: `buildkit check`, lint, format, build and type-check on every push and pull request. Steps are keyed by `id`, so add-ons add their own                                      |
+| `@buildkit/i18n` | Lingui as app code in `src/i18n/`: request middleware on `ssr`, browser detection on `spa`, a router wrapper, localized URLs through the router's rewrite, `<html lang dir>`, catalogs in `src/locales` |
