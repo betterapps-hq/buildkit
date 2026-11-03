@@ -5,6 +5,7 @@ export const printWidth = 120
 
 /**
  * Buildkit's file names: `buildkit.jsonc` holds your choices, `.buildkit/` holds the lock, and required secrets go in
- * `.env`. The catalog is published, so an upgrade renders the old baseline from the recorded catalog version.
+ * `.env`. The catalog is published, so an upgrade renders the old baseline from the recorded catalog version. Apps pin
+ * pnpm in `packageManager`, so setup installs with pnpm whichever package manager ran the CLI.
  */
-export const settings = defineSettings({ product: "buildkit", printWidth })
+export const settings = defineSettings({ product: "buildkit", printWidth, setup: { packageManager: "pnpm" } })

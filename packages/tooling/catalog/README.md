@@ -43,10 +43,16 @@ Every app also gets lint, format, build and type-check scripts, a `.gitattribute
 
 ## The `app` template
 
-The wizard asks for the mode (`ssr` or `spa`), then whether to add `i18n`, which starts unchecked. `ci` is always
-included.
+The wizard asks for the mode (`ssr` or `spa`), then "Add localization?", which defaults to no. `ci` is always included,
+and `--i18n i18n` or `--no-i18n` answers the question from the command line. `catalog --json` describes the template
+with its gallery tags (`react`, `tanstack-start`, `ssr`, `spa`) and links to this README and its source.
 
-| Add-on           | What it writes                                                                                                                                                                                          |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `@buildkit/ci`   | `.github/workflows/ci.yml`: `buildkit check`, lint, format, build and type-check on every push and pull request. Steps are keyed by `id`, so add-ons add their own                                      |
-| `@buildkit/i18n` | Lingui as app code in `src/i18n/`: request middleware on `ssr`, browser detection on `spa`, a router wrapper, localized URLs through the router's rewrite, `<html lang dir>`, catalogs in `src/locales` |
+Once the app is applied, `buildkit create` offers the setup steps: `pnpm install`, then `pnpm build`, which writes
+`src/routeTree.gen.ts` for the type check, then a git repository with a first commit. Apps pin pnpm in `packageManager`,
+so setup installs with pnpm whichever package manager ran the CLI. `--setup` runs them without asking, and `--no-setup`
+lists them in the next steps instead.
+
+| Add-on           | What it writes                                                                                                                                                                                            |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@buildkit/ci`   | `.github/workflows/ci.yml`: `buildkit check`, lint, format, build and type-check on every push and pull request. Steps are keyed by `id`, so add-ons add their own                                        |
+| `@buildkit/i18n` | Lingui 6 as app code in `src/i18n/`: request middleware on `ssr`, browser detection on `spa`, a router wrapper, localized URLs through the router's rewrite, `<html lang dir>`, catalogs in `src/locales` |

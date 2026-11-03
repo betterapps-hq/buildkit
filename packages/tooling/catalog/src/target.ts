@@ -106,13 +106,9 @@ function base(ctx: TargetContext): Contribution[] {
     fromTemplate(common, "src/routes/index.tsx", "sample"),
     fromTemplate(common, "AGENTS.md", "sample"),
     fromTemplate(common, "README.md", "sample"),
-    { kind: "command", run: "pnpm install", when: "after-apply", why: "Installs the dependencies." },
-    {
-      kind: "command",
-      run: "pnpm build",
-      when: "after-install",
-      why: "Generates src/routeTree.gen.ts, which pnpm typecheck reads. pnpm dev keeps it current."
-    }
+    { kind: "command", run: "pnpm install", when: "after-apply", why: "Install dependencies", setup: true },
+    // The build writes src/routeTree.gen.ts, which pnpm typecheck reads. pnpm dev keeps it current.
+    { kind: "command", run: "pnpm build", when: "after-install", why: "Generate the route tree", setup: true }
   ]
 }
 

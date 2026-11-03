@@ -1,0 +1,7 @@
+{
+  "type": "minor",
+  "comment": "The app template offers pnpm install and pnpm build as setup steps after create, with pnpm whichever package manager ran the CLI, and describes itself for a gallery with tags and links. The localization choice has a hint, and the i18n add-on says which Lingui versions it's written for.",
+  "packageName": "@buildkitgg/catalog",
+  "email": "ajcraswell@gmail.com",
+  "dependentChangeType": "patch"
+}
