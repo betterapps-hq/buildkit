@@ -353,13 +353,31 @@ import { definePack } from "@buildkitgg/scaffolder"
 
 export default definePack({
   extends: { catalog: "@acme/catalog", versions: "^1.0.0" },
-  templates: [{ id: "tower", title: "Tower defense", description: "Waves, towers and a path", target: "web" }],
+  versions: { phaser: "3.90.0" },
+  questions: [{ id: "engine", title: "Engine", question: "Add a game engine?", pick: "one", choices: ["npm:phaser"] }],
+  templates: [
+    {
+      id: "tower",
+      title: "Tower defense",
+      description: "Waves, towers and a path",
+      extends: "app",
+      required: ["@acme/tower-defense/waves"],
+      questions: ["engine"]
+    }
+  ],
   addons: [/* ids start with "@acme/tower-defense/" */]
 })
 ```
 
 - **It extends one catalog.** Its templates and add-ons use the catalog's targets, questions and points, and the
   catalog's add-ons stay available to `add`. It can't add targets or points, or replace anything the catalog has.
+- **Templates on the catalog's.** A pack template can `extends` a catalog template, or another template of the same
+  pack, and ask the catalog's questions by id, as a catalog template does.
+- **Questions and pins of its own.** `questions` are shared by the pack's templates. An id can't be a catalog
+  question's, another package's, or one of the CLI's flags, and each is a flag of `create`. `versions` pins packages the
+  catalog doesn't, for the pack's add-ons and bare add-ons. A pack that pins a package the catalog pins is refused, so a
+  pack can't change the platform's versions.
+- **Gallery images** are paths in the pack's package, and `catalog check` confirms each one is there.
 - **Ids.** A template is recorded as `<package>#<id>`, and its add-on ids start with `<package>/`.
 - **Compatibility.** The engine refuses a pack whose `versions` range doesn't include the installed catalog.
 - **Checks.** The engine merges the pack into the catalog and runs `checkCatalog` before planning. Run `catalog check`
