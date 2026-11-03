@@ -1,8 +1,17 @@
 # Change Log - @buildkitgg/cli
 
-<!-- This log was last generated on Tue, 03 Nov 2026 01:39:16 GMT and should not be manually modified. -->
+<!-- This log was last generated on Tue, 03 Nov 2026 02:33:15 GMT and should not be manually modified. -->
 
 <!-- Start content -->
+
+## 0.3.1
+
+Tue, 03 Nov 2026 02:33:15 GMT
+
+### Patches
+
+- Bump @buildkitgg/catalog to v0.3.1
+- Bump @buildkitgg/scaffolder to v0.8.0
 
 ## 0.3.0
 

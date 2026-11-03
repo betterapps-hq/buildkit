@@ -2,6 +2,21 @@
   "name": "@buildkitgg/scaffolder",
   "entries": [
     {
+      "date": "Tue, 03 Nov 2026 02:33:15 GMT",
+      "version": "0.8.0",
+      "tag": "@buildkitgg/scaffolder_v0.8.0",
+      "comments": {
+        "minor": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/scaffolder",
+            "commit": "c5dd86e9997aee5c8aa7e63f1e3a561851239df0",
+            "comment": "Read slot:<id> in an old config or lock as question:<id>, and write the new form on the next apply. An upgrade lists each question the template gains as a new-question notice instead of asking it."
+          }
+        ]
+      }
+    },
+    {
       "date": "Tue, 03 Nov 2026 01:39:16 GMT",
       "version": "0.7.0",
       "tag": "@buildkitgg/scaffolder_v0.7.0",

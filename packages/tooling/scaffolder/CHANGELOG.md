@@ -1,8 +1,17 @@
 # Change Log - @buildkitgg/scaffolder
 
-<!-- This log was last generated on Tue, 03 Nov 2026 01:39:16 GMT and should not be manually modified. -->
+<!-- This log was last generated on Tue, 03 Nov 2026 02:33:15 GMT and should not be manually modified. -->
 
 <!-- Start content -->
+
+## 0.8.0
+
+Tue, 03 Nov 2026 02:33:15 GMT
+
+### Minor changes
+
+- Read slot:\<id> in an old config or lock as question:\<id>, and write the new form on the next apply. An upgrade lists
+  each question the template gains as a new-question notice instead of asking it. (ajcraswell@gmail.com)
 
 ## 0.7.0
 
