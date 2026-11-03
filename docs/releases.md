@@ -1,7 +1,7 @@
 # Releases
 
 Beachball manages independent package versions and changelogs. Run `pnpm change` with public package changes and commit
-the generated change file. Pull request CI checks release notes and runs `pnpm validate`.
+the generated change file. Pull request CI checks release notes and runs what `pnpm validate` runs, as parallel jobs.
 
 ## Release from main
 

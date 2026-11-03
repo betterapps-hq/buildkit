@@ -55,7 +55,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "build": "node ../../tooling/shadcn-generator/src/build.mjs luma",
+    "build": "node ../../tooling/shadcn-generator/src/sources.mjs luma && node ../../tooling/shadcn-generator/src/build.mjs luma",
     "prepack": "pnpm build"
   },
   "dependencies": {

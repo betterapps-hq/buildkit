@@ -55,7 +55,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "build": "node ../../tooling/shadcn-generator/src/build.mjs vega",
+    "build": "node ../../tooling/shadcn-generator/src/sources.mjs vega && node ../../tooling/shadcn-generator/src/build.mjs vega",
     "prepack": "pnpm build"
   },
   "dependencies": {

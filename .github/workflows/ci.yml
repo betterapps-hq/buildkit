@@ -6,47 +6,85 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+# pnpm validate runs as four jobs side by side, each on a Blacksmith runner, and each keeps Vite+'s task cache between
+# runs under a key of its own, so vp run replays the builds, tests and docs whose inputs haven't changed.
 jobs:
-  ci-verify:
+  check:
     uses: betterapps-hq/pipelines/.github/workflows/ci-verify.yml@main
     with:
+      os: '["blacksmith-4vcpu-ubuntu-2404"]'
+      vite-task-cache: true
+      vite-task-cache-key: check
       # The release notes check diffs a pull request against its base branch, so it needs the whole history.
       fetch-depth: 0
       command: |
         if [ "$GITHUB_EVENT_NAME" = pull_request ]; then
           BASE_BRANCH="$GITHUB_BASE_REF" pnpm --filter @buildkitgg/api-tools release:check
         fi
-        pnpm validate
-  # Branch protection requires a check named verify, and a reusable workflow's checks are named after the calling job,
-  # such as "ci-verify / Verify (ubuntu-latest)". This job reports ci-verify's result as verify.
+        pnpm check && pnpm check:unused
+  test:
+    uses: betterapps-hq/pipelines/.github/workflows/ci-verify.yml@main
+    with:
+      os: '["blacksmith-4vcpu-ubuntu-2404"]'
+      vite-task-cache: true
+      vite-task-cache-key: test
+      command: pnpm test:coverage
+  # The docs read the API models check:api writes, so the API check and the build share a job.
+  build:
+    uses: betterapps-hq/pipelines/.github/workflows/ci-verify.yml@main
+    with:
+      os: '["blacksmith-4vcpu-ubuntu-2404"]'
+      vite-task-cache: true
+      vite-task-cache-key: build
+      command: pnpm check:api && pnpm build
+  shadcn:
+    uses: betterapps-hq/pipelines/.github/workflows/ci-verify.yml@main
+    with:
+      os: '["blacksmith-4vcpu-ubuntu-2404"]'
+      vite-task-cache: true
+      vite-task-cache-key: shadcn
+      command: pnpm build:packages && pnpm --filter @repo/shadcn-generator validate
+  # main's ruleset requires a check named verify, and a reusable workflow's checks are named after the calling job, such
+  # as "check / Verify (blacksmith-4vcpu-ubuntu-2404)". This job reports the four jobs' results as verify.
   verify:
-    needs: ci-verify
+    needs: [check, test, build, shadcn]
     if: always()
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     timeout-minutes: 5
     steps:
-      - name: Require ci-verify to pass
+      - name: Require check, test, build and shadcn to pass
         env:
-          RESULT: ${{ needs.ci-verify.result }}
-        run: test "$RESULT" = success
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          for result in $RESULTS; do
+            test "$result" = success
+          done
   integration:
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
+    # main's ruleset requires these checks by name, such as "integration (ubuntu-latest)", so Linux keeps its name and
+    # runs on Blacksmith.
+    runs-on: ${{ matrix.os == 'ubuntu-latest' && 'blacksmith-4vcpu-ubuntu-2404' || matrix.os }}
     timeout-minutes: 10
     steps:
       - uses: betterapps-hq/pipelines/github/actions/setup@main
+      - uses: betterapps-hq/pipelines/github/actions/vite-task-cache@main
+        with:
+          key: integration
       - run: pnpm --filter @buildkitgg/dev-domains test:integration
       - run: pnpm --filter @buildkitgg/scaffolder test:integration
       - run: pnpm exec vp run --cache --filter "@buildkitgg/cli^..." build
       - run: pnpm --filter @buildkitgg/cli test:integration
   templates:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     timeout-minutes: 20
     steps:
       - uses: betterapps-hq/pipelines/github/actions/setup@main
+      - uses: betterapps-hq/pipelines/github/actions/vite-task-cache@main
+        with:
+          key: templates
       - run: pnpm exec vp run --cache --filter "@buildkitgg/cli..." build
       - name: Generate Buildkit apps, then install, check, lint, build and type-check each one
         run: pnpm --filter @buildkitgg/cli test:smoke
