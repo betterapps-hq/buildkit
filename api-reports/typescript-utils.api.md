@@ -8,13 +8,9 @@
 
 import type tag from 'tagged-tag';
 
-// Warning: (ae-forgotten-export) The symbol "UnknownPattern" needs to be exported by the entry point index.d.ts
-//
 // @public
 const _: UnknownPattern;
 
-// Warning: (ae-forgotten-export) The symbol "DOMException_2" needs to be exported by the entry point index.d.ts
-//
 // @public
 export class AbortError extends DOMException_2 {
     constructor(message?: string);
@@ -41,9 +37,6 @@ export type AbstractConstructor<T, Arguments extends unknown[] = any[]> = abstra
 // @public
 export function after<F extends (...args: any[]) => any>(n: number, func: F): (...args: Parameters<F>) => ReturnType<F> | undefined;
 
-// Warning: (ae-forgotten-export) The symbol "IfNotAnyOrNever" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "CollapseRestElement" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type AllExtend<TArray extends UnknownArray, Type, Options extends AllExtendOptions = {}> =
 	IfNotAnyOrNever<CollapseRestElement<TArray>, {
@@ -60,10 +53,6 @@ export type AllExtendOptions = {
 // @public
 export function allKeyed<T extends Record<string, unknown>>(tasks: T): Promise<{ [K in keyof T]: Awaited<T[K]>; }>;
 
-// Warning: (ae-forgotten-export) The symbol "NonRecursiveType" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "ReadonlyKeysOfUnion" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "ValueOfUnion" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type AllUnionFields<Union> =
 	Extract<Union, NonRecursiveType | ReadonlyMap<unknown, unknown> | ReadonlySet<unknown> | UnknownArray> extends infer SkippedMembers
@@ -97,15 +86,9 @@ export type AndAll<T extends readonly boolean[]> = AllExtend<T, true>;
 // @public
 const any: UnknownPattern;
 
-// Warning: (ae-forgotten-export) The symbol "ArrayChainable" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "ArrayP" needs to be exported by the entry point index.d.ts
-//
 // @public
 function array<input>(): ArrayChainable<ArrayP<input, unknown>>;
 
-// Warning: (ae-forgotten-export) The symbol "WithDefault" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "UnwrapArray" needs to be exported by the entry point index.d.ts
-//
 // @public (undocumented)
 function array<input, const pattern extends Pattern<WithDefault<UnwrapArray<input>, unknown>>>(pattern: pattern): ArrayChainable<ArrayP<input, pattern>>;
 
@@ -115,16 +98,12 @@ export type Arrayable<T> =
 // TODO: Use `readonly T[]` when this issue is resolved: https://github.com/microsoft/TypeScript/issues/17002
 	| T[];
 
-// Warning: (ae-forgotten-export) The symbol "ArrayAtResult" needs to be exported by the entry point index.d.ts
-//
 // @public
 export function arrayAt<ArrayType extends readonly unknown[], Index extends number>(array: ArrayType, index: Index): ArrayAtResult<ArrayType, Index>;
 
 // @public
 export function arrayConcat<T extends readonly unknown[]>(array: T): T extends ReadonlyArray<infer U> ? U[] : never;
 
-// Warning: (ae-forgotten-export) The symbol "ArrayConcatUnlimited" needs to be exported by the entry point index.d.ts
-//
 // @public (undocumented)
 export function arrayConcat<T extends readonly unknown[], U extends ReadonlyArray<readonly unknown[]>>(array: T, ...items: U): ArrayConcatUnlimited<T, U> extends ReadonlyArray<infer R> ? R[] : unknown[];
 
@@ -168,8 +147,6 @@ export type ArrayReverse<TArray extends UnknownArray> = IfNotAnyOrNever<TArray, 
     		: never; // Should never happen
 }>;
 
-// Warning: (ae-forgotten-export) The symbol "_ArraySlice" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type ArraySlice<
 	Array_ extends readonly unknown[],
@@ -193,8 +170,6 @@ export type ArraySlice<
 				: never // Never happens
 	: never;
 
-// Warning: (ae-forgotten-export) The symbol "SplitArrayByIndex" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type ArraySplice<
 	T extends UnknownArray,
@@ -244,8 +219,6 @@ export type Asyncify<Function_ extends (...arguments_: any[]) => any> = SetRetur
 // @public
 export function asyncNoop(): Promise<void>;
 
-// Warning: (ae-forgotten-export) The symbol "AsyncFunction" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type AsyncReturnType<Target extends AsyncFunction> = Awaited<ReturnType<Target>>;
 
@@ -261,20 +234,12 @@ export function attemptAsync<T, E = unknown>(func: () => Promise<T>): Promise<[n
 // @public
 export function before<F extends (...args: any[]) => any>(n: number, func: F): (...args: Parameters<F>) => ReturnType<F> | undefined;
 
-// Warning: (ae-forgotten-export) The symbol "BigIntPattern" needs to be exported by the entry point index.d.ts
-//
 // @public
 const bigint: BigIntPattern;
 
-// Warning: (ae-forgotten-export) The symbol "BooleanPattern" needs to be exported by the entry point index.d.ts
-//
 // @public
 const boolean: BooleanPattern;
 
-// Warning: (ae-forgotten-export) The symbol "LeadingUnderscores" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "CamelCaseFromArray" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "_DefaultCamelCaseOptions" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type CamelCase<Type, Options extends CamelCaseOptions = {}> = Type extends string
 	? string extends Type
@@ -302,8 +267,6 @@ export type CamelCasedProperties<Value, Options extends CamelCaseOptions = {}> =
     			]: Value[K];
     		};
 
-// Warning: (ae-forgotten-export) The symbol "_CamelCasedPropertiesDeep" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type CamelCasedPropertiesDeep<
 	Value,
@@ -317,8 +280,6 @@ export type CamelCaseOptions = WordsOptions & {
     	preserveLeadingUnderscores?: boolean;
 };
 
-// Warning: (ae-forgotten-export) The symbol "Capitalize_2" needs to be exported by the entry point index.d.ts
-//
 // @public
 export function capitalize<T extends string>(str: T): Capitalize_2<T>;
 
@@ -367,8 +328,6 @@ export function cloneDeepWith<T>(obj: T, cloneValue: (value: any, key: PropertyK
 // @public
 export function combinations<T>(arr: readonly T[], r: number): T[][];
 
-// Warning: (ae-forgotten-export) The symbol "NotFalsey" needs to be exported by the entry point index.d.ts
-//
 // @public
 export function compact<T>(arr: readonly T[]): Array<NotFalsey<T>>;
 
@@ -390,10 +349,6 @@ export type ConditionalPick<Base, Condition> = ConditionalKeys<Base, Condition> 
 		: Pick<Base, Keys & keyof Base>
 	: never;
 
-// Warning: (ae-forgotten-export) The symbol "_NeverIfEmpty" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "_ConditionalPickDeep" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "DefaultConditionalPickDeepOptions" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type ConditionalPickDeep<
 	Type,
@@ -514,14 +469,9 @@ export function defer(callback: () => void): Disposable;
 // @public
 export function deferAsync(callback: () => void | PromiseLike<void>): AsyncDisposable;
 
-// Warning: (ae-forgotten-export) The symbol "DelayOptions_2" needs to be exported by the entry point index.d.ts
-//
 // @public
 export function delay(ms: number, input?: DelayOptions_2): Promise<void>;
 
-// Warning: (ae-forgotten-export) The symbol "DelimiterCaseFromArray" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "_DefaultDelimiterCaseOptions" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type DelimiterCase<
 	Value,
@@ -551,8 +501,6 @@ export type DelimiterCasedProperties<
     			DelimiterCase<K, Delimiter, ApplyDefaultOptions<WordsOptions, _DefaultDelimiterCaseOptions, Options>>
     			]: Value[K]};
 
-// Warning: (ae-forgotten-export) The symbol "_DelimiterCasedPropertiesDeep" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type DelimiterCasedPropertiesDeep<
 	Value,
@@ -599,11 +547,6 @@ export function dropWhile<T>(arr: readonly T[], canContinueDropping: (item: T, i
 // @public
 export type EmptyObject = {[emptyObjectSymbol]?: never};
 
-// Warning: (ae-forgotten-export) The symbol "MapEntries" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "SetEntries" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "ArrayEntries" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "ObjectEntries" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type Entries<BaseType> =
 	BaseType extends Map<unknown, unknown> ? MapEntries<BaseType>
@@ -612,11 +555,6 @@ export type Entries<BaseType> =
 				: BaseType extends object ? ObjectEntries<BaseType>
 					: never;
 
-// Warning: (ae-forgotten-export) The symbol "_MapEntry" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "_SetEntry" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "_ArrayEntry" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "_ObjectEntry" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type Entry<BaseType> =
 	BaseType extends Map<unknown, unknown> ? _MapEntry<BaseType>
@@ -632,8 +570,6 @@ export { escape_2 as escape }
 // @public
 export function escapeRegExp(str: string): string;
 
-// Warning: (ae-forgotten-export) The symbol "ExactObject" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type Exact<ParameterType, InputType> =
 	// Before distributing, check if the two types are equal and if so, return the parameter type immediately
@@ -650,9 +586,6 @@ export type Exact<ParameterType, InputType> =
 						: ParameterType extends readonly unknown[] ? ReadonlyArray<Exact<ArrayElement<ParameterType>, ArrayElement<InputType>>>
 							: ExactObject<ParameterType, InputType>;
 
-// Warning: (ae-forgotten-export) The symbol "_Except" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "DefaultExceptOptions" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type Except<ObjectType, KeysType extends keyof ObjectType, Options extends ExceptOptions = {}> =
 	_Except<ObjectType, KeysType, ApplyDefaultOptions<ExceptOptions, DefaultExceptOptions, Options>>;
@@ -703,9 +636,6 @@ export type ExclusifyUnion<Union> = IfNotAnyOrNever<Union, {
     	>;
 }>;
 
-// Warning: (ae-forgotten-export) The symbol "_ExtendsStrict" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "DefaultExtendsStrictOptions" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type ExtendsStrict<Left, Right, Options extends ExtendsStrictOptions = {}> =
 	_ExtendsStrict<Left, Right, ApplyDefaultOptions<ExtendsStrictOptions, DefaultExtendsStrictOptions, Options>>;
@@ -752,8 +682,6 @@ export function fill<T, U>(array: Array<T | U>, value: U, start: number): Array<
 // @public
 export function fill<T, U>(array: Array<T | U>, value: U, start: number, end: number): Array<T | U>;
 
-// Warning: (ae-forgotten-export) The symbol "FilterAsyncOptions" needs to be exported by the entry point index.d.ts
-//
 // @public
 export function filterAsync<T>(array: readonly T[], predicate: (item: T, index: number, array: readonly T[]) => Promise<boolean>, options?: FilterAsyncOptions): Promise<T[]>;
 
@@ -766,16 +694,12 @@ export type FindGlobalInstanceType<Name extends string> =
 // @public
 export type FindGlobalType<Name extends string> = typeof globalThis extends Record<Name, infer T> ? T : never;
 
-// Warning: (ae-forgotten-export) The symbol "ObjectKeys" needs to be exported by the entry point index.d.ts
-//
 // @public
 export function findKey<T extends Record<any, any>>(obj: T, predicate: (value: T[keyof T], key: ObjectKeys<T>, obj: T) => boolean): ObjectKeys<T> | undefined;
 
 // @public
 export type Finite<T extends number> = T extends PositiveInfinity | NegativeInfinity ? never : T;
 
-// Warning: (ae-forgotten-export) The symbol "ArrayLengthMutationKeys" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type FixedLengthArray<Element, Length extends number> =
 	Except<TupleOf<Length, Element>, ArrayLengthMutationKeys | number | 'length'>
@@ -785,13 +709,9 @@ export type FixedLengthArray<Element, Length extends number> =
 // @public
 export function flatMap<T, U, D extends number = 1>(arr: readonly T[], iteratee: (item: T, index: number, array: readonly T[]) => U, depth?: D): Array<FlatArray<U[], D>>;
 
-// Warning: (ae-forgotten-export) The symbol "FlatMapAsyncOptions" needs to be exported by the entry point index.d.ts
-//
 // @public
 export function flatMapAsync<T, R>(array: readonly T[], callback: (item: T, index: number, array: readonly T[]) => Promise<R[]>, options?: FlatMapAsyncOptions): Promise<R[]>;
 
-// Warning: (ae-forgotten-export) The symbol "ExtractNestedArrayType" needs to be exported by the entry point index.d.ts
-//
 // @public
 export function flatMapDeep<T, U>(arr: readonly T[], iteratee: (item: T, index: number, array: readonly T[]) => U): Array<ExtractNestedArrayType<U>>;
 
@@ -801,8 +721,6 @@ export function flatten<T, D extends number = 1>(arr: readonly T[], depth?: D): 
 // @public
 export function flattenDeep<T>(arr: readonly T[]): Array<ExtractNestedArrayType<T>>;
 
-// Warning: (ae-forgotten-export) The symbol "FlattenObjectOptions" needs to be exported by the entry point index.d.ts
-//
 // @public
 export function flattenObject(object: object, input?: FlattenObjectOptions): Record<string, any>;
 
@@ -862,8 +780,6 @@ interface Fn {
     output: unknown;
 }
 
-// Warning: (ae-forgotten-export) The symbol "ForEachAsyncOptions" needs to be exported by the entry point index.d.ts
-//
 // @public
 export function forEachAsync<T>(array: readonly T[], callback: (item: T, index: number, array: readonly T[]) => Promise<void>, options?: ForEachAsyncOptions): Promise<void>;
 
@@ -873,12 +789,6 @@ export function forEachRight<T>(arr: T[], callback: (value: T, index: number, ar
 // @public
 export function forEachRight<T>(arr: readonly T[], callback: (value: T, index: number, arr: readonly T[]) => void): void;
 
-// Warning: (ae-forgotten-export) The symbol "_LiteralStringUnion" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "ToString" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "GetWithPath" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "ToPath" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "DefaultGetOptions" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type Get<
 	BaseType,
@@ -898,16 +808,12 @@ export type GetOptions = {
     	strict?: boolean;
 };
 
-// Warning: (ae-forgotten-export) The symbol "Tag" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type GetTagMetadata<Type extends Tag<TagName, unknown>, TagName extends PropertyKey> = Type[typeof tag][TagName];
 
 // @public
 export type GlobalThis = typeof globalThis;
 
-// Warning: (ae-forgotten-export) The symbol "PositiveNumericStringGt" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type GreaterThan<A extends number, B extends number> =
 	A extends number // For distributing `A`
@@ -1021,8 +927,6 @@ export type Includes<Value extends readonly any[], Item> =
 			: Includes<rest, Item>
 		: false;
 
-// Warning: (ae-forgotten-export) The symbol "InvertPattern" needs to be exported by the entry point index.d.ts
-//
 // @public
 type infer<pattern> = InvertPattern<NoInfer<pattern>, unknown>;
 
@@ -1044,10 +948,6 @@ export function inRange(value: number, maximum: number): boolean;
 // @public
 export function inRange(value: number, minimum: number, maximum: number): boolean;
 
-// Warning: (ae-forgotten-export) The symbol "AnyConstructor" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "Chainable" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "GuardP" needs to be exported by the entry point index.d.ts
-//
 // @public
 function instanceOf<T extends AnyConstructor>(classConstructor: T): Chainable<GuardP<unknown, InstanceType<T>>>;
 
@@ -1063,8 +963,6 @@ export type Integer<T> =
 // @public
 export function intersection<T>(firstArr: readonly T[], secondArr: readonly T[]): T[];
 
-// Warning: (ae-forgotten-export) The symbol "AndP" needs to be exported by the entry point index.d.ts
-//
 // @public
 function intersection_2<input, const patterns extends readonly [Pattern<input>, ...Pattern<input>[]]>(...patterns: patterns): Chainable<AndP<input, patterns>>;
 
@@ -1074,9 +972,6 @@ export function intersectionBy<T, U>(firstArr: readonly T[], secondArr: readonly
 // @public
 export function intersectionWith<T, U>(firstArr: readonly T[], secondArr: readonly U[], areItemsEqual: (x: T, y: U) => boolean): T[];
 
-// Warning: (ae-forgotten-export) The symbol "PrivateNegativeIntRange" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "PrivateIntRange" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type IntRange<Start extends number, End extends number, Step extends number = 1> =
 	IsNegative<Start> extends true
@@ -1136,8 +1031,6 @@ export type IsEmptyObject<T> = T extends EmptyObject ? true : false;
 // @public
 export function isEmptyObject(value: unknown): value is Record<PropertyKey, never>;
 
-// Warning: (ae-forgotten-export) The symbol "_IsEqual" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type IsEqual<A, B> =
 	[A] extends [B]
@@ -1185,8 +1078,6 @@ export function isFunction(value: any): value is (...args: any[]) => any;
 // @public
 export function isInfinite(value: unknown): value is NegativeInfinity | PositiveInfinity;
 
-// Warning: (ae-forgotten-export) The symbol "Not" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type IsInteger<T> =
 	T extends bigint
@@ -1227,8 +1118,6 @@ export type IsLiteral<T> = IfNotAnyOrNever<T, {
     	ifNever: false;
 }>;
 
-// Warning: (ae-forgotten-export) The symbol "_IsLowercase" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type IsLowercase<S extends string> = AllExtend<_IsLowercase<S>, true>;
 
@@ -1238,14 +1127,9 @@ export function isMap(value: unknown): value is Map<any, any>;
 // @public
 export function isMatching<const p extends Pattern<unknown>>(pattern: p): (value: unknown) => value is P.infer<p>;
 
-// Warning: (ae-forgotten-export) The symbol "PatternConstraint" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "WithDefault_2" needs to be exported by the entry point index.d.ts
-//
 // @public
 export function isMatching<const T, const P extends PatternConstraint<T>>(pattern: P, value: T): value is T & WithDefault_2<P.narrow<T, P>, P.infer<P>>;
 
-// Warning: (ae-forgotten-export) The symbol "_Numeric" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type IsNegative<T extends _Numeric> = T extends Negative<T> ? true : false;
 
@@ -1304,13 +1188,9 @@ export function isPrimitive(value: unknown): value is null | undefined | string 
 // @public
 export function isPromise(value: unknown): value is Promise<any>;
 
-// Warning: (ae-forgotten-export) The symbol "IsPropertyDefinedPredicate" needs to be exported by the entry point index.d.ts
-//
 // @public
 export function isPropertyDefined<Key extends PropertyKey>(key: Key): IsPropertyDefinedPredicate<Key>;
 
-// Warning: (ae-forgotten-export) The symbol "IsPropertyPresentPredicate" needs to be exported by the entry point index.d.ts
-//
 // @public
 export function isPropertyPresent<Key extends PropertyKey>(key: Key): IsPropertyPresentPredicate<Key>;
 
@@ -1368,9 +1248,6 @@ export type IsSymbolLiteral<T> = IfNotAnyOrNever<T, {
     	ifNever: false;
 }>;
 
-// Warning: (ae-forgotten-export) The symbol "_IsTuple" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "DefaultIsTupleOptions" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type IsTuple<
 	TArray extends UnknownArray,
@@ -1392,8 +1269,6 @@ export type IsUndefined<T> = [T] extends [undefined] ? true : false;
 // @public
 export function isUndefined(x: any): x is undefined;
 
-// Warning: (ae-forgotten-export) The symbol "InternalIsUnion" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type IsUnion<T> = InternalIsUnion<T>;
 
@@ -1406,8 +1281,6 @@ export type IsUnknown<T> = (
 		: false
 );
 
-// Warning: (ae-forgotten-export) The symbol "_IsUppercase" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type IsUppercase<S extends string> = AllExtend<_IsUppercase<S>, true>;
 
@@ -1432,9 +1305,6 @@ export type IterableElement<TargetIterable> =
 			? ElementType
 			: never;
 
-// Warning: (ae-forgotten-export) The symbol "JoinableItem" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "NullishCoalesce" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type Join<
 	Items extends readonly JoinableItem[],
@@ -1458,17 +1328,9 @@ export type Join<
 // @public
 export type JsonArray = JsonValue[] | readonly JsonValue[];
 
-// Warning: (ae-forgotten-export) The symbol "JsonifiableObject" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "JsonifiableArray" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type Jsonifiable = JsonPrimitive | JsonifiableObject | JsonifiableArray;
 
-// Warning: (ae-forgotten-export) The symbol "NotJsonable" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "JsonifyList" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "JsonifyObject" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "UndefinedToOptional" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type Jsonify<T> = IsAny<T> extends true
 	? any
@@ -1538,8 +1400,6 @@ export type KeyAsString<BaseType> = `${Extract<keyof BaseType, string | number>}
 // @public
 export function keyBy<T, K extends PropertyKey>(arr: readonly T[], getKeyFromItem: (item: T, index: number, array: readonly T[]) => K): Record<K, T>;
 
-// Warning: (ae-forgotten-export) The symbol "NarrowedKey" needs to be exported by the entry point index.d.ts
-//
 // @public
 export function keyIn<ObjectType extends UnknownRecord, Key extends PropertyKey>(object: ObjectType, key: Key): key is NarrowedKey<ObjectType, Key> & {};
 
@@ -1627,41 +1487,27 @@ export type LowercaseLetter = 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i
 // @public
 export function lowerFirst(str: string): string;
 
-// Warning: (ae-forgotten-export) The symbol "MapP" needs to be exported by the entry point index.d.ts
-//
 // @public
 function map<input>(): Chainable<MapP<input, unknown, unknown>>;
 
-// Warning: (ae-forgotten-export) The symbol "UnwrapMapKey" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "UnwrapMapValue" needs to be exported by the entry point index.d.ts
-//
 // @public (undocumented)
 function map<input, const pkey extends Pattern<WithDefault<UnwrapMapKey<input>, unknown>>, const pvalue extends Pattern<WithDefault<UnwrapMapValue<input>, unknown>>>(patternKey: pkey, patternValue: pvalue): Chainable<MapP<input, pkey, pvalue>>;
 
-// Warning: (ae-forgotten-export) The symbol "MapAsyncOptions" needs to be exported by the entry point index.d.ts
-//
 // @public
 export function mapAsync<T, R>(array: readonly T[], callback: (item: T, index: number, array: readonly T[]) => Promise<R>, options?: MapAsyncOptions): Promise<R[]>;
 
 // @public
 export function mapKeys<T extends Record<PropertyKey, any>, K extends PropertyKey>(object: T, getNewKey: (value: T[keyof T], key: ObjectKeys<T>, object: T) => K): Record<K, T[keyof T]>;
 
-// Warning: (ae-forgotten-export) The symbol "MapKeysAsyncOptions" needs to be exported by the entry point index.d.ts
-//
 // @public
 export function mapKeysAsync<T extends Record<PropertyKey, any>, K extends PropertyKey>(object: T, getNewKey: (value: T[keyof T], key: keyof T, object: T) => Promise<K>, options?: MapKeysAsyncOptions): Promise<Record<K, T[keyof T]>>;
 
 // @public
 export function mapValues<T extends object, K extends keyof T, V>(object: T, getNewValue: (value: T[K], key: K, object: T) => V): Record<K, V>;
 
-// Warning: (ae-forgotten-export) The symbol "MapValuesAsyncOptions" needs to be exported by the entry point index.d.ts
-//
 // @public
 export function mapValuesAsync<T extends object, K extends keyof T, V>(object: T, getNewValue: (value: T[K], key: K, object: T) => Promise<V>, options?: MapValuesAsyncOptions): Promise<Record<K, V>>;
 
-// Warning: (ae-forgotten-export) The symbol "symbols" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "Match" needs to be exported by the entry point index.d.ts
-//
 // @public
 export function match<const input, output = symbols.unset>(value: input): Match<input, output>;
 
@@ -1707,8 +1553,6 @@ export interface MemoizeCache<K, V> {
     size: number;
 }
 
-// Warning: (ae-forgotten-export) The symbol "_Merge" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type Merge<Destination, Source> =
 	Destination extends unknown // For distributing `Destination`
@@ -1717,14 +1561,9 @@ export type Merge<Destination, Source> =
 			: never // Should never happen
 		: never;
 
-// Warning: (ae-forgotten-export) The symbol "Merge_2" needs to be exported by the entry point index.d.ts
-//
 // @public
 export function merge<T extends Record<PropertyKey, any>, S extends Record<PropertyKey, any>>(target: T, source: S): Merge_2<T, S>;
 
-// Warning: (ae-forgotten-export) The symbol "MergeDeepWithDefaultOptions" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "SimplifyDeepExcludeArray" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type MergeDeep<Destination, Source, Options extends MergeDeepOptions = {}> = MergeDeepWithDefaultOptions<
 	SimplifyDeepExcludeArray<Destination>,
@@ -1739,8 +1578,6 @@ export type MergeDeepOptions = {
     	recurseIntoArrays?: boolean;
 };
 
-// Warning: (ae-forgotten-export) The symbol "Without" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type MergeExclusive<FirstType, SecondType> =
 	(FirstType | SecondType) extends object
@@ -1756,8 +1593,6 @@ export function minBy<T>(items: readonly [T, ...T[]], getValue: (element: T, ind
 // @public
 export function minBy<T>(items: readonly T[], getValue: (element: T, index: number, array: readonly T[]) => number): T | undefined;
 
-// Warning: (ae-forgotten-export) The symbol "Recursive" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type MultidimensionalArray<Element, Dimensions extends number> = number extends Dimensions
 	? Recursive<Element>
@@ -1765,8 +1600,6 @@ export type MultidimensionalArray<Element, Dimensions extends number> = number e
 		? Element
 		: Array<MultidimensionalArray<Element, Subtract<Dimensions, 1>>>;
 
-// Warning: (ae-forgotten-export) The symbol "Recursive_2" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type MultidimensionalReadonlyArray<Element, Dimensions extends number> = number extends Dimensions
 	? Recursive_2<Element>
@@ -1781,16 +1614,12 @@ export class Mutex {
     release(): void;
 }
 
-// Warning: (ae-forgotten-export) The symbol "ExtractPreciseValue" needs to be exported by the entry point index.d.ts
-//
 // @public
 type narrow<input, pattern> = ExtractPreciseValue<input, InvertPattern<pattern, input>>;
 
 // @public
 export function negate<F extends (...args: any[]) => boolean>(func: F): F;
 
-// Warning: (ae-forgotten-export) The symbol "Zero" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type Negative<T extends _Numeric> = T extends Zero ? never : `${T}` extends `-${string}` ? T : never;
 
@@ -1825,14 +1654,9 @@ export type NonNegative<T extends _Numeric> = T extends Zero ? T : Negative<T> e
 // @public
 export type NonNegativeInteger<T extends number> = NonNegative<Integer<T>>;
 
-// Warning: (ae-forgotten-export) The symbol "NonNullablePattern" needs to be exported by the entry point index.d.ts
-//
 // @public
 const nonNullable: NonNullablePattern;
 
-// Warning: (ae-forgotten-export) The symbol "BuiltIns" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "HasMultipleCallSignatures" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type NonNullableDeep<T> =
 	T extends BuiltIns | (new (...arguments_: any[]) => unknown)
@@ -1868,26 +1692,15 @@ export function noop(): void;
 // @public
 export function not<T>(predicate: (value: unknown) => value is T): <Value>(value: Value) => value is Exclude<Value, T>;
 
-// Warning: (ae-forgotten-export) The symbol "UnknownValuePattern" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "NotP" needs to be exported by the entry point index.d.ts
-//
 // @public
 function not_2<input, const pattern extends Pattern<input> | UnknownValuePattern>(pattern: pattern): Chainable<NotP<input, pattern>>;
 
-// Warning: (ae-forgotten-export) The symbol "NullishPattern" needs to be exported by the entry point index.d.ts
-//
 // @public
 const nullish: NullishPattern;
 
-// Warning: (ae-forgotten-export) The symbol "NumberPattern" needs to be exported by the entry point index.d.ts
-//
 // @public
 const number: NumberPattern;
 
-// Warning: (ae-forgotten-export) The symbol "ObjectAssignSource" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "PlainObjectTarget" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "ObjectAssignResult" needs to be exported by the entry point index.d.ts
-//
 // @public
 export function objectAssign<Target extends object, Sources extends readonly ObjectAssignSource[]>(target: PlainObjectTarget<Target>, ...sources: Sources): ObjectAssignResult<Target, Sources>;
 
@@ -1909,11 +1722,6 @@ export function objectHasOwn<ObjectType, Key extends PropertyKey>(object: Object
 // @public
 export const objectKeys: <Type extends object>(value: Type) => Array<ObjectKeys_2<Type>>;
 
-// Warning: (ae-forgotten-export) The symbol "MapFunctionValue" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "NormalizeStrict" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "MapFunctionKey" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "MappedValues" needs to be exported by the entry point index.d.ts
-//
 // @public
 export function objectMapValues<Type extends object, NewValue, IsStrict extends boolean | undefined = true>(object: Type, mapFunction: (value: MapFunctionValue<Type, NormalizeStrict<IsStrict>>, key: MapFunctionKey<Type, NormalizeStrict<IsStrict>>) => NewValue, options?: {
     strict?: IsStrict;
@@ -1943,9 +1751,6 @@ export type ObjectMerge<First extends object, Second extends object> =
     		ifAny: First & Second;
     	}>;
 
-// Warning: (ae-forgotten-export) The symbol "KnownKeySource" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "UpdatableShape" needs to be exported by the entry point index.d.ts
-//
 // @public
 export function objectUpdate<Target extends object, Source extends object>(target: Target, source: KnownKeySource<Source> & Exact<UpdatableShape<Target, Source>, Source>): Target;
 
@@ -1961,8 +1766,6 @@ export function omit<T extends Record<string, any>, K extends keyof T>(obj: T, k
 // @public
 export function omitBy<T extends Record<string, any>>(obj: T, shouldOmit: (value: T[keyof T], key: ObjectKeys<T>) => boolean): Partial<T>;
 
-// Warning: (ae-forgotten-export) The symbol "OmitDeepHelper" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type OmitDeep<T, PathUnion extends LiteralUnion<Paths<T>, string>> =
 	SimplifyDeep<
@@ -1979,16 +1782,12 @@ export type OmitIndexSignature<ObjectType> = {
 // @public
 export function once<F extends (...args: any[]) => any>(func: F): F;
 
-// Warning: (ae-forgotten-export) The symbol "TagContainer" needs to be exported by the entry point index.d.ts
-//
 // @public @deprecated
 export type Opaque<Type, Token = unknown> = Type & TagContainer<Token>;
 
 // @public
 export type Optional<Value> = Exclude<Value, null> | undefined;
 
-// Warning: (ae-forgotten-export) The symbol "OptionalP" needs to be exported by the entry point index.d.ts
-//
 // @public
 function optional<input, const pattern extends unknown extends input ? UnknownValuePattern : Pattern<input>>(pattern: pattern): Chainable<OptionalP<input, pattern>, 'optional'>;
 
@@ -2421,8 +2220,6 @@ export function partial<T1, R>(func: (arg1: T1) => R, arg1: T1): () => R;
 // @public
 export function partial<T1, T2, R>(func: (arg1: T1, arg2: T2) => R, arg1: T1): (arg2: T2) => R;
 
-// Warning: (ae-forgotten-export) The symbol "Placeholder" needs to be exported by the entry point index.d.ts
-//
 // @public
 export function partial<T1, T2, R>(func: (arg1: T1, arg2: T2) => R, placeholder: Placeholder, arg2: T2): (arg1: T1) => R;
 
@@ -2507,9 +2304,6 @@ export namespace partial {
     placeholder: typeof placeholderSymbol;
 }
 
-// Warning: (ae-forgotten-export) The symbol "_PartialDeep" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "DefaultPartialDeepOptions" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type PartialDeep<T, Options extends PartialDeepOptions = {}> =
 	_PartialDeep<T, ApplyDefaultOptions<PartialDeepOptions, DefaultPartialDeepOptions, Options>>;
@@ -2521,9 +2315,6 @@ export type PartialDeepOptions = {
     	readonly allowUndefinedInNonTupleArrays?: boolean;
 };
 
-// Warning: (ae-forgotten-export) The symbol "_PartialOnUndefinedDeep" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "DefaultPartialOnUndefinedDeepOptions" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type PartialOnUndefinedDeep<T, Options extends PartialOnUndefinedDeepOptions = {}> =
 	_PartialOnUndefinedDeep<T, ApplyDefaultOptions<PartialOnUndefinedDeepOptions, DefaultPartialOnUndefinedDeepOptions, Options>>;
@@ -2548,8 +2339,6 @@ export function partialRight<T1, R>(func: (arg1: T1) => R, arg1: T1): () => R;
 // @public
 export function partialRight<T1, T2, R>(func: (arg1: T1, arg2: T2) => R): (arg1: T1, arg2: T2) => R;
 
-// Warning: (ae-forgotten-export) The symbol "Placeholder_2" needs to be exported by the entry point index.d.ts
-//
 // @public
 export function partialRight<T1, T2, R>(func: (arg1: T1, arg2: T2) => R, arg1: T1, arg2: Placeholder_2): (arg2: T2) => R;
 
@@ -2646,8 +2435,6 @@ export function partition<T, U extends T>(arr: readonly T[], isInTruthy: (value:
 // @public
 export function partition<T>(arr: readonly T[], isInTruthy: (value: T, index: number, array: readonly T[]) => unknown): [truthy: T[], falsy: T[]];
 
-// Warning: (ae-forgotten-export) The symbol "_PascalCase" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type PascalCase<Value, Options extends CamelCaseOptions = {}> =
 	_PascalCase<Value, ApplyDefaultOptions<CamelCaseOptions, _DefaultCamelCaseOptions, Options>>;
@@ -2662,15 +2449,10 @@ export type PascalCasedProperties<Value, Options extends CamelCaseOptions = {}> 
 		? Value
 		: {[K in keyof Value as PascalCase<K, ApplyDefaultOptions<CamelCaseOptions, _DefaultCamelCaseOptions, Options>>]: Value[K]};
 
-// Warning: (ae-forgotten-export) The symbol "_PascalCasedPropertiesDeep" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type PascalCasedPropertiesDeep<Value, Options extends CamelCaseOptions = {}> =
 	_PascalCasedPropertiesDeep<Value, ApplyDefaultOptions<CamelCaseOptions, _DefaultCamelCaseOptions, Options>>;
 
-// Warning: (ae-forgotten-export) The symbol "_Paths" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "DefaultPathsOptions" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type Paths<T, Options extends PathsOptions = {}> = _Paths<T, ApplyDefaultOptions<PathsOptions, DefaultPathsOptions, Options>>;
 
@@ -2685,8 +2467,6 @@ export type PathsOptions = {
     	depth?: number;
 };
 
-// Warning: (ae-forgotten-export) The symbol "KnownPattern" needs to be exported by the entry point index.d.ts
-//
 // @public
 type Pattern<a = unknown> = unknown extends a ? UnknownValuePattern : KnownPattern<a>;
 
@@ -2699,8 +2479,6 @@ export function pick<T extends Record<string, any>, K extends keyof T>(obj: T, k
 // @public
 export function pickBy<T extends Record<string, any>>(obj: T, shouldPick: (value: T[keyof T], key: ObjectKeys<T>) => boolean): Partial<T>;
 
-// Warning: (ae-forgotten-export) The symbol "InternalPickDeep" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type PickDeep<T, PathUnion extends Paths<T>> =
 	T extends NonRecursiveType
@@ -2785,10 +2563,6 @@ export function rangeRight(start: number, end: number): number[];
 // @public
 export function rangeRight(start: number, end: number, step: number): number[];
 
-// Warning: (ae-forgotten-export) The symbol "_ReadonlyObjectDeep" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "ReadonlyMapDeep" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "ReadonlySetDeep" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type ReadonlyDeep<T> = T extends BuiltIns
 	? T
@@ -2831,15 +2605,9 @@ export type ReadonlyKeysOf<Type extends object> =
 // @public @deprecated
 export type ReadonlyTuple<Element, Length extends number> = Readonly<TupleOf<Length, Element>>;
 
-// Warning: (ae-forgotten-export) The symbol "UnwrapRecordValue" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "RecordP" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "StringPattern" needs to be exported by the entry point index.d.ts
-//
 // @public
 function record<input, const pvalue extends Pattern<UnwrapRecordValue<input>>>(patternValue: pvalue): Chainable<RecordP<input, StringPattern, pvalue>>;
 
-// Warning: (ae-forgotten-export) The symbol "UnwrapRecordKey" needs to be exported by the entry point index.d.ts
-//
 // @public (undocumented)
 function record<input, const pkey extends Pattern<WithDefault<UnwrapRecordKey<input>, PropertyKey>>, const pvalue extends Pattern<WithDefault<UnwrapRecordValue<input>, unknown>>>(patternKey: pkey, patternValue?: pvalue): Chainable<RecordP<input, pkey, pvalue>>;
 
@@ -2894,9 +2662,6 @@ export type RenameKeys<
     		: never;
 }>;
 
-// Warning: (ae-forgotten-export) The symbol "_Replace" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "DefaultReplaceOptions" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type Replace<
 	Input extends string,
@@ -2929,8 +2694,6 @@ export type RequireAtLeastOne<
     			_RequireAtLeastOne<ObjectType, If<IsAny<KeysType>, keyof ObjectType, KeysType>>>;
     	}>;
 
-// Warning: (ae-forgotten-export) The symbol "RequiredObjectDeep" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type RequiredDeep<T> = T extends BuiltIns
 	? T
@@ -2989,8 +2752,6 @@ export function retry<T>(func: () => Promise<T>): Promise<T>;
 // @public
 export function retry<T>(func: () => Promise<T>, retries: number): Promise<T>;
 
-// Warning: (ae-forgotten-export) The symbol "RetryOptions" needs to be exported by the entry point index.d.ts
-//
 // @public
 export function retry<T>(func: () => Promise<T>, options: RetryOptions): Promise<T>;
 
@@ -3030,13 +2791,9 @@ export type ScreamingSnakeCase<
 	? Uppercase<SnakeCase<Value, ApplyDefaultOptions<WordsOptions, _DefaultDelimiterCaseOptions, Options>>>
 	: Value;
 
-// Warning: (ae-forgotten-export) The symbol "AnonymousSelectP" needs to be exported by the entry point index.d.ts
-//
 // @public
 function select(): Chainable<AnonymousSelectP, 'select' | 'or' | 'and'>;
 
-// Warning: (ae-forgotten-export) The symbol "SelectP" needs to be exported by the entry point index.d.ts
-//
 // @public (undocumented)
 function select<input, const patternOrKey extends string | (unknown extends input ? UnknownValuePattern : Pattern<input>)>(patternOrKey: patternOrKey): patternOrKey extends string ? Chainable<SelectP<patternOrKey, 'select' | 'or' | 'and'>> : Chainable<SelectP<symbols.anonymousSelectKey, input, patternOrKey>, 'select' | 'or' | 'and'>;
 
@@ -3058,19 +2815,12 @@ export function sentenceCase(str: string): string;
 // @public
 export function serialize(value: unknown): string;
 
-// Warning: (ae-forgotten-export) The symbol "SetP" needs to be exported by the entry point index.d.ts
-//
 // @public
 function set<input>(): Chainable<SetP<input, unknown>>;
 
-// Warning: (ae-forgotten-export) The symbol "UnwrapSet" needs to be exported by the entry point index.d.ts
-//
 // @public (undocumented)
 function set<input, const pattern extends Pattern<WithDefault<UnwrapSet<input>, unknown>>>(pattern: pattern): Chainable<SetP<input, pattern>>;
 
-// Warning: (ae-forgotten-export) The symbol "_SetFieldType" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "DefaultSetFieldTypeOptions" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type SetFieldType<BaseType, Keys extends keyof BaseType, NewType, Options extends SetFieldTypeOptions = {}> =
 	_SetFieldType<BaseType, Keys, NewType, ApplyDefaultOptions<SetFieldTypeOptions, DefaultSetFieldTypeOptions, Options>>;
@@ -3090,15 +2840,11 @@ export type SetNonNullable<BaseType, Keys extends keyof BaseType = keyof BaseTyp
     		: BaseType[Key];
 };
 
-// Warning: (ae-forgotten-export) The symbol "SetNonNullableDeepHelper" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type SetNonNullableDeep<BaseType, KeyPaths extends Paths<BaseType>> = IsAny<KeyPaths> extends true
 	? NonNullableDeep<BaseType>
 	: SetNonNullableDeepHelper<BaseType, UnionToTuple<KeyPaths>>;
 
-// Warning: (ae-forgotten-export) The symbol "_SetOptional" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type SetOptional<BaseType, Keys extends keyof BaseType> =
 	(BaseType extends (...arguments_: never) => any
@@ -3106,8 +2852,6 @@ export type SetOptional<BaseType, Keys extends keyof BaseType> =
 		: unknown)
 	& _SetOptional<BaseType, Keys>;
 
-// Warning: (ae-forgotten-export) The symbol "MergeObjectToArray" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type SetParameterType<Function_ extends (...arguments_: any[]) => unknown, P extends Record<number, unknown>> =
 	// Just using `Parameters<Fn>` isn't ideal because it doesn't handle the `this` fake parameter.
@@ -3121,8 +2865,6 @@ export type SetParameterType<Function_ extends (...arguments_: any[]) => unknown
 		)
 		: Function_;
 
-// Warning: (ae-forgotten-export) The symbol "_SetReadonly" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type SetReadonly<BaseType, Keys extends keyof BaseType> =
 	(BaseType extends (...arguments_: never) => any
@@ -3130,8 +2872,6 @@ export type SetReadonly<BaseType, Keys extends keyof BaseType> =
 		: unknown)
 	& _SetReadonly<BaseType, Keys>;
 
-// Warning: (ae-forgotten-export) The symbol "_SetRequired" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type SetRequired<BaseType, Keys extends keyof BaseType> =
 	(BaseType extends (...arguments_: never) => any
@@ -3139,8 +2879,6 @@ export type SetRequired<BaseType, Keys extends keyof BaseType> =
 		: unknown)
 	& _SetRequired<BaseType, Keys>;
 
-// Warning: (ae-forgotten-export) The symbol "SetRequiredDeepHelper" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type SetRequiredDeep<BaseType, KeyPaths extends Paths<BaseType>> = IsAny<KeyPaths> extends true
 	? SimplifyDeep<RequiredDeep<BaseType>>
@@ -3173,11 +2911,6 @@ export type SharedUnionFields<Union> =
 			: never
 		: never;
 
-// Warning: (ae-forgotten-export) The symbol "DefaultSharedUnionFieldsDeepOptions" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "SetArrayAccess" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "SharedArrayUnionFieldsDeep" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "SharedObjectUnionFieldsDeep" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type SharedUnionFieldsDeep<Union, Options extends SharedUnionFieldsDeepOptions = {}> =
 	ApplyDefaultOptions<SharedUnionFieldsDeepOptions, DefaultSharedUnionFieldsDeepOptions, Options> extends infer OptionsWithDefaults extends Required<SharedUnionFieldsDeepOptions>
@@ -3260,9 +2993,6 @@ export function sortBy<T extends object>(arr: readonly T[], criteria: ReadonlyAr
 // @public
 export function sortKeys<T extends Record<string, any>>(object: T, compareKeys?: (a: string, b: string) => number): T;
 
-// Warning: (ae-forgotten-export) The symbol "_Split" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "DefaultSplitOptions" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type Split<
 	S extends string,
@@ -3271,8 +3001,6 @@ export type Split<
 > =
 	_Split<S, Delimiter, ApplyDefaultOptions<SplitOptions, DefaultSplitOptions, Options>>;
 
-// Warning: (ae-forgotten-export) The symbol "SplitOnRestElementOptions" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type SplitOnRestElement<
 	Array_ extends UnknownArray,
@@ -3294,11 +3022,6 @@ export type SplitOptions = {
     	strictLiteralChecks?: boolean;
 };
 
-// Warning: (ae-forgotten-export) The symbol "Spreadable" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "TupleOrArray" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "SpreadTupleOrArray" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "SpreadObject" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type Spread<
 	FirstType extends Spreadable,
@@ -3324,8 +3047,6 @@ export type Stringified<ObjectType> = {[KeyType in keyof ObjectType]: string};
 // @public
 export type StringLength<S extends string> = StringToArray<S>['length'];
 
-// Warning: (ae-forgotten-export) The symbol "BuildStringDigitByDigit" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type StringRepeat<S extends string, Count extends number> =
 	Count extends unknown // To distribute `Count`
@@ -3372,16 +3093,9 @@ export type StringToArrayOptions = {
 // @public
 export type StringToNumber<S extends string> = IfNotAnyOrNever<S, {ifNot: _StringToNumber<S>; ifAny: number}>;
 
-// Warning: (ae-forgotten-export) The symbol "StructuredCloneablePrimitive" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "StructuredCloneableData" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "StructuredCloneableCollection" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type StructuredCloneable = StructuredCloneablePrimitive | StructuredCloneableData | StructuredCloneableCollection;
 
-// Warning: (ae-forgotten-export) The symbol "ReverseSign" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "SubtractPostChecks" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type Subtract<A extends number, B extends number> =
 	// Handle cases when A or B is the actual "number" type
@@ -3399,8 +3113,6 @@ export type Subtract<A extends number, B extends number> =
 							// Handle remaining regular cases
 							: SubtractPostChecks<A, B>;
 
-// Warning: (ae-forgotten-export) The symbol "SumPostChecks" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type Sum<A extends number, B extends number> =
 	// Handle cases when A or B is the actual "number" type
@@ -3424,8 +3136,6 @@ export function sum(nums: readonly number[]): number;
 // @public
 export function sumBy<T>(items: readonly T[], getValue: (element: T, index: number) => number): number;
 
-// Warning: (ae-forgotten-export) The symbol "SymbolPattern" needs to be exported by the entry point index.d.ts
-//
 // @public
 const symbol: SymbolPattern;
 
@@ -3483,8 +3193,6 @@ export interface ThrottleOptions {
     signal?: AbortSignal;
 }
 
-// Warning: (ae-forgotten-export) The symbol "TimeoutOptions" needs to be exported by the entry point index.d.ts
-//
 // @public
 export function timeout(ms: number, input?: TimeoutOptions): Promise<never>;
 
@@ -3493,13 +3201,9 @@ export class TimeoutError extends DOMException_2 {
     constructor(message?: string);
 }
 
-// Warning: (ae-forgotten-export) The symbol "ToCamelCaseKeys" needs to be exported by the entry point index.d.ts
-//
 // @public
 export function toCamelCaseKeys<T>(obj: T): ToCamelCaseKeys<T>;
 
-// Warning: (ae-forgotten-export) The symbol "ToConstantCaseKeys" needs to be exported by the entry point index.d.ts
-//
 // @public
 export function toConstantCaseKeys<T>(obj: T): ToConstantCaseKeys<T>;
 
@@ -3512,27 +3216,18 @@ export function toFilled<T, U>(arr: readonly T[], value: U, start: number): Arra
 // @public
 export function toFilled<T, U>(arr: readonly T[], value: U, start: number, end: number): Array<T | U>;
 
-// Warning: (ae-forgotten-export) The symbol "ToKebabCaseKeys" needs to be exported by the entry point index.d.ts
-//
 // @public
 export function toKebabCaseKeys<T>(obj: T): ToKebabCaseKeys<T>;
 
 // @public
 export function toMerged<T extends Record<PropertyKey, any>, S extends Record<PropertyKey, any>>(target: T, source: S): T & S;
 
-// Warning: (ae-forgotten-export) The symbol "ToPascalCaseKeys" needs to be exported by the entry point index.d.ts
-//
 // @public
 export function toPascalCaseKeys<T>(obj: T): ToPascalCaseKeys<T>;
 
-// Warning: (ae-forgotten-export) The symbol "ToSnakeCaseKeys" needs to be exported by the entry point index.d.ts
-//
 // @public
 export function toSnakeCaseKeys<T>(obj: T): ToSnakeCaseKeys<T>;
 
-// Warning: (ae-forgotten-export) The symbol "TrimLeft" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "TrimRight" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type Trim<V extends string> = TrimLeft<TrimRight<V>>;
 
@@ -4276,8 +3971,6 @@ export type TypedArray =
 // @public
 export function unary<F extends (...args: any[]) => any>(func: F): (...args: any[]) => ReturnType<F>;
 
-// Warning: (ae-forgotten-export) The symbol "UndefinedOnPartialList" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type UndefinedOnPartialDeep<T> =
 	// Handle built-in type and function
@@ -4312,8 +4005,6 @@ export { unescape_2 as unescape }
 // @public
 export function union<T>(arr1: readonly T[], arr2: readonly T[]): T[];
 
-// Warning: (ae-forgotten-export) The symbol "OrP" needs to be exported by the entry point index.d.ts
-//
 // @public
 function union_2<input, const patterns extends readonly [Pattern<input>, ...Pattern<input>[]]>(...patterns: patterns): Chainable<OrP<input, patterns>>;
 
@@ -4323,9 +4014,6 @@ export function unionBy<T, U>(arr1: readonly T[], arr2: readonly T[], mapper: (i
 // @public
 export type UnionLength<Union> = UnionToTuple<Union>['length'];
 
-// Warning: (ae-forgotten-export) The symbol "IsAnyOrNever" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "InternalUnionMax" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type UnionMax<NumberUnion extends number> =
 	IsAnyOrNever<NumberUnion> extends true ? NumberUnion
@@ -4360,8 +4048,6 @@ export type UnionToIntersection<Union> = (
 	? Intersection & Union
 	: never;
 
-// Warning: (ae-forgotten-export) The symbol "_UnionToTuple" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type UnionToTuple<Union> =
 	_UnionToTuple<Union> extends infer Result extends UnknownArray ? Result : never;
@@ -4393,16 +4079,12 @@ export type UnknownRecord = Record<PropertyKey, unknown>;
 // @public
 export type UnknownSet = ReadonlySet<unknown>;
 
-// Warning: (ae-forgotten-export) The symbol "CustomP" needs to be exported by the entry point index.d.ts
-//
 // @public
 type unstable_Matchable<narrowedOrFn, input = unknown, pattern = never> = CustomP<input, pattern, narrowedOrFn>;
 
 // @public
 type unstable_Matcher<narrowedOrFn, input = unknown, pattern = never> = ReturnType<CustomP<input, pattern, narrowedOrFn>[matcher]>;
 
-// Warning: (ae-forgotten-export) The symbol "RemoveAllTags" needs to be exported by the entry point index.d.ts
-//
 // @public @deprecated
 export type UnwrapOpaque<OpaqueType extends TagContainer<unknown>> =
 	OpaqueType extends Tag<PropertyKey, any>
@@ -4421,8 +4103,6 @@ export type UnwrapPartial<PartialObjectType> =
 		)
 		: PartialObjectType;
 
-// Warning: (ae-forgotten-export) The symbol "_UnwrapRequired" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type UnwrapRequired<RequiredObjectType> =
 	RequiredObjectType extends NonRecursiveType | MapsSetsOrArrays
@@ -4433,8 +4113,6 @@ export type UnwrapRequired<RequiredObjectType> =
 export type UnwrapTagged<TaggedType extends Tag<PropertyKey, any>> =
 	RemoveAllTags<TaggedType>;
 
-// Warning: (ae-forgotten-export) The symbol "Unzip" needs to be exported by the entry point index.d.ts
-//
 // @public
 export function unzip<T extends unknown[]>(zipped: ReadonlyArray<[...T]>): Unzip<T>;
 
@@ -4456,27 +4134,18 @@ export type ValueOf<ObjectType, ValueType extends keyof ObjectType = keyof Objec
 // @public
 function when<input, predicate extends (value: input) => unknown>(predicate: predicate): GuardP<input, predicate extends (value: any) => value is infer narrowed ? narrowed : never>;
 
-// Warning: (ae-forgotten-export) The symbol "GuardExcludeP" needs to be exported by the entry point index.d.ts
-//
 // @public (undocumented)
 function when<input, narrowed extends input, excluded>(predicate: (input: input) => input is narrowed): GuardExcludeP<input, narrowed, excluded>;
 
-// Warning: (ae-forgotten-export) The symbol "WindowedOptions" needs to be exported by the entry point index.d.ts
-//
 // @public
 export function windowed<T>(arr: readonly T[], size: number, step?: number, input?: WindowedOptions): T[][];
 
 // @public
 export function without<T>(array: readonly T[], ...values: T[]): T[];
 
-// Warning: (ae-forgotten-export) The symbol "WithTimeoutOptions" needs to be exported by the entry point index.d.ts
-//
 // @public
 export function withTimeout<T>(run: () => Promise<T>, ms: number, input?: WithTimeoutOptions): Promise<T>;
 
-// Warning: (ae-forgotten-export) The symbol "WordsImplementation" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "_DefaultWordsOptions" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type Words<Sentence extends string, Options extends WordsOptions = {}> = WordsImplementation<Sentence, ApplyDefaultOptions<WordsOptions, _DefaultWordsOptions, Options>>;
 
@@ -4489,8 +4158,6 @@ export type WordsOptions = {
     	splitOnPunctuation?: boolean;
 };
 
-// Warning: (ae-forgotten-export) The symbol "WritableArray" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type Writable<BaseType, Keys extends keyof BaseType = keyof BaseType> =
 	BaseType extends ReadonlyMap<infer KeyType, infer ValueType>
@@ -4508,11 +4175,6 @@ export type Writable<BaseType, Keys extends keyof BaseType = keyof BaseType> =
 					& {-readonly [KeyType in keyof BaseType as KeyType extends Keys ? KeyType : never]: BaseType[KeyType]}
 				>;
 
-// Warning: (ae-forgotten-export) The symbol "_WritableObjectDeep" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "WritableMapDeep" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "WritableSetDeep" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "WritableArrayDeep" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type WritableDeep<T> = T extends BuiltIns
 	? T
@@ -4579,55 +4241,6 @@ export function zipWith<T, U, V, R>(arr1: readonly T[], arr2: readonly U[], arr3
 
 // @public
 export function zipWith<T, U, V, W, R>(arr1: readonly T[], arr2: readonly U[], arr3: readonly V[], arr4: readonly W[], combine: (item1: T, item2: U, item3: V, item4: W, index: number) => R): R[];
-
-// Warnings were encountered during analysis:
-//
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/ts-extras/distribution/object-entries.d.ts:24:5 - (ae-forgotten-export) The symbol "ArrayEntryKey" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/ts-extras/distribution/object-entries.d.ts:24:5 - (ae-forgotten-export) The symbol "ArrayEntryValue" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/ts-extras/distribution/object-entries.d.ts:25:5 - (ae-forgotten-export) The symbol "ObjectKeys_2" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/type-fest/source/all-extend.d.ts:105:3 - (ae-forgotten-export) The symbol "_AllExtend" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/type-fest/source/all-extend.d.ts:105:3 - (ae-forgotten-export) The symbol "ApplyDefaultOptions" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/type-fest/source/all-extend.d.ts:105:3 - (ae-forgotten-export) The symbol "DefaultAllExtendOptions" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/type-fest/source/array-reverse.d.ts:54:2 - (ae-forgotten-export) The symbol "_ArrayReverse" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/type-fest/source/array-reverse.d.ts:54:2 - (ae-forgotten-export) The symbol "IsArrayReadonly" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/type-fest/source/array-tail.d.ts:55:2 - (ae-forgotten-export) The symbol "_ArrayTail" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/type-fest/source/conditional-keys.d.ts:53:28 - (ae-forgotten-export) The symbol "_ConditionalKeys" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/type-fest/source/exclude-exactly.d.ts:37:3 - (ae-forgotten-export) The symbol "_ExcludeExactly" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/type-fest/source/exclusify-union.d.ts:129:2 - (ae-forgotten-export) The symbol "MapsSetsOrArrays" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/type-fest/source/exclusify-union.d.ts:129:2 - (ae-forgotten-export) The symbol "_ExclusifyUnion" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/type-fest/source/extract-exactly.d.ts:36:3 - (ae-forgotten-export) The symbol "_ExtractExactly" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/type-fest/source/is-boolean-literal.d.ts:28:2 - (ae-forgotten-export) The symbol "_IsBooleanLiteral" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/type-fest/source/is-boolean-literal.d.ts:28:2 - (ae-forgotten-export) The symbol "CollapseLiterals" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/type-fest/source/is-boolean-literal.d.ts:28:2 - (ae-forgotten-export) The symbol "UnwrapBrand" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/type-fest/source/is-literal.d.ts:67:2 - (ae-forgotten-export) The symbol "_IsLiteral" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/type-fest/source/is-numeric-literal.d.ts:37:2 - (ae-forgotten-export) The symbol "_IsNumericLiteral" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/type-fest/source/is-string-literal.d.ts:58:2 - (ae-forgotten-export) The symbol "_IsStringLiteral" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/type-fest/source/is-symbol-literal.d.ts:28:2 - (ae-forgotten-export) The symbol "_IsSymbolLiteral" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/type-fest/source/last-array-element.d.ts:64:3 - (ae-forgotten-export) The symbol "_LastArrayElement" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/type-fest/source/merge-deep.d.ts:336:2 - (ae-forgotten-export) The symbol "ArrayMergeMode" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/type-fest/source/object-merge.d.ts:95:4 - (ae-forgotten-export) The symbol "_ObjectMerge" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/type-fest/source/object-merge.d.ts:95:4 - (ae-forgotten-export) The symbol "NormalizedLiteralKeys" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/type-fest/source/object-merge.d.ts:95:4 - (ae-forgotten-export) The symbol "IsExactOptionalPropertyTypesEnabled" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/type-fest/source/remove-prefix.d.ts:98:3 - (ae-forgotten-export) The symbol "_RemovePrefix" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/type-fest/source/remove-prefix.d.ts:98:3 - (ae-forgotten-export) The symbol "DefaultRemovePrefixOptions" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/type-fest/source/remove-suffix.d.ts:98:3 - (ae-forgotten-export) The symbol "_RemoveSuffix" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/type-fest/source/remove-suffix.d.ts:98:3 - (ae-forgotten-export) The symbol "DefaultRemoveSuffixOptions" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/type-fest/source/rename-keys.d.ts:113:2 - (ae-forgotten-export) The symbol "RenameOnce" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/type-fest/source/rename-keys.d.ts:113:2 - (ae-forgotten-export) The symbol "NormalizeMap" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/type-fest/source/require-all-or-none.d.ts:44:3 - (ae-forgotten-export) The symbol "_RequireAllOrNone" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/type-fest/source/require-at-least-one.d.ts:33:3 - (ae-forgotten-export) The symbol "_RequireAtLeastOne" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/type-fest/source/require-exactly-one.d.ts:37:3 - (ae-forgotten-export) The symbol "_RequireExactlyOne" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/type-fest/source/require-one-or-none.d.ts:39:3 - (ae-forgotten-export) The symbol "_RequireOneOrNone" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/type-fest/source/schema.d.ts:97:3 - (ae-forgotten-export) The symbol "_Schema" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/type-fest/source/schema.d.ts:97:3 - (ae-forgotten-export) The symbol "DefaultSchemaOptions" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/type-fest/source/some-extend.d.ts:99:3 - (ae-forgotten-export) The symbol "_SomeExtend" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/type-fest/source/some-extend.d.ts:99:3 - (ae-forgotten-export) The symbol "DefaultSomeExtendOptions" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/type-fest/source/split-on-rest-element.d.ts:68:4 - (ae-forgotten-export) The symbol "_SplitOnRestElement" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/type-fest/source/split-on-rest-element.d.ts:68:4 - (ae-forgotten-export) The symbol "DefaultSplitOnRestElementOptions" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/type-fest/source/string-to-array.d.ts:81:4 - (ae-forgotten-export) The symbol "_StringToArray" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/type-fest/source/string-to-array.d.ts:81:4 - (ae-forgotten-export) The symbol "DefaultStringToArrayOptions" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/type-fest/source/string-to-number.d.ts:50:68 - (ae-forgotten-export) The symbol "_StringToNumber" needs to be exported by the entry point index.d.ts
-// D:/system/worktrees/buildkit/typescript-utils/node_modules/type-fest/source/tuple-of.d.ts:82:2 - (ae-forgotten-export) The symbol "_TupleOf" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 

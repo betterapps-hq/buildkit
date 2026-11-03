@@ -150,7 +150,12 @@ for (const manifest of globSync("packages/*/*/package.json", { cwd: root }).sort
             default: { logLevel: ExtractorLogLevel.Warning },
             "ae-missing-release-tag": { logLevel: ExtractorLogLevel.None },
             "ae-undocumented": { logLevel: ExtractorLogLevel.None },
-            "ae-forgotten-export": { logLevel: ExtractorLogLevel.Warning, addToApiReportFile: true }
+            // A bundled package's internal types would be listed with this machine's node_modules path. Without the
+            // report, a forgotten export in the package's own code is a warning, which fails the check.
+            "ae-forgotten-export": {
+              logLevel: ExtractorLogLevel.Warning,
+              addToApiReportFile: bundledPackages.length === 0
+            }
           }
         }
       }
