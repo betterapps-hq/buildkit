@@ -1,4 +1,3 @@
-import { useTheme } from "@buildkitgg/react-theme"
 import {
   Button,
   Dialog,
@@ -8,7 +7,7 @@ import {
   DialogTitle,
   DialogDescription
 } from "@buildkitgg/shadcn-baseui-kit"
-import { createShadcnTheme, type ShadcnThemeOptions } from "@buildkitgg/shadcn-theme"
+import { createShadcnTheme, useTheme, type ShadcnThemeOptions } from "@buildkitgg/shadcn-theme"
 import { ExampleResult } from "@buildkitgg/storybook-config/examples"
 import { useEffect, useState } from "react"
 
