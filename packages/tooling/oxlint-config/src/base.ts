@@ -1,5 +1,5 @@
-// The shared lint rules, extended by the root vite.config.ts.
-import type { OxlintConfig } from "vite-plus/lint"
+// The shared lint rules: what every Buildkit package lints with, extended by the root vite.config.ts.
+import type { OxlintConfig } from "oxlint"
 
 export default {
   plugins: ["eslint", "typescript", "react", "vitest", "jsx-a11y", "import", "oxc", "unicorn", "promise", "react-perf"],

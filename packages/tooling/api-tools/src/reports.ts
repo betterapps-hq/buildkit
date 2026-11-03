@@ -1,4 +1,4 @@
-import { globSync, readFileSync, mkdirSync, readdirSync, writeFileSync } from "node:fs"
+import { existsSync, globSync, readFileSync, mkdirSync, readdirSync, writeFileSync } from "node:fs"
 import { dirname, resolve, relative } from "node:path"
 import { fileURLToPath } from "node:url"
 import { Extractor, ExtractorConfig, ExtractorLogLevel } from "@microsoft/api-extractor"
@@ -32,6 +32,18 @@ function typeEntry(value: unknown): string | undefined {
   return undefined
 }
 
+function readBundledPackages(path: string): string[] {
+  if (!existsSync(path)) {
+    return []
+  }
+  const config: unknown = JSON.parse(readFileSync(path, "utf8"))
+  const bundled = isRecord(config) ? config.bundledPackages : undefined
+  if (!Array.isArray(bundled) || !bundled.every((name) => typeof name === "string")) {
+    throw new Error(`${path} needs a bundledPackages array of package names`)
+  }
+  return bundled
+}
+
 // Report names for the published package families. Better Apps keeps its own names: `better-apps` and `@better-apps/*`.
 function reportName(name: string): string | undefined {
   if (name.startsWith("@buildkitgg/")) {
@@ -60,6 +72,9 @@ for (const manifest of globSync("packages/*/*/package.json", { cwd: root }).sort
     throw new Error(`${pkg.name} needs explicit exports for API discovery`)
   }
   const folder = dirname(manifestPath)
+  // A package that re-exports others lists them in api-extractor.json, so their declarations and docs are analyzed
+  // as its own API instead of as external references.
+  const bundledPackages = readBundledPackages(resolve(folder, "api-extractor.json"))
   const exports = Object.entries(pkg.exports)
   // Conditional root exports and subpath export maps are both valid package shapes.
   const entries = exports.some(([name]) => name.startsWith(".")) ? exports : [[".", pkg.exports]]
@@ -89,10 +104,12 @@ for (const manifest of globSync("packages/*/*/package.json", { cwd: root }).sort
       configObject: {
         projectFolder: folder,
         mainEntryPointFilePath,
+        bundledPackages,
         compiler: {
           overrideTsconfig: {
             compilerOptions: {
               target: "ES2022",
+              lib: ["ESNext", "DOM", "DOM.Iterable"],
               module: "ESNext",
               moduleResolution: "Bundler",
               jsx: "react-jsx",
@@ -129,6 +146,12 @@ for (const manifest of globSync("packages/*/*/package.json", { cwd: root }).sort
       localBuild: isUpdate,
       showVerboseMessages: false,
       messageCallback(message) {
+        // Doc comment and release tag notices inside a bundled package are upstream's to fix. Signature changes
+        // still reach the report, which is where they are reviewed.
+        const sourceFilePath = message.sourceFilePath?.replaceAll("\\", "/")
+        if (bundledPackages.some((bundled) => sourceFilePath?.includes(`/node_modules/${bundled}/`))) {
+          message.logLevel = ExtractorLogLevel.None
+        }
         // RTK deliberately ships this helper as TS behind a declaration import. Analyze it normally;
         // downgrade only this upstream packaging notice, never our source files or signature checks.
         if (

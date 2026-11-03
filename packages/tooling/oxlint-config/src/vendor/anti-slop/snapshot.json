@@ -1,0 +1,137 @@
+{
+  "repository": "https://github.com/dmmulroy/anti-slop",
+  "revision": "13909c9e07590f5a85d93c62712259fe14a883f7",
+  "files": {
+    "index.ts": {
+      "upstream": "9deed4cb455b9a6251001dc3a525d5b5e2c6ef989dd1c01e804c2edf0a697415",
+      "vendored": "ba3bf74a0f4adf5b5eece8e5445c1d7b7082ee723a2c50ec713fd8bbb285bde6"
+    },
+    "rules/no-array-filter-map.ts": {
+      "upstream": "528bba857b84712c038e35e59079cc1e6c78a0421c65bb3c6117c9d412a2f28a",
+      "vendored": "6d8ea6680cd1f9cde5fb52ae158b84cabe0f994a6a8779298ce18d0ec90c780d"
+    },
+    "rules/no-chained-type-assertions.ts": {
+      "upstream": "72f8e981520f94adac0ffbdab8f8e84e5f2a4595f14e4a6471be917a85a20a15",
+      "vendored": "22255e4bf93c3ac76a3c8303240890d1287b1c83096df9e7d0b565346c1ea83f"
+    },
+    "rules/no-conditional-empty-object-spread.ts": {
+      "upstream": "33f044030d208fcc10be73bb19c8172c275c5229df4b0ca8ec10f069bbe60062",
+      "vendored": "d82e1565ce4d91b19487b00980136455260151bf0611c177b2b111000dbad5a5"
+    },
+    "rules/no-known-value-widening.ts": {
+      "upstream": "321944d20912acc93f65f4b84075916202adfda6b8eaa839d96f0d8b8ec1463b",
+      "vendored": "c314740dbbb780213444013f2a43016c7baf62f230f92f9f3ee918faee39c613"
+    },
+    "rules/no-module-mocking.ts": {
+      "upstream": "e29ba7d9ba4a5aed971002840bf434beef93393f60a589e55b72c203dde4c8db",
+      "vendored": "a4a1436d2007204d596be886acf8a97535d496a1f40ac234baad9ee7309473a1"
+    },
+    "rules/no-object-parameters.ts": {
+      "upstream": "2056e99dcb228604d9b2534952045e8ebf9f90af54add67d07a1211657d32941",
+      "vendored": "7d0830f14357ddbcc30e9771dcec9923ca804e2585aad3d1314b5c9d74320c24"
+    },
+    "rules/no-reduce-accumulator-copy.ts": {
+      "upstream": "dce4b08ee7ac4bbedfe743f6fa4a3d423cde50b37691130b899cc4573c05d2ae",
+      "vendored": "983a2b5b0217868bb65b704815a78af84c3c5071a037786811b8417e593f9041"
+    },
+    "rules/no-reflect-apply.ts": {
+      "upstream": "f7920a332106252d6a24cdc917a2c1a433eb438792996ccceb5a25cd6e591dbb",
+      "vendored": "c792ed215fa695d1aa32ccecaa56ec0430b9db11fadf396f3c67e4c301c86245"
+    },
+    "rules/no-reflect-get.ts": {
+      "upstream": "95c5aa0f8e23b10d9345b1776082e08704ec6590298176a8ede8dfdb6e7cb56f",
+      "vendored": "e2f110142a5b3b200db66774c07ad6744acd9861bb1abd3fe6e2296056109b35"
+    },
+    "rules/no-runtime-typeof.ts": {
+      "upstream": "c3ff29662f9f5a0cbad527b200aadd486cbe63ee0d9bbf10c409ce9c39ec678c",
+      "vendored": "9e632832231a4ae3eb0d4e28e164bdf96f19c22217186d6bb7bc9d69fc6f42d5"
+    },
+    "rules/no-shape-in-symbol-names.ts": {
+      "upstream": "4e5edcb5ed083de77970a2e4f64e4b2090ba6c4588e9fc6bcb1f01900ae905b7",
+      "vendored": "8c35c4b18eb6602c78a27a51a780fa57a38e08c1cfbab44c9d77faec10af63d3"
+    },
+    "rules/no-unknown-parameters.ts": {
+      "upstream": "81df45f83b1bca1bbf0bbc36e9211e10cad1aa2bb0ab604840ed9f1b94eaa2e5",
+      "vendored": "e58835277675af54ed88b7bc74b9af074731b99a3becd7b2eb2cf2dd68e2b3eb"
+    },
+    "rules/no-unknown-returns.ts": {
+      "upstream": "67f3ac72d9f98ce29426e70be1e0c359599d94b5799f1130b7ec4cc34129f26b",
+      "vendored": "f20e4e2830b28de9b9dbad6f73309924bcb1bbf92a3153843876c8038d96ba8a"
+    },
+    "rules/no-unknown-type-aliases.ts": {
+      "upstream": "e34000ccdd5c496fadb1418e29b44a1df970ebc9075e89ef2412f7029ec4c15b",
+      "vendored": "a542b06ed6e7dd33094a30e656ada18c7dbde3a20b694bc262fad300bd84ebf1"
+    },
+    "rules/no-unsafe-dictionary-type.ts": {
+      "upstream": "6ff0b3aafe00bc42300080c514ddbee54a45508d5781cab2fb78156a19756a71",
+      "vendored": "d7d3bb313e8a02c4def7b5721732ecbf9a99610e320f62c05804a84b3f9ceca9"
+    },
+    "rules/no-widen-then-assert.ts": {
+      "upstream": "63f2c07cc42b8ad60a7e868efbd7b29e462b9ba960fbd07bbc8f590ef9e3f879",
+      "vendored": "97540a863f1ac5b73c2b5cb176134636833528471b087deb8e12b336339237a6"
+    },
+    "rules/require-readable-spacing.ts": {
+      "upstream": "803be126a508acbf6bc3681083e68b5d20d0ff7a2caf0978241d9e1a1d3344b2",
+      "vendored": "0d9c4904051bcc3eb3cfe65b1a099648481f7f3bfdf559f1e0990156430bc702"
+    },
+    "rules/require-safety-comment-for-type-assertion.ts": {
+      "upstream": "c8ed9f50f1c6e3592b77165dd8847d187ee9b0ef955d50f8099498d3139aa27c",
+      "vendored": "c1c2270ee5019aed47bd60e9b55bdc480252c7dc4103e786a21bea26b6cd56b0"
+    },
+    "shared/array-method.ts": {
+      "upstream": "e360557253c56ab7c256623f3338415743e5027e9d999f801fb79d98240d217b",
+      "vendored": "dd547d59511bc84a3c094b2daae2ffab3099d3781fb44ae3fa43ff9ae4f1ca37"
+    },
+    "shared/dictionary-types.ts": {
+      "upstream": "0f319a2d2cb34c7b3902fb78301c91e1a750bd663c754e73d669f31dc5026525",
+      "vendored": "0f03438368f15b5867ca1bf5aebc0721fcabafe6da83cb0fd609ba4bc3f14984"
+    },
+    "shared/function-parameters.ts": {
+      "upstream": "ad80a650ea14847736ab9ee4c872dc89cc7d527bf60e7de20112bcb8f679545c",
+      "vendored": "65684970732d1f36c0bac444ae13877d7b5e435bd3174bc29afa678609ce0b41"
+    },
+    "shared/lexical-type-parameters.ts": {
+      "upstream": "1ae0aa3ec245f1dc43c4bbbd8be1e2e4230e5dc389d1ca4e8de8f51b62ceff29",
+      "vendored": "abcf897c9fbcf68c8708230cc3aa3add81c5f0b3e661561631507a1ddeb3912d"
+    },
+    "shared/reflect-method.ts": {
+      "upstream": "d1b7bd13ca714bf20bec15e835ed0526316b7274e06bd9a582cf623c09ac1d40",
+      "vendored": "f09267c15fa4f25bb1890f0e611e992153146648342bc99c57bc90bf7a1e8324"
+    },
+    "shared/scope.ts": {
+      "upstream": "e38d41eeada854dbd02285e84e065d10e69460695e06e53fbe8662c963ae7eb4",
+      "vendored": "055824c6eee23b7fd4ed9566cbcb3d9fe340c07946cddf7593bf7016d4734e0f"
+    },
+    "shared/type-alias-resolution.ts": {
+      "upstream": "5520e97b177f0093af2943808ac63cef0f6c03fedd197a36137c66209d78a8e0",
+      "vendored": "b00db377bcbf8bf678dbaae420920f5cc5c7149b93d37af7f2799340a287d2ed"
+    },
+    "vendor/eslint-stylistic/LICENSE": {
+      "upstream": "a429d52d537b871facb01c086191ec8a56a22bf1a10f4e641daff114bccc4a74",
+      "vendored": "a429d52d537b871facb01c086191ec8a56a22bf1a10f4e641daff114bccc4a74"
+    },
+    "vendor/eslint-stylistic/UPSTREAM.md": {
+      "upstream": "c0eb0f55399b0f29ee8f960b6f2400475e1bc4d9c3eb4c151cd63ab4e8ace4fa",
+      "vendored": "c0eb0f55399b0f29ee8f960b6f2400475e1bc4d9c3eb4c151cd63ab4e8ace4fa"
+    },
+    "vendor/eslint-stylistic/padding-line-ast.ts": {
+      "upstream": "ae3624502620452022691c89a30ed95d669dc961a5802dbe27c44e45a647c3d0",
+      "vendored": "7a1af76a8c0cb18e79fe2200bd44b2adae744ab9412df7611dd2b71f0763e140"
+    },
+    "vendor/eslint-stylistic/padding-line-between-statements.ts": {
+      "upstream": "baead405a85b00d3e94c652844194feae4d0e39bfc9b44ecf7d76b1c8336f9de",
+      "vendored": "79fab2887e17acc2a0cb9fcea962738a04d0abd80840a0f70ba3e60a0a3dd081"
+    },
+    "vendor/eslint-stylistic/padding-line-options.d.ts": {
+      "upstream": "ff3d52f2b1c103bc429e030976641715caec676af4b8a0be802c0009874a0d58",
+      "vendored": "c6ab35b0a78b4e0ae00192e179322caeebc1cacb231a0a3cbe3baf3e27400b07"
+    },
+    "LICENSE": {
+      "upstream": "10ed33bf340d6d63dc0633dfc917a346b369b6aa41fe20734aefc6a3fb75ba17",
+      "vendored": "10ed33bf340d6d63dc0633dfc917a346b369b6aa41fe20734aefc6a3fb75ba17"
+    },
+    "README.md": {
+      "vendored": "a098ca4fa4a6011fa289a1c38086bfadda870725adefc061ee991a49079c936b"
+    }
+  }
+}

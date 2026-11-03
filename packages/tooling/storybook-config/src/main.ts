@@ -22,7 +22,7 @@ export const baseConfig: Omit<StorybookConfig, "stories"> = {
  * through Storybook's own `defineMain` so the framework is wired correctly.
  *
  * ```ts
- * import { defineMain } from "@repo/storybook-config/main";
+ * import { defineMain } from "@buildkitgg/storybook-config/main";
  *
  * export default defineMain({
  *   stories: ["../src/**\/*.stories.@(ts|tsx)"]
