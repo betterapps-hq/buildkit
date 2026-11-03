@@ -242,7 +242,7 @@ for (const manifest of globSync("packages/*/*/package.json", { cwd: root }).sort
     const [path, anchor] = href.split("#")
     const repositoryPath = relative(root, resolve(packageFolder, path ?? "")).replaceAll("\\", "/")
 
-    return `](https://github.com/AndrewCraswell/buildkit/blob/main/${repositoryPath}${anchor ? "#" + anchor : ""})`
+    return `](https://github.com/betterapps-hq/buildkit/blob/main/${repositoryPath}${anchor ? "#" + anchor : ""})`
   })
 
   const upstream = readUpstream(resolve(packageFolder, "reexports.json"))

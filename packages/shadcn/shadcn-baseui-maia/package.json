@@ -2,14 +2,14 @@
   "name": "@buildkitgg/shadcn-baseui-maia",
   "version": "0.4.3",
   "description": "Upstream shadcn Base UI components in the maia style, with compiled CSS and TypeScript declarations.",
-  "homepage": "https://github.com/AndrewCraswell/buildkit/tree/main/packages/shadcn/shadcn-baseui-maia#readme",
+  "homepage": "https://github.com/betterapps-hq/buildkit/tree/main/packages/shadcn/shadcn-baseui-maia#readme",
   "bugs": {
-    "url": "https://github.com/AndrewCraswell/buildkit/issues"
+    "url": "https://github.com/betterapps-hq/buildkit/issues"
   },
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AndrewCraswell/buildkit.git",
+    "url": "git+https://github.com/betterapps-hq/buildkit.git",
     "directory": "packages/shadcn/shadcn-baseui-maia"
   },
   "files": [

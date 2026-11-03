@@ -39,7 +39,7 @@ data; create stores per request, not as server singletons.
 Import `@buildkitgg/shadcn-alerts-manager/styles.css` once, or use the kit stylesheet already loaded by the app. Custom
 registry components use their application CSS.
 
-See [alert architecture and native toast guidance](https://github.com/AndrewCraswell/buildkit/blob/main/docs/alerts.md).
+See [alert architecture and native toast guidance](https://github.com/betterapps-hq/buildkit/blob/main/docs/alerts.md).
 
 ## Component style
 

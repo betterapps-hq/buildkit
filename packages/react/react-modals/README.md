@@ -60,6 +60,6 @@ independent values. Closed handles ignore updates; IDs are fixed. All slots acce
 Custom footers own their buttons. `onClose({ id, result, reason })` observes settlement and can be replaced with
 `update()`.
 
-See [update examples](https://github.com/AndrewCraswell/buildkit/blob/main/docs/modal-updates.md),
-[lifecycle and architecture](https://github.com/AndrewCraswell/buildkit/blob/main/docs/modals.md) and
+See [update examples](https://github.com/betterapps-hq/buildkit/blob/main/docs/modal-updates.md),
+[lifecycle and architecture](https://github.com/betterapps-hq/buildkit/blob/main/docs/modals.md) and
 [package guide](docs/README.md).

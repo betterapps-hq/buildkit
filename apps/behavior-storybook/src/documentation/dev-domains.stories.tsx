@@ -40,7 +40,7 @@ export const Setup: StoryObj<typeof meta> = {
         The guided setup lets you select endpoints and saves configuration after review. Existing configuration is never
         overwritten.
       </p>
-      <a href="https://github.com/AndrewCraswell/buildkit/tree/main/packages/tooling/dev-domains#command-reference">
+      <a href="https://github.com/betterapps-hq/buildkit/tree/main/packages/tooling/dev-domains#command-reference">
         Full command reference ↗
       </a>
     </Documentation>

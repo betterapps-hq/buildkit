@@ -34,7 +34,7 @@ portal support. Modal state, results, updates and confirmation semantics are sha
 Pass `adapter: { Surface: YourSurface }` when creating a manager to use a custom React surface. The binding is fixed for
 that manager's lifetime and overrides the package default. `ModalRenderer` still takes only `manager`; no separate
 renderer factory is needed. See the
-[adapter contract](https://github.com/AndrewCraswell/buildkit/blob/main/docs/modals.md#adapters) for lifecycle
+[adapter contract](https://github.com/betterapps-hq/buildkit/blob/main/docs/modals.md#adapters) for lifecycle
 responsibilities.
 
 The shadcn adapter exports the same factory, renderer props and shared types. Standard modal code needs only a package
@@ -49,6 +49,6 @@ works identically. `title`, `body` and `footer` accept React nodes or `{ compone
 replaces the helper buttons, leaving variants and styling to your components. Use `ariaLabel` when the title has no
 accessible text. The updateable `onClose({ id, result, reason })` callback observes settlement once.
 
-See [update examples](https://github.com/AndrewCraswell/buildkit/blob/main/docs/modal-updates.md),
-[lifecycle and architecture](https://github.com/AndrewCraswell/buildkit/blob/main/docs/modals.md) and
+See [update examples](https://github.com/betterapps-hq/buildkit/blob/main/docs/modal-updates.md),
+[lifecycle and architecture](https://github.com/betterapps-hq/buildkit/blob/main/docs/modals.md) and
 [package guide](docs/README.md).

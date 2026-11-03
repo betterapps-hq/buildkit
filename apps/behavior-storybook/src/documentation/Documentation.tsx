@@ -11,8 +11,8 @@ export function Documentation({ title, summary, children }: { title: string; sum
       </header>
       {children}
       <footer>
-        <a href="https://github.com/AndrewCraswell/buildkit">Source on GitHub</a>
-        <a href="https://github.com/AndrewCraswell/buildkit/issues">Report an issue</a>
+        <a href="https://github.com/betterapps-hq/buildkit">Source on GitHub</a>
+        <a href="https://github.com/betterapps-hq/buildkit/issues">Report an issue</a>
       </footer>
     </article>
   )

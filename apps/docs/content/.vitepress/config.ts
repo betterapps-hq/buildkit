@@ -34,7 +34,7 @@ export default defineConfig({
       },
       { text: "Buildkit.gg", link: `${origin}${process.env.PAGES_BASE ?? "/"}` }
     ],
-    socialLinks: [{ icon: "github", link: "https://github.com/AndrewCraswell/buildkit" }],
+    socialLinks: [{ icon: "github", link: "https://github.com/betterapps-hq/buildkit" }],
     search: { provider: "local" },
     sidebar: [
       {

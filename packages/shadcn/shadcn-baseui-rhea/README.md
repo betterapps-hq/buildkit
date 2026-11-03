@@ -22,8 +22,8 @@ automatically. Apps without Tailwind import `styles.css`. Do not combine these p
 the Tailwind source entry.
 
 The root exports `ShadcnLocalizationProvider` (English defaults), `useShadcnLocalization`, and `setCn`. See
-[localization and RTL](https://github.com/AndrewCraswell/buildkit/blob/main/docs/shadcn/localization.md) and
-[styling](https://github.com/AndrewCraswell/buildkit/blob/main/docs/shadcn/theming.md).
+[localization and RTL](https://github.com/betterapps-hq/buildkit/blob/main/docs/shadcn/localization.md) and
+[styling](https://github.com/betterapps-hq/buildkit/blob/main/docs/shadcn/theming.md).
 
 ## Design tokens
 
@@ -40,6 +40,6 @@ const tokens = JSON.parse(await readFile(new URL(url), "utf8"))
 The export includes light and dark defaults, the upstream revision, and resolution metadata. Application CSS overrides
 are not included.
 
-[Migrate from the standalone kit](https://github.com/AndrewCraswell/buildkit/blob/main/docs/shadcn/migration.md).
+[Migrate from the standalone kit](https://github.com/betterapps-hq/buildkit/blob/main/docs/shadcn/migration.md).
 
-[Setup, maintenance, and release checks](https://github.com/AndrewCraswell/buildkit/blob/main/docs/shadcn/styles.md).
+[Setup, maintenance, and release checks](https://github.com/betterapps-hq/buildkit/blob/main/docs/shadcn/styles.md).

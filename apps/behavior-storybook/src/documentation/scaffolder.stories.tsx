@@ -52,7 +52,7 @@ export const WritingACatalog: StoryObj<typeof meta> = {
         broken references and defaults a question doesn’t offer. Once those checks pass, it plans every pair of answers.
         These examples describe code to run in Node; nothing here writes files.
       </p>
-      <a href="https://github.com/AndrewCraswell/buildkit/tree/main/packages/tooling/scaffolder#readme">
+      <a href="https://github.com/betterapps-hq/buildkit/tree/main/packages/tooling/scaffolder#readme">
         Full guide: commands, file ownership, upgrades and template packages ↗
       </a>
     </Documentation>
