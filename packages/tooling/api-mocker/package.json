@@ -33,7 +33,7 @@
     "msw": "^3.0.3"
   },
   "devDependencies": {
-    "@repo/typescript-config": "workspace:*",
+    "@buildkitgg/typescript-config": "workspace:*",
     "@vitest/coverage-v8": "catalog:",
     "msw": "^3.0.3",
     "typescript": "catalog:",
