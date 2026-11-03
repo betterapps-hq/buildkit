@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, statSync } from "node:fs"
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs"
 import { basename, dirname, resolve } from "node:path"
 import { z } from "zod"
 import { readEnv } from "../edit/env.js"
@@ -1079,7 +1079,9 @@ export class CliRuntime {
     const loaded = await loadLocalPack(folder)
     const merged = mergePacks(this.options.catalog, [loaded])
     const templates = loaded.pack.templates.map((template) => `${loaded.name}#${template.id}`)
-    const problems = checkCatalog(merged, { matrix: true, templates })
+    // A pack's gallery images are paths in its own folder.
+    const files = (path: string, template: string) => !templates.includes(template) || existsSync(resolve(folder, path))
+    const problems = checkCatalog(merged, { matrix: true, templates, files })
     const label = `${loaded.name}@${loaded.version}`
     if (problems.length > 0) {
       throw new PlanError("E_INVALID_PACK", `${label} has problems. ${problems.join(" ")}`)

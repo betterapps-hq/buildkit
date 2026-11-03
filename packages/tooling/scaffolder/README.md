@@ -384,6 +384,10 @@ add-ons that conflict, a choice that needs what only a later question provides, 
 add-ons with options that lack defaults, unregistered facets, pins that aren't versions or ranges, add-ons whose
 `packages` a pin doesn't fit, gallery tags and links, and any pair of answers that fails to plan.
 
+A template's gallery `image` is an https URL or a path in the catalog's or pack's package, such as `gallery/saas.png`.
+Pass `files: (path, template) => boolean` to confirm each path is in the package. `catalog check` does that for a
+template package's folder.
+
 `catalog check --registry` runs the installed catalog's checks, then asks npm for each pin. It fails when nothing
 published matches a pin, when the newest match is younger than `--min-age` days (default 1), and when an add-on's
 `packages` doesn't include the newest match. It's for CI and releases, not for every plan.
