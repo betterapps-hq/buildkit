@@ -229,7 +229,11 @@ secrets that file doesn't have yet. Required add-ons are never asked about, so t
 
 Answers hold each question's add-ons, `[]` for no, and `extra` for add-ons no question offers. A required question with
 no default and more than one available choice is a decision. The config's `declined` records `question:<id>` for each
-no, and the choices a `many` question's answer left out.
+no, and the choices a `many` question's answer left out. A config or lock from before questions records `slot:<id>`,
+which is read as `question:<id>` and written in the new form on the next apply.
+
+An upgrade doesn't ask the questions a template gains. Its plan has a `new-question` notice for each one the project has
+no answer to, such as "The template now asks: Add telemetry? Run `acme add telemetry` to answer it."
 
 Every question has a flag: `--<question> <add-on>[,<add-on>]`, `--no-<question>`, `--with <add-on>` (added to the
 question that offers it, from its default, or to `extra`), `--without <add-on>`, `--mode`,

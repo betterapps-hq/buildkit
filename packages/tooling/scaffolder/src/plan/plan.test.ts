@@ -691,6 +691,76 @@ describe("upgrade", () => {
   const v1 = fixtureCatalog(1)
   const catalogs = (version: string) => (version === "1.0.0" ? v1 : undefined)
 
+  it("says which questions the template now asks, without asking them", async () => {
+    const files = await project()
+    const v2 = fixtureCatalog(2)
+    const metrics = defineAddon({
+      id: "@fixture/metrics",
+      version: "1.0.0",
+      title: "Metrics",
+      description: "Counters and timers",
+      contribute: () => []
+    })
+    const asking = {
+      ...v2,
+      addons: [...v2.addons, metrics],
+      templates: v2.templates.map((template) =>
+        template.id === "app"
+          ? {
+              ...template,
+              questions: [
+                ...(template.questions ?? []),
+                {
+                  id: "metrics",
+                  title: "Metrics",
+                  question: "Add metrics?",
+                  pick: "one" as const,
+                  choices: ["@fixture/metrics"]
+                },
+                // The project already has Storybook, so this one is answered.
+                {
+                  id: "workshop",
+                  title: "Workshop",
+                  question: "Add a workshop?",
+                  pick: "one" as const,
+                  choices: ["@fixture/storybook"]
+                }
+              ]
+            }
+          : template
+      )
+    }
+    const planned = await planFixture(files, { intent: { command: "upgrade" } }, { catalog: asking, catalogs })
+    expect(planned.status).toBe("planned")
+    expect(planned.notices.filter((notice) => notice.code === "new-question")).toEqual([
+      { code: "new-question", text: "The template now asks: Add metrics? Run `fixture add metrics` to answer it." }
+    ])
+    expect(planned.operations.find((operation) => operation.path === "fixture.jsonc")?.content ?? "").not.toContain(
+      "@fixture/metrics"
+    )
+    // Without the old catalog, which questions are new isn't known.
+    const unknown = await planFixture(files, { intent: { command: "upgrade" } }, { catalog: asking })
+    expect(unknown.notices.map((notice) => notice.code)).not.toContain("new-question")
+  })
+
+  it("reads slot: from an old config and lock as question:, and writes the new form", async () => {
+    const files = await project({ questions: { database: [] } })
+    const old = Object.fromEntries(
+      Object.entries(files).map(([path, content]) => [path, content.replaceAll("question:database", "slot:database")])
+    )
+    expect(old["fixture.jsonc"]).toContain('"slot:database"')
+    expect(lockOf(old).project.declined).toContain("slot:database")
+    const synced = await applyFixture(old, { intent: { command: "sync" } })
+    expect(synced["fixture.jsonc"]).toContain('"question:database"')
+    expect(synced["fixture.jsonc"]).not.toContain("slot:")
+    expect(lockOf(synced).project.declined).toContain("question:database")
+    expect(lockOf(synced).project.declined).not.toContain("slot:database")
+    // Answering the question later clears the old form too.
+    const added = await applyFixture(old, addRequest(["db-sqlite"]))
+    expect(added["fixture.jsonc"]).not.toContain("slot:database")
+    expect(added["fixture.jsonc"]).not.toContain("question:database")
+  })
+
   it("a choice an upgrade needs stays an upgrade, so it finishes", async () => {
     const files = await project({ questions: { database: [] } })
     const v2 = fixtureCatalog(2)
