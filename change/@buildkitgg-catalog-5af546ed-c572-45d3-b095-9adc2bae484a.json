@@ -1,0 +1,7 @@
+{
+  "type": "minor",
+  "comment": "Ask the database, sign-in and localization as questions with the same ids, so --database, --auth and --no-auth keep working. The SQL add-on conflicts with other database add-ons, and Better Auth needs one.",
+  "packageName": "@buildkitgg/catalog",
+  "email": "ajcraswell@gmail.com",
+  "dependentChangeType": "patch"
+}

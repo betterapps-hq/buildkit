@@ -7,16 +7,15 @@ const set = "better-auth"
 
 /**
  * Email and password sign-in with Better Auth, read through Better Apps' identity interface. Users and sessions live in
- * the database add-on's `main` database, so the auth slot needs the database slot.
+ * the database add-on's `main` database, so it needs an add-on that provides the database.
  */
 export const betterAuth = defineAddon({
   id: "@buildkit/better-auth",
   version: "1.0.0",
   title: "Better Auth",
   description: "Email and password sign-in with Better Auth, in your database, read through Better Apps' identity.",
-  slot: "auth",
   provides: { identity: { module: "./src/auth/identity.server.ts", export: "identity" } },
-  requires: ["slot:database"],
+  requires: ["provides:database"],
   supports: ({ target }) => (target.has("server-functions") ? true : "Better Auth needs server routes."),
   contribute(ctx): Contribution[] {
     const database = ctx.provided("database")

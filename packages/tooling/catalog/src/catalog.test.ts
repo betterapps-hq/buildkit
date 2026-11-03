@@ -47,11 +47,9 @@ describe("the catalog", () => {
 
   it("asks about the database, then sign-in, then localization", () => {
     const [template] = describeCatalog(catalog).templates
-    expect(template?.template).toBe("app")
-    const questions = template?.questionsByMode.ssr
-    expect(questions?.slots.map((slot) => slot.slot)).toEqual(["database", "auth"])
-    expect(questions?.optional.map((addon) => addon.id)).toEqual(["@buildkit/i18n"])
-    expect(questions?.required.map((addon) => addon.id)).toEqual(["@buildkit/ci"])
+    expect(template?.id).toBe("app")
+    expect(template?.questionsByMode.ssr?.map((question) => question.id)).toEqual(["database", "auth", "i18n"])
+    expect(template?.required.map((addon) => addon.id)).toEqual(["@buildkit/ci"])
   })
 })
 
@@ -110,7 +108,7 @@ describe("the TanStack Start target", () => {
   })
 
   it("runs Buildkit's checks in CI, and formats every file but the generated ones", async () => {
-    const planned = await init({ optional: ["@buildkit/i18n"] })
+    const planned = await init({ questions: { i18n: ["@buildkit/i18n"] } })
     const workflow = written(planned, ".github/workflows/ci.yml")
     for (const run of ["pnpm buildkit check", "pnpm lint", "pnpm format:check", "pnpm build", "pnpm typecheck"]) {
       expect(workflow).toContain(`run: ${run}`)
@@ -125,7 +123,8 @@ describe("the TanStack Start target", () => {
     expect(formatter.ignorePatterns).not.toEqual(expect.arrayContaining(["tsconfig.json"]))
     // The engine lays these out as the formatter does: short lists on one line, package.json as JSON.stringify writes it.
     expect(written(planned, "tsconfig.json")).toContain('"include": ["src", "vite.config.ts", "lingui.config.ts"]')
-    expect(written(planned, "buildkit.jsonc")).toContain('"declined": ["slot:auth", "slot:database"]')
+    // Without a database, sign-in has nothing available, so it isn't asked and isn't declined.
+    expect(written(planned, "buildkit.jsonc")).toContain('"declined": ["question:database"]')
     expect(written(planned, "package.json")).toBe(
       `${JSON.stringify(JSON.parse(written(planned, "package.json")), null, 2)}\n`
     )
@@ -134,7 +133,7 @@ describe("the TanStack Start target", () => {
 
 describe("the SQL database add-on", () => {
   it("declares the main database with Better Apps' SQL capability, queried with Drizzle", async () => {
-    const planned = await init({ slots: { database: "@buildkit/sql" } })
+    const planned = await init({ questions: { database: ["@buildkit/sql"] } })
     const db = written(planned, "src/db/db.server.ts")
     expect(db).toContain('defineDatabase("main", { dialect: "sqlite", migrations: "./migrations/main" })')
     expect(db).toContain("export const db = drizzle(main, { schema })")
@@ -149,15 +148,15 @@ describe("the SQL database add-on", () => {
 })
 
 describe("the Better Auth add-on", () => {
-  it("needs the database slot", async () => {
-    const planned = await planProject({}, initRequest({ slots: { auth: "@buildkit/better-auth" } }))
+  it("needs a database", async () => {
+    const planned = await planProject({}, initRequest({ questions: { auth: ["@buildkit/better-auth"] } }))
     expect(planned.status).toBe("needs-decision")
-    expect(planned.decisions[0]?.id).toBe("slot:database")
+    expect(planned.decisions[0]?.id).toBe("provides:database")
     expect(planned.decisions[0]?.choices.map((choice) => choice.id)).toContain("@buildkit/sql")
   })
 
   it("signs in with Better Auth in the app's database, read through Better Apps' identity", async () => {
-    const planned = await init({ slots: { database: "@buildkit/sql", auth: "@buildkit/better-auth" } })
+    const planned = await init({ questions: { database: ["@buildkit/sql"], auth: ["@buildkit/better-auth"] } })
     expect(written(planned, "src/auth/auth.server.ts")).toContain(
       'drizzleAdapter(db, { provider: "sqlite", schema: authSchema })'
     )
@@ -179,7 +178,7 @@ describe("the localization add-on", () => {
   const options = { "@buildkit/i18n": { locales: ["en", "fr"] } }
 
   it("detects the locale per request in middleware on a server-rendered app", async () => {
-    const planned = await init({ optional: ["@buildkit/i18n"], options })
+    const planned = await init({ questions: { i18n: ["@buildkit/i18n"] }, options })
     expect(written(planned, "src/i18n/locales.ts")).toContain('export const locales = ["en", "fr"] as const')
     expect(written(planned, "src/i18n/server.ts")).toContain('createMiddleware({ type: "request" })')
     expect(written(planned, generated.server)).toContain('"@buildkit/i18n/locale": localeMiddleware')
@@ -194,7 +193,7 @@ describe("the localization add-on", () => {
   })
 
   it("detects the locale in the browser before the first render on a single-page app", async () => {
-    const planned = await init({ mode: "spa", optional: ["@buildkit/i18n"], options })
+    const planned = await init({ mode: "spa", questions: { i18n: ["@buildkit/i18n"] }, options })
     expect(written(planned, generated.client)).toContain('"@buildkit/i18n/locale": bootstrapLocale')
     expect(written(planned, generated.server)).not.toContain("localeMiddleware")
     expect(written(planned, "src/i18n/router.tsx")).toContain("browserI18n")
@@ -203,7 +202,7 @@ describe("the localization add-on", () => {
 
   it("imports app modules without their extensions, so the app type-checks without allowImportingTsExtensions", async () => {
     for (const mode of ["ssr", "spa"]) {
-      const planned = await init({ mode, optional: ["@buildkit/i18n"], options })
+      const planned = await init({ mode, questions: { i18n: ["@buildkit/i18n"] }, options })
       const imports = [generated.client, generated.server, "vite.config.ts", "lingui.config.ts"].flatMap((path) =>
         [...written(planned, path).matchAll(/from "(\.{1,2}\/[^"]+)"/g)].map((found) => found[1])
       )
@@ -216,22 +215,25 @@ describe("the localization add-on", () => {
   })
 
   it("leaves URLs alone without localizedUrls, and refuses locale tags that aren't safe file names", async () => {
-    const plain = await init({ optional: ["@buildkit/i18n"], options: { "@buildkit/i18n": { localizedUrls: false } } })
+    const plain = await init({
+      questions: { i18n: ["@buildkit/i18n"] },
+      options: { "@buildkit/i18n": { localizedUrls: false } }
+    })
     expect(paths(plain)).not.toContain("src/i18n/rewrite.ts")
     expect(written(plain, generated.client)).toContain("export const routerRewrite = undefined")
     const unsafe = await planProject(
       {},
-      initRequest({ optional: ["@buildkit/i18n"], options: { "@buildkit/i18n": { locales: ["../x"] } } })
+      initRequest({ questions: { i18n: ["@buildkit/i18n"] }, options: { "@buildkit/i18n": { locales: ["../x"] } } })
     )
     expect(unsafe.error?.code).toBe("E_INVALID_OPTIONS")
     // A localized URL has to set the locale, so URL detection can't be left out while URLs are localized.
     const ignored = await planProject(
       {},
-      initRequest({ optional: ["@buildkit/i18n"], options: { "@buildkit/i18n": { detection: ["cookie"] } } })
+      initRequest({ questions: { i18n: ["@buildkit/i18n"] }, options: { "@buildkit/i18n": { detection: ["cookie"] } } })
     )
     expect(ignored.error).toMatchObject({ code: "E_INVALID_OPTIONS", message: expect.stringContaining('"url"') })
     const cookieOnly = await init({
-      optional: ["@buildkit/i18n"],
+      questions: { i18n: ["@buildkit/i18n"] },
       options: { "@buildkit/i18n": { detection: ["cookie"], localizedUrls: false } }
     })
     expect(cookieOnly.status).toBe("planned")
@@ -239,7 +241,7 @@ describe("the localization add-on", () => {
 
   it("activates the locale a client-side navigation lands on, in both render models", async () => {
     for (const mode of ["ssr", "spa"]) {
-      const planned = await init({ mode, optional: ["@buildkit/i18n"] })
+      const planned = await init({ mode, questions: { i18n: ["@buildkit/i18n"] } })
       expect(paths(planned)).toContain("src/i18n/navigation.ts")
       expect(written(planned, "src/i18n/router.tsx")).toContain("followLocale(router, i18n)")
       // The source locale's messages come with the app's code, for when another locale's catalog doesn't load, and
@@ -266,7 +268,7 @@ describe("the localization add-on", () => {
 
 describe("the Better Apps deploys add-on", () => {
   it("wires the Better Apps Vite plugin before Start and deploys staging with better-apps deploy", async () => {
-    const project = applied({}, await init({ slots: { database: "@buildkit/sql" } }))
+    const project = applied({}, await init({ questions: { database: ["@buildkit/sql"] } }))
     const planned = await planProject(project, addRequest(["better-apps-deploy"]))
     expect(planned.status).toBe("planned")
     const config = written(planned, generated.config)

@@ -1,9 +1,15 @@
-import { findAddon, findTemplate, templateModes } from "../manifest/catalog.js"
+import { findAddon, findTarget, type ExpandedQuestion, type ExpandedTemplate } from "../manifest/catalog.js"
 import type { Answers, CatalogManifest } from "../manifest/types.js"
 import { PlanError } from "../plan/errors.js"
 import { isRecord } from "../plan/json.js"
 import type { EnvVar } from "../plan/types.js"
-import { optionQuestions, templateQuestions, type OptionQuestion } from "../resolve/questions.js"
+import {
+  availableChoices,
+  optionQuestions,
+  requireTemplate,
+  walkQuestions,
+  type OptionQuestion
+} from "../resolve/questions.js"
 import { projectNameProblem, requireAddonId } from "../resolve/resolve.js"
 import { cancelled, type Cancelled, type Prompter } from "./prompter.js"
 
@@ -12,48 +18,63 @@ export interface PartialAnswers {
   template?: string
   mode?: string
   name?: string
-  slots: Record<string, string | null>
-  /** The exact optional add-ons, from a preset. */
-  optional?: string[]
+  /** Each answered question's add-ons, `[]` for no. */
+  questions: Record<string, string[]>
+  /** Add-ons no question offers. */
+  extra?: string[]
+  /** `--with`: added to the answer of the question that offers each, starting from its default, or to `extra`. */
   with: string[]
+  /** `--without`: taken out of its question's answer. A question left with nothing is answered no. */
   without: string[]
   options: Record<string, Record<string, unknown>>
   adopt?: boolean
 }
 
 export function emptyAnswers(): PartialAnswers {
-  return { slots: {}, with: [], without: [], options: {} }
+  return { questions: {}, with: [], without: [], options: {} }
+}
+
+function offering(template: ExpandedTemplate, id: string): ExpandedQuestion | undefined {
+  return template.questions.find((question) => question.choices.some((choice) => choice.id === id))
 }
 
 /** Combines answers without prompting: unanswered questions take their defaults in the planner. */
 export function completeAnswers(catalog: CatalogManifest, partial: PartialAnswers): Answers {
-  const template = partial.template ?? (catalog.templates.length === 1 ? catalog.templates[0]?.id : undefined)
-  if (template === undefined) {
+  const templateId = partial.template ?? (catalog.templates.length === 1 ? catalog.templates[0]?.id : undefined)
+  if (templateId === undefined) {
     throw new PlanError(
       "E_USAGE",
       `Choose a template: ${catalog.templates.map((candidate) => candidate.id).join(", ")}.`
     )
   }
-  const found = findTemplate(catalog, template)
-  let optional = partial.optional
-  if (optional === undefined && (partial.with.length > 0 || partial.without.length > 0)) {
-    const defaults = Object.entries(found?.optional ?? {})
-      .filter(([, policy]) => policy.default)
-      .map(([id]) => id)
-    optional = defaults
+  const template = requireTemplate(catalog, templateId)
+  const questions = structuredClone(partial.questions)
+  let extra = partial.extra
+  for (const name of partial.with) {
+    const id = requireAddonId(catalog, name)
+    const question = offering(template, id)
+    if (question) {
+      const current = questions[question.id] ?? question.default
+      questions[question.id] = question.pick === "one" ? [id] : [...new Set([...current, id])]
+    } else {
+      extra = [...new Set([...(extra ?? []), id])]
+    }
   }
-  if (optional !== undefined) {
-    const without = new Set(partial.without.map((name) => requireAddonId(catalog, name)))
-    optional = [...new Set([...optional, ...partial.with].map((name) => requireAddonId(catalog, name)))].filter(
-      (id) => !without.has(id)
-    )
+  for (const name of partial.without) {
+    const id = requireAddonId(catalog, name)
+    const question = offering(template, id)
+    if (question) {
+      questions[question.id] = (questions[question.id] ?? question.default).filter((entry) => entry !== id)
+    } else {
+      extra = extra?.filter((entry) => entry !== id)
+    }
   }
   return {
-    template,
+    template: templateId,
     ...(partial.mode === undefined ? {} : { mode: partial.mode }),
     ...(partial.name === undefined ? {} : { name: partial.name }),
-    ...(Object.keys(partial.slots).length > 0 ? { slots: partial.slots } : {}),
-    ...(optional === undefined ? {} : { optional }),
+    ...(Object.keys(questions).length > 0 ? { questions } : {}),
+    ...(extra === undefined || extra.length === 0 ? {} : { extra }),
     ...(Object.keys(partial.options).length > 0 ? { options: partial.options } : {}),
     ...(partial.adopt ? { adopt: true } : {})
   }
@@ -61,7 +82,8 @@ export function completeAnswers(catalog: CatalogManifest, partial: PartialAnswer
 
 /**
  * Asks every question the flags left open, generated from the catalog in this order: template, project name, mode,
- * each slot, the optional add-ons, then the options each chosen add-on lists in `ask`.
+ * each of the template's questions, then the options each chosen add-on lists in `ask`. A question that isn't asked,
+ * because of its `when` or because nothing is available, is skipped without a word.
  */
 export async function runWizard(input: {
   catalog: CatalogManifest
@@ -90,10 +112,7 @@ export async function runWizard(input: {
       partial.template = answer
     }
   }
-  const template = findTemplate(catalog, partial.template)
-  if (!template) {
-    throw new PlanError("E_UNKNOWN_TEMPLATE", `There's no template named "${partial.template}".`)
-  }
+  const template = requireTemplate(catalog, partial.template)
   if (input.askName && partial.name === undefined) {
     const answer = await prompter.text({
       message: "Project name?",
@@ -105,83 +124,37 @@ export async function runWizard(input: {
     }
     partial.name = answer.trim()
   }
-  const modes = templateModes(catalog, template)
-  if (partial.mode === undefined && modes.length > 1) {
-    const questions = templateQuestions(catalog, template, modes[0] ?? "")
+  const target = findTarget(catalog, template.target)
+  if (partial.mode === undefined && template.modes.length > 1) {
     const answer = await prompter.select({
       message: "Which mode?",
-      options: questions.modes.map((mode) => ({ value: mode.id, label: mode.title }))
+      options: template.modes.map((mode) => ({
+        value: mode,
+        label: target?.modes.find((candidate) => candidate.id === mode)?.title ?? mode
+      }))
     })
     if (answer === cancelled) {
       return cancelled
     }
     partial.mode = answer
   }
-  const questions = templateQuestions(catalog, template, partial.mode ?? modes[0] ?? "")
-  for (const slot of questions.slots) {
-    if (Object.hasOwn(partial.slots, slot.slot)) {
+  partial.mode ??= template.modes[0]
+  for (const question of template.questions) {
+    const sofar = completeAnswers(catalog, partial)
+    if (sofar.questions?.[question.id] !== undefined) {
       continue
     }
-    if (!slot.required) {
-      if (slot.choices.length === 0) {
-        partial.slots[slot.slot] = null
-        continue
-      }
-      const wanted = await prompter.confirm({
-        message: slot.question ?? `Add a ${slot.slot}?`,
-        initialValue: slot.default !== undefined
-      })
-      if (wanted === cancelled) {
-        return cancelled
-      }
-      if (!wanted) {
-        partial.slots[slot.slot] = null
-        continue
-      }
-    }
-    const [only] = slot.choices
-    if (only && slot.choices.length === 1) {
-      partial.slots[slot.slot] = only.id
-      continue
-    }
-    const answer = await prompter.select({
-      message: slot.choose,
-      options: slot.choices.map((choice) => ({ value: choice.id, label: choice.title, hint: choice.description })),
-      ...(slot.default === undefined ? {} : { initialValue: slot.default })
-    })
+    const answer = await askQuestion(prompter, question, availableChoices(catalog, sofar, question.id))
     if (answer === cancelled) {
       return cancelled
     }
-    partial.slots[slot.slot] = answer
-  }
-  if (
-    partial.optional === undefined &&
-    partial.with.length === 0 &&
-    partial.without.length === 0 &&
-    questions.optional.length > 0
-  ) {
-    const answer = await prompter.multiselect({
-      message: "Add any of these?",
-      options: questions.optional.map((choice) => ({
-        value: choice.id,
-        label: choice.title,
-        hint: choice.description
-      })),
-      initialValues: questions.optional.filter((choice) => choice.default).map((choice) => choice.id)
-    })
-    if (answer === cancelled) {
-      return cancelled
+    if (answer !== undefined) {
+      partial.questions[question.id] = answer
     }
-    partial.optional = answer
   }
   const answers = completeAnswers(catalog, partial)
-  const chosen = [
-    ...Object.values(answers.slots ?? {}).filter((id) => id !== null),
-    ...(answers.optional ??
-      Object.entries(template.optional ?? {})
-        .filter(([, policy]) => policy.default)
-        .map(([id]) => id))
-  ]
+  const steps = walkQuestions(catalog, template, undefined, answers)
+  const chosen = [...steps.flatMap((step) => step.answer), ...(answers.extra ?? [])]
   const options: Record<string, Record<string, unknown>> = structuredClone(answers.options ?? {})
   for (const id of chosen) {
     const addon = findAddon(catalog, id)
@@ -200,6 +173,55 @@ export async function runWizard(input: {
     }
   }
   return { ...answers, ...(Object.keys(options).length > 0 ? { options } : {}) }
+}
+
+/**
+ * Asks one question: yes or no unless it's required, then which, unless one choice is available. An unavailable choice
+ * is shown disabled, with its reason as the hint. `undefined` means it isn't asked.
+ */
+async function askQuestion(
+  prompter: Prompter,
+  question: ExpandedQuestion,
+  available: ReturnType<typeof availableChoices>
+): Promise<string[] | undefined | Cancelled> {
+  if (!available.asked) {
+    return undefined
+  }
+  const open = available.choices.filter((choice) => choice.disabled === undefined).map((choice) => choice.id)
+  const defaults = question.default.filter((id) => open.includes(id))
+  if (!question.required) {
+    const wanted = await prompter.confirm({
+      message: question.question ?? `Add ${question.title.toLowerCase()}?`,
+      initialValue: defaults.length > 0
+    })
+    if (wanted === cancelled || !wanted) {
+      return wanted === cancelled ? cancelled : []
+    }
+  }
+  const [only] = open
+  if (only !== undefined && open.length === 1) {
+    return [only]
+  }
+  // An unavailable choice shows why in place of its hint.
+  const options = available.choices.map((choice) => {
+    const hint = choice.disabled ?? choice.hint
+    return {
+      value: choice.id,
+      label: choice.label,
+      ...(hint ? { hint } : {}),
+      ...(choice.disabled === undefined ? {} : { disabled: true })
+    }
+  })
+  const message = question.choose ?? `Which ${question.title.toLowerCase()}?`
+  if (question.pick === "many") {
+    return prompter.multiselect({ message, options, initialValues: defaults, required: true })
+  }
+  const answer = await prompter.select({
+    message,
+    options,
+    ...(defaults[0] === undefined ? {} : { initialValue: defaults[0] })
+  })
+  return answer === cancelled ? cancelled : [answer]
 }
 
 async function askOption(prompter: Prompter, title: string, question: OptionQuestion): Promise<unknown> {

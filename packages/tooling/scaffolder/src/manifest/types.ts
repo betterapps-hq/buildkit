@@ -141,23 +141,25 @@ export interface Migration {
 }
 
 export interface AddonManifest<S extends z.ZodType = z.ZodType> {
-  /** Namespaced id, such as `@buildkit/i18n`. */
+  /** Namespaced id, such as `@buildkit/i18n`. `npm:` ids are bare add-ons, which the engine makes. */
   id: string
   version: string
   title: string
   description: string
-  /** One add-on per slot, such as `database` or `auth`. */
-  slot?: string
-  /** Typed data other add-ons read with `ctx.provided()`. */
+  /** Typed data other add-ons read with `ctx.provided()`, keyed by capability, such as `orm` or `database`. */
   provides?: Record<string, unknown>
-  /** Add-on ids, `slot:<id>` or `provides:<name>`. */
-  requires?: string[]
-  conflicts?: string[]
+  /** Pulled in with this add-on (ids), or needed from another (`provides:<name>`). */
+  requires?: AddonReference[]
+  /**
+   * Never installed together. `provides:<name>` means any other add-on that provides it, so Drizzle's
+   * `["provides:orm"]` keeps every other ORM out. One side declaring it is enough.
+   */
+  conflicts?: AddonReference[]
   /**
    * A combination add-on, such as the glue between an auth library and an ORM: selected when every reference (an id or
    * `provides:<name>`) is selected, and removed when one isn't. It's never asked about or added by name.
    */
-  joins?: string[]
+  joins?: AddonReference[]
   /**
    * The ranges of packages this add-on is written for, such as `{ "drizzle-orm": ">=0.45 <1" }`. Catalog CI checks the
    * lowest version each pin allows is in its range.
@@ -203,41 +205,102 @@ export interface TargetManifest {
   adopt?(tree: MutableTree, ctx: TargetContext): void
 }
 
-export interface SlotDefinition {
-  id: string
-  title: string
-  /** Asked only when a template makes the slot optional, such as "Add a database?". */
-  question: string
-  /** Asked to pick one add-on, such as "Which database?". */
-  choose: string
+/** An add-on id, or `provides:<name>` for any add-on that provides it. */
+export type AddonReference = string
+
+/** A bare add-on: one package at the catalog's pin, and nothing else. Recorded as `npm:<name>`. */
+export interface PackageAddon {
+  npm: string
+  dev?: boolean
+  /** Defaults to the package name. */
+  title?: string
+  description?: string
 }
 
-export type SlotPolicy = { required: true; default?: string } | { required: false; default?: string }
+/** An add-on a template installs or offers: an id, `npm:<name>` for a bare add-on, or a bare add-on with details. */
+export type AddonRef = string | PackageAddon
 
-export interface TemplateManifest {
+/** One choice in a question. `hint` is the line beside it, defaulting to the add-on's description. */
+export type Choice = string | { addon: string; label?: string; hint?: string } | (PackageAddon & { hint?: string })
+
+/** When a question is asked, by what the required add-ons and earlier answers select. */
+export interface Condition {
+  /** Every reference matches. */
+  selected?: AddonReference[]
+  /** No reference matches. */
+  notSelected?: AddonReference[]
+}
+
+interface QuestionShape {
+  /**
+   * Unique in the template: lowercase letters, digits and hyphens. It's the flag (`--database`), the name
+   * `add database` answers, and the key in answers.
+   */
+  id: string
+  /** A noun for messages, `catalog --json` and the gallery, such as "Database". */
+  title: string
+  /** The pick, such as "Which ORM?". Not asked when only one choice is available. */
+  choose?: string
+  /** In the order the wizard shows them. */
+  choices: Choice[]
+  when?: Condition
+}
+
+/** A required question has no yes or no. An optional one asks `question` first. */
+type Asking = { required: true; question?: string } | { required?: false; question: string }
+
+/** `one` is a select (radio buttons). `many` is a multi-select of at least one (checkboxes). */
+type Picking = { pick: "one"; default?: string } | { pick: "many"; default?: string[] }
+
+/** A question: yes or no unless it's required, then which. `default` preselects, and makes yes the first answer. */
+export type QuestionDefinition = QuestionShape & Asking & Picking
+
+/** A catalog question in a template, with what this template changes. */
+export interface QuestionUse {
+  use: string
+  choices?: Choice[]
+  default?: string | string[]
+  required?: boolean
+  when?: Condition
+}
+
+export interface Gallery {
+  /** Lowercase and hyphenated. */
+  tags?: string[]
+  /** An https URL, or a path in the catalog's or pack's package, such as `gallery/saas.png`. */
+  image?: string
+  links?: { docs?: string; demo?: string; source?: string }
+}
+
+interface TemplateFields {
   id: string
   title: string
   description: string
-  target: string
-  /** Modes offered, asked when there's more than one. Defaults to all the target's modes. */
+  /** Modes offered, asked when there's more than one. Defaults to the parent's, then all the target's. */
   modes?: string[]
-  /** Add-ons installed every time, never asked about. */
-  required?: string[]
-  /** Add-ons offered in one multi-select. `default: true` preselects one. */
-  optional?: Record<string, { default: boolean }>
-  /** Slots this template offers, asked in this order. */
-  slots?: Record<string, SlotPolicy>
+  /** Installed every time, never asked about. Added to the parent's. */
+  required?: AddonRef[]
+  /** Asked in order. An id uses a catalog question. A parent's question with the same id is replaced in place. */
+  questions?: (string | QuestionUse | QuestionDefinition)[]
+  /** Question ids and required add-ons the parent has that this template leaves out. */
+  omit?: string[]
+  /** Not inherited. */
+  gallery?: Gallery
 }
+
+/** A template names its target, or extends another template and inherits it. */
+export type TemplateManifest = TemplateFields &
+  ({ target: string; extends?: undefined } | { extends: string; target?: undefined })
 
 export interface Answers {
   template: string
   mode?: string
   /** The project name, used for the folder and `package.json`. */
   name?: string
-  /** A slot's add-on id, or `null` for "no" to an optional slot. */
-  slots?: Record<string, string | null>
-  /** Add-ons to include beyond the required ones. Unlisted optional add-ons are declined. */
-  optional?: string[]
+  /** Each question's chosen add-on ids, `[]` for no. An unanswered question takes its default. */
+  questions?: Record<string, string[]>
+  /** Add-ons no question offers, added as `add` would add them. */
+  extra?: string[]
   /** Options keyed by add-on id. */
   options?: Record<string, Record<string, unknown>>
   /** Adopt an existing project: existing files stay yours, and the target wires it once. */
@@ -263,7 +326,8 @@ export interface CatalogManifest {
   range?: RangeStyle
   targets: TargetManifest[]
   templates: TemplateManifest[]
-  slots: SlotDefinition[]
+  /** Questions templates use by id. */
+  questions?: QuestionDefinition[]
   addons: AddonManifest[]
   presets?: PresetManifest[]
   /** Template packages merged into this catalog, keyed by package name. The engine sets it; a catalog never does. */
@@ -278,8 +342,8 @@ export interface PackRecord {
 }
 
 /**
- * A template package's default export: templates, and the add-ons they need, for the targets, slots and points of the
- * product catalog it extends. It can't add targets, slots or points, or replace anything the catalog defines.
+ * A template package's default export: templates, and the add-ons they need, for the targets and points of the product
+ * catalog it extends. It can't add targets or points, or replace anything the catalog defines.
  */
 export interface TemplatePack {
   /** The product catalog's id, and the catalog versions this pack works with, as an npm range such as `^1.0.0`. */
