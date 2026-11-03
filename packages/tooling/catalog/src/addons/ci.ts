@@ -42,10 +42,7 @@ export function setupSteps(): CiStep[] {
   ]
 }
 
-/**
- * The app-code checks, as a GitHub Actions workflow. They're Buildkit's: deploys belong to Better Apps' deploy service,
- * whose workflow the Better Apps deploys add-on writes.
- */
+/** The app-code checks, as a GitHub Actions workflow. */
 export const ci = defineAddon({
   id: "@buildkit/ci",
   version: "1.0.0",

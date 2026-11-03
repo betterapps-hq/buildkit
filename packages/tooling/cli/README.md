@@ -11,12 +11,11 @@ Requires Node.js 24 or later.
 npx @buildkitgg/cli create app my-app
 ```
 
-In a terminal it asks for the mode, a database, sign-in and localization, shows the plan, and asks once before it writes
-anything. The same answers work as flags:
+In a terminal it asks for the mode and localization, shows the plan, and asks once before it writes anything. The same
+answers work as flags:
 
 ```sh
 npx @buildkitgg/cli create app my-app --mode ssr --with i18n --set i18n.locales=en,fr --yes
-npx @buildkitgg/cli create app my-app --preset saas --yes
 ```
 
 `--yes` accepts every default but never makes a decision for you, and `--json` prints one JSON envelope without
@@ -29,7 +28,6 @@ New apps pin `@buildkitgg/cli` as a dev dependency, so run it through pnpm insid
 | Command                                          | What it does                                                         |
 | ------------------------------------------------ | -------------------------------------------------------------------- |
 | `pnpm buildkit add i18n`                         | Add an add-on                                                        |
-| `pnpm buildkit add database`, `add auth`         | Answer a question later. Sign-in needs a database, and asks for one  |
 | `pnpm buildkit config set i18n.locales=en,fr,de` | Change an option                                                     |
 | `pnpm buildkit upgrade`                          | Move to the installed catalog, merging template fixes into your code |
 | `pnpm buildkit check`                            | Fail when generated files or the lock are out of date                |
@@ -61,5 +59,4 @@ const code = await runBuildkit(["add", "i18n", "--json", "--yes"], { io: { cwd: 
 
 `pnpm --filter @buildkitgg/cli test:smoke` generates apps with the built CLI, installs them with the Buildkit packages
 packed from the checkout, then runs `buildkit check`, lint, format check, build and type-check, and requests pages from
-the built server. Build first with `pnpm exec vp run --cache --filter "@buildkitgg/cli..." build`. Cases that need
-unpublished Better Apps packages are skipped and say why.
+the built server. Build first with `pnpm exec vp run --cache --filter "@buildkitgg/cli..." build`.
