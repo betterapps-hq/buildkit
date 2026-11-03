@@ -42,7 +42,8 @@ Package-specific docs live in each package’s `docs/README.md`. Start with
 [architecture guide](../packages/tooling/scaffolder/docs/README.md). Buildkit's own
 [catalog](../packages/tooling/catalog/README.md) and [`buildkit` CLI](../packages/tooling/cli/README.md) run on it.
 [Template packages](platform-planning/scaffolder-template-packages.md): templates anyone can publish to npm for a
-product's catalog, installed by name.
+product's catalog, installed by name. [Templates for platforms](platform-planning/scaffolder-platform-templates.md): the
+planned move to questions, bare add-ons, version ranges and combination add-ons, so a platform can ship many starters.
 
 [shadcn component styles](shadcn/README.md) documents installation, styling, and maintenance of the generated Base UI
 packages.
