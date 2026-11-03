@@ -44,6 +44,20 @@ function readBundledPackages(path: string): string[] {
   return bundled
 }
 
+// CI can't update a baseline, so it prints the lines that differ to show what changed.
+function printReportChanges(baseline: string, current: string) {
+  const read = (path: string) =>
+    existsSync(path) ? readFileSync(path, "utf8").replaceAll("\r\n", "\n").split("\n") : []
+  const before = read(baseline)
+  const after = read(current)
+  const removed = before.filter((line) => !after.includes(line)).map((line) => `- ${line}`)
+  const added = after.filter((line) => !before.includes(line)).map((line) => `+ ${line}`)
+  const changes = [...removed, ...added]
+  process.stderr.write(
+    `${changes.slice(0, 40).join("\n")}\n${changes.length > 40 ? `...and ${changes.length - 40} more\n` : ""}`
+  )
+}
+
 // Report names for the published package families. Better Apps keeps its own names: `better-apps` and `@better-apps/*`.
 function reportName(name: string): string | undefined {
   if (name.startsWith("@buildkitgg/")) {
@@ -165,6 +179,12 @@ for (const manifest of globSync("packages/*/*/package.json", { cwd: root }).sort
       }
     })
     hasErrors ||= !result.succeeded
+    if (result.apiReportChanged && !isUpdate) {
+      printReportChanges(
+        resolve(reportFolder, slug + ".api.md"),
+        resolve(root, "dist/api-report-temp", slug + ".api.md")
+      )
+    }
     models.push({
       package: pkg.name,
       entryPoint,
