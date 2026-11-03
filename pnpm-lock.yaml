@@ -187,13 +187,16 @@ overrides:
   vitest@*: 5.0.5
   vitepress>vite: 5.4.21
 
+patchedDependencies:
+  beachball: 4265e2c600eeede2a3fbe3c92a0e82fc140686b6db9978f191c959f920369780
+
 importers:
 
   .:
     devDependencies:
       beachball:
         specifier: ^2.65.5
-        version: 2.66.0(typescript@7.0.2)
+        version: 2.66.0(patch_hash=4265e2c600eeede2a3fbe3c92a0e82fc140686b6db9978f191c959f920369780)(typescript@7.0.2)
       knip:
         specifier: ^6.43.0
         version: 6.43.0
@@ -11957,7 +11960,7 @@ snapshots:
 
   baseline-browser-mapping@2.11.28: {}
 
-  beachball@2.66.0(typescript@7.0.2):
+  beachball@2.66.0(patch_hash=4265e2c600eeede2a3fbe3c92a0e82fc140686b6db9978f191c959f920369780)(typescript@7.0.2):
     dependencies:
       '@vercel/detect-agent': 1.2.7
       cosmiconfig: 9.0.2(typescript@7.0.2)

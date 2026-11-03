@@ -1,0 +1,27 @@
+diff --git a/lib/packageManager/resolveSpecialVersion.js b/lib/packageManager/resolveSpecialVersion.js
+index e82b350..1216d28 100644
+--- a/lib/packageManager/resolveSpecialVersion.js
++++ b/lib/packageManager/resolveSpecialVersion.js
+@@ -22,6 +22,22 @@ function resolveSpecialVersion(params) {
+     }
+     // Check for a workspace: version (there's a slight chance one could be nested inside a catalog)
+     const workspaceRange = (0, getWorkspaceRange_1.getWorkspaceRange)(depVersion) || (versionFromCatalog && (0, getWorkspaceRange_1.getWorkspaceRange)(versionFromCatalog));
++    // An aliased workspace version (workspace:<name>@<range>) publishes as npm:<name>@<version>, as pnpm does.
++    const alias = workspaceRange && /^((?:@[^/]+\/)?[^@]+)@(.*)$/.exec(workspaceRange);
++    if (alias) {
++        const aliasedName = alias[1];
++        const aliasedRange = alias[2] || '*';
++        const aliasedInfo = packageInfos[aliasedName];
++        if (!aliasedInfo) {
++            throw new Error(`Package "${aliasedName}" (referenced by version "${depVersion}") not found in workspace packages`);
++        }
++        const aliasedVersion = aliasedRange === '*'
++            ? aliasedInfo.version
++            : aliasedRange === '^' || aliasedRange === '~'
++                ? `${aliasedRange}${aliasedInfo.version}`
++                : aliasedRange;
++        return `npm:${aliasedName}@${aliasedVersion}`;
++    }
+     if (workspaceRange) {
+         const packageInfo = packageInfos[depName];
+         if (!packageInfo) {
