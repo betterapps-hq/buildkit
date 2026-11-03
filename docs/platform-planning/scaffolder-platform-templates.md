@@ -6,8 +6,9 @@ recommended stack. The engine itself is described in [scaffolder-research.md](sc
 [scaffolder-phase-0.md](scaffolder-phase-0.md). Third-party templates started in
 [scaffolder-template-packages.md](scaffolder-template-packages.md).
 
-**Status (2026-11-02):** planned. Nothing here is built. The unreleased `groups` work on `claude/scaffolder-picks`
-(e5a118a) is superseded by questions and isn't merged.
+**Status (2026-11-03):** phases A to D are built. Questions shipped in 0.7.0 and old answers in 0.8.0; template packages
+on the catalog's templates, setup steps and add-on packages ship in 0.9.0. Phase E, the catalogs and the site, is next.
+The `groups` work on `claude/scaffolder-picks` (e5a118a) was superseded by questions and never merged.
 
 ## Why
 
@@ -1119,6 +1120,11 @@ matrix select. Tests: the wizard's message, the next step.
 
 ### Phase B: questions
 
+Done on 2026-11-03: B1 to B5 in [#107](https://github.com/betterapps-hq/buildkit/pull/107), B6 to B9 in
+[#117](https://github.com/betterapps-hq/buildkit/pull/117), B10 in
+[#116](https://github.com/betterapps-hq/buildkit/pull/116) and B11 in
+[#B11](https://github.com/betterapps-hq/buildkit/pull/B11).
+
 **B1. Types and helpers.** `manifest/types.ts`: everything in [The API](#the-api), the removals, and `Choice`,
 `Condition`, `QuestionDefinition`, `QuestionUse`, `Gallery`. `manifest/define.ts`: `defineQuestion`, and remove
 `defineSlot`. `core.ts` exports. The fixture catalog moves to questions. Nothing else compiles until B2 to B5 land, so
@@ -1167,12 +1173,19 @@ B2 to B5 are sequential. B6, B7 and B8 can run in parallel after B5. B9 needs B4
 
 ### Phase C: setup steps
 
+Done on 2026-11-03 in [#125](https://github.com/betterapps-hq/buildkit/pull/125). clack's `tasks` marks every task done,
+so the CLI runs each step with its own spinner, and `Prompter.tasks` is optional, so custom prompters keep working.
+
 **C1. Setup steps.** `command` gains `setup`. `ProductSettings.setup`. `cli/scaffold.ts` and `cli/create.ts`: the
 multi-select after apply, running steps with clack's `tasks`, exit code 6, `--setup` and `--no-setup`. Plans mark setup
 commands in `commands`. Tests: order, a failing step, no terminal, `--json`, a template package's steps after the trust
 confirmation. Needs B6.
 
 ### Phase D: third parties
+
+Done on 2026-11-03: D1 in [#118](https://github.com/betterapps-hq/buildkit/pull/118) and D2 in
+[#126](https://github.com/betterapps-hq/buildkit/pull/126). `catalog check` in an add-on package's folder runs the
+catalog's checks on its add-ons; there are no templates to plan.
 
 **D1. Template packages.** `manifest/packs.ts`: pack templates can extend catalog templates and use catalog questions;
 pack `questions` and `versions`, with their checks; gallery images resolved inside the pack. Tests: acceptance case 9
