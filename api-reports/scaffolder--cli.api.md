@@ -148,20 +148,17 @@ export function parseSet(entries: readonly string[]): {
 export interface PartialAnswers {
     // (undocumented)
     adopt?: boolean;
+    extra?: string[];
     // (undocumented)
     mode?: string;
     // (undocumented)
     name?: string;
-    optional?: string[];
     // (undocumented)
     options: Record<string, Record<string, unknown>>;
-    // (undocumented)
-    slots: Record<string, string | null>;
+    questions: Record<string, string[]>;
     // (undocumented)
     template?: string;
-    // (undocumented)
     with: string[];
-    // (undocumented)
     without: string[];
 }
 
@@ -177,6 +174,7 @@ export interface Prompter {
         message: string;
         options: SelectOption[];
         initialValues: string[];
+        required?: boolean;
     }): Promise<string[] | Cancelled>;
     // (undocumented)
     note(message: string, title: string): void;
@@ -227,6 +225,7 @@ export interface ScaffoldOptions {
 
 // @public (undocumented)
 export interface SelectOption {
+    disabled?: boolean;
     // (undocumented)
     hint?: string;
     // (undocumented)

@@ -29,7 +29,7 @@ function packSource(version: string, options: { range?: string; templates?: stri
     target: "web",
     modes: ["spa"],
     required: ["@acme/tower/turrets"],
-    slots: { ui: { required: true, default: "@fixture/ui-basic" } }
+    questions: [{ use: "ui", required: true, default: "@fixture/ui-basic" }]
   }))
   return `export default {
   extends: { catalog: "@fixture/catalog", versions: ${JSON.stringify(options.range ?? "^1.0.0")} },
@@ -302,11 +302,8 @@ describe("template packages", () => {
     expect(readFileSync(join(root, "demo/fixture.jsonc"), "utf8")).toContain('"template": "@acme/tower#siege"')
 
     const described = await run(["catalog", "@acme/tower", "--json"], npm)
-    const description = JSON.parse(described.out) as { templates: { template: string }[] }
-    expect(description.templates.map((template) => template.template)).toEqual([
-      "@acme/tower#tower",
-      "@acme/tower#siege"
-    ])
+    const description = JSON.parse(described.out) as { templates: { id: string }[] }
+    expect(description.templates.map((template) => template.id)).toEqual(["@acme/tower#tower", "@acme/tower#siege"])
     expect((await run(["catalog", "@acme/tower"], npm)).out).toContain("@fixture/catalog@1.0.0 with @acme/tower@1.0.0")
   })
 

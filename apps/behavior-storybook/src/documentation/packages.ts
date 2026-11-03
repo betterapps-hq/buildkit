@@ -66,7 +66,7 @@ export const packages = [
     summary: "A plan-first scaffolding engine: catalogs of targets, templates and add-ons, with safe upgrades.",
     code: 'import catalog from "@acme/catalog"\nimport { defineSettings } from "@buildkitgg/scaffolder"\nimport { createCli } from "@buildkitgg/scaffolder/cli"\nimport { runMain } from "citty"\n\nawait runMain(createCli({\n  name: "acme",\n  version: "1.0.0",\n  catalog,\n  settings: defineSettings({ product: "acme" })\n}))',
     api: [
-      "defineCatalog: targets, templates, slots and add-ons, each with its own define helper.",
+      "defineCatalog: targets, add-ons, questions and templates, each with its own define helper.",
       "plan(options): turn answers into operations, decisions and conflicts, with a fingerprint.",
       "scaffold <package> [folder]: after npm install -g @buildkitgg/scaffolder, create a project from any catalog or template package.",
       "createCli / runCli: create, add, config, upgrade, sync, check and more, with a wizard generated from the catalog.",

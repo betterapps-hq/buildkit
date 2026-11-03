@@ -47,8 +47,8 @@ export const sql = defineAddon({
   version: "1.0.0",
   title: "SQL database",
   description: "A SQL database declared in your code with Better Apps' SQL capability, queried with Drizzle.",
-  slot: "database",
   provides: { database: provision },
+  conflicts: ["provides:database"],
   contribute: (ctx): Contribution[] => [
     ...betterAppsDependency("@better-apps/sql"),
     dependency(ctx, "drizzle-orm"),

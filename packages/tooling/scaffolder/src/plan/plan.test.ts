@@ -30,7 +30,7 @@ describe("planning", () => {
     const second = await planFixture({}, initRequest())
     expect(JSON.stringify(second)).toBe(JSON.stringify(first))
     expect(first.fingerprint).toMatch(/^[0-9a-f]{64}$/)
-    const other = await planFixture({}, initRequest({ optional: ["@fixture/i18n"] }))
+    const other = await planFixture({}, initRequest({ extra: ["@fixture/i18n"] }))
     expect(other.fingerprint).not.toBe(first.fingerprint)
   })
 
@@ -287,7 +287,7 @@ describe("shared JSON files", () => {
     expect(entry?.class === "shared" && entry.keys["/dependencies/react"]?.provenance).toBe("adopted")
   })
 
-  it("replacing within a slot removes the introduced dependency, adds the new one, and keeps your script", async () => {
+  it("replacing a conflicting add-on removes the introduced dependency, adds the new one, and keeps your script", async () => {
     const files = await project()
     const mine = JSON.parse(files["package.json"] ?? "{}")
     mine.scripts.db = "drizzle-kit studio"
@@ -329,7 +329,7 @@ describe("shared JSON files", () => {
       catalog,
       settings,
       tree: memoryTree({}),
-      request: initRequest({ optional: ["@fixture/other-lint"] })
+      request: initRequest({ extra: ["@fixture/other-lint"] })
     })
     expect(planned.error?.code).toBe("E_CONTRIBUTION")
     expect(planned.error?.message).toContain("@fixture/lint")
@@ -434,7 +434,7 @@ describe("shared JSON files", () => {
     )
     const ci = applyInMemory(
       {},
-      await plan({ catalog, settings, tree: memoryTree({}), request: initRequest({ optional: ["@fixture/ci"] }) })
+      await plan({ catalog, settings, tree: memoryTree({}), request: initRequest({ extra: ["@fixture/ci"] }) })
     )
     const steps = JSON.parse(ci["ci.json"] ?? "{}")
     steps.steps[1].run = "pnpm test --coverage"
@@ -520,7 +520,7 @@ describe("YAML and adoption", () => {
       catalog,
       settings,
       tree: memoryTree(existing),
-      request: initRequest({ optional: ["@fixture/ci"], adopt: true })
+      request: initRequest({ extra: ["@fixture/ci"], adopt: true })
     })
     const files = applyInMemory(existing, planned)
     expect(files[".github/workflows/ci.yml"]).toContain("# keep")
@@ -570,7 +570,7 @@ describe("YAML and adoption", () => {
       })
     )
     const ids = (text: string | undefined) => [...(text ?? "").matchAll(/- id: (\w+)/g)].map((found) => found[1])
-    const request = initRequest({ optional: ["@fixture/ci", "@fixture/translations"] })
+    const request = initRequest({ extra: ["@fixture/ci", "@fixture/translations"] })
     const created = applyInMemory({}, await plan({ catalog, settings, tree: memoryTree({}), request }))
     expect(ids(created[workflow])).toEqual(["first", "lint", "translations", "build", "last"])
     const yours = { [workflow]: "jobs:\n  verify:\n    steps:\n      - id: build\n        run: pnpm build\n" }
@@ -580,7 +580,7 @@ describe("YAML and adoption", () => {
         catalog,
         settings,
         tree: memoryTree(yours),
-        request: initRequest({ optional: ["@fixture/ci", "@fixture/translations"], adopt: true })
+        request: initRequest({ extra: ["@fixture/ci", "@fixture/translations"], adopt: true })
       })
     )
     expect(ids(adopted[workflow])).toEqual(["first", "build", "lint", "translations", "last"])
@@ -601,7 +601,7 @@ describe("YAML and adoption", () => {
       catalog: unkeyed,
       settings,
       tree: memoryTree({}),
-      request: initRequest({ optional: ["@fixture/ci"] })
+      request: initRequest({ extra: ["@fixture/ci"] })
     })
     expect(refused.error?.message).toContain("only items of a keyed array can be ordered")
   })
@@ -641,7 +641,7 @@ describe("state", () => {
 
   it("the config round-trips: what's written resolves back to the same selection", async () => {
     const files = await project({
-      optional: ["@fixture/i18n"],
+      extra: ["@fixture/i18n"],
       options: { "@fixture/i18n": { locales: ["en", "fr"] } }
     })
     expect(files["fixture.jsonc"]).toContain('"@fixture/i18n": { "locales": ["en", "fr"] }')
@@ -676,7 +676,7 @@ describe("state", () => {
       catalog,
       settings,
       tree: memoryTree({}),
-      request: initRequest({ optional: ["@fixture/dotenv", "@fixture/sentry"] })
+      request: initRequest({ extra: ["@fixture/dotenv", "@fixture/sentry"] })
     })
     expect(planned.operations.find((operation) => operation.path === ".env")?.secret).toBe(true)
     expect(planned.operations.find((operation) => operation.path === ".env.example")?.secret).toBeUndefined()
@@ -692,12 +692,12 @@ describe("upgrade", () => {
   const catalogs = (version: string) => (version === "1.0.0" ? v1 : undefined)
 
   it("a choice an upgrade needs stays an upgrade, so it finishes", async () => {
-    const files = await project({ slots: { database: null } })
+    const files = await project({ questions: { database: [] } })
     const v2 = fixtureCatalog(2)
     const strict = {
       ...v2,
       addons: v2.addons.map((addon) =>
-        addon.id === "@fixture/lint" ? { ...addon, requires: ["slot:database"] } : addon
+        addon.id === "@fixture/lint" ? { ...addon, requires: ["provides:database"] } : addon
       )
     }
     const planned = await planFixture(files, { intent: { command: "upgrade" } }, { catalog: strict, catalogs })

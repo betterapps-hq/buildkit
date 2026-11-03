@@ -72,23 +72,22 @@ function withAddons(catalog: CatalogManifest, ...addons: ReturnType<typeof defin
  * no answer set has. The values come from what the template asks, so a value no set uses is reported.
  */
 function appPairs(catalog: CatalogManifest, sets: Answers[]): { values: string[][]; uncovered: string[] } {
-  const asked = templateQuestions(
-    catalog,
-    catalog.templates.find((entry) => entry.id === "app")!,
-    "ssr"
+  const asked = templateQuestions(catalog, "app", "ssr")
+  const questions = asked.flatMap((question) =>
+    question.pick === "one"
+      ? [
+          {
+            values: [...(question.required ? [] : ["none"]), ...question.choices.map((choice) => choice.id)].map(
+              (value) => `${question.id}=${value}`
+            ),
+            of: (answers: Answers) => `${question.id}=${answers.questions?.[question.id]?.[0] ?? "none"}`
+          }
+        ]
+      : question.choices.map((choice) => ({
+          values: [`${choice.id}=false`, `${choice.id}=true`],
+          of: (answers: Answers) => `${choice.id}=${answers.questions?.[question.id]?.includes(choice.id) ?? false}`
+        }))
   )
-  const questions = [
-    ...asked.slots.map((slot) => ({
-      values: [...(slot.required ? [] : ["none"]), ...slot.choices.map((choice) => choice.id)].map(
-        (value) => `slot ${slot.slot}=${value}`
-      ),
-      of: (answers: Answers) => `slot ${slot.slot}=${answers.slots?.[slot.slot] ?? "none"}`
-    })),
-    ...asked.optional.map((tool) => ({
-      values: [`${tool.id}=false`, `${tool.id}=true`],
-      of: (answers: Answers) => `${tool.id}=${answers.optional?.includes(tool.id) ?? false}`
-    }))
-  ]
   const uncovered: string[] = []
   for (let left = 0; left < questions.length; left++) {
     for (let right = left + 1; right < questions.length; right++) {
@@ -151,7 +150,7 @@ describe("resolveSelection", () => {
     })
   })
 
-  it("asks which add-on fills a required slot, filtered by support", () => {
+  it("asks for a provider a requirement needs, filtered by support", () => {
     const result = resolveSelection(fixtureCatalog(), {
       ...base,
       target: { id: "web", mode: "spa" },
@@ -159,11 +158,16 @@ describe("resolveSelection", () => {
     })
     expect(result).toEqual({
       ok: false,
-      issue: { kind: "choose-slot", slot: "database", by: "@fixture/auth", candidates: ["@fixture/db-sqlite"] }
+      issue: {
+        kind: "choose-provider",
+        capability: "database",
+        by: "@fixture/auth",
+        candidates: ["@fixture/db-sqlite"]
+      }
     })
   })
 
-  it("asks for a provider, and allows one add-on per slot", () => {
+  it("asks for a provider, and allows one add-on that provides a capability another conflicts with", () => {
     const catalog = withAddons(
       fixtureCatalog(),
       defineAddon({
@@ -183,7 +187,7 @@ describe("resolveSelection", () => {
       resolveSelection(fixtureCatalog(), { ...base, addons: { "@fixture/db-sqlite": {}, "@fixture/db-postgres": {} } })
     ).toMatchObject({
       ok: false,
-      issue: { kind: "slot-taken", slot: "database" }
+      issue: { kind: "conflicts", capability: "database" }
     })
   })
 
@@ -281,19 +285,19 @@ describe("templates and answers", () => {
         template: "app",
         target: { id: "web", mode: "ssr" },
         addons: { "@fixture/lint": {}, "@fixture/db-sqlite": {}, "@fixture/ui-basic": {}, "@fixture/storybook": {} },
-        declined: ["@fixture/i18n", "@fixture/sentry"]
+        declined: ["question:localization", "question:telemetry"]
       }
     })
   })
 
-  it("answers slots with short names, says no to optional slots, and lists exact optional add-ons", () => {
+  it("answers questions with short names, records no, and adds extra add-ons", () => {
     const result = selectionFromAnswers(
       catalog,
       {
         template: "app",
         mode: "ssr",
-        slots: { database: null, ui: "ui-fancy" },
-        optional: ["i18n"],
+        questions: { database: [], ui: ["ui-fancy"], devtools: [] },
+        extra: ["i18n"],
         options: { "ui-fancy": { theme: "dark" } }
       },
       "demo"
@@ -302,7 +306,7 @@ describe("templates and answers", () => {
       ok: true,
       selection: {
         addons: { "@fixture/lint": {}, "@fixture/ui-fancy": { theme: "dark" }, "@fixture/i18n": {} },
-        declined: ["@fixture/sentry", "@fixture/storybook", "slot:database"]
+        declined: ["question:database", "question:devtools", "question:localization", "question:telemetry"]
       }
     })
   })
@@ -312,19 +316,24 @@ describe("templates and answers", () => {
       ok: false,
       issue: { kind: "choose-mode", template: "app", modes: ["ssr", "spa"] }
     })
-    expect(selectionFromAnswers(catalog, { template: "bare", slots: { ui: "ui-basic" } }, "demo").ok).toBe(true)
+    expect(selectionFromAnswers(catalog, { template: "bare", questions: { ui: ["ui-basic"] } }, "demo").ok).toBe(true)
   })
 
-  it("a required slot with no default and more than one choice needs a decision; one fitting choice is taken", () => {
+  it("a required question with no default and more than one choice needs a decision; one fitting choice is taken", () => {
     expect(selectionFromAnswers(catalog, { template: "bare" }, "demo")).toEqual({
       ok: false,
-      issue: { kind: "choose-slot", slot: "ui", candidates: ["@fixture/ui-basic", "@fixture/ui-fancy"] }
+      issue: {
+        kind: "choose",
+        template: "bare",
+        question: "ui",
+        candidates: ["@fixture/ui-basic", "@fixture/ui-fancy"]
+      }
     })
-    const spaOnly = {
+    const spaOnly: CatalogManifest = {
       ...catalog,
       templates: catalog.templates.map((template) =>
         template.id === "bare"
-          ? { ...template, modes: ["spa"], slots: { database: { required: true as const } } }
+          ? { ...template, modes: ["spa"], questions: [{ use: "database", required: true }] }
           : template
       )
     }
@@ -338,16 +347,26 @@ describe("templates and answers", () => {
     expect(thrown(() => selectionFromAnswers(catalog, { template: "nope" }, "demo")).code).toBe("E_UNKNOWN_TEMPLATE")
     expect(thrown(() => selectionFromAnswers(catalog, { template: "app", mode: "rsc" }, "demo")).code).toBe("E_USAGE")
     expect(
-      thrown(() => selectionFromAnswers(catalog, { template: "app", mode: "ssr", slots: { ui: null } }, "demo")).code
+      thrown(() => selectionFromAnswers(catalog, { template: "app", mode: "ssr", questions: { ui: [] } }, "demo")).code
     ).toBe("E_USAGE")
     expect(
       thrown(() =>
-        selectionFromAnswers(catalog, { template: "app", mode: "ssr", slots: { database: "ui-fancy" } }, "demo")
+        selectionFromAnswers(catalog, { template: "app", mode: "ssr", questions: { database: ["ui-fancy"] } }, "demo")
       ).code
     ).toBe("E_USAGE")
     expect(
-      thrown(() => selectionFromAnswers(catalog, { template: "app", mode: "ssr", slots: { nope: "x" } }, "demo")).code
+      thrown(() => selectionFromAnswers(catalog, { template: "app", mode: "ssr", questions: { nope: ["x"] } }, "demo"))
+        .code
     ).toBe("E_USAGE")
+    expect(
+      thrown(() =>
+        selectionFromAnswers(
+          catalog,
+          { template: "app", mode: "ssr", questions: { ui: ["ui-basic", "ui-fancy"] } },
+          "demo"
+        )
+      ).message
+    ).toBe("UI kit takes one answer, not @fixture/ui-basic, @fixture/ui-fancy.")
     expect(
       thrown(() =>
         selectionFromAnswers(
@@ -361,13 +380,13 @@ describe("templates and answers", () => {
 })
 
 describe("plan decisions", () => {
-  it("re-adding an installed add-on is unchanged, and filling an empty slot isn't a replace", async () => {
-    const files = await applyFixture({}, initRequest({ slots: { database: null } }))
+  it("re-adding an installed add-on is unchanged, and answering a declined question isn't a replace", async () => {
+    const files = await applyFixture({}, initRequest({ questions: { database: [] } }))
     expect((await planFixture(files, addRequest(["storybook"]))).status).toBe("unchanged")
     const filled = await planFixture(files, addRequest(["db-postgres"]))
     expect(filled.status).toBe("planned")
     expect(filled.operations.find((operation) => operation.path === "fixture.jsonc")?.content).not.toContain(
-      "slot:database"
+      "question:database"
     )
   })
 
@@ -383,9 +402,9 @@ describe("plan decisions", () => {
     for (const choice of mode.decisions[0]?.choices ?? []) {
       expect((await planFixture({}, choice.request)).status).toBe("planned")
     }
-    const slotless = await applyFixture({}, initRequest({ slots: { database: null } }))
+    const slotless = await applyFixture({}, initRequest({ questions: { database: [] } }))
     const question = await planFixture(slotless, addRequest(["database"]))
-    expect(question.decisions[0]).toMatchObject({ id: "slot:database", message: "Which database?" })
+    expect(question.decisions[0]).toMatchObject({ id: "question:database", message: "Which database?" })
     for (const choice of question.decisions[0]?.choices ?? []) {
       expect(choice.request.intent).toMatchObject({ command: "add", addons: [choice.id] })
       expect((await planFixture(slotless, choice.request)).status).toBe("planned")
@@ -396,7 +415,9 @@ describe("plan decisions", () => {
 
   it("swaps an add-on that conflicts by capability, through the decision's argv", async () => {
     const catalog = withAddons(fixtureCatalog(), ...orms)
-    const files = await applyFixture({}, initRequest({ optional: ["@x/drizzle"] }), { catalog })
+    const files = await applyFixture({}, initRequest({ questions: { database: [] }, extra: ["@x/drizzle"] }), {
+      catalog
+    })
     const swap = await planFixture(files, addRequest(["prisma"]), { catalog })
     expect(swap.decisions).toEqual([
       {
@@ -419,7 +440,9 @@ describe("plan decisions", () => {
     expect(JSON.parse(swapped["package.json"] ?? "{}").devDependencies).toMatchObject({ prisma: "6.19.0" })
 
     // Convex declares the conflict, and doesn't provide an ORM itself.
-    const convex = await applyFixture({}, initRequest({ optional: ["@x/convex"] }), { catalog })
+    const convex = await applyFixture({}, initRequest({ questions: { database: [] }, extra: ["@x/convex"] }), {
+      catalog
+    })
     const fromConvex = await planFixture(convex, addRequest(["prisma"]), { catalog })
     expect(fromConvex.decisions[0]?.message).toBe(
       "Convex can't be used with an add-on that provides orm. Replace it with Prisma?"
@@ -458,7 +481,9 @@ describe("plan decisions", () => {
       contribute: () => []
     })
     const withMigrations = withAddons(catalog, needsDrizzle)
-    const pulled = await applyFixture({}, initRequest({ optional: ["@x/migrations"] }), { catalog: withMigrations })
+    const pulled = await applyFixture({}, initRequest({ questions: { database: [] }, extra: ["@x/migrations"] }), {
+      catalog: withMigrations
+    })
     expect((await planFixture(pulled, addRequest(["prisma"]), { catalog: withMigrations })).decisions[0]).toMatchObject(
       {
         message: "Drizzle is your orm. Migrations needs it, so it can't be replaced with Prisma.",
@@ -466,9 +491,13 @@ describe("plan decisions", () => {
       }
     )
     // Chosen as well, Drizzle would still be pulled back in by Migrations.
-    const chosen = await applyFixture({}, initRequest({ optional: ["@x/migrations", "@x/drizzle"] }), {
-      catalog: withMigrations
-    })
+    const chosen = await applyFixture(
+      {},
+      initRequest({ questions: { database: [] }, extra: ["@x/migrations", "@x/drizzle"] }),
+      {
+        catalog: withMigrations
+      }
+    )
     expect((await planFixture(chosen, addRequest(["prisma"]), { catalog: withMigrations })).decisions[0]).toMatchObject(
       {
         message: "Drizzle is your orm. Migrations needs it, so it can't be replaced with Prisma.",
@@ -477,7 +506,13 @@ describe("plan decisions", () => {
     )
 
     // Asked for together, neither is installed, so there's nothing to swap.
-    const both = await planFixture({}, initRequest({ optional: ["@x/drizzle", "@x/prisma"] }), { catalog })
+    const both = await planFixture(
+      {},
+      initRequest({ questions: { database: [] }, extra: ["@x/drizzle", "@x/prisma"] }),
+      {
+        catalog
+      }
+    )
     expect(both.decisions[0]).toMatchObject({
       message: "Drizzle can't be used with Prisma. Remove one of them from the config.",
       choices: []
@@ -496,7 +531,7 @@ describe("plan decisions", () => {
   })
 
   it("offers only supported alternatives in a decision", async () => {
-    const files = await applyFixture({}, initRequest({ mode: "spa", slots: { database: null } }))
+    const files = await applyFixture({}, initRequest({ mode: "spa", questions: { database: [] } }))
     const decision = await planFixture(files, addRequest(["database"]))
     expect(decision.status).toBe("planned")
     expect(decision.operations.map((operation) => operation.path)).toContain("src/db/schema.ts")
@@ -507,31 +542,27 @@ describe("questions and catalog CI", () => {
   const catalog = fixtureCatalog()
 
   it("describes each template's questions in wizard order", () => {
-    const template = catalog.templates[0]
-    if (!template) {
-      throw new Error("missing template")
-    }
-    const spa = templateQuestions(catalog, template, "spa")
-    expect(spa.required.map((choice) => choice.id)).toEqual(["@fixture/lint"])
+    const spa = templateQuestions(catalog, "app", "spa")
     expect(
-      spa.slots.map((slot) => [
-        slot.slot,
-        slot.question,
-        slot.required,
-        slot.default,
-        slot.choices.map((choice) => choice.id)
+      spa.map((question) => [
+        question.id,
+        question.question,
+        question.required,
+        question.default,
+        question.choices.map((choice) => choice.id)
       ])
     ).toEqual([
-      ["database", "Add a database?", false, "@fixture/db-sqlite", ["@fixture/db-sqlite"]],
-      ["ui", undefined, true, "@fixture/ui-basic", ["@fixture/ui-basic", "@fixture/ui-fancy"]]
-    ])
-    expect(spa.optional.map((choice) => [choice.id, choice.default])).toEqual([
-      ["@fixture/i18n", false],
-      ["@fixture/storybook", true],
-      ["@fixture/sentry", false]
+      ["database", "Add a database?", false, ["@fixture/db-sqlite"], ["@fixture/db-sqlite"]],
+      ["ui", "Add a UI kit?", true, ["@fixture/ui-basic"], ["@fixture/ui-basic", "@fixture/ui-fancy"]],
+      ["localization", "Add localization?", false, [], ["@fixture/i18n"]],
+      ["devtools", "Add developer tools?", false, ["@fixture/storybook"], ["@fixture/storybook"]],
+      ["telemetry", "Add telemetry?", false, [], ["@fixture/sentry"]]
     ])
     const description = describeCatalog(catalog)
-    expect(Object.keys(description.templates[0]?.questionsByMode ?? {})).toEqual(["ssr", "spa"])
+    const [app] = description.templates
+    expect(app?.required.map((choice) => choice.id)).toEqual(["@fixture/lint"])
+    expect(Object.keys(app?.questionsByMode ?? {})).toEqual(["ssr", "spa"])
+    expect(app?.gallery.stack).toEqual(["Lint", "SQLite", "Basic UI", "Storybook"])
     expect(description.addons.find((addon) => addon.id === "@fixture/i18n")?.ask).toEqual([
       {
         addon: "@fixture/i18n",
@@ -541,6 +572,11 @@ describe("questions and catalog CI", () => {
         default: ["en"]
       }
     ])
+    expect(description.addons.find((addon) => addon.id === "@fixture/auth")).toMatchObject({
+      provides: [],
+      requires: ["@fixture/sessions", "provides:database"],
+      conflicts: []
+    })
     expect(description.presets).toEqual([
       {
         id: "saas",
@@ -549,8 +585,7 @@ describe("questions and catalog CI", () => {
         answers: {
           template: "app",
           mode: "ssr",
-          slots: { database: "@fixture/db-postgres" },
-          optional: ["@fixture/i18n"]
+          questions: { database: ["@fixture/db-postgres"], localization: ["@fixture/i18n"] }
         }
       }
     ])
@@ -589,10 +624,10 @@ describe("questions and catalog CI", () => {
       return !selection.ok || !resolveSelection(conflicting, selection.selection).ok
     })
     expect(turnedDown).toEqual([])
-    expect(appPairs(conflicting, sets).uncovered).toEqual(["@fixture/i18n=true & @fixture/sentry=true"])
+    expect(appPairs(conflicting, sets).uncovered).toEqual(["localization=@fixture/i18n & telemetry=@fixture/sentry"])
   })
 
-  it("plans the other questions when a required slot has no add-on for the mode", () => {
+  it("plans the other questions when a required question has no add-on for the mode", () => {
     const lonely: CatalogManifest = {
       ...catalog,
       templates: [
@@ -600,16 +635,24 @@ describe("questions and catalog CI", () => {
         {
           id: "lonely",
           title: "Lonely",
-          description: "A template whose slot has nothing to offer",
+          description: "A template whose question has nothing to offer",
           target: "web",
-          optional: { "@fixture/i18n": { default: false } },
-          slots: { nothing: { required: true } }
+          questions: [
+            {
+              id: "localization",
+              title: "Localization",
+              question: "Add localization?",
+              pick: "one",
+              choices: ["@fixture/i18n"]
+            },
+            { id: "nothing", title: "Nothing", required: true, pick: "one", choices: [] }
+          ]
         }
       ]
     }
-    expect(pairwiseAnswers(lonely, "lonely", "ssr").map(({ slots, optional }) => ({ slots, optional }))).toEqual([
-      { slots: { nothing: null }, optional: [] },
-      { slots: { nothing: null }, optional: ["@fixture/i18n"] }
+    expect(pairwiseAnswers(lonely, "lonely", "ssr").map(({ questions }) => questions)).toEqual([
+      { localization: [] },
+      { localization: ["@fixture/i18n"] }
     ])
   })
 
@@ -632,9 +675,8 @@ describe("questions and catalog CI", () => {
           version: "1.0.0",
           title: "Bad",
           description: "",
-          slot: "nope",
-          requires: ["@x/missing", "slot:nope", "provides:nope"],
-          conflicts: ["slot:database", "provides:nothing", "provides:i18n"],
+          requires: ["@x/missing", "provides:nope"],
+          conflicts: ["@x/gone", "provides:nothing", "provides:i18n"],
           after: ["provides:i18n"],
           ask: ["missing"],
           options: z.object({ needed: z.string() }),
@@ -654,43 +696,60 @@ describe("questions and catalog CI", () => {
           description: "",
           target: "web",
           modes: ["ssr", "rsc"],
-          required: ["@x/missing"],
-          slots: { nope: { required: false, default: "@fixture/i18n" } }
+          required: ["@x/missing"]
         },
+        { id: "unasked", title: "Unasked", description: "", target: "web", questions: ["nope"] },
         {
           id: "needs-default",
           title: "Needs default",
           description: "",
           target: "web",
           required: ["@x/bad"],
-          optional: { "@fixture/db-postgres": { default: false } },
-          slots: { database: { required: false, default: "@fixture/i18n" } }
+          questions: [{ use: "database", default: "@fixture/db-postgres" }]
         },
-        { id: "lost", title: "Lost", description: "", target: "nowhere" }
+        {
+          id: "odd",
+          title: "Odd",
+          description: "",
+          target: "web",
+          questions: [
+            { use: "database", default: "@fixture/i18n" },
+            { id: "Bad Id", title: "Bad", required: true, pick: "one", choices: ["@fixture/i18n"] },
+            { id: "json", title: "Flag", question: "Add it?", pick: "one", choices: ["@fixture/sentry"] },
+            { id: "none", title: "None", required: true, pick: "one", choices: [] },
+            { id: "ui", title: "Mine", question: "Mine?", pick: "one", choices: ["@x/nowhere"] }
+          ]
+        },
+        { id: "lost", title: "Lost", description: "", target: "nowhere" },
+        { id: "orphaned", title: "Orphaned", description: "", extends: "missing" }
       ],
       presets: [{ id: "orphan", title: "Orphan", answers: { template: "nope" } }]
     }
     const problems = checkCatalog(broken)
     const missing = [
-      "uses slot:database in conflicts, which takes",
+      "refers to @x/gone, which isn't in the catalog",
       "uses provides:i18n in after, which takes add-on ids only",
       "refers to provides:nothing, and no add-on provides it",
       "isn't a semantic version",
       "More than one add-on has the id @x/bad",
       "uses facet webgl",
-      "fills slot nope",
       "refers to @x/missing",
-      "refers to slot:nope",
       "refers to provides:nope",
       "asks about option missing",
       "newer than the add-on",
       "offers mode rsc",
       "names required add-on @x/missing",
-      "asks about slot nope",
+      "Template unasked asks question nope, which isn't in the catalog.",
       "every option needs a default",
       "doesn't support web/spa",
-      "isn't one of that slot's add-ons",
+      "Template odd question database defaults to @fixture/i18n, which it doesn't offer.",
+      "Template odd question Bad Id needs an id of lowercase letters, digits and hyphens.",
+      "Template odd question json has the id of one of the CLI's own flags.",
+      "Template odd question none has no choices.",
+      "Template odd question ui offers @x/nowhere, which isn't in the catalog.",
+      "Template odd defines question ui, which is a catalog question's id.",
       "uses target nowhere",
+      "Template orphaned extends missing, which isn't in the catalog.",
       "Preset orphan"
     ].filter((expected) => !problems.some((problem) => problem.includes(expected)))
     expect(missing).toEqual([])
@@ -866,7 +925,7 @@ describe("combination add-ons", () => {
       code: "E_USAGE",
       message: "Auth tables for SQLite is added with Auth and SQLite."
     })
-    expect((await planFixture({}, initRequest({ optional: ["@x/auth-i18n"] }), { catalog })).error).toMatchObject({
+    expect((await planFixture({}, initRequest({ extra: ["@x/auth-i18n"] }), { catalog })).error).toMatchObject({
       code: "E_USAGE",
       message: "Translated auth is added with Auth tables for SQLite and an add-on that provides i18n."
     })
@@ -885,13 +944,13 @@ describe("combination add-ons", () => {
         { ...glue("@x/optioned", "Optioned", ["@fixture/auth", "@fixture/i18n"]), options: z.object({}) }
       ),
       templates: [{ ...app!, required: [...(app?.required ?? []), "@x/auth-sqlite"] }],
-      presets: [{ id: "glued", title: "Glued", answers: { template: "app", optional: ["@x/auth-postgres"] } }]
+      presets: [{ id: "glued", title: "Glued", answers: { template: "app", extra: ["@x/auth-postgres"] } }]
     }
     const problems = checkCatalog(broken)
     const missing = [
       "@x/lonely is a combination add-on, so it joins at least two add-ons.",
-      "@x/lonely is a combination add-on, so it can't have requires, options or a slot.",
-      "@x/optioned is a combination add-on, so it can't have requires, options or a slot.",
+      "@x/lonely is a combination add-on, so it can't have requires or options.",
+      "@x/optioned is a combination add-on, so it can't have requires or options.",
       "@x/dangling refers to @x/missing, which isn't in the catalog.",
       "@x/dangling refers to provides:nothing, and no add-on provides it.",
       "Template app names @x/auth-sqlite, a combination add-on, which is added with what it joins.",
