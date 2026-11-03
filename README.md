@@ -28,8 +28,8 @@ Use Node 24+ and pnpm 12. Run `pnpm install`, then `pnpm verify` (format, lint, 
 builds).
 
 For upstream component updates, run `pnpm update:shadcn`, `pnpm generate`, then `pnpm validate`. The private
-`@repo/shadcn-generator` package owns generation and token resolution; published style packages contain the generated
-artifacts only.
+`@buildkitgg/shadcn-generator` package owns generation and token resolution; published style packages contain the
+generated artifacts only.
 
 ## Packages
 
@@ -39,7 +39,8 @@ artifacts only.
 - [shadcn component styles](docs/shadcn/README.md): compiled Base UI components and styles.
 - [@buildkitgg/dev-domains](packages/tooling/dev-domains/README.md): Portless domain CLI with typed configuration,
   guided setup, and webhook tunnels.
-- Private `@repo/*` packages share TypeScript, oxlint, and Storybook configuration.
+- `@buildkitgg/typescript-config`, `@buildkitgg/oxlint-config` and `@buildkitgg/storybook-config` share TypeScript,
+  oxlint, and Storybook configuration.
 
 Apps and examples belong under `apps/`; independently reusable libraries belong under `packages/`.
 

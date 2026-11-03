@@ -32,8 +32,9 @@ React Compiler), product-level UI-system selection and styling, and the state/er
 - **Prefer named exports** — they keep renames consistent.
 - **Avoid barrel files** (`index.ts` that only re-exports), except a single leaf folder re-exporting its own
   component/resource.
-- **Consume shared config via workspace packages** (`@repo/*`); extend the shared oxlint/Storybook/TS configs rather
-  than redefining rules per package.
+- **Consume shared config via workspace packages** (`@buildkitgg/oxlint-config`, `@buildkitgg/storybook-config`,
+  `@buildkitgg/typescript-config`); extend the shared oxlint/Storybook/TS configs rather than redefining rules per
+  package.
 - **Prefer path/package aliases over deep relative paths** (`../../../`).
 
 ## Logging
