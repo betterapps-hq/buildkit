@@ -30,6 +30,9 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # vite.config.ts lints with the anti-slop plugin, so vp fmt can't load it until the plugin is built.
+      - name: Build the lint packages the formatter loads
+        run: pnpm --fail-if-no-match --filter "@buildkitgg/oxlint-config..." build
       - name: Fetch upstream and regenerate all styles
         run: |
           pnpm update:shadcn
