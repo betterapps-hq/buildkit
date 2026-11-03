@@ -21,6 +21,10 @@ nothing and uploads its diagnostics.
 
 Only public `@buildkitgg/*` packages publish. Private packages remain incubating.
 
+Beachball publishes with npm, so it rewrites `workspace:` ranges itself. Its patch in `patches/beachball.patch` teaches
+it the aliased form the shadcn packages use, so `workspace:@buildkitgg/shadcn-baseui-nova@*` publishes as
+`npm:@buildkitgg/shadcn-baseui-nova@<version>`, as pnpm would. Drop the patch once Beachball handles aliases itself.
+
 If a release fails before publishing, nothing is pushed and main keeps its change files: rerun the failed `release` job
 while that commit is still main's head, or let the next push's run release them. To publish versions that are on main
 but not on npm, run **CI** by hand on main: its `publish-missing` job publishes every public version npm doesn't have,
