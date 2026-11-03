@@ -1,121 +1,81 @@
 # Build plans
 
-Designs for what we plan to build: Better Apps' deploy CLI, the services that run with it, and its collaboration and
-feature-flag features; Buildkit's packages and services; the pipelines; and AI guidance. The recommendations themselves
-are in [stack.md](stack.md); the scaffolder design is in [scaffolder-research.md](scaffolder-research.md), and the
-deploy design in
-[the Better Apps deploy plan](https://github.com/betterapps-hq/better-apps/blob/main/docs/deploy-plan.md).
+Designs for what we plan to build: deployment on Void, the Better Apps services and features around it, Buildkit's
+packages and services, the pipelines, and AI guidance. The recommendations themselves are in [stack.md](stack.md), and
+the scaffolder design is in [scaffolder-research.md](scaffolder-research.md).
 
 # CI/CD pipelines
 
 Every template ships its pipelines. Workflows in the app repo are thin and call **versioned composite actions**, so
 fixes and upgrades roll out centrally instead of being copied into every app. The preview, deploy and cleanup workflows
-and their actions (for example `better-apps/actions/migrate@v1`) belong to Better Apps; the app-code checks in `ci.yml`
-belong to Buildkit. The scaffolder generates the workflow set from the app's choices (data layer, jobs, packages vs
-app).
+deploy with Void (`void deploy`); the app-code checks in `ci.yml` belong to Buildkit. The scaffolder generates the
+workflow set from the app's choices (data layer, jobs, packages vs app).
 
 ## Pipelines
 
-| Workflow                | Owner                                                  | Runs on                         | Steps                                                                                                                                                                                                                                               |
-| ----------------------- | ------------------------------------------------------ | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ci.yml`                | Buildkit                                               | Every PR                        | pnpm install (cached) → oxfmt check → oxlint → typecheck → knip → Vitest → build → **migration check** (schema changed ⇒ a migration was generated and committed)                                                                                   |
-| `preview.yml`           | Better Apps                                            | Every PR push                   | `better-apps deploy --env preview` (the PR's own Worker and database, migrations applied) → seed → Playwright E2E + axe → VRT → comment URL + results on the PR                                                                                     |
-| `storybook.yml`         | Buildkit                                               | PRs touching UI                 | Build Storybook → story tests (addon-vitest) → VRT (our visual regression service)                                                                                                                                                                  |
-| `deploy-staging.yml`    | Better Apps                                            | Merge to `main`                 | `better-apps deploy --env staging` (build, migrations, deploy) → smoke tests → upload sourcemaps to Sentry → create Sentry release                                                                                                                  |
-| `deploy-production.yml` | Better Apps                                            | Manual promote                  | Approval → `better-apps deploy --env production`: restore point (D1 Time Travel bookmark / Neon branch / Convex export) → migrations → canary (traffic split by the dispatch Worker) → smoke tests → watch error rate → auto-rollback on regression |
-| `cleanup.yml`           | Better Apps                                            | PR closed                       | The deploy service removes the PR's Worker, database and bucket; delete any Neon branch                                                                                                                                                             |
-| `release-packages.yml`  | Buildkit                                               | Merge to `main` (library repos) | beachball bump → tsdown build → npm publish with trusted publishing (OIDC)                                                                                                                                                                          |
-| `scheduled.yml`         | Buildkit; the preview-resource sweeper is Better Apps' | Nightly                         | Backup export, dependency audit, preview-resource sweeper                                                                                                                                                                                           |
+| Workflow                | Owner    | Runs on                         | Steps                                                                                                                                                             |
+| ----------------------- | -------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ci.yml`                | Buildkit | Every PR                        | pnpm install (cached) → oxfmt check → oxlint → typecheck → knip → Vitest → build → **migration check** (schema changed ⇒ a migration was generated and committed) |
+| `preview.yml`           | Void     | Every PR push                   | `void deploy` to the PR's preview → seed → Playwright E2E + axe → VRT → comment URL + results on the PR                                                           |
+| `storybook.yml`         | Buildkit | PRs touching UI                 | Build Storybook → story tests (addon-vitest) → VRT (our visual regression service)                                                                                |
+| `deploy-staging.yml`    | Void     | Merge to `main`                 | `void deploy` to staging (build, provisioning, migrations) → smoke tests → upload sourcemaps to Sentry → create Sentry release                                    |
+| `deploy-production.yml` | Void     | Manual promote                  | Approval → `void deploy` to production: D1 restore point → migrations → deploy → smoke tests → watch error rate → `void project rollback` on regression           |
+| `cleanup.yml`           | Void     | PR closed                       | Remove the PR's preview and its resources                                                                                                                         |
+| `release-packages.yml`  | Buildkit | Merge to `main` (library repos) | beachball bump → tsdown build → npm publish with trusted publishing (OIDC)                                                                                        |
+| `scheduled.yml`         | Buildkit | Nightly                         | Backup export, dependency audit, preview-resource sweeper                                                                                                         |
 
 ## Migration rules (enforced by the pipelines)
 
-1. **Generated in the PR, reviewed as SQL.** `drizzle-kit generate` output is committed; CI fails if the schema changed
-   without one.
+1. **Generated in the PR, reviewed as SQL.** The generated migration is committed; CI fails if the schema changed
+   without one, and so does `void deploy`.
 2. **Applied before the code that needs them.** Migrate, then deploy.
 3. **Expand, then contract.** Add columns/tables in one release, remove old ones in a later release. No destructive
    change ships alongside the code that stops using it.
 4. **Backfills are jobs, not migrations.** Large data changes run through the chosen jobs system.
 5. **Restore point before every production migration.**
 
-Rule 1 is a `ci.yml` check (Buildkit). The deploy service applies rules 2 and 5 (Better Apps).
+Rule 1 is a `ci.yml` check (Buildkit). `void deploy` applies rules 2 and 5: it applies pending migrations before
+deploying, and on D1 saves a restore point first (`void db restore` recovers from it). Rolling back code doesn't reverse
+a migration, which is why rule 3 matters.
 
 ## Build artifacts
 
-| Artifact                       | Destination                                                                                           |
-| ------------------------------ | ----------------------------------------------------------------------------------------------------- |
-| Worker bundle + static assets  | Better Apps' deploy service: Cloudflare Workers for Platforms in v1 (static assets served by Workers) |
-| Sourcemaps                     | Sentry (not deployed publicly)                                                                        |
-| Storybook                      | R2, for our visual regression service                                                                 |
-| Packages                       | npm (trusted publishing)                                                                              |
-| Playwright traces, screenshots | GitHub Actions artifacts                                                                              |
+| Artifact                       | Destination                                                            |
+| ------------------------------ | ---------------------------------------------------------------------- |
+| Worker bundle + static assets  | Cloudflare Workers, deployed by Void (static assets served by Workers) |
+| Sourcemaps                     | Sentry (not deployed publicly)                                         |
+| Storybook                      | R2, for our visual regression service                                  |
+| Packages                       | npm (trusted publishing)                                               |
+| Playwright traces, screenshots | GitHub Actions artifacts                                               |
 
 ## Secrets
 
-Per-environment secrets live in Better Apps' vault (below); the deploy service sets them on the environment's Worker
-during deploy. `@t3-oss/env-core` validates them at startup, so a missing secret fails the deploy, not a user request.
+Apps declare their variables in `env.ts` with `void/env`, and server secrets are set per environment with
+`void secret put`. `void env check` validates them against the schema. Deploys never upload a local `.env`, and public
+`VITE_*` values come from the build environment.
 
 ---
 
-# Better Apps services
+# Deployment (Void)
 
-These belong to Better Apps, not Buildkit: the deploy CLI and the services that run with it (environments and preview
-environments, custom domains, the environment variables vault, managed storage), plus the collaboration features and
-feature flags. Buildkit keeps the application-code helpers and the scaffolder. Only the deploy service is paid; nothing
-else here has a payment plan.
+**Decided (2026-11-02): deployment is built on [Void](https://github.com/voidzero-dev/void),** Cloudflare's open-source
+(MIT) deploy platform. It replaces the capability packages, the manifest and the hosted `better-apps deploy` service
+designed earlier. Better Apps' earlier
+[deploy plan](https://github.com/betterapps-hq/better-apps/blob/main/docs/deploy-plan.md) is on hold.
 
-## Deploy CLI
-
-**Goal:** one command (locally and in CI) that builds the app and deploys it to an environment with everything it needs.
-It belongs to Better Apps, not Buildkit, and is a paid product: the `better-apps deploy` CLI plus a hosted deploy
-service. The scaffolder stays in Buildkit. Full design in
-[the Better Apps deploy plan](https://github.com/betterapps-hq/better-apps/blob/main/docs/deploy-plan.md).
-
-**Decided (2026-10-28):**
-
-- **Not built on Void.**
-- **Capability packages drive deploys.** Code declares the cloud resources it uses with open capability packages from
-  Better Apps, for example `defineDatabase("main")`, `defineBucket("uploads")` or `defineRoom("presence")` (names not
-  settled). App code, Better Apps features and the scaffolder's starter code all declare resources the same way. The
-  Better Apps Vite plugin writes the declarations that reach the server bundle to a manifest.
-- **Better Apps picks the cloud behind the scenes.** Users never configure a provider, and projects hold no cloud config
-  (no Wrangler config, no `cloudflare.config.ts`). The capability packages and their Cloudflare adapters are open;
-  what's charged for is the service. v1 deploys to Cloudflare only.
-- **The service calls the Cloudflare API directly**, not the `cf` CLI or Wrangler.
-- **Each environment builds separately** from the same commit, with the backend the service names.
-- **Apps run in the customer's own Cloudflare account, for now.**
-
-**How it deploys (v1, proposed):**
-
-- **Where apps run:** the customer's own Cloudflare account (decided above). The earlier design put apps in Better Apps'
-  account as Workers for Platforms user Workers behind a dispatch Worker; the Previews and Rollout bullets below still
-  assume that and need rework.
-- **Per environment:** diff the manifest against the environment's resources and post the diff on every PR (deleting
-  data is always a decision); provision D1, KV, R2 and Queues by name; render the bindings; set secrets from our vault;
-  take a D1 Time Travel bookmark and apply SQL migrations; keep the Durable Object migration journal; then upload.
-- **Previews** (needs rework for customer accounts): one user Worker per PR, with its own Durable Objects and resources
-  per the environment's policy, removed when the PR closes.
-- **Custom domains:** each customer can use their own domain, with SSL issued and renewed through Cloudflare for SaaS
-  custom hostnames (not researched yet).
-- **Rollout** (needs rework for customer accounts): user Workers don't support gradual deployments, so a canary is a
-  second Worker and the dispatch Worker splits traffic by percentage. Rolling back points it at the previous Worker.
-- **Environments** are declared in the repo in `better-apps.environments.jsonc`, which names no cloud.
-- **Ours on top:** provisioning our own services per environment (managed storage, flags, env vars and secrets). This is
-  what the CI/CD pipelines call.
-- **To verify (spike, about a day):** the pass/fail gate in
-  [the Better Apps deploy plan](https://github.com/betterapps-hq/better-apps/blob/main/docs/deploy-plan.md) §6 (its
-  hosted half needs rework for customer accounts):
-  - the manifest lists exactly the declarations in the server bundle;
-  - `vite dev` works with no cloud config file in the project;
-  - a user Worker with D1, R2, a Queue and a Durable Object deploys into a dispatch namespace;
-  - queue consumers and cron triggers on user Workers;
-  - Durable Object migrations, per-PR previews, canary and rollback;
-  - D1 migrations through the API;
-  - Start SPA mode with server functions.
-- **Sources:**
-  [Workers for Platforms bindings](https://developers.cloudflare.com/cloudflare-for-platforms/workers-for-platforms/configuration/bindings/),
-  [Workers for Platforms limits](https://developers.cloudflare.com/cloudflare-for-platforms/workers-for-platforms/reference/limits/),
-  [Encore's application model](https://encore.dev/docs/ts/concepts/application-model) (prior art for declaring resources
-  in code), [Void resource inference](https://void.cloud/reference/resource-inference).
+- **Resources from code:** Void finds what an app uses by scanning its imports of `void/db`, `void/kv`, `void/storage`,
+  `void/queues`, `void/durable` and `void/live`, plus crons and secrets, and provisions it. Projects hold no cloud
+  config.
+- **One command:** `void deploy` builds the app, provisions its resources, applies migrations and deploys, either to the
+  customer's own Cloudflare account or to a team Void Platform. `void project status`, `logs` and `rollback` cover the
+  rest.
+- **CI:** `void init --github` generates a deploy workflow, and the pipelines above call `void deploy`.
+- **Cloudflare only.** Other clouds aren't planned.
+- **To check:** how Void scopes per-PR previews and removes them, how staging and production are kept apart (separate
+  projects or environments), and whether it can split traffic for a canary.
+- **Sources:** [Void deployment](https://void.cloud/guide/deployment),
+  [environment variables](https://void.cloud/guide/env-vars),
+  [resource inference](https://void.cloud/reference/resource-inference).
 
 ## Environments and preview environments
 
@@ -125,8 +85,7 @@ service. The scaffolder stays in Buildkit. Full design in
 | **Staging**    | Long-lived                 | Seeded or anonymized copy                                                  | Merge to `main`                                         | None                                            |
 | **Production** | Long-lived                 | Real                                                                       | Manual approval; rebuilt from the approved commit in v1 | GitHub Environment reviewers, prod-only secrets |
 
-Each environment has its own Worker, database, bucket, secrets and Sentry environment, provisioned by the deploy
-service.
+Each environment has its own Worker, database, bucket, secrets and Sentry environment, provisioned by Void.
 
 **Build per stage in v1; promote the same build later.** Promoting one artifact from staging to production is preferred
 but not required for v1. What blocks it today:
@@ -135,18 +94,22 @@ but not required for v1. What blocks it today:
    key) into the browser bundle, so a staging bundle carries staging values. Fix: no environment-specific `VITE_*`
    values; serve public config at runtime (injected into the HTML during SSR, or from a config endpoint).
 2. **Worker versions don't move between Workers.** Staging and production are separate Workers, and an uploaded version
-   belongs to one Worker. Fix: the deploy service uploads the same prebuilt bundle to each environment's Worker through
-   the Cloudflare API (to verify).
+   belongs to one Worker. Fix: upload the same prebuilt bundle to each environment's Worker (to check with Void).
 
 Adopt rule 1 now (runtime public config), since it's cheap and makes promotion possible later without app changes.
+
+# Better Apps services
+
+These belong to Better Apps, not Buildkit: the environment variables vault, managed storage, the collaboration features
+and feature flags. Buildkit keeps the application-code helpers and the scaffolder.
 
 ## Environment variables: our own vault and CLI
 
 **Decided:** Better Apps builds its own vault on Cloudflare and its own CLI. No third-party secrets backend.
 
-**Why Cloudflare alone isn't enough:** Cloudflare secrets are write-only (values can't be read back; verify for Secrets
-Store), so they can't feed local dev, worktrees or agents. Our vault holds the readable copy; Cloudflare holds what
-deployed Workers read.
+**Why deployed secrets alone aren't enough:** secrets set on a Worker are write-only (values can't be read back), so
+they can't feed local dev, worktrees or agents. Our vault holds the readable copy; Cloudflare holds what deployed
+Workers read.
 
 ### Architecture
 
@@ -156,8 +119,8 @@ deployed Workers read.
 | Encryption            | Envelope encryption: a master key in Cloudflare Secrets Store wraps a key per tenant, which wraps a key per project; values are encrypted with the project key. Rotating the master key re-wraps keys, not values |
 | Access                | Users sign in through the platform; the CLI gets short-lived tokens scoped to one project and environment. CI and agents use machine tokens (GitHub OIDC in Actions)                                              |
 | Permissions and audit | Our permissions package decides who can read or write which environment; every read and write goes to the platform audit log (values never logged)                                                                |
-| Typing                | Each app's @t3-oss/env-core schema is the contract. Bindings are typed by the capability handles, so apps never read `env`                                                                                        |
-| Deployed apps         | On deploy, values are pushed to Secrets Store (secrets) and Worker `vars` (plain config) for that environment, and to GitHub Environments where pipelines need them                                               |
+| Typing                | Each app's `env.ts` schema (`void/env`) is the contract                                                                                                                                                           |
+| Deployed apps         | On deploy, secrets are set for that environment through Void (`void secret put`), and values go to GitHub Environments where pipelines need them                                                                  |
 
 ### Environments
 
@@ -173,16 +136,13 @@ deployed Workers read.
 - `env run -- <cmd>`: run with development values injected (dev server, tests, agents in any worktree)
 - `env check [--env <name>]`: validate against the app's schema; fails on missing or invalid values
 - `env diff --env <a> --env <b>`: which keys differ between environments (names only, never values)
-- `env push --env <name>`: check, then write to Secrets Store, Worker vars and GitHub Environments. Called by the deploy
-  service
+- `env push --env <name>`: check, then set the environment's secrets through Void and write GitHub Environments. Called
+  by the deploy pipelines
 - `env set` / `env unset` / `env rotate`: change a value and push it to the environments that use it
 - `env import`: one-time import from existing `.env` files
 
 ### To settle
 
-- **Secrets Store layout:** one store per environment if the beta allows more than one per account; otherwise one store
-  with prefixed names bound to plain names per environment.
-- **Write-only behavior** of Secrets Store values (assumed above).
 - **Offline dev:** whether the CLI keeps an encrypted local cache so `env run` works without network.
 - **Versioning:** keep previous values per key for rollback.
 
@@ -191,14 +151,14 @@ deployed Workers read.
 **Goal:** the app developer never thinks about buckets, CORS or presigned URLs. They drop in an Uploadcn component and
 files work.
 
-**It's the storage capability:** `@better-apps/storage` is the API. Declaring a bucket with it is what makes the deploy
-service set up managed storage for each environment.
+**It builds on Void's storage:** an app that uses `void/storage` gets a bucket in each environment from Void, and
+managed storage adds everything around it.
 
 - **UI:** Uploadcn components and blocks, unchanged.
 - **Adapter:** `@better-apps/uploadcn-adapter` (name not settled) implements Uploadcn's adapter for our service.
-- **Service:** R2 under the hood, provisioned per environment by the deploy service when a bucket is declared. Presigned
-  direct uploads, a file metadata table, access rules tied to the app's users/orgs (via `AuthContext`), quotas, and
-  image variants (Cloudflare Images).
+- **Service:** R2 under the hood, in the bucket Void provisions for each environment. Presigned direct uploads, a file
+  metadata table, access rules tied to the app's users/orgs (via `AuthContext`), quotas, and image variants (Cloudflare
+  Images).
 - **Hooks:** optional scanning and post-processing via the chosen jobs system.
 - **Exit:** files are plain R2 objects; metadata is exportable.
 
@@ -212,13 +172,11 @@ approval flows and the audit log. Our own tools reuse them.
 
 - **Building blocks:** presence and live cursors, threaded comments pinned to an element or range, mentions, and
   approval flows (request → approve/reject, with status and assignee).
-- **Resources:** each feature declares what it needs with the capability packages, like any other code (Deploy CLI
-  above). Presence and live documents are real-time rooms (`@better-apps/realtime`; Durable Objects on Cloudflare).
-  Whether `partyserver` and `y-partyserver` implement the room adapter is open. Comments and approvals are tables in the
-  app's database (D1 on Cloudflare), added through Better Apps' schema layer and scoped through `AuthContext`. How a
-  feature reaches the app's `main` database is open
-  ([the Better Apps deploy plan](https://github.com/betterapps-hq/better-apps/blob/main/docs/deploy-plan.md) §8).
-  kibo-ui's Cursor is a visual starting point; it has no networking.
+- **Resources:** each feature uses Void's resource APIs like any other app code (Deployment above). Presence and live
+  documents run on `void/live` and `defineDurableState` (Durable Objects on Cloudflare). Comments and approvals are
+  tables in the app's database (D1 on Cloudflare), added through Better Apps' schema layer and scoped through
+  `AuthContext`. How a feature reaches the app's `main` database is open. kibo-ui's Cursor is a visual starting point;
+  it has no networking.
 - **Attachments** build on managed storage (above).
 - **Notifications aren't ours:** in-app notifications go through Novu, and email through Resend.
 - **Wrapped for our tools:**
@@ -239,7 +197,7 @@ because it needs database tables. **Not on the agenda yet.**
 - **Rollouts and rollbacks:** staged percentages (1% → 10% → 50% → 100%), a kill switch, rollback, and auto-pause when
   Sentry error rates for flagged users rise.
 - **Evaluation:** in the Worker, with flag state in KV for fast reads at the edge; SSR-safe so there is no flicker.
-- **Data:** the feature's tables, declared through the capability packages like any other feature's.
+- **Data:** the feature's tables, in the app's database like any other feature's.
 - **Admin:** a flags page with an audit log of who changed what.
 - **Buildkit's side, later:** once this feature exists, `@buildkitgg/feature-flags-core` syncs flag data and
   `@buildkitgg/react-feature-flags` gives React hooks on top. The dev tooling is the flags and config devtool below, not
@@ -292,18 +250,17 @@ one line.
 
 # Buildkit packages
 
-| Package                                              | Design                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Async state**                                      | Loading, empty and error states as one pattern for every data view. Model it on @elsecase's AsyncState: statuses `idle · loading · refreshing · empty · success · error · offline · forbidden`; optional content per state; `onRetry` that ignores double clicks; keeps old content while refreshing; screen-reader announcements; `data-status` for styling. Ours adds a `fromQuery(query, isEmpty)` helper for TanStack Query, Suspense support, translatable copy, and shadcn Empty + Skeleton defaults                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| **Permissions (RBAC)**                               | No library unifies Better Auth, Clerk and WorkOS, so we build a thin one. One adapter per provider maps its session to `{ userId, orgId, roles[], permissions[] }`; permissions are named `resource:action` (Clerk and Better Auth already use this shape); `can()` on the server, `<Can>`/`useCan()` on the client. Optional CASL backing for ownership rules ("edit own posts"); a hook for WorkOS FGA or OpenFGA when per-resource checks are needed. Not a policy engine                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| **Endpoint mocking (`MockEndpoint`)**                | A class that wraps and orchestrates MSW so mocking an endpoint is one line, not copied boilerplate. Rebuild it from scratch: the original (`school-data-sync` in skilling-ui) is no longer available. Sketch: `const getUser = new MockEndpoint('GET', '/api/users/:id').returns(user)`; `.returns()`, `.returnsOnce()`, `.fails(status, body)`, `.delays(ms)`, `.respondWith(fn)` for dynamic responses; a built-in spy (`getUser.calls`, `.lastRequest` with parsed body, params and query; `expect(getUser).toHaveBeenCalledWith(...)`-style matchers or `.called(n)`); typed from the `src/api` request and response types; registers itself with the active MSW server or worker and resets between tests; the same endpoint objects plug into Storybook (`parameters.msw`) and Vitest (`msw/node`). Also patterns already used in `D:\msft\SkillingUI\apps\vrt-dashboard\src\tests`: shared handlers plus scenario sets (`happy`, `empty`, `error`), a `delay` option, default handlers that return 401 for third-party endpoints so nothing hits the real network, and `server.use()` overrides per test. Package shape: `defineMocks(resource, { scenarios })` typed from the `src/api` response types; one setup each for Vitest (`msw/node`), Storybook (`parameters.msw`) and the browser in dev; `onUnhandledRequest: 'error'` |
-| **Theme base defaults**                              | Add to `@buildkitgg/shadcn-theme`'s base layer: `color-scheme: light dark`, `text-wrap: balance` on headings, `text-wrap: pretty` on paragraphs. App templates use Tailwind v4 (`@tailwindcss/vite`), `@import "tailwindcss"` (Preflight) and the style's `tailwind.css`; no separate reset. Precompiled `styles.css` is only for pages without Tailwind. Going Tailwind-free in apps was rejected because registry blocks must work without Buildkit wrapping them                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| **Copy to clipboard**                                | One `useCopy()` hook and `<CopyButton>`: copy text, rich HTML or images, with a copied/failed state that resets, a toast option, a fallback when the Clipboard API is unavailable or permission is denied, accessible announcements, and telemetry. Rebuilt by hand about ten times in the last month                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| **API layer** (`defineApi` + lint rules)             | One file per resource declaring its queries and mutations over server functions, with tag-based invalidation, generating TanStack Query `queryOptions`/`mutationOptions` for components and loaders. RTK Query's structure on TanStack Query. Ships with lint rules that ban inline `useQuery`/`useMutation` query functions outside `src/api`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| **Lint config** (`@buildkitgg/oxlint-config`)        | Publish the repo's private `@repo/oxlint-config` (today a single `base.json`). Structure: `base` (current rules) plus one rule set per feature, each a separate export that the app's TypeScript lint config extends: the `lint` block of `vite.config.ts` under Vite+, or `oxlint.config.ts` (`.oxlintrc.json` can't extend a package) (`api-layer`: no inline `queryFn`/`fetch` in components; `i18n`: no global Lingui `i18n` or core `t` on the server (enforces the localization add-on's per-request rule); `components`: `components/ui` is re-exports only; `server`: server functions declare a schema and auth policy). Custom rules ship as Oxlint JS plugins, which are alpha and not subject to semver, so pin oxlint. Scaffolder add-ons add their rule set to `extends` when enabled                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| **Form fields** (`@buildkitgg/shadcn-tanstack-form`) | The TanStack Form + shadcn version of `@1js/fluentui-rhf-inputs` (`D:/msft/fluentui-rhf-inputs`: controlled Fluent inputs for React Hook Form, each inside a Fluent `Field`). Built on TanStack Form's form composition: `createFormHookContexts` + `createFormHook` registering field components, so apps write `form.AppField name="email" children={(f) => <f.TextField label="Email" />}`. Each field renders shadcn `Field`, `FieldLabel`, `FieldDescription` and `FieldError` from the locked Buildkit primitives, with ARIA wiring and Zod (Standard Schema) validation. Form-level pieces: `SubmitButton` (pending and disabled state), server-function errors mapped onto fields, a form-level error through the alerts manager, and a leave-with-unsaved-changes guard. Works inside Buildkit's typed modal forms                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| **Icon library per style**                           | Buildkit's style packages are built with `lucide-react`, so icons inside our components stay Lucide whatever the app picks. Extend the shadcn generator to build each style once per supported icon library (Lucide, Tabler, Hugeicons, Phosphor, Remix Icon), selected the same way as the style. Confirm shadcn's exact `iconLibrary` values against its schema                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| **tablecn adapters**                                 | A TanStack Router implementation of tablecn's `UrlStateAdapter` (`read`, `write(patch)`, `subscribe`, `readServer`; about 20 lines), and a converter from its filter model (`@querycn/filter-core`) to Drizzle queries. tablecn targets TanStack Table v9                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| Package                                              | Design                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Async state**                                      | Loading, empty and error states as one pattern for every data view. Model it on @elsecase's AsyncState: statuses `idle · loading · refreshing · empty · success · error · offline · forbidden`; optional content per state; `onRetry` that ignores double clicks; keeps old content while refreshing; screen-reader announcements; `data-status` for styling. Ours adds a `fromQuery(query, isEmpty)` helper for TanStack Query, Suspense support, translatable copy, and shadcn Empty + Skeleton defaults                                                                                                                                                                                                                                                                                                                  |
+| **Permissions (RBAC)**                               | No library unifies Better Auth, Clerk and WorkOS, so we build a thin one. One adapter per provider maps its session to `{ userId, orgId, roles[], permissions[] }`; permissions are named `resource:action` (Clerk and Better Auth already use this shape); `can()` on the server, `<Can>`/`useCan()` on the client. Optional CASL backing for ownership rules ("edit own posts"); a hook for WorkOS FGA or OpenFGA when per-resource checks are needed. Not a policy engine                                                                                                                                                                                                                                                                                                                                                |
+| **Endpoint mocking** (`@buildkitgg/api-mocker`)      | Merged in [betterapps-hq/buildkit#97](https://github.com/betterapps-hq/buildkit/pull/97) and prepared for its 0.1.0 release, not yet published. `createApiMock(target)` registers mock endpoints on an MSW worker or server, shared between unit tests and Storybook, with optional spies on requests                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| **Theme base defaults**                              | Add to `@buildkitgg/shadcn-theme`'s base layer: `color-scheme: light dark`, `text-wrap: balance` on headings, `text-wrap: pretty` on paragraphs. App templates use Tailwind v4 (`@tailwindcss/vite`), `@import "tailwindcss"` (Preflight) and the style's `tailwind.css`; no separate reset. Precompiled `styles.css` is only for pages without Tailwind. Going Tailwind-free in apps was rejected because registry blocks must work without Buildkit wrapping them                                                                                                                                                                                                                                                                                                                                                         |
+| **Copy to clipboard**                                | One `useCopy()` hook and `<CopyButton>`: copy text, rich HTML or images, with a copied/failed state that resets, a toast option, a fallback when the Clipboard API is unavailable or permission is denied, accessible announcements, and telemetry. Rebuilt by hand about ten times in the last month                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| **API layer** (`defineApi`)                          | One file per resource declaring its queries and mutations over server functions, with tag-based invalidation, generating TanStack Query `queryOptions`/`mutationOptions` for components and loaders. RTK Query's structure on TanStack Query.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| **Form fields** (`@buildkitgg/shadcn-tanstack-form`) | The TanStack Form + shadcn version of `@1js/fluentui-rhf-inputs` (`D:/msft/fluentui-rhf-inputs`: controlled Fluent inputs for React Hook Form, each inside a Fluent `Field`). Built on TanStack Form's form composition: `createFormHookContexts` + `createFormHook` registering field components, so apps write `form.AppField name="email" children={(f) => <f.TextField label="Email" />}`. Each field renders shadcn `Field`, `FieldLabel`, `FieldDescription` and `FieldError` from the locked Buildkit primitives, with ARIA wiring and Zod (Standard Schema) validation. Form-level pieces: `SubmitButton` (pending and disabled state), server-function errors mapped onto fields, a form-level error through the alerts manager, and a leave-with-unsaved-changes guard. Works inside Buildkit's typed modal forms |
+| **Icon library per style**                           | Buildkit's style packages are built with `lucide-react`, so icons inside our components stay Lucide whatever the app picks. Extend the shadcn generator to build each style once per supported icon library (Lucide, Tabler, Hugeicons, Phosphor, Remix Icon), selected the same way as the style. Confirm shadcn's exact `iconLibrary` values against its schema                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| **tablecn adapters**                                 | A TanStack Router implementation of tablecn's `UrlStateAdapter` (`read`, `write(patch)`, `subscribe`, `readServer`; about 20 lines), and a converter from its filter model (`@querycn/filter-core`) to Drizzle queries. tablecn targets TanStack Table v9                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 
 ## Localization add-on (scaffolder)
 
@@ -329,8 +286,7 @@ TanStack Start only in v1. Full design in [scaffolder-research.md](scaffolder-re
     `{ locale, i18n }` on through the middleware context.
   - **Per-request instance (critical):** never use Lingui's global `i18n` or the core `t` macro on the server; a Worker
     serves concurrent requests, so a global instance leaks locales between users. Create one with `setupI18n()` per
-    request, provide it through `I18nProvider`, and use the `useLingui()` macro in components. The `i18n` rule set of
-    `@buildkitgg/oxlint-config` enforces this.
+    request, provide it through `I18nProvider`, and use the `useLingui()` macro in components.
   - **CSRF:** once an app has `src/start.ts`, Start stops adding its CSRF middleware, so the template adds it back
     first.
   - **URLs:** TanStack Router's `rewrite` strips and adds the locale prefix, so app links stay locale-free. On the
@@ -381,9 +337,8 @@ optional add-ons, and asks slot questions such as "Add a database?", then "Which
 flags are generated from the catalog, so a new add-on needs no CLI code. Design in
 [scaffolder-research.md](scaffolder-research.md) §4.11.
 
-**No hosts or cloud config:** the scaffolder never decides where an app runs. Add-ons add capability packages and write
-their declarations as app code, and the Start target wires the Better Apps Vite plugin. Better Apps' deploy service does
-the rest (Deploy CLI above).
+**No hosts or cloud config:** the scaffolder never decides where an app runs. Add-ons write app code that uses Void's
+resource APIs, and `void deploy` provisions and deploys what that code uses (Deployment above).
 
 **Add to the engine:**
 

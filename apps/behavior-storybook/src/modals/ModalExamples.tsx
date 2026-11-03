@@ -1,5 +1,5 @@
 import type { ModalManager } from "@buildkitgg/react-modals"
-import { ExampleResult } from "@repo/storybook-config/examples"
+import { ExampleResult } from "@buildkitgg/storybook-config/examples"
 import { useState } from "react"
 import type { ComponentType, ReactNode } from "react"
 import { createPreviewModal, createQuantityModal } from "./createExampleModals.js"

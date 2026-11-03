@@ -9,7 +9,7 @@ import {
   DialogDescription
 } from "@buildkitgg/shadcn-baseui-kit"
 import { createShadcnTheme, type ShadcnThemeOptions } from "@buildkitgg/shadcn-theme"
-import { ExampleResult } from "@repo/storybook-config/examples"
+import { ExampleResult } from "@buildkitgg/storybook-config/examples"
 import { useEffect, useState } from "react"
 export type ShadcnDemoProps = ShadcnThemeOptions & { showPortal?: boolean }
 export function ShadcnDemo({ showPortal = false, ...options }: ShadcnDemoProps) {

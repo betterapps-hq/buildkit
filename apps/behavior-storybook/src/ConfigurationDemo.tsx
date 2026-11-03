@@ -2,7 +2,7 @@ import { createPreferences } from "@buildkitgg/preferences-core"
 import { createConfiguration, type ReactConfigurationClient } from "@buildkitgg/react-configuration"
 import { usePreference } from "@buildkitgg/react-preferences"
 import { Button, NativeSelect, NativeSelectOption } from "@buildkitgg/shadcn-baseui-kit"
-import { ExampleResult } from "@repo/storybook-config/examples"
+import { ExampleResult } from "@buildkitgg/storybook-config/examples"
 import { useEffect, useState } from "react"
 
 type Settings = { newCheckout: boolean; defaultLanguage: string }

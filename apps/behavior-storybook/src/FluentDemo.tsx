@@ -1,4 +1,5 @@
 import { createFluentTheme, FluentThemeProvider, useTheme, type FluentThemeOptions } from "@buildkitgg/fluentui-theme"
+import { ExampleResult } from "@buildkitgg/storybook-config/examples"
 import {
   Button,
   Dialog,
@@ -10,7 +11,6 @@ import {
   DialogActions,
   Text
 } from "@fluentui/react-components"
-import { ExampleResult } from "@repo/storybook-config/examples"
 import { useState } from "react"
 import { useFluentDemoStyles } from "./FluentDemo.styles.js"
 

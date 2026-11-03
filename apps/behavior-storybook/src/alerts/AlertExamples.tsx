@@ -1,5 +1,5 @@
 import { useAlerts, type AlertManager, type AlertRegionProps } from "@buildkitgg/react-alerts"
-import { ExampleResult } from "@repo/storybook-config/examples"
+import { ExampleResult } from "@buildkitgg/storybook-config/examples"
 import type { ComponentType, ReactNode } from "react"
 import { useState } from "react"
 export type AlertScenario = "dismiss" | "replace" | "action" | "regions" | "silent"

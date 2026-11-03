@@ -1,13 +1,61 @@
 {
-  "name": "@repo/oxlint-config",
+  "name": "@buildkitgg/oxlint-config",
   "version": "0.0.0",
-  "private": true,
+  "description": "Shared Oxlint configuration: the Buildkit base rules and the anti-slop rule set.",
   "license": "MIT",
-  "files": [
-    "base.ts"
-  ],
+  "type": "module",
+  "sideEffects": false,
   "exports": {
-    "./base": "./base.ts"
+    "./base": {
+      "types": "./dist/base.d.ts",
+      "import": "./dist/base.js"
+    },
+    "./anti-slop": {
+      "types": "./dist/anti-slop.d.ts",
+      "import": "./dist/anti-slop.js"
+    }
   },
-  "scripts": {}
+  "files": [
+    "dist/**/*.js",
+    "dist/**/*.d.ts",
+    "dist/vendor/anti-slop/**/LICENSE",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "pnpm build && vp test run",
+    "test:coverage": "pnpm build && vp test run --coverage",
+    "sync:anti-slop": "node scripts/sync-anti-slop.ts",
+    "prepack": "pnpm build"
+  },
+  "dependencies": {
+    "@oxlint/plugins": "1.89.0"
+  },
+  "peerDependencies": {
+    "oxlint": "^1.89.0"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "24.19.2",
+    "@vitest/coverage-v8": "catalog:",
+    "oxlint": "1.89.0",
+    "typescript": "catalog:",
+    "vite-plus": "catalog:",
+    "vitest": "catalog:"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AndrewCraswell/buildkit.git",
+    "directory": "packages/tooling/oxlint-config"
+  },
+  "homepage": "https://github.com/AndrewCraswell/buildkit/tree/main/packages/tooling/oxlint-config#readme",
+  "bugs": {
+    "url": "https://github.com/AndrewCraswell/buildkit/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
 }

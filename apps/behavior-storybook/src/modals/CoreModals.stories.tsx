@@ -1,6 +1,6 @@
 import { createModalStore } from "@buildkitgg/modal-core"
 import { useModals } from "@buildkitgg/react-modals"
-import { ExampleResult } from "@repo/storybook-config/examples"
+import { ExampleResult } from "@buildkitgg/storybook-config/examples"
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { useEffect, useState } from "react"
 

@@ -236,7 +236,6 @@ The phase found seven gaps in the engine. All but one are fixed.
   `translate` is deferred: it needs an AI provider.
 - **Detection is `url`, `cookie`, `header` in both modes.** The browser reads `document.cookie` and
   `navigator.languages`, so an SPA ignores none of them.
-- **The `lint.extends` point and the `i18n` lint rule wait** for `@buildkitgg/oxlint-config` to publish.
 - **No `$schema` in `buildkit.jsonc`** until a schema is hosted; `buildkit schema` prints it.
 - **The deploy wiring is an add-on the template doesn't offer yet,** so the wizard never offers an app that can't
   install.

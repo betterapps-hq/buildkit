@@ -1,5 +1,5 @@
 import { createAlertStore } from "@buildkitgg/alert-core"
-import { ExampleResult } from "@repo/storybook-config/examples"
+import { ExampleResult } from "@buildkitgg/storybook-config/examples"
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { useState, useSyncExternalStore } from "react"
 function Example() {

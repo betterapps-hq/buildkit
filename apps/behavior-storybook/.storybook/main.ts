@@ -1,4 +1,4 @@
-import { defineMain } from "@repo/storybook-config/main"
+import { defineMain } from "@buildkitgg/storybook-config/main"
 import react from "@vitejs/plugin-react"
 export default defineMain({
   framework: "@storybook/react-vite",
