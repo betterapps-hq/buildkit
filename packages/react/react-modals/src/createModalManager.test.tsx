@@ -9,6 +9,7 @@ afterEach(cleanup)
 
 function TestSurface({ entry, title, body, footer, children }: ModalSurfaceProps<object>) {
   useModalExit(entry)
+
   return (
     <section aria-label={String(title)}>
       {body}
@@ -19,8 +20,10 @@ function TestSurface({ entry, title, body, footer, children }: ModalSurfaceProps
     </section>
   )
 }
+
 function NameBody({ data, controls }: ModalSlotProps<{ name: string }, string>) {
   const [count, setCount] = useState(0)
+
   return (
     <>
       <span>{data.name}</span>
@@ -59,19 +62,23 @@ it("shares confirm, alert, labels and typed updates in one manager", async () =>
 
 it("renders typed components, preserves their state on updates, and settles on real unmount", async () => {
   const manager = createModalManager({ adapter: { Surface: TestSurface } })
+
   const name = manager.createModal({
     body: { component: NameBody },
     initialState: { name: "" },
     title: "Name",
     defaultResult: ""
   })
+
   const handle = name.open({ name: "Ada" }, { id: "name" })
   expectTypeOf(handle).resolves.toEqualTypeOf<string>()
+
   const view = render(
     <StrictMode>
       <ModalRenderer manager={manager} />
     </StrictMode>
   )
+
   await act(async () => {
     await Promise.resolve()
   })
@@ -105,9 +112,11 @@ it("cleans up open-and-close in one batch and gives SSR a stable empty snapshot"
   handle.dismiss()
   render(<ModalRenderer manager={manager} />)
   expect(manager.getSnapshot()).toHaveLength(0)
+
   function Count() {
     return <span>{useModals(manager).length}</span>
   }
+
   act(() => {
     manager.open({ title: "Client only" })
   })
@@ -120,6 +129,7 @@ it("rejects multiple renderers for one manager", () => {
   const manager = createModalManager({ adapter: { Surface: TestSurface } })
   render(<ModalRenderer manager={manager} />)
   const spy = vi.spyOn(console, "error").mockImplementation(() => undefined)
+
   try {
     expect(() => render(<ModalRenderer manager={manager} />)).toThrow(/one modal renderer/)
   } finally {
@@ -135,12 +145,14 @@ it("explains the missing adapter when rendering a headless manager", () => {
 // Checked by the package type build; invalid operations never run.
 function checkTypes() {
   const manager = createModalManager<{ className?: string }>()
+
   const definition = manager.createModal<{ name: string }, string>({
     body: { component: NameBody },
     initialState: { name: "" },
     title: "Edit",
     defaultResult: ""
   })
+
   const handle = definition.open({ name: "Ada" })
   // @ts-expect-error A result must match the definition.
   handle.close(false)
@@ -153,4 +165,5 @@ function checkTypes() {
   // @ts-expect-error UI options retain the adapter's surface type.
   manager.open({ title: "Edit", surfaceProps: { unknownProp: true } })
 }
+
 void checkTypes

@@ -9,7 +9,10 @@ export type HandlerTarget = {
 }
 
 /** Receives the parsed request body before the endpoint resolves. */
+// oxlint-disable-next-line anti-slop/no-unknown-parameters -- public API: callers decode the body themselves
 export type OnRequest = (body: unknown) => void
+
+type JsonValue = null | boolean | number | string | JsonValue[] | { [key: string]: JsonValue }
 
 export type MockRequest = {
   method: string
@@ -52,18 +55,22 @@ class EndpointHistory implements MockEndpoint {
       url: request.url,
       pathname: url.pathname + url.search
     })
+
     if (this.onRequest) {
       this.onRequest(await readBody(request))
     }
   }
 }
 
-async function readBody(request: Request): Promise<unknown> {
+/** The body as JSON, its text when it isn't JSON, or undefined when there is none. */
+async function readBody(request: Request): Promise<JsonValue | undefined> {
   try {
     const text = await request.clone().text()
+
     if (!text) {
       return undefined
     }
+
     try {
       return JSON.parse(text)
     } catch {
@@ -80,15 +87,17 @@ export type MockOptions<T = unknown> = {
   headers?: Record<string, string>
 }
 
-function isResolver(value: unknown): value is HttpResponseResolver {
-  return typeof value === "function"
+function isResolver(value: MockOptions | HttpResponseResolver | undefined): value is HttpResponseResolver {
+  return value instanceof Function
 }
 
 function resolveOptions(options: MockOptions): Response {
   const { status, data, headers = {} } = options
+
   if (data === null || data === undefined) {
     return new HttpResponse(null, { status: status ?? 204, headers })
   }
+
   return HttpResponse.json(data, { status: status ?? 200, headers })
 }
 
@@ -100,19 +109,24 @@ function createHandler(
 ): RequestHandler {
   if (Array.isArray(input)) {
     const sequence = [...input]
+
     const resolver: HttpResponseResolver = async (info) => {
       const next = sequence.length > 1 ? sequence.shift() : sequence[0]
       await endpoint.record(info.request)
+
       return resolveOptions(next ?? {})
     }
+
     return http[method](path, resolver)
   }
 
   const resolver: HttpResponseResolver = async (info) => {
     await endpoint.record(info.request)
+
     if (isResolver(input)) {
       return input(info)
     }
+
     return resolveOptions(input ?? {})
   }
 
@@ -159,6 +173,7 @@ export function createApiMock(target: HandlerTarget, onRequest?: OnRequest): Api
       endpoint.clear()
       endpointRegistry.set(key, endpoint)
       target.use(createHandler(method, escapedPath, input, endpoint))
+
       return endpoint
     }
   }

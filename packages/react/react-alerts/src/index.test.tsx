@@ -4,7 +4,9 @@ import { renderToString } from "react-dom/server"
 import { afterEach, expect, it, vi } from "vite-plus/test"
 import { AlertRegion, createAlertManager, useAlerts } from "./index.js"
 import type { AlertRendererProps } from "./index.js"
+
 afterEach(cleanup)
+
 function Alert({ entry, dismiss, dismissLabel }: AlertRendererProps) {
   return (
     <div>
@@ -13,6 +15,7 @@ function Alert({ entry, dismiss, dismissLabel }: AlertRendererProps) {
     </div>
   )
 }
+
 it("renders external commands and region changes without a provider", async () => {
   const manager = createAlertManager({ adapter: { Alert } })
   const view = render(<AlertRegion manager={manager} />)
@@ -28,12 +31,15 @@ it("renders external commands and region changes without a provider", async () =
   expect(screen.queryByText("Panel")).toBeNull()
   expect(manager.getSnapshot()).toHaveLength(1)
 })
+
 it("subscribes headlessly, uses empty SSR snapshots, and requires an adapter for rendering", () => {
   const manager = createAlertManager()
   manager.add({ title: "Client only" })
+
   function Count() {
     return <p>{useAlerts(manager).length}</p>
   }
+
   expect(renderToString(<Count />)).toContain("0")
   render(<Count />)
   expect(screen.getByText("1")).toBeTruthy()

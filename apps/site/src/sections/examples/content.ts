@@ -5,9 +5,11 @@ const SOURCES = import.meta.glob<string>("../../examples/*/*", { query: "?raw", 
 
 function source(path: string) {
   const text = SOURCES[`../../examples/${path}`]
+
   if (text === undefined) {
     throw new Error(`No example file at ${path}`)
   }
+
   return text
 }
 

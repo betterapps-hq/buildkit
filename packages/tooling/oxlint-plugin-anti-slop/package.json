@@ -14,11 +14,11 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "default": "./dist/index.js"
     },
     "./recommended": {
       "types": "./dist/recommended.d.ts",
-      "import": "./dist/recommended.js"
+      "default": "./dist/recommended.js"
     }
   },
   "files": [

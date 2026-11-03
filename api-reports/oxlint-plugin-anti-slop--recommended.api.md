@@ -9,6 +9,7 @@ import type { OxlintConfig } from 'oxlint';
 // @public
 const antiSlop: OxlintConfig;
 export default antiSlop;
+export { antiSlop as module.exports }
 
 // (No @packageDocumentation comment for this package)
 

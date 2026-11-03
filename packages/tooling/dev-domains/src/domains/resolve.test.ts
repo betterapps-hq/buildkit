@@ -21,6 +21,7 @@ it("resolves distinct primary and worktree names, callbacks, and environment tem
       }
     }
   })
+
   const endpoints = resolveEndpoints({ config, root: process.cwd(), worktree: null, file: undefined })
   expect(endpoints[0]).toMatchObject({
     origin: "https://local.example.com",
@@ -38,6 +39,7 @@ it("resolves distinct primary and worktree names, callbacks, and environment tem
   expect(interpolate("{origin}/callback", { origin: "https://example.test" })).toBe("https://example.test/callback")
   expect(() => interpolate("{missing}", {})).toThrow("Unknown template")
 })
+
 it("rejects conflicting or invalid resolved names", () => {
   for (const name of ["shared", "x".repeat(64), "nested..name", "UPPER", "-name"]) {
     const config = configSchema.parse({
@@ -47,17 +49,21 @@ it("rejects conflicting or invalid resolved names", () => {
         b: { command: ["node"], primaryName: name, name }
       }
     })
+
     expect(() => resolveEndpoints({ config, root: ".", worktree: null, file: undefined })).toThrow(Error)
   }
 })
+
 it("uses custom ports and refuses directories outside the project", async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), "buildkit-path-"))
+
   try {
     const config = configSchema.parse({
       project: "demo",
       proxy: { https: false, port: 8080 },
       endpoints: { app: { command: ["node"], cwd: ".." } }
     })
+
     const project = { config, root, worktree: null, file: undefined }
     const endpoint = resolveEndpoints(project)[0]!
     expect(endpoint.origin).toBe("http://demo-app.localhost:8080")

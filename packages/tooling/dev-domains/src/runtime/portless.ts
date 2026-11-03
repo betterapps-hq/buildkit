@@ -10,16 +10,21 @@ export async function runEndpoint(project: Project, endpoint: ResolvedEndpoint, 
   if (process.env.BUILDKIT_ACTIVE) {
     throw new Error("Recursive dev-domains invocation. Configure the underlying server command.")
   }
+
   await endpointDirectory(project, endpoint)
+
   const hostnames = (project.config.proxy.domains ?? [project.config.domain]).map(
     (domain) => `${endpoint.name}.${domain}`
   )
+
   await ensureProxy(project, signal)
   const store = routeStore()
+
   for (let attempt = 0; attempt < 3; attempt++) {
     signal?.throwIfAborted()
     const reservation = await reservePort()
     const claimed: string[] = []
+
     try {
       const command = await serverCommand(
         endpoint.endpoint,
@@ -28,12 +33,15 @@ export async function runEndpoint(project: Project, endpoint: ResolvedEndpoint, 
         endpoint.variables,
         reservation.port
       )
+
       for (const hostname of hostnames) {
         try {
           const existing = store.loadRoutes().find((route) => route.hostname === hostname)
+
           if (existing) {
             throw new RouteConflictError(hostname, existing.pid)
           }
+
           // addRoute takes Portless's cross-process lock and never replaces a live owner.
           store.addRoute(hostname, reservation.port, process.pid)
           claimed.push(hostname)
@@ -44,14 +52,17 @@ export async function runEndpoint(project: Project, endpoint: ResolvedEndpoint, 
               { cause: error }
             )
           }
+
           throw error
         }
       }
+
       const env = serverEnvironment(endpoint, reservation.port, proxyEnvironment(project), hostnames)
       // Most framework CLIs accept a port, not an inherited listening socket.
       // Keep the registration until the child exits; retry a competing external bind.
       await reservation.release()
       const result = await runProcess(command, { cwd: endpoint.cwd, env, signal, quiet })
+
       if (
         signal?.aborted ||
         result.code === 0 ||
@@ -72,5 +83,6 @@ export async function runEndpoint(project: Project, endpoint: ResolvedEndpoint, 
       }
     }
   }
+
   return 1
 }

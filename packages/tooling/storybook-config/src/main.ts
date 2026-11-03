@@ -30,5 +30,5 @@ export const baseConfig: Omit<StorybookConfig, "stories"> = {
  * ```
  */
 export function defineMain(overrides: StorybookConfig): StorybookConfig {
-  return defineStorybookMain(deepMerge(baseConfig as StorybookConfig, overrides))
+  return defineStorybookMain(deepMerge(baseConfig, overrides))
 }

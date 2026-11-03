@@ -87,16 +87,25 @@ export type ShadcnLocalizationProviderProps = {
 export function ShadcnLocalizationProvider({ strings, direction, children }: ShadcnLocalizationProviderProps) {
   const parent = useShadcnLocalization()
   const resolved = { ...parent.strings }
-  for (const key of Object.keys(parent.strings)) {
-    const value = Reflect.get(strings ?? {}, key)
+
+  function override<Key extends keyof ShadcnStrings>(key: Key) {
+    const value = strings?.[key]
+
     if (value !== undefined) {
-      Reflect.set(resolved, key, value)
+      resolved[key] = value
     }
   }
+
+  // SAFETY: parent.strings is a ShadcnStrings, so its keys are ShadcnStrings keys.
+  for (const key of Object.keys(parent.strings) as (keyof ShadcnStrings)[]) {
+    override(key)
+  }
+
   const localization: ShadcnLocalization = {
     strings: Object.freeze(resolved),
     direction: direction ?? parent.direction
   }
+
   return (
     <LocalizationContext value={localization}>
       <DirectionProvider direction={localization.direction}>{children}</DirectionProvider>

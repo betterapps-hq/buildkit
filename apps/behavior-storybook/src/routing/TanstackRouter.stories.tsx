@@ -10,6 +10,7 @@ import {
 } from "@tanstack/react-router"
 import { useState } from "react"
 import { RoutingDemo, routingStory, type RoutingScenario } from "./RoutingDemo.js"
+
 function NativeLinks() {
   return (
     <nav className="bk-router-links" aria-label="Direct links">
@@ -18,19 +19,23 @@ function NativeLinks() {
     </nav>
   )
 }
+
 function makeRouter(initialPath: string) {
   const root = createRootRoute({ component: NativeLinks })
   const people = createRoute({ getParentRoute: () => root, path: "/people" })
   const detail = createRoute({ getParentRoute: () => root, path: "/people/$id" })
   const settings = createRoute({ getParentRoute: () => root, path: "/settings" })
+
   return createRouter({
     routeTree: root.addChildren([people, detail, settings]),
     history: createMemoryHistory({ initialEntries: [initialPath] })
   })
 }
+
 function Example({ initialPath = "/people", scenario }: { initialPath?: string; scenario?: RoutingScenario }) {
   const [router] = useState(() => makeRouter(initialPath))
   const [adapter] = useState(() => createRouterAdapter(router))
+
   return (
     <RoutingDemo
       scenario={scenario}
@@ -46,12 +51,16 @@ function Example({ initialPath = "/people", scenario }: { initialPath?: string; 
     </RoutingDemo>
   )
 }
+
 const meta = { title: "Routing/TanStack Router", component: Example } satisfies Meta<typeof Example>
+
 export default meta
+
 export const RouteTabs: StoryObj<typeof meta> = { ...routingStory("tabs"), name: "Route tabs" }
 export const RoutePanel: StoryObj<typeof meta> = { ...routingStory("panel"), name: "Route panel" }
 export const BrowserHistory: StoryObj<typeof meta> = { ...routingStory("history"), name: "Browser history" }
 export const NativeLinksExample: StoryObj<typeof meta> = { ...routingStory("links"), name: "Native links" }
+
 export const DirectLink: StoryObj<typeof meta> = {
   name: "Direct link",
   ...routingStory("direct"),

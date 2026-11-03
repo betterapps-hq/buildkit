@@ -1,4 +1,5 @@
 import { makeStyles, tokens } from "@fluentui/react-components"
+
 export const useFluentDemoStyles = makeStyles({
   surface: {
     padding: tokens.spacingHorizontalL,

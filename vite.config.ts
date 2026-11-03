@@ -33,11 +33,15 @@ export default defineConfig({
     ignorePatterns: [
       "packages/tooling/catalog/templates/**",
       "**/src/vendor/**",
+      // Written by pnpm --filter @buildkitgg/typescript-utils generate
+      "packages/core/typescript-utils/src/index.ts",
       // Code the anti-slop tests expect to be reported
-      "packages/tooling/oxlint-plugin-anti-slop/test/fixture/slop.ts"
+      "packages/tooling/oxlint-plugin-anti-slop/test/fixture/slop.ts",
+      "packages/tooling/oxlint-config/test/fixture/commonjs/slop.ts"
     ],
     options: { typeAware: true, typeCheck: true },
-    jsPlugins: [{ name: "vite-plus", specifier: "vite-plus/oxlint-plugin" }],
+    // Listing plugins here replaces the ones base registers, so keep them.
+    jsPlugins: [...(base.jsPlugins ?? []), { name: "vite-plus", specifier: "vite-plus/oxlint-plugin" }],
     rules: {
       "vite-plus/prefer-vite-plus-imports": "error",
       // Type-aware rules the code doesn't pass yet; turning one on means fixing its errors first.

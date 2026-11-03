@@ -133,7 +133,7 @@
       "entry": ["src/index.ts", "src/recommended.ts", "test/fixture/*.ts"]
     },
     "packages/tooling/oxlint-config": {
-      "entry": ["src/anti-slop.ts"]
+      "entry": ["src/base.ts", "test/fixture/**/*.ts"]
     }
   }
 }

@@ -9,6 +9,7 @@ import { Plugin as Plugin_2 } from '@oxlint/plugins';
 // @public
 const antiSlopPlugin: Plugin_2;
 export default antiSlopPlugin;
+export { antiSlopPlugin as module.exports }
 
 // (No @packageDocumentation comment for this package)
 

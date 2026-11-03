@@ -26,6 +26,7 @@ export function exampleCatalog(): CatalogManifest {
       { kind: "dependency", name: "vite", version: ctx.version("vite"), dev: true }
     ]
   })
+
   const drizzle = defineAddon({
     id: "@acme/drizzle",
     version: "1.0.0",
@@ -49,6 +50,7 @@ export function exampleCatalog(): CatalogManifest {
       }
     ]
   })
+
   const prisma = defineAddon({
     id: "@acme/prisma",
     version: "1.0.0",
@@ -57,6 +59,7 @@ export function exampleCatalog(): CatalogManifest {
     provides: { orm: { name: "prisma" }, database: { dialect: "postgresql" } },
     contribute: (ctx) => [{ kind: "dependency", name: "prisma", version: ctx.version("prisma"), dev: true }]
   })
+
   const convex = defineAddon({
     id: "@acme/convex",
     version: "1.0.0",
@@ -66,6 +69,7 @@ export function exampleCatalog(): CatalogManifest {
     conflicts: ["provides:orm"],
     contribute: (ctx) => [{ kind: "dependency", name: "convex", version: ctx.version("convex") }]
   })
+
   const betterAuth = defineAddon({
     id: "@acme/better-auth",
     version: "1.0.0",
@@ -76,6 +80,7 @@ export function exampleCatalog(): CatalogManifest {
     conflicts: ["provides:auth"],
     contribute: (ctx) => [{ kind: "dependency", name: "better-auth", version: ctx.version("better-auth") }]
   })
+
   const clerk = defineAddon({
     id: "@acme/clerk",
     version: "1.0.0",
@@ -86,6 +91,7 @@ export function exampleCatalog(): CatalogManifest {
       { kind: "dependency", name: "@clerk/clerk-react", version: ctx.version("@clerk/clerk-react") }
     ]
   })
+
   const betterAuthDrizzle = defineAddon({
     id: "@acme/better-auth-drizzle",
     version: "1.0.0",
@@ -94,6 +100,7 @@ export function exampleCatalog(): CatalogManifest {
     joins: ["@acme/better-auth", "@acme/drizzle"],
     contribute: () => [{ kind: "file", path: "src/db/auth-schema.ts", content: "export {}\n", ownership: "seed" }]
   })
+
   const betterAuthPrisma = defineAddon({
     id: "@acme/better-auth-prisma",
     version: "1.0.0",
@@ -102,6 +109,7 @@ export function exampleCatalog(): CatalogManifest {
     joins: ["@acme/better-auth", "@acme/prisma"],
     contribute: () => [{ kind: "lines", path: "prisma/schema.prisma", lines: ["model User {", "  id String @id", "}"] }]
   })
+
   const lingui = defineAddon({
     id: "@acme/lingui",
     version: "1.0.0",
@@ -113,6 +121,7 @@ export function exampleCatalog(): CatalogManifest {
     ask: ["locales"],
     contribute: (ctx) => [{ kind: "dependency", name: "@lingui/core", version: ctx.version("@lingui/core") }]
   })
+
   const reactIntl = defineAddon({
     id: "@acme/react-intl",
     version: "1.0.0",
@@ -121,6 +130,7 @@ export function exampleCatalog(): CatalogManifest {
     provides: { i18n: {} },
     contribute: (ctx) => [{ kind: "dependency", name: "react-intl", version: ctx.version("react-intl") }]
   })
+
   const sentry = defineAddon({
     id: "@acme/sentry",
     version: "1.0.0",
@@ -128,6 +138,7 @@ export function exampleCatalog(): CatalogManifest {
     description: "Errors and performance",
     contribute: (ctx) => [{ kind: "dependency", name: "@sentry/react", version: ctx.version("@sentry/react") }]
   })
+
   const posthog = defineAddon({
     id: "@acme/posthog",
     version: "1.0.0",
@@ -135,6 +146,7 @@ export function exampleCatalog(): CatalogManifest {
     description: "Product analytics",
     contribute: (ctx) => [{ kind: "dependency", name: "posthog-js", version: ctx.version("posthog-js") }]
   })
+
   const database = defineQuestion({
     id: "database",
     title: "Database",
@@ -147,6 +159,7 @@ export function exampleCatalog(): CatalogManifest {
       { addon: "@acme/convex", hint: "Hosted, no SQL to write" }
     ]
   })
+
   const auth = defineQuestion({
     id: "auth",
     title: "Sign-in",
@@ -155,6 +168,7 @@ export function exampleCatalog(): CatalogManifest {
     pick: "one",
     choices: ["@acme/better-auth", "@acme/clerk"]
   })
+
   const telemetry = defineQuestion({
     id: "telemetry",
     title: "Telemetry",
@@ -163,6 +177,7 @@ export function exampleCatalog(): CatalogManifest {
     pick: "many",
     choices: ["@acme/sentry", "@acme/posthog"]
   })
+
   return defineCatalog({
     id: "@acme/catalog",
     version: "2.0.0",

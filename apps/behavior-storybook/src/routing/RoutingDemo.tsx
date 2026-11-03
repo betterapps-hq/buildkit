@@ -13,9 +13,12 @@ import {
   Button
 } from "@buildkitgg/shadcn-baseui-kit"
 import { useSyncExternalStore, type ReactNode } from "react"
+
 export type RoutingScenario = "tabs" | "panel" | "history" | "direct" | "links"
+
 export function routingStory(scenario: RoutingScenario) {
   let code: string | undefined
+
   if (scenario === "tabs") {
     code =
       'const tabs = useRouteTabs(adapter, {\n  tabs: [\n    { id: "people", route: peopleRoute },\n    { id: "settings", route: settingsRoute }\n  ]\n})\n\n<Tabs\n  value={tabs.activeTab ?? null}\n  onValueChange={(value) => {\n    if (value === "people" || value === "settings") {\n      void tabs.select(value)\n    }\n  }}\n>\n  {/* Your tab triggers and content */}\n</Tabs>'
@@ -23,6 +26,7 @@ export function routingStory(scenario: RoutingScenario) {
     code =
       "const panel = useRoutePanel(adapter, {\n  route: personRoute,\n  closeTo: peopleRoute\n})\n\n<Sheet\n  open={panel.isOpen}\n  onOpenChange={(open) => void panel.setOpen(open)}\n>\n  {/* Your panel content */}\n</Sheet>"
   }
+
   const descriptions = {
     tabs: "Select a section to navigate. The active tab is derived from the current route.",
     panel: "Open a person’s details in a side panel. Opening and closing both update the route.",
@@ -30,6 +34,7 @@ export function routingStory(scenario: RoutingScenario) {
     direct: "Start at a person’s URL. The panel can close to its list without relying on a previous page.",
     links: "Navigate through native router links. Buildkit observes the route without intercepting link behavior."
   }
+
   return {
     args: { scenario },
     parameters: {
@@ -40,6 +45,7 @@ export function routingStory(scenario: RoutingScenario) {
     }
   }
 }
+
 export type RoutingDemoProps = {
   adapter: RouterAdapter
   people: RouteTarget
@@ -51,6 +57,7 @@ export type RoutingDemoProps = {
   children?: ReactNode
   scenario?: RoutingScenario
 }
+
 function PeopleList() {
   return (
     <div className="bk-stack">
@@ -71,6 +78,7 @@ function PeopleList() {
     </div>
   )
 }
+
 export function RoutingDemo({
   adapter,
   people,
@@ -83,13 +91,16 @@ export function RoutingDemo({
   scenario = "tabs"
 }: RoutingDemoProps) {
   const location = useSyncExternalStore(adapter.subscribe, adapter.getSnapshot, adapter.getServerSnapshot)
+
   const tabs = useRouteTabs(adapter, {
     tabs: [
       { id: "people", route: people },
       { id: "settings", route: settings }
     ]
   })
+
   const panel = useRoutePanel(adapter, { route: detail, closeTo })
+
   return (
     <section className="bk-stack">
       <div className="bk-route-location">

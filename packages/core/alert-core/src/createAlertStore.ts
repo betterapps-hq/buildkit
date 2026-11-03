@@ -7,14 +7,18 @@ export function createAlertStore<T = string>(): AlertStore<T> {
   const listeners = new Map<string, Set<() => void>>()
   let sequence = 0
   let isDisposed = false
+
   function getSnapshot(region = "default") {
     return regions.get(region) ?? empty
   }
+
   function find(id: string, region: string) {
     return getSnapshot(region).find((entry) => entry.id === id)
   }
+
   function notify(callbacks: readonly (() => void)[]) {
     const errors: unknown[] = []
+
     for (const callback of callbacks) {
       try {
         callback()
@@ -22,10 +26,12 @@ export function createAlertStore<T = string>(): AlertStore<T> {
         errors.push(error)
       }
     }
+
     if (errors.length) {
       throw new AggregateError(errors, "Alert callbacks failed")
     }
   }
+
   function write(region: string, entries: readonly AlertEntry<T>[]) {
     if (entries.length) {
       regions.set(region, Object.freeze(entries))
@@ -33,14 +39,18 @@ export function createAlertStore<T = string>(): AlertStore<T> {
       regions.delete(region)
     }
   }
+
   function publish(region: string, callbacks: (() => void)[] = []) {
     notify([...(listeners.get(region) ?? []), ...callbacks])
   }
+
   function update(id: string, patch: AlertPatch<T>, region = "default") {
     const current = find(id, region)
+
     if (!current) {
       return
     }
+
     const next = Object.freeze({
       ...current,
       ...patch,
@@ -51,33 +61,42 @@ export function createAlertStore<T = string>(): AlertStore<T> {
       dismissible: patch.dismissible ?? current.dismissible,
       action: "action" in patch ? patch.action && Object.freeze({ ...patch.action }) : current.action
     })
+
     write(
       region,
       getSnapshot(region).map((entry) => (entry === current ? next : entry))
     )
     publish(region)
   }
+
   function dismiss(id: string, region = "default") {
     const current = find(id, region)
+
     if (!current) {
       return
     }
+
     write(
       region,
       getSnapshot(region).filter((entry) => entry !== current)
     )
     publish(region, current.onDismiss ? [current.onDismiss] : [])
   }
+
   function add(options: AlertOptions<T>, region = "default"): AlertHandle<T> {
     if (isDisposed) {
       throw new Error("Cannot add to a disposed alert store")
     }
+
     const key = ++sequence
     let id = options.id ?? `alert-${key}`
+
     while (options.id === undefined && find(id, region)) {
       id = `alert-${++sequence}`
     }
+
     const current = find(id, region)
+
     const entry: AlertEntry<T> = Object.freeze({
       ...options,
       id,
@@ -87,12 +106,14 @@ export function createAlertStore<T = string>(): AlertStore<T> {
       dismissible: options.dismissible ?? true,
       action: options.action && Object.freeze({ ...options.action })
     })
+
     write(
       region,
       current ? getSnapshot(region).map((item) => (item === current ? entry : item)) : [...getSnapshot(region), entry]
     )
     publish(region)
     const isActive = () => find(id, region)?.key === key
+
     return {
       id,
       region,
@@ -111,11 +132,13 @@ export function createAlertStore<T = string>(): AlertStore<T> {
       }
     }
   }
+
   function clear() {
     const affected = [...regions.keys()]
     regions.clear()
     notify(affected.flatMap((region) => [...(listeners.get(region) ?? [])]))
   }
+
   return {
     add,
     info: (options, region) => add({ ...options, intent: "info" }, region),
@@ -128,14 +151,19 @@ export function createAlertStore<T = string>(): AlertStore<T> {
       if (isDisposed) {
         return () => undefined
       }
+
       let group = listeners.get(region)
+
       if (!group) {
         group = new Set()
         listeners.set(region, group)
       }
+
       group.add(listener)
+
       return () => {
         group.delete(listener)
+
         if (!group.size && listeners.get(region) === group) {
           listeners.delete(region)
         }
@@ -146,9 +174,11 @@ export function createAlertStore<T = string>(): AlertStore<T> {
     dismiss,
     dismissAll(region = "default") {
       const entries = getSnapshot(region)
+
       if (!entries.length) {
         return
       }
+
       write(region, empty)
       publish(
         region,
@@ -160,7 +190,9 @@ export function createAlertStore<T = string>(): AlertStore<T> {
       if (isDisposed) {
         return
       }
+
       isDisposed = true
+
       try {
         clear()
       } finally {

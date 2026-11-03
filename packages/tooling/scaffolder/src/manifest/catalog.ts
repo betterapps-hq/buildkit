@@ -1,10 +1,12 @@
 import { PlanError } from "../plan/errors.js"
-import { isRecord } from "../plan/json.js"
+import { isRecord, isString } from "../plan/json.js"
 import { isValidVersion } from "../upgrade/semver.js"
 import type {
   AddonManifest,
   AddonRef,
+  Answers,
   CatalogManifest,
+  Contribution,
   Choice,
   Condition,
   Gallery,
@@ -77,9 +79,10 @@ const bareCache = new WeakMap<CatalogManifest, BareAddons>()
 
 /** The id a template uses for an add-on it installs or offers: `npm:<name>` for a bare add-on. */
 export function addonRefId(ref: AddonRef | Choice): string {
-  if (typeof ref === "string") {
+  if (isString(ref)) {
     return ref
   }
+
   return "npm" in ref ? `npm:${ref.npm}` : ref.addon
 }
 
@@ -89,14 +92,19 @@ function packageAddon(details: PackageAddon): AddonManifest {
     version: "0.0.0",
     title: details.title ?? details.npm,
     description: details.description ?? "",
-    contribute: (ctx) => [
-      {
+    contribute: (ctx) => {
+      const dependency: Extract<Contribution, { kind: "dependency" }> = {
         kind: "dependency",
         name: details.npm,
-        version: ctx.version(details.npm),
-        ...(details.dev ? { dev: true } : {})
+        version: ctx.version(details.npm)
       }
-    ]
+
+      if (details.dev) {
+        dependency.dev = true
+      }
+
+      return [dependency]
+    }
   }
 }
 
@@ -106,26 +114,32 @@ function packageAddon(details: PackageAddon): AddonManifest {
  */
 export function bareAddons(catalog: CatalogManifest): Map<string, AddonManifest> {
   const cached = bareCache.get(catalog)
+
   if (cached && cached.templates === catalog.templates && cached.questions === catalog.questions) {
     return cached.addons
   }
+
   const addons = new Map<string, AddonManifest>()
+
   for (const ref of packageRefs(catalog)) {
-    if (typeof ref !== "string") {
+    if (!isString(ref)) {
       addons.set(`npm:${ref.npm}`, packageAddon(ref))
     } else if (!addons.has(ref)) {
       addons.set(ref, packageAddon({ npm: ref.slice(4) }))
     }
   }
+
   bareCache.set(catalog, { templates: catalog.templates, questions: catalog.questions, addons })
+
   return addons
 }
 
 /** Every place a catalog names a bare add-on, in order: `npm:<name>`, or the details a template gives. */
 export function packageRefs(catalog: CatalogManifest): (string | PackageAddon)[] {
   const refs: (string | PackageAddon)[] = []
+
   const see = (ref: AddonRef | Choice) => {
-    if (typeof ref === "string") {
+    if (isString(ref)) {
       if (ref.startsWith("npm:")) {
         refs.push(ref)
       }
@@ -133,17 +147,21 @@ export function packageRefs(catalog: CatalogManifest): (string | PackageAddon)[]
       refs.push(ref)
     }
   }
+
   for (const question of catalog.questions ?? []) {
     question.choices.forEach(see)
   }
+
   for (const template of catalog.templates) {
     template.required?.forEach(see)
+
     for (const entry of template.questions ?? []) {
-      if (typeof entry !== "string") {
+      if (!isString(entry)) {
         entry.choices?.forEach(see)
       }
     }
   }
+
   return refs
 }
 
@@ -152,31 +170,46 @@ export function findQuestion(catalog: CatalogManifest, id: string): QuestionDefi
 }
 
 function expandChoice(choice: Choice): ExpandedChoice {
-  if (typeof choice === "string") {
+  if (isString(choice)) {
     return { id: choice }
   }
-  if ("npm" in choice) {
-    return { id: `npm:${choice.npm}`, ...(choice.hint === undefined ? {} : { hint: choice.hint }) }
+
+  const expanded: ExpandedChoice = { id: "npm" in choice ? `npm:${choice.npm}` : choice.addon }
+
+  if (!("npm" in choice) && choice.label !== undefined) {
+    expanded.label = choice.label
   }
-  return {
-    id: choice.addon,
-    ...(choice.label === undefined ? {} : { label: choice.label }),
-    ...(choice.hint === undefined ? {} : { hint: choice.hint })
+
+  if (choice.hint !== undefined) {
+    expanded.hint = choice.hint
   }
+
+  return expanded
 }
 
 function expandQuestion(question: QuestionDefinition): ExpandedQuestion {
-  return {
+  const expanded: ExpandedQuestion = {
     id: question.id,
     title: question.title,
-    ...(question.question === undefined ? {} : { question: question.question }),
-    ...(question.choose === undefined ? {} : { choose: question.choose }),
     pick: question.pick,
     required: question.required === true,
     default: question.default === undefined ? [] : [question.default].flat(),
-    ...(question.when === undefined ? {} : { when: question.when }),
     choices: question.choices.map(expandChoice)
   }
+
+  if (question.question !== undefined) {
+    expanded.question = question.question
+  }
+
+  if (question.choose !== undefined) {
+    expanded.choose = question.choose
+  }
+
+  if (question.when !== undefined) {
+    expanded.when = question.when
+  }
+
+  return expanded
 }
 
 /**
@@ -190,48 +223,68 @@ export function expandTemplate(catalog: CatalogManifest, id: string): ExpandedTe
 
 function expand(catalog: CatalogManifest, id: string, chain: readonly string[]): ExpandedTemplate | undefined {
   const template = findTemplate(catalog, id)
+
   if (!template) {
     return undefined
   }
+
   if (chain.includes(id)) {
     throw new PlanError("E_INVALID_CATALOG", `Templates extend each other in a cycle: ${[...chain, id].join(", ")}.`)
   }
+
   const parent = template.extends === undefined ? undefined : expand(catalog, template.extends, [...chain, id])
+
   if (template.extends !== undefined && !parent) {
     throw new PlanError("E_INVALID_CATALOG", `Template ${id} extends ${template.extends}, which isn't in the catalog.`)
   }
+
   const target = template.target ?? parent?.target
+
   if (target === undefined) {
     throw new PlanError("E_INVALID_CATALOG", `Template ${id} has no target, and extends no template.`)
   }
+
   const omit = new Set(template.omit ?? [])
+
   const required = [
     ...new Set([
       ...(parent?.required ?? []).filter((ref) => !omit.has(ref)),
       ...(template.required ?? []).map(addonRefId)
     ])
   ]
+
   const questions = (parent?.questions ?? []).filter((question) => !omit.has(question.id))
+
   for (const entry of template.questions ?? []) {
     const question = expandEntry(catalog, id, entry, questions)
     const index = questions.findIndex((candidate) => candidate.id === question.id)
+
     if (index === -1) {
       questions.push(question)
     } else {
       questions[index] = question
     }
   }
-  return {
+
+  const expanded: ExpandedTemplate = {
     id: template.id,
     title: template.title,
     description: template.description,
-    ...(template.extends === undefined ? {} : { extends: template.extends }),
     target,
     modes: template.modes ?? parent?.modes ?? findTarget(catalog, target)?.modes.map((mode) => mode.id) ?? [],
     required,
-    questions,
-    ...(template.gallery === undefined ? {} : { gallery: template.gallery })
+    questions
   }
+
+  if (template.extends !== undefined) {
+    expanded.extends = template.extends
+  }
+
+  if (template.gallery !== undefined) {
+    expanded.gallery = template.gallery
+  }
+
+  return expanded
 }
 
 /** One of a template's `questions` entries: a catalog or parent question by id, one changed by `use`, or its own. */
@@ -241,25 +294,41 @@ function expandEntry(
   entry: string | QuestionUse | QuestionDefinition,
   inherited: readonly ExpandedQuestion[]
 ): ExpandedQuestion {
-  if (typeof entry !== "string" && !("use" in entry)) {
+  if (!isString(entry) && !("use" in entry)) {
     return expandQuestion(entry)
   }
-  const id = typeof entry === "string" ? entry : entry.use
+
+  const id = isString(entry) ? entry : entry.use
   const own = findQuestion(catalog, id)
   const base = inherited.find((question) => question.id === id) ?? (own ? expandQuestion(own) : undefined)
+
   if (!base) {
     throw new PlanError("E_INVALID_CATALOG", `Template ${template} asks question ${id}, which isn't in the catalog.`)
   }
-  if (typeof entry === "string") {
+
+  if (isString(entry)) {
     return base
   }
-  return {
-    ...base,
-    ...(entry.choices === undefined ? {} : { choices: entry.choices.map(expandChoice) }),
-    ...(entry.default === undefined ? {} : { default: [entry.default].flat() }),
-    ...(entry.required === undefined ? {} : { required: entry.required }),
-    ...(entry.when === undefined ? {} : { when: entry.when })
+
+  const used: ExpandedQuestion = { ...base }
+
+  if (entry.choices !== undefined) {
+    used.choices = entry.choices.map(expandChoice)
   }
+
+  if (entry.default !== undefined) {
+    used.default = [entry.default].flat()
+  }
+
+  if (entry.required !== undefined) {
+    used.required = entry.required
+  }
+
+  if (entry.when !== undefined) {
+    used.when = entry.when
+  }
+
+  return used
 }
 
 export function findTarget(catalog: CatalogManifest, id: string): TargetManifest | undefined {
@@ -280,6 +349,7 @@ export function findPreset(catalog: CatalogManifest, id: string): PresetManifest
  */
 export function writtenVersions(catalog: CatalogManifest): Record<string, string> {
   const prefix = { exact: "", caret: "^", tilde: "~" }[catalog.range ?? "exact"]
+
   return Object.fromEntries(
     Object.entries(catalog.versions ?? {}).map(([name, pin]) => [name, isValidVersion(pin) ? `${prefix}${pin}` : pin])
   )
@@ -291,6 +361,7 @@ export function findMode(target: TargetManifest, mode: string): TargetMode | und
 
 export function targetInfo(catalog: CatalogManifest, target: TargetManifest, mode: TargetMode): TargetInfo {
   const facets = new Set(mode.facets)
+
   return {
     id: target.id,
     family: target.family,
@@ -300,6 +371,7 @@ export function targetInfo(catalog: CatalogManifest, target: TargetManifest, mod
       if (!catalog.facets.includes(facet)) {
         throw new Error(`Facet "${facet}" isn't registered in catalog ${catalog.id}.`)
       }
+
       return facets.has(facet)
     }
   }
@@ -308,6 +380,7 @@ export function targetInfo(catalog: CatalogManifest, target: TargetManifest, mod
 /** The part of an add-on id after its scope: `@buildkit/db-d1` is `db-d1`. */
 export function shortName(id: string): string {
   const slash = id.lastIndexOf("/")
+
   return slash === -1 ? id : id.slice(slash + 1)
 }
 
@@ -321,68 +394,90 @@ export function lookupAddon(catalog: CatalogManifest, name: string): NameLookup 
   if (findAddon(catalog, name)) {
     return { id: name }
   }
+
   if (bareAddons(catalog).has(`npm:${name}`)) {
     return { id: `npm:${name}` }
   }
+
   const matches = catalog.addons.filter((addon) => shortName(addon.id) === name)
   const [only] = matches
+
   if (only && matches.length === 1) {
     return { id: only.id }
   }
+
   if (matches.length > 1) {
     return { suggestions: matches.map((addon) => addon.id).sort(), ambiguous: true }
   }
+
   const wanted = shortName(name)
+
   const suggestions = catalog.addons
     .map((addon) => addon.id)
     .filter((id) => {
       const short = shortName(id)
+
       return short.includes(wanted) || wanted.includes(short) || editDistance(short, wanted) <= 2
     })
     .sort()
+
   return { suggestions, ambiguous: false }
 }
 
-export type OptionsResult = { ok: true; value: Record<string, unknown> } | { ok: false; issues: string[] }
+/** One add-on's options, keyed by option name, as answers hold them. */
+type AddonOptions = NonNullable<Answers["options"]>[string]
+
+export type OptionsResult = { ok: true; value: AddonOptions } | { ok: false; issues: string[] }
 
 /** Validates raw options against the add-on's schema, filling defaults. */
-export function parseOptions(addon: AddonManifest, raw: Record<string, unknown> | undefined): OptionsResult {
+export function parseOptions(addon: AddonManifest, raw: AddonOptions | undefined): OptionsResult {
   const input = raw ?? {}
+
   if (!addon.options) {
     const keys = Object.keys(input)
+
     return keys.length === 0
       ? { ok: true, value: {} }
       : { ok: false, issues: keys.map((key) => `${key}: unknown option`) }
   }
+
   const result = addon.options.safeParse(input)
+
   if (!result.success) {
     return {
       ok: false,
       issues: result.error.issues.map((issue) => `${issue.path.map(String).join(".") || "(options)"}: ${issue.message}`)
     }
   }
+
   const value: unknown = result.data
+
   return isRecord(value) ? { ok: true, value } : { ok: false, issues: ["(options): options must be an object"] }
 }
 
 function editDistance(left: string, right: string): number {
   let previous = Array.from({ length: right.length + 1 }, (_, index) => index)
+
   for (let row = 1; row <= left.length; row++) {
     const current = [row]
+
     for (let column = 1; column <= right.length; column++) {
       const cost = left[row - 1] === right[column - 1] ? 0 : 1
       current.push(
         Math.min((previous[column] ?? 0) + 1, (current[column - 1] ?? 0) + 1, (previous[column - 1] ?? 0) + cost)
       )
     }
+
     previous = current
   }
+
   return previous[right.length] ?? 0
 }
 
 /** The template package a catalog template comes from: `<package>#<id>`. Built-in templates have none. */
 export function packOf(templateId: string): string | undefined {
   const hash = templateId.indexOf("#")
+
   return hash === -1 ? undefined : templateId.slice(0, hash)
 }
 
@@ -396,6 +491,7 @@ export function sameCatalogVersion(
       .map(([name, pack]) => `${name}@${pack.version}`)
       .sort()
       .join(" ")
+
   return left.version === right.version && versions(left.packs) === versions(right.packs)
 }
 
@@ -405,5 +501,6 @@ export function catalogVersionText(catalog: {
   packs?: Record<string, PackRecord> | undefined
 }): string {
   const packs = Object.entries(catalog.packs ?? {}).map(([name, pack]) => `${name}@${pack.version}`)
+
   return packs.length === 0 ? catalog.version : `${catalog.version} with ${packs.sort().join(", ")}`
 }

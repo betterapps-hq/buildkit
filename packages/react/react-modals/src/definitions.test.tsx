@@ -14,6 +14,7 @@ function Surface({ body }: ModalSurfaceProps<object>) {
 it("infers state, merges opening overrides, and preserves component hooks across updates", async () => {
   const user = userEvent.setup()
   const manager = createModalManager({ adapter: { Surface } })
+
   const definition = manager.createModal({
     title: "Profile",
     initialState: { name: "Ada", count: 0 },
@@ -23,6 +24,7 @@ it("infers state, merges opening overrides, and preserves component hooks across
         const [local, setLocal] = useState(0)
         expectTypeOf(data.name).toEqualTypeOf<string>()
         expectTypeOf(data.count).toEqualTypeOf<number>()
+
         return (
           <>
             <p>
@@ -35,6 +37,7 @@ it("infers state, merges opening overrides, and preserves component hooks across
       }
     }
   })
+
   const handle = definition.open({ name: "Grace" })
   expectTypeOf(handle).resolves.toEqualTypeOf<{ name: string; count: number } | null>()
   render(<ModalRenderer manager={manager} />)
@@ -62,6 +65,7 @@ it("infers state, merges opening overrides, and preserves component hooks across
 it("creates independent nested defaults using an initial-state factory", async () => {
   const manager = createModalManager()
   const values: number[][] = []
+
   const definition = manager.createModal({
     title: "Selection",
     initialState: () => ({ ids: [1] }),
@@ -69,9 +73,11 @@ it("creates independent nested defaults using an initial-state factory", async (
     body: { component: () => null },
     beforeDismiss(data) {
       values.push(data.ids)
+
       return true
     }
   })
+
   const first = definition.open()
   await first.dismiss()
   const second = definition.open()
@@ -84,6 +90,7 @@ it("creates independent nested defaults using an initial-state factory", async (
 
 it("updates presentation independently per instance and ignores stale handles", async () => {
   const manager = createModalManager<{ tone: "quiet" | "loud" }>()
+
   const definition = manager.createModal({
     title: "Profile",
     description: "Original description",
@@ -92,12 +99,14 @@ it("updates presentation independently per instance and ignores stale handles", 
     defaultResult: null,
     body: { component: () => null }
   })
+
   const first = definition.open(undefined, { id: "profile" })
   const second = definition.open()
   first.update({ title: "Edited profile", dismissible: false, surfaceProps: { tone: "loud" } })
   first.update((current) => {
     expect(Object.isFrozen(current)).toBe(true)
     expect(current.title).toBe("Edited profile")
+
     return { title: `${current.title}!`, description: undefined }
   })
   first.update({ data: { name: "Grace" } })
@@ -135,6 +144,7 @@ it("updates presentation independently per instance and ignores stale handles", 
 it("invalidates a pending dismissal approval after presentation changes", async () => {
   let approve: (allowed: boolean) => void = () => undefined
   const manager = createModalManager()
+
   const handle = manager
     .createModal({
       title: "Review",
@@ -147,6 +157,7 @@ it("invalidates a pending dismissal approval after presentation changes", async 
         })
     })
     .open()
+
   const dismissal = handle.dismiss()
   handle.update({ dismissible: false })
   approve(true)
@@ -160,6 +171,7 @@ it("renders pending and failure state and returns a separately typed saved resul
   const manager = createModalManager({ adapter: { Surface } })
   let failSave: (error: Error) => void = () => undefined
   let attempt = 0
+
   function Editor({ data, controls, isPending, error }: ModalSlotProps<{ name: string }, number | null>) {
     return (
       <>
@@ -171,6 +183,7 @@ it("renders pending and failure state and returns a separately typed saved resul
             controls.submit((current) => {
               expect(current.name).toBe(data.name)
               attempt += 1
+
               return attempt === 1
                 ? new Promise<number>((_, reject) => {
                     failSave = reject
@@ -184,12 +197,14 @@ it("renders pending and failure state and returns a separately typed saved resul
       </>
     )
   }
+
   const definition = manager.createModal({
     body: { component: Editor },
     initialState: { name: "Ada" },
     title: "Editor",
     defaultResult: null
   })
+
   const handle = definition.open()
   expectTypeOf(handle).resolves.toEqualTypeOf<number | null>()
   render(<ModalRenderer manager={manager} />)
@@ -207,6 +222,7 @@ it("renders pending and failure state and returns a separately typed saved resul
 // Compiled alongside runtime tests. These calls are intentionally never executed.
 function checkTypes() {
   const manager = createModalManager<{ className?: string }>()
+
   const definition = manager.createModal({
     title: "Inferred",
     initialState: { name: "Ada", count: 0 },
@@ -240,16 +256,19 @@ function checkTypes() {
           current.data.count = 1
           // @ts-expect-error Presentation values are read-only.
           current.dismissible = false
+
           return { title: "Step", data: { count: current.data.count + 1 } }
         })
         // @ts-expect-error There is one update method.
         controls.updateOptions({ title: "Removed" })
         // @ts-expect-error The render field was replaced by body slots.
         controls.update({ render: () => null })
+
         return null
       }
     }
   })
+
   // @ts-expect-error Opening overrides retain property types.
   definition.open({ count: "one" })
   // @ts-expect-error Unknown opening keys are rejected.
@@ -267,6 +286,7 @@ function checkTypes() {
       component: function Body({ controls }) {
         controls.update({ data: { mode: "edit", selected: 1 } })
         controls.close("saved")
+
         return null
       }
     }
@@ -279,4 +299,5 @@ function checkTypes() {
     body: { component: () => null }
   })
 }
+
 void checkTypes

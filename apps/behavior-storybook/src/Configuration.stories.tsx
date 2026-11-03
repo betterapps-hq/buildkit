@@ -1,12 +1,16 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { ConfigurationDemo } from "./ConfigurationDemo.js"
+
 const meta = {
   title: "React/react-configuration",
   component: ConfigurationDemo,
   parameters: { controls: { disable: true } }
 } satisfies Meta<typeof ConfigurationDemo>
+
 export default meta
+
 type Story = StoryObj<typeof meta>
+
 export const ConfigurationAndPreferences: Story = {
   name: "Configuration and preferences",
   args: { scenario: "language" },
@@ -22,6 +26,7 @@ export const ConfigurationAndPreferences: Story = {
     }
   }
 }
+
 export const DefaultsAndLoading: Story = {
   args: { scenario: "loading" },
   parameters: {
@@ -31,6 +36,7 @@ export const DefaultsAndLoading: Story = {
     }
   }
 }
+
 export const TargetingContext: Story = {
   args: { scenario: "targeting" },
   parameters: {
@@ -45,6 +51,7 @@ export const TargetingContext: Story = {
     }
   }
 }
+
 export const DeveloperOverrides: Story = {
   args: { scenario: "overrides" },
   parameters: {
@@ -57,6 +64,7 @@ export const DeveloperOverrides: Story = {
     }
   }
 }
+
 export const FailureAndRetry: Story = {
   args: { scenario: "failure" },
   parameters: {

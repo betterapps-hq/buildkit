@@ -1,7 +1,7 @@
 # @buildkitgg/oxlint-config
 
-Shared [Oxlint](https://oxc.rs/docs/guide/usage/linter) configuration: Buildkit's base rules, and the anti-slop rule set
-from [`@buildkitgg/oxlint-plugin-anti-slop`](../oxlint-plugin-anti-slop/README.md).
+Shared [Oxlint](https://oxc.rs/docs/guide/usage/linter) configuration: the rules every Buildkit package lints with,
+including [`@buildkitgg/oxlint-plugin-anti-slop`](../oxlint-plugin-anti-slop/README.md).
 
 ```sh
 pnpm add -D @buildkitgg/oxlint-config
@@ -12,8 +12,8 @@ Oxlint 1.89 or later is required. Vite+ 1.4 includes it.
 ## Base rules
 
 `@buildkitgg/oxlint-config/base` holds the rules every Buildkit package lints with: the correctness category, strict
-TypeScript rules, and the React, Vitest, import and accessibility plugins. With [Vite+](https://viteplus.dev), extend it
-from the `lint` block of `vite.config.ts`:
+TypeScript rules, the React, Vitest, import and accessibility plugins, and every anti-slop rule. With
+[Vite+](https://viteplus.dev), extend it from the `lint` block of `vite.config.ts`:
 
 ```ts
 import base from "@buildkitgg/oxlint-config/base"
@@ -26,21 +26,27 @@ export default defineConfig({
 
 With Oxlint on its own, extend it from `oxlint.config.ts` with `defineConfig` from `oxlint`.
 
-## Anti-slop rule set
+## Anti-slop rules
 
-`@buildkitgg/oxlint-config/anti-slop` is the plugin's recommended rule set, installed with this package. The base rules
-don't include it, so add it next to them:
+The base rules register the anti-slop plugin, installed with this package, and turn on every one of its rules. Its
+[README](../oxlint-plugin-anti-slop/README.md) lists the rules. To change one, set it after `extends`:
 
 ```ts
-import antiSlop from "@buildkitgg/oxlint-config/anti-slop"
-import base from "@buildkitgg/oxlint-config/base"
-import { defineConfig } from "vite-plus"
-
 export default defineConfig({
-  lint: { extends: [base, antiSlop] }
+  lint: {
+    extends: [base],
+    rules: { "anti-slop/no-runtime-typeof": ["error", { allowInTypeGuards: true }] }
+  }
 })
 ```
 
-To use the anti-slop rules without the base rules, install
-[`@buildkitgg/oxlint-plugin-anti-slop`](../oxlint-plugin-anti-slop/README.md) on its own. Its README lists the rules and
-how to change them.
+A `jsPlugins` list in your own config replaces the plugins base registers, so include them when you add one:
+
+```ts
+lint: {
+  extends: [base],
+  jsPlugins: [...(base.jsPlugins ?? []), { name: "my-plugin", specifier: "my-oxlint-plugin" }]
+}
+```
+
+To use the anti-slop rules without the base rules, install the plugin on its own.

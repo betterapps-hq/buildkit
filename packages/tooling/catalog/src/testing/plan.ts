@@ -4,6 +4,7 @@ import {
   type Answers,
   type CatalogManifest,
   type Plan,
+  type PlanInput,
   type PlanRequest
 } from "@buildkitgg/scaffolder"
 import { catalog } from "../catalog.js"
@@ -15,20 +16,23 @@ export function planProject(
   request: PlanRequest,
   options: { catalog?: CatalogManifest; catalogs?: (version: string) => CatalogManifest | undefined } = {}
 ): Promise<Plan> {
-  return plan({
-    catalog: options.catalog ?? catalog,
-    settings,
-    tree: memoryTree(files),
-    request,
-    ...(options.catalogs ? { catalogs: options.catalogs } : {})
-  })
+  const input: PlanInput = { catalog: options.catalog ?? catalog, settings, tree: memoryTree(files), request }
+
+  if (options.catalogs) {
+    input.catalogs = options.catalogs
+  }
+
+  return plan(input)
 }
+
+/** Each add-on's options, keyed by add-on id, as an `add` request takes them. */
+type AddOptions = Extract<PlanRequest["intent"], { command: "add" }>["options"]
 
 export function initRequest(answers: Partial<Answers> = {}): PlanRequest {
   return { intent: { command: "init", answers: { template: "app", mode: "ssr", name: "demo", ...answers } } }
 }
 
-export function addRequest(addons: string[], options: Record<string, Record<string, unknown>> = {}): PlanRequest {
+export function addRequest(addons: string[], options: AddOptions = {}): PlanRequest {
   return { intent: { command: "add", addons, replace: [], options } }
 }
 
@@ -39,25 +43,30 @@ export function applied(files: Record<string, string>, planned: Plan): Record<st
       `Expected a plan, got ${planned.status}: ${JSON.stringify(planned.error ?? planned.decisions ?? planned.conflicts)}`
     )
   }
-  const next = { ...files }
+
+  const next = new Map(Object.entries(files))
+
   for (const operation of planned.operations) {
     if (operation.action === "delete") {
-      delete next[operation.path]
+      next.delete(operation.path)
     } else if (operation.content !== undefined) {
-      next[operation.path] = operation.content
+      next.set(operation.path, operation.content)
     }
   }
-  return next
+
+  return Object.fromEntries(next)
 }
 
 /** The text a plan writes at a path, failing the test when it writes nothing there. */
 export function written(planned: Plan, path: string): string {
   const content = planned.operations.find((operation) => operation.path === path)?.content
+
   if (content === undefined) {
     throw new Error(
       `The plan writes nothing at ${path}. It writes ${planned.operations.map((o) => o.path).join(", ")}.`
     )
   }
+
   return content
 }
 

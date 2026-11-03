@@ -3,14 +3,19 @@ export type ConfigurationOverrideStorage = { storage: "localStorage" | "sessionS
 
 /** Supported scalar settings: boolean switches, string variants, and numeric values. */
 export type SettingValue = boolean | string | number
+
 export type SettingValues = Record<string, SettingValue>
+
 export type SettingKey<T> = Extract<keyof T, string>
+
 export type SettingSource = "default" | "provider" | "override"
+
 export type SettingState<T> = Readonly<{
   value: T
   defaultValue: T
   source: SettingSource
 }>
+
 export type ConfigurationStatus = "idle" | "loading" | "ready" | "error"
 
 /**
@@ -23,6 +28,7 @@ export type ConfigurationProvider<T extends object, Context extends object> = {
   /** Optional invalidation signal. Return a function that removes this client's listener. */
   subscribe?(onChange: () => void): () => void
 }
+
 export type ConfigurationOptions<T extends object, Context extends object> = {
   defaults: T
   context: Context
@@ -32,12 +38,14 @@ export type ConfigurationOptions<T extends object, Context extends object> = {
   /** Additional validation, e.g. enum membership or numeric limits. No schema library required. */
   validate?: Partial<{ [K in keyof T]: (value: T[K]) => boolean }>
 }
+
 export type ConfigurationSnapshot<T extends object, Context extends object> = Readonly<{
   values: Readonly<T>
   context: Readonly<Context>
   status: ConfigurationStatus
   error: Error | undefined
 }>
+
 export type ConfigurationClient<T extends object, Context extends object> = {
   get<K extends SettingKey<T>>(key: K): T[K]
   getSetting<K extends SettingKey<T>>(key: K): SettingState<T[K]>

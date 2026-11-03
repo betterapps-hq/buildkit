@@ -2,9 +2,11 @@ import { createAlertStore } from "@buildkitgg/alert-core"
 import { ExampleResult } from "@buildkitgg/storybook-config/examples"
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { useState, useSyncExternalStore } from "react"
+
 function Example() {
   const [store] = useState(() => createAlertStore<{ message: string }>())
   const entries = useSyncExternalStore(store.subscribe, store.getSnapshot, store.getServerSnapshot)
+
   return (
     <section>
       <div className="bk-stack">
@@ -41,6 +43,7 @@ function Example() {
     </section>
   )
 }
+
 const meta = {
   title: "Core/alert-core",
   component: Example,
@@ -53,7 +56,9 @@ const meta = {
     }
   }
 } satisfies Meta<typeof Example>
+
 export default meta
+
 export const TypedPayload: StoryObj<typeof meta> = {
   name: "Typed payload"
 }

@@ -5,27 +5,40 @@
  * - Plain objects are merged recursively, key by key.
  * - Everything else (strings, numbers, RegExp, functions, ...) is overridden.
  */
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+function isPlainObject<T>(value: T): value is T & object {
+  if (value === null || value === undefined || Array.isArray(value)) {
     return false
   }
+
+  // Primitives have their wrapper's prototype, so only plain objects get this far.
   const prototype = Object.getPrototypeOf(value)
+
   return prototype === Object.prototype || prototype === null
 }
 
-export function deepMerge<T>(base: T, override: unknown): T {
+/** The merge has every property of both values, so it is typed as both. */
+export function deepMerge<Base, Override>(base: Base, override: Override): Base & Override {
   if (override === undefined) {
-    return base
+    // SAFETY: an undefined override leaves the base as it is.
+    return base as Base & Override
   }
+
   if (Array.isArray(base) && Array.isArray(override)) {
-    return [...base, ...override] as T
+    // SAFETY: the concatenation holds the entries of both arrays.
+    return [...base, ...override] as Base & Override
   }
+
   if (isPlainObject(base) && isPlainObject(override)) {
-    const result: Record<string, unknown> = { ...base }
-    for (const key of Object.keys(override)) {
-      result[key] = key in base ? deepMerge(base[key], override[key]) : override[key]
+    const merged = new Map(Object.entries(base))
+
+    for (const [key, value] of Object.entries(override)) {
+      merged.set(key, merged.has(key) ? deepMerge(merged.get(key), value) : value)
     }
-    return result as T
+
+    // SAFETY: the merged object has every key of both objects, each merged the same way.
+    return Object.fromEntries(merged) as Base & Override
   }
-  return override as T
+
+  // SAFETY: an override that can't be merged replaces the base.
+  return override as Base & Override
 }

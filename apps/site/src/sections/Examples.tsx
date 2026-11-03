@@ -14,6 +14,7 @@ import "./examples.css"
  */
 function Slide({ example, active }: { example: Example; active: boolean }) {
   const [view, setView] = useState<"preview" | "code">("preview")
+
   return (
     <div
       id={`example-${example.id}`}
@@ -64,10 +65,14 @@ export function Examples() {
   // While the scroll story runs, it says which example is in view
   useEffect(() => {
     const element = section.current
+
     function onShow(event: Event) {
+      // SAFETY: the scroll story sends the data-example of the card in view, and the cards are rendered from ExampleIds.
       setActive((event as CustomEvent<ExampleId>).detail)
     }
+
     element?.addEventListener("examples:show", onShow)
+
     return () => element?.removeEventListener("examples:show", onShow)
   }, [])
 
@@ -75,6 +80,7 @@ export function Examples() {
   useEffect(() => {
     const row = tabs.current
     const tab = row?.querySelector<HTMLElement>('[aria-selected="true"]')
+
     if (row && tab && row.scrollWidth > row.clientWidth) {
       row.scrollTo({ left: tab.offsetLeft - (row.clientWidth - tab.offsetWidth) / 2, behavior: "smooth" })
     }
@@ -83,6 +89,7 @@ export function Examples() {
   /** Shows an example. The scroll story takes the request when it runs, and scrolls to that example. */
   function select(id: ExampleId) {
     const request = new CustomEvent("examples:go", { detail: id, cancelable: true })
+
     if (section.current?.dispatchEvent(request) !== false) {
       setActive(id)
     }
@@ -90,16 +97,20 @@ export function Examples() {
 
   function onTabKey(event: KeyboardEvent<HTMLDivElement>) {
     const index = EXAMPLES.findIndex((example) => example.id === active)
-    const targets: Record<string, number> = {
-      ArrowLeft: index - 1,
-      ArrowRight: index + 1,
-      Home: 0,
-      End: EXAMPLES.length - 1
-    }
-    const target = targets[event.key]
+
+    const targets = new Map([
+      ["ArrowLeft", index - 1],
+      ["ArrowRight", index + 1],
+      ["Home", 0],
+      ["End", EXAMPLES.length - 1]
+    ])
+
+    const target = targets.get(event.key)
+
     if (target === undefined) {
       return
     }
+
     event.preventDefault()
     const example = EXAMPLES[(target + EXAMPLES.length) % EXAMPLES.length]
     select(example.id)

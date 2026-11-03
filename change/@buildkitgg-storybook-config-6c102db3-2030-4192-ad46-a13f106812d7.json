@@ -1,0 +1,7 @@
+{
+  "type": "patch",
+  "comment": "fix: pass the anti-slop lint rules",
+  "packageName": "@buildkitgg/storybook-config",
+  "email": "ajcraswell@gmail.com",
+  "dependentChangeType": "patch"
+}

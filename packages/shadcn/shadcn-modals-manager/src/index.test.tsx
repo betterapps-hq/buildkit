@@ -9,11 +9,13 @@ import type { BaseUiModalComponents, RadixModalComponents } from "./index.js"
 
 it("updates provider labels while preserving manager and per-modal overrides", async () => {
   const manager = createModalManager({ labels: { confirm: "Approve" } })
+
   const view = render(
     <ShadcnLocalizationProvider strings={{ cancel: "Annuler" }}>
       <ModalRenderer manager={manager} />
     </ShadcnLocalizationProvider>
   )
+
   act(() => {
     void manager.confirm({ title: "Confirm", cancelLabel: "Keep" })
   })
@@ -52,6 +54,7 @@ const components: BaseUiModalComponents = {
     return <button {...props} />
   }
 }
+
 const radix: RadixModalComponents = {
   ...components,
   Dialog: Radix.Root,
@@ -66,12 +69,15 @@ const radix: RadixModalComponents = {
   DialogTitle: Radix.Title,
   DialogDescription: Radix.Description
 }
+
 const radixAdapter = radixComponents(radix)
+
 const adapters = [
   { name: "default", adapter: undefined },
   { name: "registry Base UI", adapter: baseUiComponents(components) },
   { name: "registry Radix", adapter: radixAdapter }
 ]
+
 afterEach(() => {
   cleanup()
   vi.restoreAllMocks()
@@ -80,11 +86,13 @@ afterEach(() => {
 describe.each(adapters)("$name", ({ adapter }) => {
   it("renders custom slots and supports explicit accessible names with no visible title", async () => {
     const manager = createModalManager({ adapter })
+
     const modal = manager.confirm({
       title: <em>Preview</em>,
       body: <p>Draft content</p>,
       footer: <button className="consumer-style">Preview action</button>
     })
+
     render(<ModalRenderer manager={manager} />)
     expect(screen.getByRole("dialog", { name: "Preview" })).toBeDefined()
     expect(screen.getByRole("button", { name: "Preview action" }).className).toBe("consumer-style")
@@ -101,6 +109,7 @@ describe.each(adapters)("$name", ({ adapter }) => {
 
   it("updates a custom dialog's accessible name, description, styling and Escape behavior", async () => {
     const manager = createModalManager({ adapter })
+
     const handle = manager
       .createModal({
         title: "Profile",
@@ -114,6 +123,7 @@ describe.each(adapters)("$name", ({ adapter }) => {
         }
       })
       .open()
+
     render(<ModalRenderer manager={manager} />)
     act(() => {
       handle.update({
@@ -139,6 +149,7 @@ describe.each(adapters)("$name", ({ adapter }) => {
     const manager = createModalManager({ adapter })
     let isAllowed = false
     const guard = vi.fn<() => boolean>(() => isAllowed)
+
     const definition = manager.createModal({
       title: "Guarded editor",
       initialState: { name: "Ada" },
@@ -159,6 +170,7 @@ describe.each(adapters)("$name", ({ adapter }) => {
         }
       }
     })
+
     const handle = definition.open()
     render(
       <StrictMode>
@@ -190,11 +202,13 @@ describe.each(adapters)("$name", ({ adapter }) => {
 
   it("honors dismissal policy, shared surface styling, and immediate close", async () => {
     const manager = createModalManager({ adapter })
+
     const handle = manager.open({
       title: "Required",
       dismissible: false,
       surfaceProps: { className: "custom", style: { maxWidth: 360 } }
     })
+
     render(<ModalRenderer manager={manager} />)
     const dialog = screen.getByRole("dialog")
     expect(dialog.classList.contains("custom")).toBe(true)
@@ -246,6 +260,7 @@ describe.each(adapters)("$name", ({ adapter }) => {
     const manager = createModalManager({ adapter })
     let rejectSave: (error: Error) => void = () => undefined
     let attempts = 0
+
     const definition = manager.createModal({
       title: "Profile",
       initialState: { name: "Ada" },
@@ -261,6 +276,7 @@ describe.each(adapters)("$name", ({ adapter }) => {
                 onClick={() => {
                   void controls.submit(() => {
                     attempts++
+
                     return attempts === 1
                       ? new Promise<{ name: string }>((_, reject) => {
                           rejectSave = reject
@@ -276,6 +292,7 @@ describe.each(adapters)("$name", ({ adapter }) => {
         }
       }
     })
+
     const handle = definition.open()
     render(<ModalRenderer manager={manager} />)
     fireEvent.click(screen.getByRole("button", { name: "Save profile" }))
@@ -299,6 +316,7 @@ it("waits for Radix's actual CSS exit event before removing a closing entry", as
   const getStyle = window.getComputedStyle.bind(window)
   vi.spyOn(window, "getComputedStyle").mockImplementation((element, pseudo) => {
     const style = getStyle(element, pseudo)
+
     if (element.getAttribute("role") === "dialog") {
       // Model the live computed style that a browser exposes during CSS animation.
       return new Proxy(style, {
@@ -306,10 +324,13 @@ it("waits for Radix's actual CSS exit event before removing a closing entry", as
           if (property === "animationName") {
             return element.getAttribute("data-state") === "closed" ? "modal-exit" : "modal-enter"
           }
-          return Reflect.get(target, property)
+
+          // SAFETY: every other read goes to the style itself, and one it lacks is undefined, as without the proxy.
+          return target[property as keyof CSSStyleDeclaration]
         }
       })
     }
+
     return style
   })
   const manager = createModalManager({ adapter: radixAdapter })

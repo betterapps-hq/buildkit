@@ -2,6 +2,7 @@ import { createAlertManager, AlertRegion } from "@buildkitgg/react-alerts"
 import type { AlertRendererProps } from "@buildkitgg/react-alerts"
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { useState } from "react"
+
 function Alert({ entry, dismiss, dismissLabel }: AlertRendererProps) {
   return (
     <output className="bk-custom-alert" aria-live="polite">
@@ -13,8 +14,10 @@ function Alert({ entry, dismiss, dismissLabel }: AlertRendererProps) {
     </output>
   )
 }
+
 function Example() {
   const [manager] = useState(() => createAlertManager({ adapter: { Alert } }))
+
   return (
     <div className="bk-stack">
       <div className="actions">
@@ -26,8 +29,11 @@ function Example() {
     </div>
   )
 }
+
 const meta = { title: "React/react-alerts", component: Example } satisfies Meta<typeof Example>
+
 export default meta
+
 export const CustomRenderer: StoryObj<typeof meta> = {
   name: "Custom renderer",
   parameters: {

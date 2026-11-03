@@ -12,6 +12,7 @@ beforeEach(() => {
     cancel.call(this)
   })
 })
+
 afterEach(() => {
   cleanup()
   vi.restoreAllMocks()
@@ -19,11 +20,13 @@ afterEach(() => {
 
 it("renders custom slots and supports explicit accessible names with no visible title", async () => {
   const manager = createModalManager()
+
   const modal = manager.confirm({
     title: <em>Preview</em>,
     body: <p>Draft content</p>,
     footer: <button className="consumer-style">Preview action</button>
   })
+
   render(
     <FluentProvider theme={webLightTheme}>
       <ModalRenderer manager={manager} />
@@ -44,6 +47,7 @@ it("renders custom slots and supports explicit accessible names with no visible 
 
 it("updates a custom dialog's accessible name, description, styling and Escape behavior", async () => {
   const manager = createModalManager()
+
   const handle = manager
     .createModal({
       title: "Profile",
@@ -57,6 +61,7 @@ it("updates a custom dialog's accessible name, description, styling and Escape b
       }
     })
     .open()
+
   render(
     <FluentProvider theme={webLightTheme}>
       <ModalRenderer manager={manager} />
@@ -86,6 +91,7 @@ it("uses the same cancellation guard for Escape and the form's Cancel action", a
   const manager = createModalManager()
   let isAllowed = false
   const guard = vi.fn<() => boolean>(() => isAllowed)
+
   const definition = manager.createModal({
     title: "Guarded editor",
     initialState: { name: "Ada" },
@@ -106,6 +112,7 @@ it("uses the same cancellation guard for Escape and the form's Cancel action", a
       }
     }
   })
+
   const handle = definition.open()
   render(
     <FluentProvider theme={webLightTheme}>
@@ -125,11 +132,13 @@ it("uses the same cancellation guard for Escape and the form's Cancel action", a
 
 it("renders Fluent dialogs with shared confirmation and exit settlement", async () => {
   const manager = createModalManager()
+
   const handle = manager.confirm({
     title: "Delete draft?",
     description: "This removes the draft.",
     body: "Draft contents"
   })
+
   render(
     <FluentProvider theme={webLightTheme}>
       <ModalRenderer manager={manager} />
@@ -145,11 +154,13 @@ it("renders Fluent dialogs with shared confirmation and exit settlement", async 
 it("respects dismissal policy and removes entries closed before mounting", async () => {
   const manager = createModalManager()
   const handle = manager.open({ title: "Required", dismissible: false, surfaceProps: { className: "custom" } })
+
   const view = render(
     <FluentProvider theme={webLightTheme}>
       <ModalRenderer manager={manager} />
     </FluentProvider>
   )
+
   fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" })
   expect(handle.isActive()).toBe(true)
   fireEvent.click(screen.getByRole("button", { name: "Close" }))

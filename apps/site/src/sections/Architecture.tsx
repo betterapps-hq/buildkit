@@ -146,6 +146,7 @@ function Chips({ packages, label }: { packages: Pkg[]; label: string }) {
     <ul className="arch-chips" aria-label={label}>
       {packages.map((pkg) => {
         const Icon = FEATURE_ICONS[pkg.feature]
+
         return (
           <li key={pkg.name}>
             <Link className="arch-chip" href={packageGuide(pkg.name)} data-feature={pkg.feature}>
@@ -276,6 +277,7 @@ function StoryPlate({
       </span>
       {packages.map((pkg) => {
         const Icon = FEATURE_ICONS[pkg.feature]
+
         return (
           <span key={pkg.name} className="arch-story-chip" data-feature={pkg.feature}>
             <Icon aria-hidden="true" />
@@ -294,6 +296,7 @@ function StoryPlate({
  */
 function Story() {
   const [shadcn, fluentui] = COMPONENT_LIBRARIES
+
   return (
     <div className="arch-story" aria-hidden="true">
       <div className="arch-story-scene">
@@ -465,6 +468,7 @@ export function Architecture() {
           <ul className="arch-proof">
             {PROOF.map((item) => {
               const Icon = item.icon
+
               return (
                 <li key={item.title} className="arch-proof-item">
                   <Icon className="arch-proof-icon" aria-hidden="true" />

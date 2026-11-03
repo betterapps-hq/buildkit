@@ -8,13 +8,17 @@ function failure(code: string): Error {
 describe("withRetries", () => {
   it("retries while Windows holds the file, then succeeds", async () => {
     let calls = 0
+
     const result = await withRetries(() => {
       calls++
+
       if (calls < 3) {
         throw failure(calls === 1 ? "EPERM" : "EBUSY")
       }
+
       return "renamed"
     })
+
     expect({ result, calls }).toEqual({ result: "renamed", calls: 3 })
   })
 

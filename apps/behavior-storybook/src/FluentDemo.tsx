@@ -18,6 +18,7 @@ export function FluentDemo({ showPortal = false, ...options }: FluentThemeOption
   const [store] = useState(() => createFluentTheme(options))
   const { theme, resolvedTheme, setTheme } = useTheme(store)
   const classes = useFluentDemoStyles()
+
   return (
     <FluentThemeProvider store={store} className={classes.surface}>
       <section className={classes.content} aria-label="Fluent theme example">

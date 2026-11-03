@@ -5,9 +5,12 @@ import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vite-plus/test"
 
 const vendorRoot = fileURLToPath(new URL("./vendor/anti-slop/", import.meta.url))
+
+// SAFETY: the sync script writes snapshot.json with each vendored file's hash.
 const snapshot = JSON.parse(readFileSync(resolve(vendorRoot, "snapshot.json"), "utf8")) as {
   files: Record<string, { vendored: string }>
 }
+
 const hash = (path: string) =>
   createHash("sha256")
     .update(readFileSync(resolve(vendorRoot, path), "utf8").replaceAll("\r\n", "\n"))
@@ -25,6 +28,7 @@ describe("vendored anti-slop source", () => {
       .filter((entry) => entry.isFile())
       .map((entry) => relative(vendorRoot, resolve(entry.parentPath, entry.name)).replaceAll("\\", "/"))
       .filter((path) => path !== "snapshot.json")
+
     expect(present.sort()).toEqual(Object.keys(snapshot.files).sort())
   })
 })
