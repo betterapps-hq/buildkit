@@ -1,6 +1,8 @@
 import { createThemeStore, type ThemeOptions, type ThemeStore } from "@buildkitgg/theme-core"
 import { connectBrowserTheme, type BrowserThemeOptions, type ThemeStorageOptions } from "@buildkitgg/theme-core/browser"
 
+export { useTheme } from "@buildkitgg/react-theme"
+
 export type ShadcnThemeOptions = ThemeOptions & BrowserThemeOptions
 
 export type ShadcnThemeStore = ThemeStore & { start(): () => void }

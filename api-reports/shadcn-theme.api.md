@@ -11,6 +11,7 @@ import { ThemeOptions } from '@buildkitgg/theme-core';
 import { ThemeSnapshot } from '@buildkitgg/theme-core';
 import { ThemeStorageOptions } from '@buildkitgg/theme-core/browser';
 import { ThemeStore } from '@buildkitgg/theme-core';
+import { useTheme } from '@buildkitgg/react-theme';
 
 // @public
 export function createShadcnTheme(options?: ShadcnThemeOptions): ShadcnThemeStore;
@@ -34,6 +35,8 @@ export { Theme }
 export type ThemeInitScriptOptions = Pick<ThemeOptions, "defaultTheme"> & ThemeStorageOptions;
 
 export { ThemeSnapshot }
+
+export { useTheme }
 
 // (No @packageDocumentation comment for this package)
 

@@ -133,15 +133,16 @@ export const packages = [
     name: "shadcn-theme",
     group: "shadcn",
     summary: "Theme selection for registry-installed shadcn components or the Buildkit component kit.",
-    code: 'import { createShadcnTheme } from "@buildkitgg/shadcn-theme"\n\nexport const theme = createShadcnTheme({\n  defaultTheme: "system",\n  storageKey: "my-app-theme"\n})\nconst stop = theme.start() // At browser startup.\ntheme.setTheme("dark")\ntheme.reset()\n// Call stop() at teardown.',
+    code: 'import { createShadcnTheme, useTheme } from "@buildkitgg/shadcn-theme"\n\nexport const theme = createShadcnTheme({\n  defaultTheme: "system",\n  storageKey: "my-app-theme"\n})\nconst stop = theme.start() // At browser startup.\n// Call stop() at teardown.\n\nfunction ThemeLabel() {\n  const { resolvedTheme } = useTheme(theme)\n  return <span>{resolvedTheme}</span>\n}',
     api: [
       "createShadcnTheme(options): isolated theme with optional persistence.",
+      "useTheme(store): read the current theme and update it from a React component.",
       "start(): apply .dark and color-scheme; returns cleanup.",
       "setTheme / reset: choose appearance or restore the default.",
       "getThemeInitScript(options): first-paint script; use matching options and a CSP nonce."
     ],
     notes:
-      "No dependency on React or our component kit. Supply your own CSS and tokens using the .dark convention. Use one instance per document. Construction has no browser effects.",
+      "React is a peer dependency. Supply your own CSS and tokens using the .dark convention. Use one instance per document. Construction has no browser effects.",
     example: "shadcn-shadcn-theme--appearance"
   },
   {

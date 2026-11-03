@@ -1,7 +1,7 @@
 # @buildkitgg/shadcn-theme
 
 Theme state and document styling for shadcn apps. Works with the packaged Base UI kit or an app's own shadcn components;
-no component-library or React runtime dependency is required.
+React is a peer dependency.
 
 ```ts
 // theme.ts
@@ -20,7 +20,7 @@ last cleanup removes listeners and restores the original class and color-scheme.
 Construction has no browser side effects. Calling `start()` without a browser is harmless.
 
 ```tsx
-import { useTheme } from "@buildkitgg/react-theme"
+import { useTheme } from "@buildkitgg/shadcn-theme"
 import { theme } from "./theme"
 
 export function Appearance() {
@@ -29,9 +29,8 @@ export function Appearance() {
 }
 ```
 
-Outside React, use `theme.setTheme("dark")` and `theme.getSnapshot()`. No theme provider is required. The React hook is
-deliberately a separate package so future Fluent bindings can use the same store. All functions ship declarations;
-`ShadcnThemeOptions` is exported and the returned store and hook types are inferred.
+Outside React, use `theme.setTheme("dark")` and `theme.getSnapshot()`. No theme provider is required. All functions ship
+declarations; `ShadcnThemeOptions` is exported and the returned store and hook types are inferred.
 
 Import the component kit's stylesheet and supply any custom CSS tokens in your app. This package selects light/dark; it
 does not ship palettes or change the component stylesheet. System is the default preference. A valid saved user
