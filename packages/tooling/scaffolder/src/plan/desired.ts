@@ -18,13 +18,21 @@ export type DesiredResult =
   | { ok: true; selection: Selection; required: string[]; adopt: boolean; unchanged: string[] }
   | { ok: false; issue: ResolveIssue }
 
+/**
+ * Declined entries in the current form. Before questions, "no" was recorded as `slot:<id>`. It reads as
+ * `question:<id>`, so the next apply writes the new form.
+ */
+function currentDeclined(declined: readonly string[]): string[] {
+  return [...new Set(declined.map((entry) => (entry.startsWith("slot:") ? `question:${entry.slice(5)}` : entry)))]
+}
+
 export function selectionFromConfig(config: ProjectConfig): Selection {
   return {
     name: config.name,
     template: config.template,
     target: { id: config.target.id, mode: config.target.mode },
     addons: structuredClone(config.addons),
-    declined: [...(config.declined ?? [])]
+    declined: currentDeclined(config.declined ?? [])
   }
 }
 
@@ -40,7 +48,7 @@ export function selectionFromLock(lock: Lock): Selection {
     template: lock.project.template,
     target: { ...lock.project.target },
     addons,
-    declined: [...lock.project.declined]
+    declined: currentDeclined(lock.project.declined)
   }
 }
 
