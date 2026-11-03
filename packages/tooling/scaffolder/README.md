@@ -21,6 +21,7 @@ as Buildkit build their own CLI on the engine instead, and create projects with 
 - [Concepts](#concepts)
 - [Writing a catalog](#writing-a-catalog)
 - [Templates and the wizard](#templates-and-the-wizard)
+- [Setup steps](#setup-steps)
 - [File ownership](#file-ownership)
 - [Building a CLI](#building-a-cli)
 - [Commands](#commands)
@@ -33,8 +34,9 @@ as Buildkit build their own CLI on the engine instead, and create projects with 
 
 `scaffold [package][@version][#template] [folder]` fetches the package from npm into your user cache, never the project,
 without running its scripts, and creates a project from it. It takes every option `create` takes: `--mode`, `--preset`,
-`--name`, `--with`, `--without`, `--set`, `--adopt`, `--dry-run`, `--json` and `--yes`. npm's install scripts never run,
-but the package's own code does, on your machine and with your permissions, so scaffold only from packages you trust.
+`--name`, `--with`, `--without`, `--set`, `--adopt`, `--setup`, `--no-setup`, `--dry-run`, `--json` and `--yes`. npm's
+install scripts never run, but the package's own code does, on your machine and with your permissions, so scaffold only
+from packages you trust.
 
 - **A catalog package** exports its catalog as `catalog` or by default, and its product settings as `settings`. The
   project gets the product's file names, so the product's own CLI manages it later. Without `settings`, the files are
@@ -135,9 +137,10 @@ export default defineCatalog({
 ```
 
 Contribution kinds: `dependency`, `script`, `env`, `file` (`owned`, `seed` or `sample`), `entry`, `json` and `yaml`
-(`set`, `merge`, or `append` with an optional `key` for keyed arrays), `lines`, `command` (listed, never run) and
-`notice`. Add-ons declare `provides`, `requires` (ids, which are pulled in, or `provides:<name>`, which another add-on
-must satisfy), `conflicts` (ids or `provides:<name>`), `after`, `supports()` and `migrations`.
+(`set`, `merge`, or `append` with an optional `key` for keyed arrays), `lines`, `command` (listed in the next steps, or
+with `setup: true` a [setup step](#setup-steps)) and `notice`. Add-ons declare `provides`, `requires` (ids, which are
+pulled in, or `provides:<name>`, which another add-on must satisfy), `conflicts` (ids or `provides:<name>`), `after`,
+`supports()` and `migrations`.
 
 `conflicts: ["provides:orm"]` keeps out any **other** add-on that provides `orm`, so an ORM add-on can say it and still
 be installed. One side declaring a conflict is enough: a new ORM from anyone conflicts with that add-on without saying
@@ -224,8 +227,9 @@ multi-select for `many`, with unavailable choices disabled and their reason besi
 lists in `ask`, and the plan's environment variables, with a masked prompt for secrets. A required variable's example is
 its default, and an optional one can be left blank. A variable's `help`, an https URL such as the provider's dashboard,
 adds `Get one at <url>` to its prompt, and to the next steps when it's left for later. Then it shows the plan and asks
-for one confirmation, which defaults to no. The answers go to the secrets file. Later commands ask only for required
-secrets that file doesn't have yet. Required add-ons are never asked about, so their options must all have defaults.
+for one confirmation, which defaults to no, and once the project is applied it offers the [setup steps](#setup-steps).
+The answers go to the secrets file. Later commands ask only for required secrets that file doesn't have yet. Required
+add-ons are never asked about, so their options must all have defaults.
 
 Answers hold each question's add-ons, `[]` for no, and `extra` for add-ons no question offers. A required question with
 no default and more than one available choice is a decision. The config's `declined` records `question:<id>` for each
@@ -240,6 +244,36 @@ question that offers it, from its default, or to `extra`), `--without <add-on>`,
 `--set <add-on>.<option>=<value>` and `--preset`. Short names drop the scope: `db-sqlite` is `@acme/db-sqlite`, and a
 bare add-on is its package name, such as `zod`. `catalog --json` describes the whole questionnaire, with each template's
 questions per mode and a gallery `stack`, for dashboards and agents.
+
+## Setup steps
+
+Once `create` applies, it offers the setup steps in one multi-select, all preselected:
+
+```text
+◆  Run setup now?
+│  ◼ Create the tables      pnpm db:push
+│  ◼ Install dependencies   pnpm install
+│  ◼ Create a git repository with a first commit
+└
+```
+
+The steps, in order: the `after-apply` setup commands, the install, the `after-install` setup commands, then `git init`
+and a commit of everything. An add-on's `command` contribution with `setup: true` is a step, labelled by its `why` and
+run as it's written, in the project folder. Commands without `setup` stay in the plan's commands to run later.
+
+The product's settings decide the rest: `defineSettings({ product, setup: { install, git, packageManager } })`.
+`install` and `git` default to true, and there's no git step when the project is already in a repository.
+`packageManager` defaults to the one that ran the CLI, read from `npm_config_user_agent`, then pnpm.
+
+- **They run one at a time**, each with a spinner, after the secrets file is written. A step that fails stops the rest:
+  the CLI prints its output, lists the steps left in the next steps, and exits with code 6. The project is applied
+  either way.
+- **Without a terminal**, or with `--yes`, they run only with `--setup`, which runs them all without asking.
+  `--no-setup` doesn't ask about them. The steps that didn't run are in the next steps.
+- **`--json` never runs them.** The plan's `commands` mark each setup command with `setup: true`, so another door can
+  offer them.
+- **A template package's commands** are its author's code. They're offered only after you confirm the plan, which says
+  the template comes from the package and runs its author's code.
 
 ## File ownership
 
@@ -330,6 +364,7 @@ When any command fails, it prints the envelope with `status: "error"`.
 | 3    | conflict                      |
 | 4    | drift: the project changed    |
 | 5    | locked or interrupted         |
+| 6    | applied, setup failed         |
 | 130  | cancelled                     |
 
 ## Upgrades

@@ -119,6 +119,8 @@ export interface CommandHint {
   run: string
   when: "after-apply" | "after-install"
   why: string
+  /** A setup step, which `create` offers to run after applying. */
+  setup?: true
 }
 
 export interface MigrationNote {

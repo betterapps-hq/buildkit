@@ -26,7 +26,7 @@ import {
 import { projectStatus } from "../node/status.js"
 import { nodeTree, readSafely } from "../node/tree.js"
 import { hasConflictMarkers } from "../ownership/text.js"
-import { toEnvelope, exitCode, type Envelope, type EnvelopeStatus } from "../plan/envelope.js"
+import { toEnvelope, exitCode, type Envelope, type EnvelopeStatus, type SetupReport } from "../plan/envelope.js"
 import { errorInfo, PlanError } from "../plan/errors.js"
 import { explain } from "../plan/explain.js"
 import { isRecord } from "../plan/json.js"
@@ -42,6 +42,15 @@ import { compareVersions, satisfiesRange } from "../upgrade/semver.js"
 import { parseFlags, parseSet, type FlagSpec, type ParsedFlags } from "./flags.js"
 import { describeEnvelope } from "./output.js"
 import { cancelled, clackPrompter, type Cancelled, type Prompter } from "./prompter.js"
+import {
+  commandsBesideSetup,
+  insideRepository,
+  runSetupCommand,
+  setupNextStep,
+  setupSteps,
+  type SetupRunner,
+  type SetupStep
+} from "./setup.js"
 import { askEnv, completeAnswers, emptyAnswers, runWizard, type PartialAnswers } from "./wizard.js"
 
 export interface CliIo {
@@ -51,6 +60,8 @@ export interface CliIo {
   isTTY: boolean
   prompter: Prompter
   cwd: string
+  /** The environment, for the package manager that ran the CLI. */
+  env: Record<string, string | undefined>
 }
 
 export interface CliOptions {
@@ -67,6 +78,8 @@ export interface CliOptions {
   /** The per-user cache for earlier catalog versions. Defaults to the product's folder in the user's cache folder. */
   cacheDir?: string
   hooks?: ApplyHooks
+  /** Runs `create`'s setup steps. Defaults to a shell in the project folder. */
+  runSetup?: SetupRunner
 }
 
 const sharedFlags = {
@@ -150,7 +163,8 @@ export class CliRuntime {
       stderr: options.io?.stderr ?? ((text) => process.stderr.write(text)),
       isTTY: options.io?.isTTY ?? (process.stdout.isTTY === true && process.stdin.isTTY === true),
       prompter: options.io?.prompter ?? clackPrompter,
-      cwd: options.io?.cwd ?? process.cwd()
+      cwd: options.io?.cwd ?? process.cwd(),
+      env: options.io?.env ?? process.env
     }
   }
 
@@ -578,8 +592,9 @@ export class CliRuntime {
       )
 
       plan.notices.unshift(...this.#sourceNotices)
+      const setup = await this.#setup(root, plan, status, flags)
 
-      return this.#emit(toEnvelope(plan, { ...this.#catalogs(context), status }), json)
+      return this.#emit({ ...toEnvelope(plan, { ...this.#catalogs(context), status }), ...setup }, json)
     }
 
     const interactive = this.#interactive(flags)
@@ -701,8 +716,89 @@ export class CliRuntime {
 
     plan.nextSteps = current.nextSteps
     plan.notices.unshift(...this.#sourceNotices)
+    const setup = await this.#setup(root, plan, status, flags)
 
-    return this.#emit(envelope(plan, status), json)
+    return this.#emit({ ...envelope(plan, status), ...setup }, json)
+  }
+
+  /**
+   * `create`'s setup steps, once the project is applied: offered on a terminal, run without asking with `--setup`, and
+   * otherwise left in the next steps. A step that fails stops the rest. `--json` never runs them, and its `commands`
+   * keep `setup: true` for another door to offer.
+   */
+  async #setup(root: string, plan: Plan, status: EnvelopeStatus, flags: ParsedFlags): Promise<{ setup?: SetupReport }> {
+    if (plan.request.intent.command !== "init" || status !== "applied" || flags.booleans.has("json")) {
+      return {}
+    }
+
+    const steps = setupSteps(plan.commands, {
+      settings: this.#settings.setup,
+      userAgent: this.io.env.npm_config_user_agent,
+      inRepository: insideRepository(root)
+    })
+
+    if (steps.length === 0) {
+      return {}
+    }
+
+    plan.commands = commandsBesideSetup(plan.commands, steps)
+    const interactive = this.#interactive(flags)
+    let chosen: SetupStep[] = []
+
+    if (flags.booleans.has("setup")) {
+      chosen = steps
+    } else if (interactive && !flags.booleans.has("no-setup")) {
+      const answer = await this.io.prompter.multiselect({
+        message: "Run setup now?",
+        options: steps.map((step, index) => ({ value: String(index), label: step.label, hint: step.hint })),
+        initialValues: steps.map((_, index) => String(index))
+      })
+
+      // The project is applied either way, so cancelling here only skips the steps.
+      chosen = answer === cancelled ? [] : steps.filter((_, index) => answer.includes(String(index)))
+    }
+
+    const run = this.options.runSetup ?? runSetupCommand
+    const report: SetupReport = { ran: [] }
+    const done = new Set<SetupStep>()
+
+    const tasks = chosen.map((step) => ({
+      title: step.label,
+      run: async () => {
+        let result: Awaited<ReturnType<SetupRunner>>
+
+        try {
+          result = await run(step.run, root)
+        } catch (error) {
+          result = { code: 1, output: errorInfo(error).message }
+        }
+
+        if (result.code !== 0) {
+          report.failed = { label: step.label, run: step.run, output: result.output }
+
+          return false
+        }
+
+        done.add(step)
+        report.ran.push(step.label)
+
+        return true
+      }
+    }))
+
+    if (interactive && this.io.prompter.tasks) {
+      await this.io.prompter.tasks(tasks)
+    } else {
+      for (const task of tasks) {
+        if (!(await task.run())) {
+          break
+        }
+      }
+    }
+
+    plan.nextSteps.unshift(...steps.filter((step) => !done.has(step)).map(setupNextStep))
+
+    return chosen.length === 0 ? {} : { setup: report }
   }
 
   /** Every question id, which is a flag: the catalog's questions and every template's own. */
@@ -725,7 +821,7 @@ export class CliRuntime {
     const flags = parseFlags(
       argv,
       spec({
-        booleans: ["adopt"],
+        booleans: ["adopt", "setup", "no-setup"],
         strings: ["mode", "preset", "name"],
         lists: ["with", "without"],
         repeats: ["set"],
@@ -736,6 +832,15 @@ export class CliRuntime {
     )
 
     const json = flags.booleans.has("json")
+
+    if (flags.booleans.has("setup") && (json || flags.booleans.has("no-setup"))) {
+      throw new PlanError(
+        "E_USAGE",
+        json
+          ? "--setup can't be used with --json, which never runs the setup steps. Their commands have setup: true."
+          : "Pass --setup or --no-setup, not both."
+      )
+    }
 
     // With --preset, the template comes from the preset, so a lone argument is the folder.
     const positionals =

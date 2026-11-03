@@ -94,7 +94,7 @@ export { requestArgv } from "./plan/argv.js"
 
 export { artifactName, exitCode, toEnvelope } from "./plan/envelope.js"
 
-export type { Envelope, EnvelopeStatus } from "./plan/envelope.js"
+export type { Envelope, EnvelopeStatus, SetupReport } from "./plan/envelope.js"
 
 export { PlanError } from "./plan/errors.js"
 
@@ -147,7 +147,7 @@ export type { Lock, LockFileEntry, ProjectConfig } from "./state/schemas.js"
 
 export { defineSettings, lockPath } from "./state/settings.js"
 
-export type { ProductSettings } from "./state/settings.js"
+export type { ProductSettings, SetupSettings } from "./state/settings.js"
 
 export { compareVersions, isValidRange, lowestVersion, satisfiesRange } from "./upgrade/semver.js"
 

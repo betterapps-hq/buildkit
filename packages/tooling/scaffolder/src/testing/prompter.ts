@@ -44,12 +44,15 @@ interface ScriptedPrompter {
   prompter: Prompter
   asked: AskedQuestion[]
   notes: string[]
+  /** The title of every task run, in order, the failed one included. */
+  tasks: string[]
 }
 
 /** A prompter that answers from a script and records every question, for wizard tests. */
 export function scriptedPrompter(script: ScriptedAnswer[]): ScriptedPrompter {
   const asked: AskedQuestion[] = []
   const notes: string[] = []
+  const tasks: string[] = []
 
   const next = (question: AskedQuestion) => {
     asked.push(question)
@@ -79,6 +82,7 @@ export function scriptedPrompter(script: ScriptedAnswer[]): ScriptedPrompter {
   return {
     asked,
     notes,
+    tasks,
     prompter: {
       select: async (question) =>
         ofType(
@@ -118,6 +122,15 @@ export function scriptedPrompter(script: ScriptedAnswer[]): ScriptedPrompter {
       password: async (question) => ofType({ kind: "password", message: question.message }, isString),
       note: (message) => {
         notes.push(message)
+      },
+      tasks: async (list) => {
+        for (const task of list) {
+          tasks.push(task.title)
+
+          if (!(await task.run())) {
+            return
+          }
+        }
       }
     }
   }
