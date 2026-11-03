@@ -15,7 +15,6 @@ npm). `@buildkitgg/catalog` and `@buildkitgg/cli` 0.1.0 wait for their first pub
 | **Two packages:** `@buildkitgg/catalog` holds the manifests, and `@buildkitgg/cli` is a thin `buildkit` bin on the engine's `runCli`           | Both live in `packages/tooling/`, beside the scaffolder             |
 | **Auth first:** Better Auth, read through the Better Apps identity interface (`@better-apps/identity-better-auth`, PR #59)                     | The auth slot has one add-on                                        |
 | **Database first:** the SQL capability `@better-apps/sql` (`defineDatabase`) with Drizzle. The Better Apps Features session builds the package | The database add-on is written against the documented API and waits |
-| **No deploy add-on:** the catalog writes no cloud config and no deploy workflow                                                                | Deployment is built on Void (decided 2026-11-02)                    |
 
 ## Done when
 

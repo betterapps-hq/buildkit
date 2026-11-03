@@ -968,7 +968,7 @@ decisions D2, D3, D5 and D6. This section keeps the scaffolder's side.
 
 - Add-ons add capability packages as dependencies, and write the declarations as seed files. Third-party services stay
   env vars.
-- The CI add-on writes `ci.yml`, whose app-code checks are Buildkit's. The scaffolder writes no deploy workflow.
+- The CI add-on writes `ci.yml`, whose app-code checks are Buildkit's.
 - There are no hosts, no `needs()`, no generated bindings and no cloud config. `check` flags a Wrangler config or a
   `cloudflare.config.ts`, because the deploy service ignores both.
 
