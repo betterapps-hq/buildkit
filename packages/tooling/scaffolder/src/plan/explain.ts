@@ -26,7 +26,6 @@ export type Explanation =
       by: string[]
       requires: string[]
       requiredBy: string[]
-      slot?: string
       options: Record<string, unknown>
     }
   | { kind: "entry"; id: string; point: string; contributor: string; band: string; after: string[]; before: string[] }
@@ -106,7 +105,6 @@ export function explain(input: {
       by: resolved?.by ?? [],
       requires: addon?.requires ?? [],
       requiredBy,
-      ...(addon?.slot ? { slot: addon.slot } : {}),
       options: resolved?.options ?? {}
     }
   }

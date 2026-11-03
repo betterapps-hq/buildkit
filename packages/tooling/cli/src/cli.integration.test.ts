@@ -84,8 +84,9 @@ describe("buildkit create", () => {
     const result = await run(["catalog", "--json"])
     expect(result.code).toBe(0)
     const description = JSON.parse(result.out)
-    expect(description.templates.map((template: { template: string }) => template.template)).toEqual(["app"])
-    expect(description.slots.map((slot: { id: string }) => slot.id)).toEqual(["database", "auth"])
+    expect(description.templates.map((template: { id: string }) => template.id)).toEqual(["app"])
+    const questions = description.templates[0].questionsByMode.ssr.map((question: { id: string }) => question.id)
+    expect(questions).toEqual(["database", "auth", "i18n"])
   })
 })
 
@@ -95,7 +96,7 @@ describe("buildkit add", () => {
     const asked = await run(["add", "auth", "--cwd", "demo", "--yes", "--json"])
     expect(asked.code).toBe(1)
     const [decision] = envelope(asked.out).decisions ?? []
-    expect(decision?.id).toBe("slot:database")
+    expect(decision?.id).toBe("provides:database")
     const argv = decision?.choices[0]?.argv ?? []
     expect(argv.slice(0, 2)).toEqual(["buildkit", "add"])
     const added = await run([...argv.slice(1), "--cwd", "demo", "--yes", "--json"])

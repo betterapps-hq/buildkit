@@ -1,4 +1,4 @@
-import { defineCatalog, definePreset, defineSlot, defineTemplate } from "@buildkitgg/scaffolder"
+import { defineCatalog, definePreset, defineQuestion, defineTemplate } from "@buildkitgg/scaffolder"
 import { betterAuth } from "./addons/better-auth.js"
 import { ci } from "./addons/ci.js"
 import { i18n } from "./addons/i18n.js"
@@ -8,8 +8,9 @@ import { catalogVersion } from "./version.js"
 import { versions } from "./versions.js"
 
 /**
- * Buildkit's catalog: what `buildkit create` can make, and what `buildkit add` can add. The database and sign-in slots
- * default to "no" while the Better Apps packages they use are unpublished, so a new app installs from npm today.
+ * Buildkit's catalog: what `buildkit create` can make, and what `buildkit add` can add. The database and sign-in
+ * questions default to "no" while the Better Apps packages they use are unpublished, so a new app installs from npm
+ * today.
  */
 export const catalog = defineCatalog({
   id: "@buildkitgg/catalog",
@@ -17,9 +18,30 @@ export const catalog = defineCatalog({
   facets: ["react", "vite", "ssr", "spa", "request-middleware", "root-loader", "router-rewrite", "server-functions"],
   versions,
   targets: [tanstackStart],
-  slots: [
-    defineSlot({ id: "database", title: "Database", question: "Add a database?", choose: "Which database?" }),
-    defineSlot({ id: "auth", title: "Sign-in", question: "Add sign-in?", choose: "Which sign-in?" })
+  questions: [
+    defineQuestion({
+      id: "database",
+      title: "Database",
+      question: "Add a database?",
+      choose: "Which database?",
+      pick: "one",
+      choices: ["@buildkit/sql"]
+    }),
+    defineQuestion({
+      id: "auth",
+      title: "Sign-in",
+      question: "Add sign-in?",
+      choose: "Which sign-in?",
+      pick: "one",
+      choices: ["@buildkit/better-auth"]
+    }),
+    defineQuestion({
+      id: "i18n",
+      title: "Localization",
+      question: "Add localization?",
+      pick: "one",
+      choices: ["@buildkit/i18n"]
+    })
   ],
   templates: [
     defineTemplate({
@@ -28,8 +50,7 @@ export const catalog = defineCatalog({
       description: "A React app on TanStack Start, server-rendered or as a single-page app.",
       target: "tanstack-start",
       required: ["@buildkit/ci"],
-      optional: { "@buildkit/i18n": { default: false } },
-      slots: { database: { required: false }, auth: { required: false } }
+      questions: ["database", "auth", "i18n"]
     })
   ],
   addons: [ci, sql, betterAuth, i18n],
@@ -40,8 +61,7 @@ export const catalog = defineCatalog({
       answers: {
         template: "app",
         mode: "ssr",
-        slots: { database: "@buildkit/sql", auth: "@buildkit/better-auth" },
-        optional: ["@buildkit/i18n"]
+        questions: { database: ["@buildkit/sql"], auth: ["@buildkit/better-auth"], i18n: ["@buildkit/i18n"] }
       }
     })
   ]
