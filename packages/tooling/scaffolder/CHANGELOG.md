@@ -1,8 +1,30 @@
 # Change Log - @buildkitgg/scaffolder
 
-<!-- This log was last generated on Tue, 03 Nov 2026 02:41:57 GMT and should not be manually modified. -->
+<!-- This log was last generated on Tue, 03 Nov 2026 11:33:32 GMT and should not be manually modified. -->
 
 <!-- Start content -->
+
+## 0.9.0
+
+Tue, 03 Nov 2026 11:33:32 GMT
+
+### Minor changes
+
+- Template packages can extend the catalog's templates and their own, ask the catalog's questions, and bring questions
+  and pins of their own. create takes a package's question flags once the package is loaded. (ajcraswell@gmail.com)
+- Add-on packages: defineAddonPack({ extends, addons, versions }) publishes add-ons for a catalog, add installs one by
+  its package name, the lock records it in packs, and later commands and upgrade load it as they load template packages.
+  (ajcraswell@gmail.com)
+- Breaking: init, create's name before 0.6, is removed. The README has a Migrating from slots section for catalogs
+  moving to questions. (ajcraswell@gmail.com)
+- create offers setup steps once the project is applied: the add-ons' commands with setup: true, the install and a git
+  repository with a first commit. --setup runs them without asking, --no-setup skips them, a failing step exits 6, and
+  settings.setup picks the package manager and turns the install or git step off. (ajcraswell@gmail.com)
+
+### Patches
+
+- Keep the command when publishing: npm dropped a bin path that started with ./ (ajcraswell@gmail.com)
+- fix: pass the anti-slop lint rules (ajcraswell@gmail.com)
 
 ## 0.8.0
 

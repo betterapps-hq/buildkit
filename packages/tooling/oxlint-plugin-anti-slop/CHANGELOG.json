@@ -1,0 +1,42 @@
+{
+  "name": "@buildkitgg/oxlint-plugin-anti-slop",
+  "entries": [
+    {
+      "date": "Tue, 03 Nov 2026 11:33:32 GMT",
+      "version": "0.1.0",
+      "tag": "@buildkitgg/oxlint-plugin-anti-slop_v0.1.0",
+      "comments": {
+        "minor": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/oxlint-plugin-anti-slop",
+            "commit": "f068bd0f1e7f36bc301a369e722e79ac9360b6e2",
+            "comment": "feat(oxlint-plugin-anti-slop): add the anti-slop Oxlint plugin and its recommended rule set"
+          }
+        ],
+        "none": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/oxlint-plugin-anti-slop",
+            "commit": "cb28c32943eb51eb486131148d0e2ef49bc148c7",
+            "comment": "chore: depend on @buildkitgg/typescript-config"
+          },
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/oxlint-plugin-anti-slop",
+            "commit": "82b35a41ef7ccbc4f8da11ff844cc681cdc04699",
+            "comment": "Point repository, bugs and homepage at betterapps-hq/buildkit"
+          }
+        ],
+        "patch": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/oxlint-plugin-anti-slop",
+            "commit": "f068bd0f1e7f36bc301a369e722e79ac9360b6e2",
+            "comment": "fix: pass the anti-slop lint rules"
+          }
+        ]
+      }
+    }
+  ]
+}

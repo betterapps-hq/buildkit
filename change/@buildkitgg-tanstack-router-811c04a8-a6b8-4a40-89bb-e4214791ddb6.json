@@ -1,7 +1,0 @@
-{
-  "type": "minor",
-  "comment": "feat(tanstack-router): publish to npm",
-  "packageName": "@buildkitgg/tanstack-router",
-  "email": "ajcraswell@gmail.com",
-  "dependentChangeType": "patch"
-}

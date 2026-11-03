@@ -1,8 +1,18 @@
 # Change Log - @buildkitgg/fluentui-theme
 
-<!-- This log was last generated on Tue, 03 Nov 2026 01:39:16 GMT and should not be manually modified. -->
+<!-- This log was last generated on Tue, 03 Nov 2026 11:33:33 GMT and should not be manually modified. -->
 
 <!-- Start content -->
+
+## 0.1.5
+
+Tue, 03 Nov 2026 11:33:33 GMT
+
+### Patches
+
+- fix: pass the anti-slop lint rules (ajcraswell@gmail.com)
+- Bump @buildkitgg/theme-core to v0.1.3
+- Bump @buildkitgg/react-theme to v0.2.1
 
 ## 0.1.4
 

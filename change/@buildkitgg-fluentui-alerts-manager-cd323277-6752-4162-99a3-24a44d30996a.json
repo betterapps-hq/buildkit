@@ -1,7 +1,0 @@
-{
-  "type": "minor",
-  "comment": "feat(fluentui-alerts-manager): publish to npm",
-  "packageName": "@buildkitgg/fluentui-alerts-manager",
-  "email": "ajcraswell@gmail.com",
-  "dependentChangeType": "patch"
-}

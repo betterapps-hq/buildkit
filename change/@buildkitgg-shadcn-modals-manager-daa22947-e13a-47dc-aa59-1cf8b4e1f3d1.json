@@ -1,7 +1,0 @@
-{
-  "type": "patch",
-  "comment": "fix: pass the anti-slop lint rules",
-  "packageName": "@buildkitgg/shadcn-modals-manager",
-  "email": "ajcraswell@gmail.com",
-  "dependentChangeType": "patch"
-}

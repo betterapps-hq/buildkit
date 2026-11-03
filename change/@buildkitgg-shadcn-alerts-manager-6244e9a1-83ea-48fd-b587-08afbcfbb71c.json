@@ -1,7 +1,0 @@
-{
-  "type": "minor",
-  "comment": "feat(shadcn-alerts-manager): publish to npm",
-  "packageName": "@buildkitgg/shadcn-alerts-manager",
-  "email": "ajcraswell@gmail.com",
-  "dependentChangeType": "patch"
-}

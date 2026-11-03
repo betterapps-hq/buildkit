@@ -2,6 +2,35 @@
   "name": "@buildkitgg/modal-core",
   "entries": [
     {
+      "date": "Tue, 03 Nov 2026 11:33:33 GMT",
+      "version": "0.2.1",
+      "tag": "@buildkitgg/modal-core_v0.2.1",
+      "comments": {
+        "none": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/modal-core",
+            "commit": "cb28c32943eb51eb486131148d0e2ef49bc148c7",
+            "comment": "chore: depend on @buildkitgg/typescript-config"
+          },
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/modal-core",
+            "commit": "82b35a41ef7ccbc4f8da11ff844cc681cdc04699",
+            "comment": "Point repository, bugs and homepage at betterapps-hq/buildkit"
+          }
+        ],
+        "patch": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/modal-core",
+            "commit": "f068bd0f1e7f36bc301a369e722e79ac9360b6e2",
+            "comment": "fix: pass the anti-slop lint rules"
+          }
+        ]
+      }
+    },
+    {
       "date": "Tue, 03 Nov 2026 01:39:16 GMT",
       "version": "0.2.0",
       "tag": "@buildkitgg/modal-core_v0.2.0",

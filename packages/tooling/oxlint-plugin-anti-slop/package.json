@@ -1,6 +1,6 @@
 {
   "name": "@buildkitgg/oxlint-plugin-anti-slop",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "An Oxlint plugin that rejects low-evidence TypeScript patterns, with a recommended rule set. Vendored from anti-slop.",
   "license": "MIT",
   "type": "module",

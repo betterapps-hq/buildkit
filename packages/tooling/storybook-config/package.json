@@ -1,6 +1,6 @@
 {
   "name": "@buildkitgg/storybook-config",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Shared Storybook main and preview configuration, and story example frames.",
   "license": "MIT",
   "type": "module",
