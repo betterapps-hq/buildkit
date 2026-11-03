@@ -13,7 +13,7 @@ concurrency:
 jobs:
   update:
     if: github.ref == 'refs/heads/main'
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ubuntu-latest
     timeout-minutes: 60
     # The npm environment holds RELEASE_DEPLOY_KEY, the one actor main's ruleset lets skip a pull request.
     environment:
