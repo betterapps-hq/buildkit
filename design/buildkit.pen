@@ -123,7 +123,7 @@
           "fill": {
             "type": "shader",
             "enabled": true,
-            "url": "design/hero-light.glsl",
+            "url": "hero-light.glsl",
             "uniforms": {
               "u_bx0": 0.0556,
               "u_by0": 0.0861,
@@ -10680,7 +10680,7 @@
                           "fill": "$text-2",
                           "textGrowth": "fixed-width",
                           "width": "fill_container",
-                          "content": "dev-domains gives your app, Storybook and E2E servers stable .localhost names with trusted certificates, tied to the worktree they run in. Several agents can work in several worktrees at once without fighting over ports.",
+                          "content": "dev-domains gives your app, Storybook and E2E servers stable .localhost domain names with trusted certificates, tied to the worktree they run in. Several agents can work in several worktrees at once without fighting over ports.",
                           "lineHeight": 1.6,
                           "fontFamily": "$font-sans",
                           "fontSize": 16,
@@ -19437,7 +19437,7 @@
           "fill": {
             "type": "shader",
             "enabled": true,
-            "url": "design/hero-light.glsl",
+            "url": "hero-light.glsl",
             "uniforms": {
               "u_bx0": 0.7771,
               "u_by0": 0.6466,
@@ -29173,7 +29173,7 @@
           "fill": {
             "type": "shader",
             "enabled": true,
-            "url": "design/hero-light.glsl",
+            "url": "hero-light.glsl",
             "uniforms": {
               "u_bx0": 0.0514,
               "u_by0": 0.0817,
@@ -32709,7 +32709,7 @@
                       "fill": "$text-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "dev-domains gives your app, Storybook and E2E servers stable .localhost names with trusted certificates, tied to the worktree they run in. Several agents can work in several worktrees at once without fighting over ports.",
+                      "content": "dev-domains gives your app, Storybook and E2E servers stable .localhost domain names with trusted certificates, tied to the worktree they run in. Several agents can work in several worktrees at once without fighting over ports.",
                       "lineHeight": 1.55,
                       "fontFamily": "$font-sans",
                       "fontSize": 14.5,
@@ -38464,7 +38464,7 @@
           "fill": {
             "type": "shader",
             "enabled": true,
-            "url": "design/hero-light.glsl",
+            "url": "hero-light.glsl",
             "uniforms": {
               "u_bx0": 0.3974,
               "u_by0": 0.7481,
@@ -97468,7 +97468,7 @@
                               "fill": "$text-2",
                               "textGrowth": "fixed-width",
                               "width": "fill_container",
-                              "content": "dev-domains gives your app, Storybook and E2E servers stable .localhost names with trusted certificates, tied to the worktree they run in. Several agents can work in several worktrees at once without fighting over ports.",
+                              "content": "dev-domains gives your app, Storybook and E2E servers stable .localhost domain names with trusted certificates, tied to the worktree they run in. Several agents can work in several worktrees at once without fighting over ports.",
                               "lineHeight": 1.6,
                               "fontFamily": "$font-sans",
                               "fontSize": 16,
@@ -103450,6 +103450,2666 @@
                           "icon": "arrow-right",
                           "library": "lucide",
                           "fill": "$blue-soft"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "SMtyQ",
+      "x": 0,
+      "y": 11000,
+      "name": "Scaffolder with questions (exploration)",
+      "width": 1440,
+      "fill": "$ink-950",
+      "layout": "vertical",
+      "padding": 80,
+      "children": [
+        {
+          "type": "frame",
+          "id": "aBA52",
+          "name": "Scaffolder",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 48,
+          "children": [
+            {
+              "type": "frame",
+              "id": "G6ypf",
+              "name": "Subsection bar",
+              "width": "fill_container",
+              "gap": 14,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "GOnLM",
+                  "name": "Icon wrap",
+                  "width": 40,
+                  "height": 40,
+                  "fill": "#3370FF24",
+                  "cornerRadius": 11,
+                  "stroke": "#3370FF55",
+                  "strokeWidth": 1,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "k7ONr",
+                      "name": "Icon",
+                      "width": 18,
+                      "height": 18,
+                      "icon": "blocks",
+                      "library": "lucide",
+                      "fill": "$blue-soft"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "YX0oa",
+                  "name": "Text",
+                  "layout": "vertical",
+                  "gap": 2,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "pyZFm",
+                      "name": "Name",
+                      "fill": "$text",
+                      "content": "Scaffolder",
+                      "fontFamily": "$font-sans",
+                      "fontSize": 18,
+                      "fontWeight": "600",
+                      "letterSpacing": -0.3
+                    },
+                    {
+                      "type": "text",
+                      "id": "ah8y2",
+                      "name": "Package",
+                      "fill": "$text-3",
+                      "content": "@buildkitgg/scaffolder",
+                      "fontFamily": "$font-mono",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "rectangle",
+                  "id": "T7Zng",
+                  "name": "Rule",
+                  "fill": "$line-strong",
+                  "width": "fill_container",
+                  "height": 1
+                },
+                {
+                  "type": "frame",
+                  "id": "RXx2T",
+                  "name": "Guide",
+                  "gap": 6,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "lc7u3",
+                      "name": "Label",
+                      "fill": "$blue-soft",
+                      "content": "Scaffolder guide",
+                      "fontFamily": "$font-sans",
+                      "fontSize": 13.5,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "eVxUE",
+                      "name": "Arrow",
+                      "width": 14,
+                      "height": 14,
+                      "icon": "arrow-right",
+                      "library": "lucide",
+                      "fill": "$blue-soft"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "N5UVE",
+              "name": "Scaffolder body",
+              "width": "fill_container",
+              "fill": "#00000000",
+              "stroke": "$line",
+              "gap": 72,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "QhrNe",
+                  "name": "Copy",
+                  "width": 440,
+                  "layout": "vertical",
+                  "gap": 24,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "jjZuY",
+                      "name": "Heading",
+                      "fill": "$text",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Ship your stack\nas a template",
+                      "lineHeight": 1.08,
+                      "fontFamily": "$font-sans",
+                      "fontSize": 40,
+                      "fontWeight": "600",
+                      "letterSpacing": -1.4
+                    },
+                    {
+                      "type": "text",
+                      "id": "IzLrA",
+                      "name": "Body",
+                      "fill": "$text-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Build starter templates and a project-creation wizard for your platform. Define required packages, optional add-ons, and setup choices in a catalog. Publish your templates or build your own CLI on the engine. Developers can create projects, choose add-ons, and update them later.",
+                      "lineHeight": 1.6,
+                      "fontFamily": "$font-sans",
+                      "fontSize": 16,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "uDwnN",
+                      "name": "Features",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "padding": [
+                        8,
+                        0,
+                        0,
+                        0
+                      ],
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "lp4ma",
+                          "name": "Feature Required and optional",
+                          "width": "fill_container",
+                          "stroke": "$line",
+                          "strokeWidth": {
+                            "top": 1
+                          },
+                          "gap": 16,
+                          "padding": [
+                            18,
+                            0
+                          ],
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "CKPQ3",
+                              "name": "Icon wrap",
+                              "width": 34,
+                              "height": 34,
+                              "fill": "#3370FF1A",
+                              "cornerRadius": 9,
+                              "stroke": "#3370FF40",
+                              "strokeWidth": 1,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "HqVwk",
+                                  "name": "Icon",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "list-checks",
+                                  "library": "lucide",
+                                  "fill": "$blue-soft"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "qfRSP",
+                              "name": "Text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 5,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "jybIA",
+                                  "name": "Title",
+                                  "fill": "$text",
+                                  "content": "Questions, in order",
+                                  "fontFamily": "$font-sans",
+                                  "fontSize": 15.5,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "CO3aP",
+                                  "name": "Desc",
+                                  "fill": "$text-2",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "A template lists what every project gets, then asks its questions in order. Pick one or many, from your add-ons or any npm package. A choice that won't work says why.",
+                                  "lineHeight": 1.5,
+                                  "fontFamily": "$font-sans",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "nmJLm",
+                          "name": "Feature Publish it anywhere",
+                          "width": "fill_container",
+                          "stroke": "$line",
+                          "strokeWidth": {
+                            "top": 1
+                          },
+                          "gap": 16,
+                          "padding": [
+                            18,
+                            0
+                          ],
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "akv1B",
+                              "name": "Icon wrap",
+                              "width": 34,
+                              "height": 34,
+                              "fill": "#3370FF1A",
+                              "cornerRadius": 9,
+                              "stroke": "#3370FF40",
+                              "strokeWidth": 1,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "cxu0E",
+                                  "name": "Icon",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "package",
+                                  "library": "lucide",
+                                  "fill": "$blue-soft"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "mbPkX",
+                              "name": "Text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 5,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "dGgnc",
+                                  "name": "Title",
+                                  "fill": "$text",
+                                  "content": "Publish templates on npm",
+                                  "fontFamily": "$font-sans",
+                                  "fontSize": 15.5,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "ISLlM",
+                                  "name": "Desc",
+                                  "fill": "$text-2",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Ship a template package on npm. People install it by name with the scaffold command, or through a CLI you build on the engine.",
+                                  "lineHeight": 1.5,
+                                  "fontFamily": "$font-sans",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Ku76t",
+                          "name": "Feature Change it later",
+                          "width": "fill_container",
+                          "stroke": "$line",
+                          "strokeWidth": {
+                            "top": 1
+                          },
+                          "gap": 16,
+                          "padding": [
+                            18,
+                            0
+                          ],
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "m87KJ",
+                              "name": "Icon wrap",
+                              "width": 34,
+                              "height": 34,
+                              "fill": "#3370FF1A",
+                              "cornerRadius": 9,
+                              "stroke": "#3370FF40",
+                              "strokeWidth": 1,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "SssH4",
+                                  "name": "Icon",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "git-compare",
+                                  "library": "lucide",
+                                  "fill": "$blue-soft"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "FoSxM",
+                              "name": "Text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 5,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "RxME3",
+                                  "name": "Title",
+                                  "fill": "$text",
+                                  "content": "Change it later",
+                                  "fontFamily": "$font-sans",
+                                  "fontSize": 15.5,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "p3NL0m",
+                                  "name": "Desc",
+                                  "fill": "$text-2",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Review planned changes before adding, upgrading, or syncing. The engine merges supported changes and asks you to resolve conflicts with your edits.",
+                                  "lineHeight": 1.5,
+                                  "fontFamily": "$font-sans",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "XbCpJ",
+                  "name": "Flow",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "p6OR2",
+                      "name": "Part title wrap",
+                      "width": "fill_container",
+                      "padding": [
+                        0,
+                        0,
+                        20,
+                        0
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "E8ifZm",
+                          "name": "Part title",
+                          "fill": "$text",
+                          "content": "How it works",
+                          "lineHeight": 1.3,
+                          "fontFamily": "$font-sans",
+                          "fontSize": 18,
+                          "fontWeight": "600",
+                          "letterSpacing": -0.2
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "KRoLq",
+                      "name": "Step author",
+                      "width": "fill_container",
+                      "gap": 18,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "SGEVV",
+                          "name": "Track",
+                          "width": 14,
+                          "height": "fill_container",
+                          "layout": "vertical",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "rectangle",
+                              "id": "JlrLU",
+                              "name": "Line above",
+                              "fill": "#00000000",
+                              "width": 2,
+                              "height": 9
+                            },
+                            {
+                              "type": "ellipse",
+                              "id": "Kturp",
+                              "name": "Node",
+                              "fill": "$ink-950",
+                              "width": 10,
+                              "height": 10,
+                              "stroke": "$blue-soft",
+                              "strokeWidth": 2
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "H2omf",
+                              "name": "Line below",
+                              "fill": "#2A3860",
+                              "width": 2,
+                              "height": "fill_container"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "SMduM",
+                          "name": "Content",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 12,
+                          "padding": [
+                            0,
+                            0,
+                            28,
+                            0
+                          ],
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "zoska",
+                              "name": "Head",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "COXOZ",
+                                  "name": "Icon",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "pen-line",
+                                  "library": "lucide",
+                                  "fill": "$blue-soft"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "z90z5O",
+                                  "name": "Title",
+                                  "fill": "$text",
+                                  "content": "You write the template",
+                                  "fontFamily": "$font-sans",
+                                  "fontSize": 15,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "HEQv4",
+                              "name": "Template code",
+                              "clip": true,
+                              "width": "fill_container",
+                              "fill": "#070A14",
+                              "cornerRadius": 14,
+                              "stroke": "$line-strong",
+                              "strokeWidth": 1,
+                              "effect": {
+                                "type": "shadow",
+                                "shadowType": "outer",
+                                "color": "#00000099",
+                                "offset": {
+                                  "x": 0,
+                                  "y": 24
+                                },
+                                "blur": 60
+                              },
+                              "layout": "vertical",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "njyWF",
+                                  "name": "Title bar",
+                                  "width": "fill_container",
+                                  "height": 36,
+                                  "fill": "$ink-900",
+                                  "stroke": "$line",
+                                  "strokeWidth": {
+                                    "bottom": 1
+                                  },
+                                  "gap": 8,
+                                  "padding": [
+                                    0,
+                                    14
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "Mv9dW",
+                                      "name": "Icon",
+                                      "width": 13,
+                                      "height": 13,
+                                      "icon": "file-code",
+                                      "library": "lucide",
+                                      "fill": "$text-3"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "aAOpn",
+                                      "name": "Title",
+                                      "fill": "$text-2",
+                                      "content": "templates/app.ts",
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 11.5,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "Go8vH",
+                                  "name": "Body",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "padding": [
+                                    14,
+                                    18
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "S3Ot2C",
+                                      "name": "L1",
+                                      "width": "fill_container",
+                                      "height": 22,
+                                      "cornerRadius": 5,
+                                      "padding": [
+                                        0,
+                                        6
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "Y1JZCV",
+                                          "name": "Tok",
+                                          "fill": "$violet",
+                                          "content": "import ",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "cc8p5",
+                                          "name": "Tok",
+                                          "fill": "$text-2",
+                                          "content": "{ ",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "Ymkcb",
+                                          "name": "Tok",
+                                          "fill": "$text",
+                                          "content": "defineTemplate ",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "B14D5",
+                                          "name": "Tok",
+                                          "fill": "$text-2",
+                                          "content": "} ",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "r2g6p6",
+                                          "name": "Tok",
+                                          "fill": "$violet",
+                                          "content": "from ",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "SUl1N",
+                                          "name": "Tok",
+                                          "fill": "$mint",
+                                          "content": "\"@buildkitgg/scaffolder\"",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "lwsbj",
+                                      "name": "L2",
+                                      "width": "fill_container",
+                                      "height": 22,
+                                      "cornerRadius": 5,
+                                      "padding": [
+                                        0,
+                                        6
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "JYKNI",
+                                          "name": "Tok",
+                                          "fill": "$text-2",
+                                          "content": " ",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "I3xXd",
+                                      "name": "L3",
+                                      "width": "fill_container",
+                                      "height": 22,
+                                      "cornerRadius": 5,
+                                      "padding": [
+                                        0,
+                                        6
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "Bx6Dp",
+                                          "name": "Tok",
+                                          "fill": "$violet",
+                                          "content": "export const ",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "JIZUZ",
+                                          "name": "Tok",
+                                          "fill": "$text",
+                                          "content": "app ",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "lotQT",
+                                          "name": "Tok",
+                                          "fill": "$text-2",
+                                          "content": "= ",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "UyceK",
+                                          "name": "Tok",
+                                          "fill": "$blue-soft",
+                                          "content": "defineTemplate",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "VyyHe",
+                                          "name": "Tok",
+                                          "fill": "$text-2",
+                                          "content": "({",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "EteRj",
+                                      "name": "L4",
+                                      "width": "fill_container",
+                                      "height": 22,
+                                      "cornerRadius": 5,
+                                      "padding": [
+                                        0,
+                                        6
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "PWvlI",
+                                          "name": "Tok",
+                                          "fill": "$text",
+                                          "content": "  id",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "NqiHa",
+                                          "name": "Tok",
+                                          "fill": "$text-2",
+                                          "content": ": ",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "JQLXM",
+                                          "name": "Tok",
+                                          "fill": "$mint",
+                                          "content": "\"app\"",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "JQc3e",
+                                          "name": "Tok",
+                                          "fill": "$text-2",
+                                          "content": ",",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "xDI1a",
+                                      "name": "L5",
+                                      "width": "fill_container",
+                                      "height": 22,
+                                      "cornerRadius": 5,
+                                      "padding": [
+                                        0,
+                                        6
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "z7ek4",
+                                          "name": "Tok",
+                                          "fill": "$text",
+                                          "content": "  title",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "wSyql",
+                                          "name": "Tok",
+                                          "fill": "$text-2",
+                                          "content": ": ",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "odT5e",
+                                          "name": "Tok",
+                                          "fill": "$mint",
+                                          "content": "\"App\"",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "e99KSL",
+                                          "name": "Tok",
+                                          "fill": "$text-2",
+                                          "content": ",",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "BG7Lm",
+                                      "name": "L6",
+                                      "width": "fill_container",
+                                      "height": 22,
+                                      "cornerRadius": 5,
+                                      "padding": [
+                                        0,
+                                        6
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "mihq6",
+                                          "name": "Tok",
+                                          "fill": "$text",
+                                          "content": "  description",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "soT4X",
+                                          "name": "Tok",
+                                          "fill": "$text-2",
+                                          "content": ": ",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "prxRF",
+                                          "name": "Tok",
+                                          "fill": "$mint",
+                                          "content": "\"A React app with lint and tests\"",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "DTXbf",
+                                          "name": "Tok",
+                                          "fill": "$text-2",
+                                          "content": ",",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "To6rT",
+                                      "name": "L7",
+                                      "width": "fill_container",
+                                      "height": 22,
+                                      "cornerRadius": 5,
+                                      "padding": [
+                                        0,
+                                        6
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "JW2Ns",
+                                          "name": "Tok",
+                                          "fill": "$text",
+                                          "content": "  target",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "W5YxIh",
+                                          "name": "Tok",
+                                          "fill": "$text-2",
+                                          "content": ": ",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "B1JjB",
+                                          "name": "Tok",
+                                          "fill": "$mint",
+                                          "content": "\"web\"",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "y4uSc",
+                                          "name": "Tok",
+                                          "fill": "$text-2",
+                                          "content": ",",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "GpK65",
+                                      "name": "L8",
+                                      "width": "fill_container",
+                                      "height": 22,
+                                      "fill": "#7EE2B01A",
+                                      "cornerRadius": 5,
+                                      "padding": [
+                                        0,
+                                        6
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "IVb63",
+                                          "name": "Tok",
+                                          "fill": "$text",
+                                          "content": "  required",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "uj31D",
+                                          "name": "Tok",
+                                          "fill": "$text-2",
+                                          "content": ": [",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "Q4TYC",
+                                          "name": "Tok",
+                                          "fill": "$mint",
+                                          "content": "\"npm:vite-plus\"",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "XPSSn",
+                                          "name": "Tok",
+                                          "fill": "$text-2",
+                                          "content": ", ",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "f9qepU",
+                                          "name": "Tok",
+                                          "fill": "$mint",
+                                          "content": "\"npm:vitest\"",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "iycxt",
+                                          "name": "Tok",
+                                          "fill": "$text-2",
+                                          "content": "],",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "hbzOV",
+                                          "name": "Flex",
+                                          "width": "fill_container",
+                                          "height": 1
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "Y0DUP",
+                                          "name": "Note",
+                                          "fill": "$mint",
+                                          "content": "always installed",
+                                          "fontFamily": "$font-sans",
+                                          "fontSize": 11.5,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "f4XlG",
+                                      "name": "L9",
+                                      "width": "fill_container",
+                                      "height": 22,
+                                      "cornerRadius": 5,
+                                      "padding": [
+                                        0,
+                                        6
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "fLNyM",
+                                          "name": "Tok",
+                                          "fill": "$text",
+                                          "content": "  questions",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "DKLP0",
+                                          "name": "Tok",
+                                          "fill": "$text-2",
+                                          "content": ": [",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "aeN5n",
+                                      "name": "L10",
+                                      "width": "fill_container",
+                                      "height": 22,
+                                      "fill": "#F5C76E1A",
+                                      "cornerRadius": 5,
+                                      "padding": [
+                                        0,
+                                        6
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "i6eXD",
+                                          "name": "Tok",
+                                          "fill": "$mint",
+                                          "content": "    \"localization\"",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "zxa3A",
+                                          "name": "Tok",
+                                          "fill": "$text-2",
+                                          "content": ",",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "OYNhU",
+                                          "name": "Flex",
+                                          "width": "fill_container",
+                                          "height": 1
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "pW8Y8",
+                                          "name": "Note",
+                                          "fill": "$amber",
+                                          "content": "one of lingui, react-intl",
+                                          "fontFamily": "$font-sans",
+                                          "fontSize": 11.5,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "W4YkyV",
+                                      "name": "L11",
+                                      "width": "fill_container",
+                                      "height": 22,
+                                      "fill": "#F5C76E1A",
+                                      "cornerRadius": 5,
+                                      "padding": [
+                                        0,
+                                        6
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "uAwWG",
+                                          "name": "Tok",
+                                          "fill": "$mint",
+                                          "content": "    \"database\"",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "D12pK",
+                                          "name": "Tok",
+                                          "fill": "$text-2",
+                                          "content": ",",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "Z9gXVO",
+                                          "name": "Flex",
+                                          "width": "fill_container",
+                                          "height": 1
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "M26d1",
+                                          "name": "Note",
+                                          "fill": "$amber",
+                                          "content": "one of drizzle, prisma, convex",
+                                          "fontFamily": "$font-sans",
+                                          "fontSize": 11.5,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "GM3Sv",
+                                      "name": "L12",
+                                      "width": "fill_container",
+                                      "height": 22,
+                                      "fill": "#F5C76E1A",
+                                      "cornerRadius": 5,
+                                      "padding": [
+                                        0,
+                                        6
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "qVxFu",
+                                          "name": "Tok",
+                                          "fill": "$text-2",
+                                          "content": "    { ",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "QVid8",
+                                          "name": "Tok",
+                                          "fill": "$text",
+                                          "content": "use",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "m1Ztyg",
+                                          "name": "Tok",
+                                          "fill": "$text-2",
+                                          "content": ": ",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "xGw1a",
+                                          "name": "Tok",
+                                          "fill": "$mint",
+                                          "content": "\"auth\"",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "h5AUC",
+                                          "name": "Tok",
+                                          "fill": "$text-2",
+                                          "content": ", ",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "u68ARl",
+                                          "name": "Tok",
+                                          "fill": "$text",
+                                          "content": "default",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "ZmfGJ",
+                                          "name": "Tok",
+                                          "fill": "$text-2",
+                                          "content": ": ",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "ORejo",
+                                          "name": "Tok",
+                                          "fill": "$mint",
+                                          "content": "\"better-auth\"",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "jcZgH",
+                                          "name": "Tok",
+                                          "fill": "$text-2",
+                                          "content": " },",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "dRp7j",
+                                          "name": "Flex",
+                                          "width": "fill_container",
+                                          "height": 1
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "y0NIwm",
+                                          "name": "Note",
+                                          "fill": "$amber",
+                                          "content": "one of better-auth, clerk",
+                                          "fontFamily": "$font-sans",
+                                          "fontSize": 11.5,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "SwwhT",
+                                      "name": "L13",
+                                      "width": "fill_container",
+                                      "height": 22,
+                                      "cornerRadius": 5,
+                                      "padding": [
+                                        0,
+                                        6
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "r8JSyu",
+                                          "name": "Tok",
+                                          "fill": "$text-2",
+                                          "content": "    {",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "WWXCc",
+                                      "name": "L14",
+                                      "width": "fill_container",
+                                      "height": 22,
+                                      "cornerRadius": 5,
+                                      "padding": [
+                                        0,
+                                        6
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "u6Tzr",
+                                          "name": "Tok",
+                                          "fill": "$text",
+                                          "content": "      id",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "F08k3",
+                                          "name": "Tok",
+                                          "fill": "$text-2",
+                                          "content": ": ",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "zPzEc",
+                                          "name": "Tok",
+                                          "fill": "$mint",
+                                          "content": "\"telemetry\"",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "zQuIX",
+                                          "name": "Tok",
+                                          "fill": "$text-2",
+                                          "content": ",",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "eg7rK",
+                                      "name": "L14b",
+                                      "width": "fill_container",
+                                      "height": 22,
+                                      "cornerRadius": 5,
+                                      "padding": [
+                                        0,
+                                        6
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "e8X22",
+                                          "name": "Tok",
+                                          "fill": "$text",
+                                          "content": "      title",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "HovKh",
+                                          "name": "Tok",
+                                          "fill": "$text-2",
+                                          "content": ": ",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "dVs5I",
+                                          "name": "Tok",
+                                          "fill": "$mint",
+                                          "content": "\"Telemetry\"",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "ghY3p",
+                                          "name": "Tok",
+                                          "fill": "$text-2",
+                                          "content": ",",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "aWAs4",
+                                      "name": "L15",
+                                      "width": "fill_container",
+                                      "height": 22,
+                                      "fill": "#3370FF1F",
+                                      "cornerRadius": 5,
+                                      "padding": [
+                                        0,
+                                        6
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "sBphS",
+                                          "name": "Tok",
+                                          "fill": "$text",
+                                          "content": "      question",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "ntJuU",
+                                          "name": "Tok",
+                                          "fill": "$text-2",
+                                          "content": ": ",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "xagLE",
+                                          "name": "Tok",
+                                          "fill": "$mint",
+                                          "content": "\"Add telemetry?\"",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "RKM1b",
+                                          "name": "Tok",
+                                          "fill": "$text-2",
+                                          "content": ",",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "tDiFK",
+                                          "name": "Flex",
+                                          "width": "fill_container",
+                                          "height": 1
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "rmhuY",
+                                          "name": "Note",
+                                          "fill": "$blue-soft",
+                                          "content": "asked first",
+                                          "fontFamily": "$font-sans",
+                                          "fontSize": 11.5,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "pow9F",
+                                      "name": "L16",
+                                      "width": "fill_container",
+                                      "height": 22,
+                                      "cornerRadius": 5,
+                                      "padding": [
+                                        0,
+                                        6
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "qsG3a",
+                                          "name": "Tok",
+                                          "fill": "$text",
+                                          "content": "      choose",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "krICc",
+                                          "name": "Tok",
+                                          "fill": "$text-2",
+                                          "content": ": ",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "r6Gvs",
+                                          "name": "Tok",
+                                          "fill": "$mint",
+                                          "content": "\"Which ones?\"",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "s6vuk",
+                                          "name": "Tok",
+                                          "fill": "$text-2",
+                                          "content": ",",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "VnAE2",
+                                      "name": "L17",
+                                      "width": "fill_container",
+                                      "height": 22,
+                                      "fill": "#3370FF1F",
+                                      "cornerRadius": 5,
+                                      "padding": [
+                                        0,
+                                        6
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "qhFlf",
+                                          "name": "Tok",
+                                          "fill": "$text",
+                                          "content": "      pick",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "zEQ14",
+                                          "name": "Tok",
+                                          "fill": "$text-2",
+                                          "content": ": ",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "O4lF1",
+                                          "name": "Tok",
+                                          "fill": "$mint",
+                                          "content": "\"many\"",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "pptKB",
+                                          "name": "Tok",
+                                          "fill": "$text-2",
+                                          "content": ",",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "K0xyyK",
+                                          "name": "Flex",
+                                          "width": "fill_container",
+                                          "height": 1
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "fF0Ke",
+                                          "name": "Note",
+                                          "fill": "$blue-soft",
+                                          "content": "checkboxes, \"one\" for radios",
+                                          "fontFamily": "$font-sans",
+                                          "fontSize": 11.5,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "SJUSm",
+                                      "name": "L18",
+                                      "width": "fill_container",
+                                      "height": 22,
+                                      "fill": "#3370FF1F",
+                                      "cornerRadius": 5,
+                                      "padding": [
+                                        0,
+                                        6
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "S6YeLx",
+                                          "name": "Tok",
+                                          "fill": "$text",
+                                          "content": "      choices",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "FYOgT",
+                                          "name": "Tok",
+                                          "fill": "$text-2",
+                                          "content": ": [",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "spKbd",
+                                          "name": "Tok",
+                                          "fill": "$mint",
+                                          "content": "\"sentry\"",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "w1jgOp",
+                                          "name": "Tok",
+                                          "fill": "$text-2",
+                                          "content": ", ",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "wnjtE",
+                                          "name": "Tok",
+                                          "fill": "$mint",
+                                          "content": "\"npm:posthog-js\"",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "uoXMR",
+                                          "name": "Tok",
+                                          "fill": "$text-2",
+                                          "content": "],",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "mUmzu",
+                                          "name": "Flex",
+                                          "width": "fill_container",
+                                          "height": 1
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "My52Y",
+                                          "name": "Note",
+                                          "fill": "$blue-soft",
+                                          "content": "add-ons or any npm package",
+                                          "fontFamily": "$font-sans",
+                                          "fontSize": 11.5,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "k8Sa0",
+                                      "name": "L19",
+                                      "width": "fill_container",
+                                      "height": 22,
+                                      "cornerRadius": 5,
+                                      "padding": [
+                                        0,
+                                        6
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "nz0gs",
+                                          "name": "Tok",
+                                          "fill": "$text-2",
+                                          "content": "    },",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "odnxU",
+                                      "name": "L20",
+                                      "width": "fill_container",
+                                      "height": 22,
+                                      "cornerRadius": 5,
+                                      "padding": [
+                                        0,
+                                        6
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "cTRHa",
+                                          "name": "Tok",
+                                          "fill": "$text-2",
+                                          "content": "  ],",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "YETYc",
+                                      "name": "L21",
+                                      "width": "fill_container",
+                                      "height": 22,
+                                      "cornerRadius": 5,
+                                      "padding": [
+                                        0,
+                                        6
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "N0Z6LT",
+                                          "name": "Tok",
+                                          "fill": "$text-2",
+                                          "content": "})",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "t3XTz",
+                      "name": "Step install",
+                      "width": "fill_container",
+                      "gap": 18,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "oosHQ",
+                          "name": "Track",
+                          "width": 14,
+                          "height": "fill_container",
+                          "layout": "vertical",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "rectangle",
+                              "id": "RoqkO",
+                              "name": "Line above",
+                              "fill": "#2A3860",
+                              "width": 2,
+                              "height": 9
+                            },
+                            {
+                              "type": "ellipse",
+                              "id": "CLgo2",
+                              "name": "Node",
+                              "fill": "$ink-950",
+                              "width": 10,
+                              "height": 10,
+                              "stroke": "$blue-soft",
+                              "strokeWidth": 2
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "y1N51d",
+                              "name": "Line below",
+                              "fill": "#2A3860",
+                              "width": 2,
+                              "height": "fill_container"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "vfkKZ",
+                          "name": "Content",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 12,
+                          "padding": [
+                            0,
+                            0,
+                            28,
+                            0
+                          ],
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "Hcjnm",
+                              "name": "Head",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "L57I8y",
+                                  "name": "Icon",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "terminal",
+                                  "library": "lucide",
+                                  "fill": "$blue-soft"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "RljHF",
+                                  "name": "Title",
+                                  "fill": "$text",
+                                  "content": "Developers create a project",
+                                  "fontFamily": "$font-sans",
+                                  "fontSize": 15,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "QcJwo",
+                              "name": "Install terminal",
+                              "clip": true,
+                              "width": "fill_container",
+                              "fill": "#070A14",
+                              "cornerRadius": 14,
+                              "stroke": "$line-strong",
+                              "strokeWidth": 1,
+                              "effect": {
+                                "type": "shadow",
+                                "shadowType": "outer",
+                                "color": "#00000099",
+                                "offset": {
+                                  "x": 0,
+                                  "y": 24
+                                },
+                                "blur": 60
+                              },
+                              "layout": "vertical",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "j6pJN",
+                                  "name": "Title bar",
+                                  "width": "fill_container",
+                                  "height": 36,
+                                  "fill": "$ink-900",
+                                  "stroke": "$line",
+                                  "strokeWidth": {
+                                    "bottom": 1
+                                  },
+                                  "gap": 8,
+                                  "padding": [
+                                    0,
+                                    14
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "b6CHB",
+                                      "name": "Icon",
+                                      "width": 13,
+                                      "height": 13,
+                                      "icon": "square-terminal",
+                                      "library": "lucide",
+                                      "fill": "$text-3"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "ng9RA",
+                                      "name": "Title",
+                                      "fill": "$text-2",
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 11.5,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "DK1SW",
+                                  "name": "Body",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "padding": [
+                                    14,
+                                    18
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "V6F93",
+                                      "name": "Line",
+                                      "width": "fill_container",
+                                      "height": 22,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "zJUOS",
+                                          "name": "Seg",
+                                          "fill": "$text-3",
+                                          "content": "$ ",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "kh0UJ",
+                                          "name": "Seg",
+                                          "fill": "$text",
+                                          "content": "npx @acme/cli create app my-app",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "fhOaV",
+                                      "name": "Line",
+                                      "width": "fill_container",
+                                      "height": 22,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "PZfrs",
+                                          "name": "Seg",
+                                          "fill": "$text-3",
+                                          "content": " ",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "RsWly",
+                                      "name": "Line",
+                                      "width": "fill_container",
+                                      "height": 22,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "MYHcN",
+                                          "name": "Seg",
+                                          "fill": "$blue-soft",
+                                          "content": "  ◇",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "xgZTh",
+                                          "name": "Seg",
+                                          "fill": "$text-2",
+                                          "content": "  Add localization?   ",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "U8e84L",
+                                          "name": "Seg",
+                                          "fill": "$text",
+                                          "content": "No",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "r9AKh",
+                                      "name": "Line",
+                                      "width": "fill_container",
+                                      "height": 22,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "aqEUM",
+                                          "name": "Seg",
+                                          "fill": "$blue-soft",
+                                          "content": "  ◇",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "a15CMF",
+                                          "name": "Seg",
+                                          "fill": "$text-2",
+                                          "content": "  Add a database?     ",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "HmMNS",
+                                          "name": "Seg",
+                                          "fill": "$text",
+                                          "content": "Yes",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "ox4JG",
+                                      "name": "Line",
+                                      "width": "fill_container",
+                                      "height": 22,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "ZI6PZ",
+                                          "name": "Seg",
+                                          "fill": "$blue-soft",
+                                          "content": "  ◇",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "rftH8",
+                                          "name": "Seg",
+                                          "fill": "$text-2",
+                                          "content": "  Which one?          ",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "yL7XH",
+                                          "name": "Seg",
+                                          "fill": "$text",
+                                          "content": "Convex",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "naPEp",
+                                      "name": "Line",
+                                      "width": "fill_container",
+                                      "height": 22,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "Nd63V",
+                                          "name": "Seg",
+                                          "fill": "$blue-soft",
+                                          "content": "  ◇",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "EEMfe",
+                                          "name": "Seg",
+                                          "fill": "$text-2",
+                                          "content": "  Add sign-in?        ",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "wmm0O",
+                                          "name": "Seg",
+                                          "fill": "$text",
+                                          "content": "Yes",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "v5TjC",
+                                      "name": "Line",
+                                      "width": "fill_container",
+                                      "height": 22,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "eHsrf",
+                                          "name": "Seg",
+                                          "fill": "$blue-soft",
+                                          "content": "  ◆",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "MKBuo",
+                                          "name": "Seg",
+                                          "fill": "$text",
+                                          "content": "  Which provider?",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "ROjvl",
+                                      "name": "Line",
+                                      "width": "fill_container",
+                                      "height": 22,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "B67Uk",
+                                          "name": "Seg",
+                                          "fill": "$text-3",
+                                          "content": "  │",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "Xf6Vi",
+                                          "name": "Seg",
+                                          "fill": "$text-3",
+                                          "content": "    ○ ",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "PCuct",
+                                          "name": "Seg",
+                                          "fill": "$text-3",
+                                          "content": "Better Auth  ",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "u5CeAu",
+                                          "name": "Seg",
+                                          "fill": "$amber",
+                                          "content": "Needs Drizzle or Prisma",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "VKEq9",
+                                      "name": "Line",
+                                      "width": "fill_container",
+                                      "height": 22,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "ysEIG",
+                                          "name": "Seg",
+                                          "fill": "$text-3",
+                                          "content": "  │",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "dlY06",
+                                          "name": "Seg",
+                                          "fill": "$blue-soft",
+                                          "content": "    ● ",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "rMlZl",
+                                          "name": "Seg",
+                                          "fill": "$text",
+                                          "content": "Clerk        ",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "RbAiF",
+                                          "name": "Seg",
+                                          "fill": "$text-3",
+                                          "content": "Hosted sign-in",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "xQ4yf",
+                                      "name": "Line",
+                                      "width": "fill_container",
+                                      "height": 22,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "mGunP",
+                                          "name": "Seg",
+                                          "fill": "$text-3",
+                                          "content": "  └",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "D5dyH1",
+                      "name": "Step evolve",
+                      "width": "fill_container",
+                      "gap": 18,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "y19bdc",
+                          "name": "Track",
+                          "width": 14,
+                          "height": "fill_container",
+                          "layout": "vertical",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "rectangle",
+                              "id": "pJXSV",
+                              "name": "Line above",
+                              "fill": "#2A3860",
+                              "width": 2,
+                              "height": 9
+                            },
+                            {
+                              "type": "ellipse",
+                              "id": "O86WUD",
+                              "name": "Node",
+                              "fill": "$ink-950",
+                              "width": 10,
+                              "height": 10,
+                              "stroke": "$blue-soft",
+                              "strokeWidth": 2
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "DRbMj",
+                              "name": "Line below",
+                              "fill": "#00000000",
+                              "width": 2,
+                              "height": "fill_container"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Y0wmB",
+                          "name": "Content",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 12,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "hFEyW",
+                              "name": "Head",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "XwIp9",
+                                  "name": "Icon",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "refresh-cw",
+                                  "library": "lucide",
+                                  "fill": "$blue-soft"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "LQ8C0",
+                                  "name": "Title",
+                                  "fill": "$text",
+                                  "content": "They change it later",
+                                  "fontFamily": "$font-sans",
+                                  "fontSize": 15,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "XxePb",
+                              "name": "Later terminal",
+                              "clip": true,
+                              "width": "fill_container",
+                              "fill": "#070A14",
+                              "cornerRadius": 14,
+                              "stroke": "$line-strong",
+                              "strokeWidth": 1,
+                              "effect": {
+                                "type": "shadow",
+                                "shadowType": "outer",
+                                "color": "#00000099",
+                                "offset": {
+                                  "x": 0,
+                                  "y": 24
+                                },
+                                "blur": 60
+                              },
+                              "layout": "vertical",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "PRtwv",
+                                  "name": "Title bar",
+                                  "width": "fill_container",
+                                  "height": 36,
+                                  "fill": "$ink-900",
+                                  "stroke": "$line",
+                                  "strokeWidth": {
+                                    "bottom": 1
+                                  },
+                                  "gap": 8,
+                                  "padding": [
+                                    0,
+                                    14
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "enTKQ",
+                                      "name": "Icon",
+                                      "width": 13,
+                                      "height": 13,
+                                      "icon": "square-terminal",
+                                      "library": "lucide",
+                                      "fill": "$text-3"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "n5Guzx",
+                                      "name": "Title",
+                                      "fill": "$text-2",
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 11.5,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "kkNro",
+                                  "name": "Body",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "padding": [
+                                    14,
+                                    18
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "bU6J9",
+                                      "name": "Line",
+                                      "width": "fill_container",
+                                      "height": 22,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "JmPsK",
+                                          "name": "Seg",
+                                          "fill": "$text-3",
+                                          "content": "$ ",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "tGZyB",
+                                          "name": "Seg",
+                                          "fill": "$text",
+                                          "content": "pnpm acme add telemetry                 ",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "dxcqT",
+                                          "name": "Seg",
+                                          "fill": "$text-3",
+                                          "content": "Sentry, PostHog",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "AJTDF",
+                                      "name": "Line",
+                                      "width": "fill_container",
+                                      "height": 22,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "whPIR",
+                                          "name": "Seg",
+                                          "fill": "$text-3",
+                                          "content": "$ ",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "iMpcg",
+                                          "name": "Seg",
+                                          "fill": "$text",
+                                          "content": "pnpm acme add prisma --replace convex   ",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "EvdIi",
+                                          "name": "Seg",
+                                          "fill": "$text-3",
+                                          "content": "Convex to Prisma",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "nxmOe",
+                                      "name": "Line",
+                                      "width": "fill_container",
+                                      "height": 22,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "enP9y",
+                                          "name": "Seg",
+                                          "fill": "$text-3",
+                                          "content": "$ ",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "bdYki",
+                                          "name": "Seg",
+                                          "fill": "$text",
+                                          "content": "pnpm acme upgrade                       ",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "BjaGn",
+                                          "name": "Seg",
+                                          "fill": "$text-3",
+                                          "content": "fixes merged, edits kept",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
                         }
                       ]
                     }
