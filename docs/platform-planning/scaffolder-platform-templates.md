@@ -1166,8 +1166,8 @@ Tests: the JSON for the fixture, snapshot-free.
 **B10. Config and lock.** `state/schemas.ts` and the readers: `slot:` read as `question:`, written in the new form.
 `plan/plan.ts`: the `new-question` notice on upgrade. Tests: an old config and lock upgrade cleanly.
 
-**B11. Docs and release files.** The README's concepts, the catalog example, "Templates and the wizard", the flags, and
-a "Migrating from slots" section; the architecture guide; `pnpm api:update`; a breaking change file.
+**B11. Docs and release files.** The README's concepts, the catalog example, "Templates and the wizard", and the flags;
+the architecture guide; `pnpm api:update`; a breaking change file.
 
 B2 to B5 are sequential. B6, B7 and B8 can run in parallel after B5. B9 needs B4. B10 can start after B3. B11 is last.
 
