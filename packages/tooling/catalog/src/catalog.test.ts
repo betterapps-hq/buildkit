@@ -38,7 +38,7 @@ describe("the catalog", () => {
     expect(checkCatalog(catalog, { matrix: true })).toEqual([])
   })
 
-  it("is versioned by its own package.json and pins every package exactly", () => {
+  it("is versioned by its own package.json and pins every package to one version", () => {
     expect(catalog.version).toBe(catalogVersion)
     expect(catalog.versions?.["@buildkitgg/cli"]).toBe(catalogVersion)
     const loose = Object.entries(catalog.versions ?? {}).filter(([, version]) => !/^\d+\.\d+\.\d+$/.test(version))
@@ -124,10 +124,11 @@ describe("the TanStack Start target", () => {
     }
   })
 
-  it("pins the CLI so pnpm buildkit runs the version that made the app", async () => {
+  it("pins the CLI exactly so pnpm buildkit runs the version that made the app, and the rest with caret", async () => {
     const { dependencies, devDependencies } = packageJson(await init())
     expect(devDependencies["@buildkitgg/cli"]).toBe(catalogVersion)
-    expect(dependencies["@tanstack/react-start"]).toBe(catalog.versions?.["@tanstack/react-start"])
+    expect(dependencies["@tanstack/react-start"]).toBe(`^${catalog.versions?.["@tanstack/react-start"]}`)
+    expect(devDependencies.vite).toBe(`^${catalog.versions?.vite}`)
   })
 
   it("runs Buildkit's checks in CI, and formats every file but the generated ones", async () => {
