@@ -1,0 +1,24 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "site",
+      "runtimeExecutable": "fnm",
+      "runtimeArgs": [
+        "--version-file-strategy=recursive",
+        "exec",
+        "--",
+        "node",
+        "../../node_modules/vite-plus/bin/vp",
+        "dev",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "4178"
+      ],
+      "cwd": "apps/site",
+      "port": 4178,
+      "url": "http://127.0.0.1:4178"
+    }
+  ]
+}
