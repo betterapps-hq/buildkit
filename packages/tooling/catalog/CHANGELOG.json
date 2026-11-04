@@ -2,6 +2,21 @@
   "name": "@buildkitgg/catalog",
   "entries": [
     {
+      "date": "Wed, 04 Nov 2026 03:09:03 GMT",
+      "version": "0.6.0",
+      "tag": "@buildkitgg/catalog_v0.6.0",
+      "comments": {
+        "minor": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/catalog",
+            "commit": "45d4dfae9e18c7f0224846f28b86a8ad2fa43223",
+            "comment": "New apps get caret ranges, such as ^19.3.1, so they take fixes without an upgrade. @buildkitgg/cli stays pinned exactly."
+          }
+        ]
+      }
+    },
+    {
       "date": "Tue, 03 Nov 2026 11:50:50 GMT",
       "version": "0.5.0",
       "tag": "@buildkitgg/catalog_v0.5.0",

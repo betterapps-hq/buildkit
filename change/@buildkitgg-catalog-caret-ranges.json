@@ -1,7 +1,0 @@
-{
-  "type": "minor",
-  "comment": "New apps get caret ranges, such as ^19.3.1, so they take fixes without an upgrade. @buildkitgg/cli stays pinned exactly.",
-  "packageName": "@buildkitgg/catalog",
-  "email": "ajcraswell@gmail.com",
-  "dependentChangeType": "patch"
-}
