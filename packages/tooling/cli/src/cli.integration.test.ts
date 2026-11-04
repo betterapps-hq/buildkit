@@ -115,7 +115,7 @@ describe("buildkit add", () => {
     expect(read("src/router.tsx")).toBe(router)
     const updated = JSON.parse(read("package.json"))
     expect(updated.scripts.mine).toBe("echo mine")
-    expect(updated.dependencies["@lingui/core"]).toBe(catalog.versions?.["@lingui/core"])
+    expect(updated.dependencies["@lingui/core"]).toBe(`^${catalog.versions?.["@lingui/core"]}`)
     expect(read("src/generated/buildkit/client.ts")).toContain("withI18n")
     expect(read("src/generated/buildkit/server.ts")).toContain("localeMiddleware")
     expect(read("src/locales/fr.po")).toContain("Language: fr")

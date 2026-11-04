@@ -41,6 +41,9 @@ adding an add-on only changes generated files.
 Every app also gets lint, format, build and type-check scripts, a `.gitattributes` that marks generated files, and the
 `@buildkitgg/cli` dev dependency at the catalog's version, so `pnpm buildkit upgrade` runs in the project.
 
+The catalog writes its pins as caret ranges, such as `^19.3.1` for React, so apps take fixes without an upgrade. The CLI
+is the exception: it's pinned exactly, because it carries the catalog that made the app.
+
 ## The `app` template
 
 The wizard asks for the mode (`ssr` or `spa`), then "Add localization?", which defaults to no. `ci` is always included,

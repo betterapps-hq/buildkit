@@ -2,6 +2,7 @@ import { defineTarget, type Contribution, type TargetContext } from "@buildkitgg
 import { dependency, file, fromTemplate, json, jsonItems, jsonKey } from "./files.js"
 import { generatedFolder, startPoints } from "./points.js"
 import { printWidth } from "./settings.js"
+import { catalogVersion } from "./version.js"
 
 const common = "tanstack-start/common"
 
@@ -46,8 +47,10 @@ function base(ctx: TargetContext): Contribution[] {
     { kind: "script", name: "format", command: "oxfmt" },
     { kind: "script", name: "format:check", command: "oxfmt --check" },
     ...["react", "react-dom", "@tanstack/react-router", "@tanstack/react-start"].map((name) => dependency(ctx, name)),
+    // Exact, unlike the catalog's caret ranges: the CLI carries the catalog, so `pnpm buildkit` runs the version that
+    // made the app.
+    { kind: "dependency", name: "@buildkitgg/cli", version: catalogVersion, dev: true },
     ...[
-      "@buildkitgg/cli",
       "vite",
       "@vitejs/plugin-react",
       "oxc-transform-react",

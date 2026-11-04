@@ -1239,7 +1239,7 @@ wizard's lines show Better Auth unavailable after Convex, with its reason. Every
 - **B11** comes last, after B6 to B10, C1, D1 and D2, then the release.
 - **E1 and E2** follow the release, in parallel. **E3** follows E1, so the site shows what Buildkit's catalog ships.
 
-## Open questions
+## Decisions after the build
 
-- **Buildkit's range style.** E1 keeps exact pins, as phase 2 decided for reproducible apps. A starter for vibe coders
-  might want `caret`, so their apps take fixes without an upgrade.
+- **Buildkit's range style is `caret`**, so apps take fixes without an upgrade. `@buildkitgg/cli` stays pinned exactly,
+  because it carries the catalog that made the app.

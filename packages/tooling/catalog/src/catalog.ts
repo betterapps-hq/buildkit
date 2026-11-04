@@ -9,6 +9,8 @@ import { versions } from "./versions.js"
 export const catalog = defineCatalog({
   id: "@buildkitgg/catalog",
   version: catalogVersion,
+  // Apps take fixes without an upgrade: `package.json` gets `^19.3.1` for a 19.3.1 pin.
+  range: "caret",
   facets: ["react", "vite", "ssr", "spa", "request-middleware", "root-loader", "router-rewrite", "server-functions"],
   versions,
   targets: [tanstackStart],
