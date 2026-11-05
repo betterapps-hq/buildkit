@@ -41,7 +41,7 @@
     "type-fest": "5.10.0"
   },
   "devDependencies": {
-    "@microsoft/api-extractor": "^7.59.4",
+    "@microsoft/api-extractor": "^7.60.1",
     "@buildkitgg/typescript-config": "workspace:*",
     "@types/node": "24.19.2",
     "@vitest/coverage-v8": "catalog:",
