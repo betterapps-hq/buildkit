@@ -82,7 +82,6 @@ needs a human discussion**, not a silent add.
 
 ## Gotchas
 
-- Hosted on **GitHub** — use GitHub for PRs and issues.
 - oxlint rules live in the shared `@buildkitgg/oxlint-config` base; add new rules there so every package benefits.
 
 ## Principles for development
