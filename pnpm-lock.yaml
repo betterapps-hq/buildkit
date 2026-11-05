@@ -196,7 +196,7 @@ importers:
     devDependencies:
       '@betterapps/playbook':
         specifier: github:betterapps-hq/playbook
-        version: https://codeload.github.com/betterapps-hq/playbook/tar.gz/a0e50f98df43ee3bdeab207c03cb1e78a44b6595(@types/node@24.19.2)(supports-color@8.1.1)
+        version: https://codeload.github.com/betterapps-hq/playbook/tar.gz/efc37ff702358b5415800908f94a4c1230e6c8a8(@types/node@24.19.2)(supports-color@8.1.1)
       beachball:
         specifier: ^2.65.5
         version: 2.66.0(patch_hash=4265e2c600eeede2a3fbe3c92a0e82fc140686b6db9978f191c959f920369780)(typescript@7.0.2)
@@ -2388,8 +2388,8 @@ packages:
     resolution: {integrity: sha512-6zABk/ECA/QYSCQ1NGiVwwbQerUCZ+TQbp64Q3AgmfNvurHH0j8TtXa1qbShXA6qqkpAj4V5W8pP6mLe1mcMqA==}
     engines: {node: '>=18'}
 
-  '@betterapps/playbook@https://codeload.github.com/betterapps-hq/playbook/tar.gz/a0e50f98df43ee3bdeab207c03cb1e78a44b6595':
-    resolution: {gitHosted: true, integrity: sha512-xnBQ/OehjbLQ1ZWWQSLYPZE8ONbnLR7xf6/ojnqwbPXc3QwieUd/iWOA5uqg2WN7NA8+dJuIrset/g+iJyQS1Q==, tarball: https://codeload.github.com/betterapps-hq/playbook/tar.gz/a0e50f98df43ee3bdeab207c03cb1e78a44b6595}
+  '@betterapps/playbook@https://codeload.github.com/betterapps-hq/playbook/tar.gz/efc37ff702358b5415800908f94a4c1230e6c8a8':
+    resolution: {gitHosted: true, integrity: sha512-u/OlnA4Io469+mAj4ks85xjP7mNZT9PwXSYIiBL7p7/syDNqZlyZ+Vr+pPHgdTJ6JjinluXdm43MhK7uWhBI7A==, tarball: https://codeload.github.com/betterapps-hq/playbook/tar.gz/efc37ff702358b5415800908f94a4c1230e6c8a8}
     version: 0.0.0
     engines: {node: ^24.20.0 || >=26.0.0}
     hasBin: true
@@ -9009,7 +9009,7 @@ snapshots:
 
   '@bcoe/v8-coverage@1.0.2': {}
 
-  '@betterapps/playbook@https://codeload.github.com/betterapps-hq/playbook/tar.gz/a0e50f98df43ee3bdeab207c03cb1e78a44b6595(@types/node@24.19.2)(supports-color@8.1.1)':
+  '@betterapps/playbook@https://codeload.github.com/betterapps-hq/playbook/tar.gz/efc37ff702358b5415800908f94a4c1230e6c8a8(@types/node@24.19.2)(supports-color@8.1.1)':
     dependencies:
       rulesync: 43.5.0(@types/node@24.19.2)(supports-color@8.1.1)
     transitivePeerDependencies:
