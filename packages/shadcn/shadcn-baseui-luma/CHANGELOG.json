@@ -2,6 +2,21 @@
   "name": "@buildkitgg/shadcn-baseui-luma",
   "entries": [
     {
+      "date": "Thu, 05 Nov 2026 06:15:15 GMT",
+      "version": "0.4.6",
+      "tag": "@buildkitgg/shadcn-baseui-luma_v0.4.6",
+      "comments": {
+        "patch": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/shadcn-baseui-luma",
+            "commit": "7fe1d86f17cfa94ee1c71ae62b7f8564ba573986",
+            "comment": "Size icons passed to MenubarCheckboxItem like those in other menu items."
+          }
+        ]
+      }
+    },
+    {
       "date": "Tue, 03 Nov 2026 12:25:23 GMT",
       "version": "0.4.5",
       "tag": "@buildkitgg/shadcn-baseui-luma_v0.4.5",

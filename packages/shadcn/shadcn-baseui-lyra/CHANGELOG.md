@@ -1,8 +1,16 @@
 # Change Log - @buildkitgg/shadcn-baseui-lyra
 
-<!-- This log was last generated on Tue, 03 Nov 2026 12:25:23 GMT and should not be manually modified. -->
+<!-- This log was last generated on Thu, 05 Nov 2026 06:15:15 GMT and should not be manually modified. -->
 
 <!-- Start content -->
+
+## 0.4.6
+
+Thu, 05 Nov 2026 06:15:15 GMT
+
+### Patches
+
+- Size icons passed to MenubarCheckboxItem like those in other menu items. (ajcraswell@gmail.com)
 
 ## 0.4.5
 
