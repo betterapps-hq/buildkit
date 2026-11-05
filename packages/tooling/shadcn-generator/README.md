@@ -5,9 +5,10 @@ from the repository root. See [style packaging](../../../docs/shadcn/styles.md).
 
 The snapshot retains upstream source verbatim. The pinned `shadcn` package supplies style, icon, and direction
 transforms. `ts-morph` rewrites ESM module paths, routes class merging to the shared runtime, and localizes semantic UI
-labels. Unknown static labels and unsupported component shapes stop generation for review. Neutral color values and
-Tailwind token mappings are derived from the same upstream revision. Buildkit does not maintain a semantic-class
-mapping.
+labels. Before the style transform, menu item parts that upstream leaves without an icon size take their menu's plain
+item size. Unknown static labels, unsupported component shapes and menus whose plain item has no icon size stop
+generation for review. Neutral color values and Tailwind token mappings are derived from the same upstream revision.
+Buildkit does not maintain a semantic-class mapping.
 
 To fetch a specific revision without updating dependencies:
 

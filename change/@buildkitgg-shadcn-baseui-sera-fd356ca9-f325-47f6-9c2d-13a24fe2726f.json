@@ -1,0 +1,7 @@
+{
+  "email": "ajcraswell@gmail.com",
+  "comment": "Size icons passed to MenubarCheckboxItem like those in other menu items.",
+  "packageName": "@buildkitgg/shadcn-baseui-sera",
+  "type": "patch",
+  "dependentChangeType": "patch"
+}

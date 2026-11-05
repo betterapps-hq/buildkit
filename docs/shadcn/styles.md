@@ -41,8 +41,9 @@ pnpm validate
 `update:shadcn` downloads a pinned Git commit and updates the shadcn generator and Base UI dependencies. The snapshot
 records the revision and SHA-256 hashes of the downloaded files. `generate` derives style packages, exports, component
 source, and stylesheets from that snapshot. Builds do not access the network. A shared adaptation pass adds logical
-direction, localized labels, accessible combobox actions, and shared class merging. The upstream snapshot remains
-unchanged.
+direction, localized labels, accessible combobox actions, and shared class merging. It also gives every menu item,
+checkbox item, radio item and sub-trigger the icon size of its menu's plain item, which upstream leaves off menubar
+checkbox items. The upstream snapshot remains unchanged.
 
 `validate` runs repository verification, including API Extractor baselines, then compares every generated declaration
 across styles and installs packed artifacts in standalone consumers. Consumers check strict peer resolution, TypeScript,

@@ -7,6 +7,7 @@ import { createStyleMap, transformStyle, transformIcons, transformDirection } fr
 import { Project, ts } from "ts-morph"
 import { transformRuntime } from "./runtime.mjs"
 import { root, templatePath, tool, snapshot, variants, readJson, write, writeJson, pnpm } from "./shared.mjs"
+import { adaptStyleMap } from "./styles.mjs"
 import { designTokens } from "./tokens.mjs"
 
 const data = snapshot()
@@ -90,7 +91,7 @@ export async function generateSources(style, directory, { clean = true } = {}) {
     rmSync(output, { recursive: true, force: true })
   }
 
-  const styleMap = createStyleMap(data.styles[style])
+  const styleMap = adaptStyleMap(createStyleMap(data.styles[style]))
   const exports = []
 
   for (const [filename, source] of Object.entries(data.sources)) {
