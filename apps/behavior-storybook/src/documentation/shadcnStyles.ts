@@ -10,7 +10,7 @@ export const shadcnStylePackages = [
       "Root export: components, component types, and shared utilities.",
       "styles.css: compiled styles with Tailwind Preflight.",
       "styles-no-reset.css: compiled styles for apps that supply their own reset.",
-      "tokens.json: light/dark defaults with resolvedValue and sourceValue.",
+      "tokens.json: the default tokens as a DTCG resolver, with light and dark themes and a description for each.",
       "tailwind.css: source input with automatic component scanning for Tailwind 4 apps.",
       "theme.css: plain CSS variables without utilities or reset.",
       "ShadcnLocalizationProvider, useShadcnLocalization, and setCn: shared runtime configuration."
@@ -29,7 +29,7 @@ export const shadcnStylePackages = [
       "Root export: components, component types, and shared utilities.",
       "styles.css: compiled styles with Tailwind Preflight.",
       "styles-no-reset.css: compiled styles for apps that supply their own reset.",
-      "tokens.json: light/dark defaults with resolvedValue and sourceValue.",
+      "tokens.json: the default tokens as a DTCG resolver, with light and dark themes and a description for each.",
       "tailwind.css: source input with automatic component scanning for Tailwind 4 apps.",
       "theme.css: plain CSS variables without utilities or reset.",
       "ShadcnLocalizationProvider, useShadcnLocalization, and setCn: shared runtime configuration."
@@ -48,7 +48,7 @@ export const shadcnStylePackages = [
       "Root export: components, component types, and shared utilities.",
       "styles.css: compiled styles with Tailwind Preflight.",
       "styles-no-reset.css: compiled styles for apps that supply their own reset.",
-      "tokens.json: light/dark defaults with resolvedValue and sourceValue.",
+      "tokens.json: the default tokens as a DTCG resolver, with light and dark themes and a description for each.",
       "tailwind.css: source input with automatic component scanning for Tailwind 4 apps.",
       "theme.css: plain CSS variables without utilities or reset.",
       "ShadcnLocalizationProvider, useShadcnLocalization, and setCn: shared runtime configuration."
@@ -67,7 +67,7 @@ export const shadcnStylePackages = [
       "Root export: components, component types, and shared utilities.",
       "styles.css: compiled styles with Tailwind Preflight.",
       "styles-no-reset.css: compiled styles for apps that supply their own reset.",
-      "tokens.json: light/dark defaults with resolvedValue and sourceValue.",
+      "tokens.json: the default tokens as a DTCG resolver, with light and dark themes and a description for each.",
       "tailwind.css: source input with automatic component scanning for Tailwind 4 apps.",
       "theme.css: plain CSS variables without utilities or reset.",
       "ShadcnLocalizationProvider, useShadcnLocalization, and setCn: shared runtime configuration."
@@ -86,7 +86,7 @@ export const shadcnStylePackages = [
       "Root export: components, component types, and shared utilities.",
       "styles.css: compiled styles with Tailwind Preflight.",
       "styles-no-reset.css: compiled styles for apps that supply their own reset.",
-      "tokens.json: light/dark defaults with resolvedValue and sourceValue.",
+      "tokens.json: the default tokens as a DTCG resolver, with light and dark themes and a description for each.",
       "tailwind.css: source input with automatic component scanning for Tailwind 4 apps.",
       "theme.css: plain CSS variables without utilities or reset.",
       "ShadcnLocalizationProvider, useShadcnLocalization, and setCn: shared runtime configuration."
@@ -105,7 +105,7 @@ export const shadcnStylePackages = [
       "Root export: components, component types, and shared utilities.",
       "styles.css: compiled styles with Tailwind Preflight.",
       "styles-no-reset.css: compiled styles for apps that supply their own reset.",
-      "tokens.json: light/dark defaults with resolvedValue and sourceValue.",
+      "tokens.json: the default tokens as a DTCG resolver, with light and dark themes and a description for each.",
       "tailwind.css: source input with automatic component scanning for Tailwind 4 apps.",
       "theme.css: plain CSS variables without utilities or reset.",
       "ShadcnLocalizationProvider, useShadcnLocalization, and setCn: shared runtime configuration."
@@ -124,7 +124,7 @@ export const shadcnStylePackages = [
       "Root export: components, component types, and shared utilities.",
       "styles.css: compiled styles with Tailwind Preflight.",
       "styles-no-reset.css: compiled styles for apps that supply their own reset.",
-      "tokens.json: light/dark defaults with resolvedValue and sourceValue.",
+      "tokens.json: the default tokens as a DTCG resolver, with light and dark themes and a description for each.",
       "tailwind.css: source input with automatic component scanning for Tailwind 4 apps.",
       "theme.css: plain CSS variables without utilities or reset.",
       "ShadcnLocalizationProvider, useShadcnLocalization, and setCn: shared runtime configuration."
@@ -143,7 +143,7 @@ export const shadcnStylePackages = [
       "Root export: components, component types, and shared utilities.",
       "styles.css: compiled styles with Tailwind Preflight.",
       "styles-no-reset.css: compiled styles for apps that supply their own reset.",
-      "tokens.json: light/dark defaults with resolvedValue and sourceValue.",
+      "tokens.json: the default tokens as a DTCG resolver, with light and dark themes and a description for each.",
       "tailwind.css: source input with automatic component scanning for Tailwind 4 apps.",
       "theme.css: plain CSS variables without utilities or reset.",
       "ShadcnLocalizationProvider, useShadcnLocalization, and setCn: shared runtime configuration."

@@ -33,12 +33,12 @@ Read the selected style's defaults through the same alias:
 import { readFile } from "node:fs/promises"
 const url = import.meta.resolve("@buildkitgg/shadcn-baseui-kit/tokens.json")
 const tokens = JSON.parse(await readFile(new URL(url), "utf8"))
-// tokens.light["radius-sm"].resolvedValue: concrete value
-// tokens.light["radius-sm"].sourceValue: upstream CSS expression
 ```
 
-The export includes light and dark defaults, the upstream revision, and resolution metadata. Application CSS overrides
-are not included.
+`tokens.json` is a DTCG resolver (2025.10) with light and dark themes. Every token has a type and a description, and its
+path is its CSS variable's name split at each hyphen (`card.foreground` is `--card-foreground`). Application CSS
+overrides are not included. See
+[design tokens](https://github.com/betterapps-hq/buildkit/blob/main/docs/shadcn/styles.md#design-tokens).
 
 [Migrate from the standalone kit](https://github.com/betterapps-hq/buildkit/blob/main/docs/shadcn/migration.md).
 

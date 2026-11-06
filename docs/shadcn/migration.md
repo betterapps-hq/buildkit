@@ -31,7 +31,7 @@ regenerated from current upstream source: choosing Nova preserves the style fami
 retired distribution. Custom selectors depending on internal markup or classes may need adjustment.
 
 Import one kit stylesheet at the app entry. Use `styles-no-reset.css` when the application already supplies its own
-reset. Design tools can resolve the installed alias's `tokens.json` export; values describe package defaults, not
-application CSS overrides.
+reset. Design tools can resolve the installed alias's `tokens.json` export, a DTCG resolver; values describe package
+defaults, not application CSS overrides.
 
 No registry connection, component-source edits, or renderer adapters are required for this migration.

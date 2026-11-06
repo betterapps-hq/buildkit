@@ -1,35 +1,80 @@
 import assert from "node:assert/strict"
 import { test } from "node:test"
-import { resolveTokens } from "./tokens.mjs"
+import { designTokens, tokensFrom } from "./tokens.mjs"
 
-test("resolves chained references and dimensions while retaining the upstream expression", () => {
-  const tokens = resolveTokens({
-    "--radius": "0.625rem",
-    "--radius-sm": "calc(var(--radius) * 0.6)",
-    "--control-radius": "var(--radius-sm)"
+test("writes colors and dimensions as DTCG values, computing calc() and keeping its CSS", () => {
+  const tokens = tokensFrom({
+    radius: "0.625rem",
+    "radius-sm": "calc(var(--radius) * 0.6)",
+    primary: "oklch(0.205 0 0)",
+    border: "oklch(1 0 0 / 10%)",
+    ring: "#ff0000"
   })
 
-  assert.deepEqual(tokens["radius-sm"], { resolvedValue: "6px", sourceValue: "calc(var(--radius) * 0.6)" })
-  assert.equal(tokens["control-radius"].resolvedValue, "6px")
-  assert.equal(resolveTokens({ "--radius": "1rem" }, { rootFontSize: 20 }).radius.resolvedValue, "20px")
+  assert.deepEqual(tokens["radius-sm"], {
+    $type: "dimension",
+    $value: { value: 0.375, unit: "rem" },
+    $description: "Corner radius at the sm size, derived from the base radius.",
+    $extensions: { "gg.buildkit": { css: "calc(var(--radius) * 0.6)" } }
+  })
+  assert.deepEqual(tokens.primary.$value, { colorSpace: "oklch", components: [0.205, 0, 0] })
+  assert.deepEqual(tokens.border.$value, { colorSpace: "oklch", components: [1, 0, 0], alpha: 0.1 })
+  assert.deepEqual(tokens.ring.$value, { colorSpace: "srgb", components: [1, 0, 0] })
 })
 
-test("exports concrete sRGB colors and preserves alpha", () => {
-  const tokens = resolveTokens({
-    "--primary": "oklch(0.205 0 0)",
-    "--color-primary": "var(--primary)",
-    "--border": "oklch(1 0 0 / 10%)"
+test("writes a variable that only refers to another as an alias, through `$root` for a group's own token", () => {
+  const tokens = tokensFrom({ radius: "0.625rem", "radius-lg": "var(--radius)", primary: "oklch(0.205 0 0)" })
+
+  assert.deepEqual(tokens["radius-lg"], {
+    $type: "dimension",
+    $value: "{radius.$root}",
+    $description: "Corner radius at the lg size, derived from the base radius."
+  })
+})
+
+test("rejects missing references, cycles, context-dependent values and undescribed variables", () => {
+  assert.throws(() => tokensFrom({ primary: "var(--missing)" }), /Missing/)
+  assert.throws(() => tokensFrom({ primary: "var(--ring)", ring: "var(--primary)" }), /Cyclic/)
+  assert.throws(() => tokensFrom({ primary: "currentColor" }), /context-dependent/)
+  assert.throws(() => tokensFrom({ "brand-glow": "#fff" }), /--brand-glow has no description/)
+  assert.deepEqual(tokensFrom({ primary: "var(--missing, #fff)" }).primary.$value, {
+    colorSpace: "srgb",
+    components: [1, 1, 1]
+  })
+})
+
+test("nests tokens by name, puts what changes in dark mode in the dark context, and leaves out Tailwind's aliases", () => {
+  const resolver = designTokens({
+    style: "nova",
+    repository: "https://github.com/shadcn-ui/ui",
+    revision: "abc123",
+    palette: "neutral",
+    cssVariables: {
+      light: { card: "oklch(1 0 0)", "card-foreground": "oklch(0.145 0 0)", radius: "0.625rem" },
+      dark: { card: "oklch(0.205 0 0)", "card-foreground": "oklch(0.145 0 0)" }
+    },
+    tailwind: { "--color-card": "var(--card)", "--radius-sm": "calc(var(--radius) * 0.6)" }
   })
 
-  assert.equal(tokens.primary.resolvedValue, "#171717")
-  assert.equal(tokens["color-primary"].resolvedValue, "#171717")
-  assert.equal(tokens.border.resolvedValue, "rgba(255, 255, 255, 0.1)")
-})
+  const [base] = resolver.sets.shadcn.sources
+  const [dark] = resolver.modifiers.theme.contexts.dark
 
-test("rejects missing references, cycles, and context-dependent values", () => {
-  assert.throws(() => resolveTokens({ "--a": "var(--missing)" }), /Missing/)
-  assert.throws(() => resolveTokens({ "--a": "var(--b)", "--b": "var(--a)" }), /Cyclic/)
-  assert.throws(() => resolveTokens({ "--a": "currentColor" }), /context-dependent/)
-  assert.throws(() => resolveTokens({ "--a": "1rem" }, { rootFontSize: 0 }), /positive/)
-  assert.equal(resolveTokens({ "--a": "var(--missing, #fff)" }).a.resolvedValue, "#ffffff")
+  assert.equal(resolver.version, "2025.10")
+  assert.deepEqual(resolver.resolutionOrder, [{ $ref: "#/sets/shadcn" }, { $ref: "#/modifiers/theme" }])
+  assert.deepEqual(Object.keys(base), ["card", "radius"])
+  assert.deepEqual(Object.keys(base.card), ["$root", "foreground"])
+  assert.deepEqual(dark, {
+    card: {
+      $root: {
+        $type: "color",
+        $value: { colorSpace: "oklch", components: [0.205, 0, 0] },
+        $description: "Background of cards."
+      }
+    }
+  })
+  assert.deepEqual(resolver.$extensions["gg.buildkit"], {
+    style: "nova",
+    palette: "neutral",
+    upstream: { repository: "https://github.com/shadcn-ui/ui", revision: "abc123" }
+  })
 })

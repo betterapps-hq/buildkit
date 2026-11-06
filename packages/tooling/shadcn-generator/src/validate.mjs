@@ -30,9 +30,10 @@ for (const { style, directory } of matrix) {
     "Style versions must be released together"
   )
   const tokens = readJson(resolve(directory, "dist/tokens.json"))
-  assert.equal(tokens.style, style)
-  assert.equal(tokens.light.background.resolvedValue, "#ffffff")
-  assert.ok(tokens.light["radius-sm"].sourceValue.includes("var("))
+  assert.equal(tokens.version, "2025.10")
+  assert.equal(tokens.$extensions["gg.buildkit"].style, style)
+  assert.equal(tokens.sets.shadcn.sources[0].background.$type, "color")
+  assert.ok(tokens.modifiers.theme.contexts.dark[0].background, `${style} has no dark background`)
   const css = readFileSync(resolve(directory, "dist/styles.css"), "utf8")
   assert.ok(css.length > 10000, `${style} stylesheet is empty`)
 }

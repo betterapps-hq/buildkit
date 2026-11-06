@@ -1,0 +1,7 @@
+{
+  "type": "minor",
+  "comment": "tokens.json is now a DTCG resolver (2025.10) with light and dark themes, and every token has a type and a description",
+  "packageName": "@buildkitgg/shadcn-baseui-maia",
+  "email": "ajcraswell@gmail.com",
+  "dependentChangeType": "patch"
+}

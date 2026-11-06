@@ -57,7 +57,7 @@ changes. The weekly updater never calls that command automatically.
 All style packages come from one source snapshot. Generated files in `.generated` and `dist` are disposable; do not edit
 them. The updater owns the generated package metadata; Beachball owns versions and changelogs.
 
-## Reading default tokens from a CLI
+## Design tokens
 
 The alias applies to asset exports as well as components:
 
@@ -67,11 +67,20 @@ const url = import.meta.resolve("@buildkitgg/shadcn-baseui-kit/tokens.json")
 const tokens = JSON.parse(await readFile(new URL(url), "utf8"))
 ```
 
-The JSON contains `schemaVersion`, `style`, `upstream`, `palette`, `light`, and `dark`. Each token has a `resolvedValue`
-and its original `sourceValue`. Dimensions resolve to pixels at the recorded `rootFontSize` (16px for the published
-defaults). Colors resolve to sRGB hex or RGBA literals, preserving alpha; wide-gamut originals remain in `sourceValue`.
-It is generated from the same upstream data as the CSS. These are package defaults, not computed values after app CSS
-overrides. Component utility classes are not invented into a second token system.
+`tokens.json` is a [DTCG](https://www.designtokens.org/) resolver (the Format and Resolver modules, 2025.10), so any
+tool that reads DTCG reads it. Its `shadcn` set holds the light values. The `theme` modifier's `dark` context replaces
+the tokens that change in dark mode. A token's path is its CSS variable's name split at each hyphen: `card.foreground`
+is `--card-foreground`. A name that others extend keeps its own token in `$root`, as `radius.$root` is `--radius`.
+
+Every token has a `$type` and a `$description`. Colors keep the color space upstream writes them in, usually oklch. DTCG
+has no form for `calc()`, so a value such as `--radius-sm` is computed (`0.375rem`), and its CSS is kept in
+`$extensions["gg.buildkit"].css`. A variable that only refers to another is an alias, as `radius.lg` is
+`{radius.$root}`. The resolver's own `$extensions["gg.buildkit"]` names the style, palette, and upstream revision.
+
+Descriptions live in `packages/tooling/shadcn-generator/src/token-descriptions.mjs`. When upstream adds a variable that
+has no description, generation fails, so the weekly update stops for review. The tokens come from the same upstream data
+as the CSS. They're the package defaults, not values after an app's CSS overrides. Component utility classes aren't
+turned into a second token system.
 
 ## Weekly updates
 
