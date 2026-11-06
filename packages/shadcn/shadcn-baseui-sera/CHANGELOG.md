@@ -1,8 +1,17 @@
 # Change Log - @buildkitgg/shadcn-baseui-sera
 
-<!-- This log was last generated on Thu, 05 Nov 2026 06:15:15 GMT and should not be manually modified. -->
+<!-- This log was last generated on Fri, 06 Nov 2026 17:40:12 GMT and should not be manually modified. -->
 
 <!-- Start content -->
+
+## 0.5.0
+
+Fri, 06 Nov 2026 17:40:12 GMT
+
+### Minor changes
+
+- tokens.json is now a DTCG resolver (2025.10) with light and dark themes, and every token has a type and a description
+  (ajcraswell@gmail.com)
 
 ## 0.4.6
 

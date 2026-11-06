@@ -1,6 +1,6 @@
 {
   "name": "@buildkitgg/shadcn-baseui-vega",
-  "version": "0.4.6",
+  "version": "0.5.0",
   "description": "Upstream shadcn Base UI components in the vega style, with compiled CSS and TypeScript declarations.",
   "homepage": "https://github.com/betterapps-hq/buildkit/tree/main/packages/shadcn/shadcn-baseui-vega#readme",
   "bugs": {

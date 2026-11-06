@@ -2,6 +2,21 @@
   "name": "@buildkitgg/shadcn-baseui-vega",
   "entries": [
     {
+      "date": "Fri, 06 Nov 2026 17:40:12 GMT",
+      "version": "0.5.0",
+      "tag": "@buildkitgg/shadcn-baseui-vega_v0.5.0",
+      "comments": {
+        "minor": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/shadcn-baseui-vega",
+            "commit": "8411e7423188dbb2acef7cab4359aa8f32a8f87e",
+            "comment": "tokens.json is now a DTCG resolver (2025.10) with light and dark themes, and every token has a type and a description"
+          }
+        ]
+      }
+    },
+    {
       "date": "Thu, 05 Nov 2026 06:15:15 GMT",
       "version": "0.4.6",
       "tag": "@buildkitgg/shadcn-baseui-vega_v0.4.6",
