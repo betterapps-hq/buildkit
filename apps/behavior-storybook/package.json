@@ -15,7 +15,7 @@
     "@buildkitgg/preferences-core": "workspace:*",
     "@buildkitgg/react-preferences": "workspace:*",
     "@buildkitgg/fluentui-theme": "workspace:*",
-    "@fluentui/react-components": "^9.75.0",
+    "@fluentui/react-components": "^9.75.1",
     "@buildkitgg/modal-core": "workspace:*",
     "@buildkitgg/react-modals": "workspace:*",
     "@buildkitgg/fluentui-modals-manager": "workspace:*",

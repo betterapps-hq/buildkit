@@ -267,8 +267,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/react/tanstack-router
       '@fluentui/react-components':
-        specifier: ^9.75.0
-        version: 9.75.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(scheduler@0.28.0)
+        specifier: ^9.75.1
+        version: 9.75.1(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(scheduler@0.28.0)
       '@tanstack/react-router':
         specifier: ^1.170.46
         version: 1.170.46(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -672,8 +672,8 @@ importers:
         specifier: workspace:*
         version: link:../../tooling/typescript-config
       '@fluentui/react-components':
-        specifier: ^9.75.0
-        version: 9.75.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(scheduler@0.28.0)
+        specifier: ^9.75.1
+        version: 9.75.1(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(scheduler@0.28.0)
       '@testing-library/react':
         specifier: ^16.3.3
         version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -718,8 +718,8 @@ importers:
         specifier: workspace:*
         version: link:../../tooling/typescript-config
       '@fluentui/react-components':
-        specifier: ^9.75.0
-        version: 9.75.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(scheduler@0.28.0)
+        specifier: ^9.75.1
+        version: 9.75.1(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(scheduler@0.28.0)
       '@testing-library/react':
         specifier: ^16.3.3
         version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -767,8 +767,8 @@ importers:
         specifier: workspace:*
         version: link:../../tooling/typescript-config
       '@fluentui/react-components':
-        specifier: ^9.75.0
-        version: 9.75.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(scheduler@0.28.0)
+        specifier: ^9.75.1
+        version: 9.75.1(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(scheduler@0.28.0)
       '@testing-library/react':
         specifier: ^16.3.3
         version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -2900,8 +2900,8 @@ packages:
       '@types/react':
         optional: true
 
-  '@fluentui/react-components@9.75.0':
-    resolution: {integrity: sha512-H5qNXBbA2E2t+xNjPYKtiphB1NgHlvjckkq/vRpMGFNZ3W5RM0e/VsUg/5YyCDfIgQpH4lxmbVY/Pz3fT2xh9w==}
+  '@fluentui/react-components@9.75.1':
+    resolution: {integrity: sha512-n4xyB7H8gOhO9JlwJrdwuZuu4Au/FS0IJz7YwykIs4kY1s7xJda+o7eNIdA0I5Eh87r2kUmgl5WDmdXQT74hWQ==}
     peerDependencies:
       '@types/react': '>=16.14.0 <20.0.0'
       react: 19.3.1
@@ -3267,8 +3267,8 @@ packages:
       '@types/react':
         optional: true
 
-  '@fluentui/react-tag-picker@9.10.6':
-    resolution: {integrity: sha512-+pKt9kyO+Knc+dMCX4XKuL0v8kPhxpNxQ0IPHu3PBTKupOBzBoQ3Q89q0OzD62gxO1fmxyX0+Rz05tv1LTI7GQ==}
+  '@fluentui/react-tag-picker@9.10.7':
+    resolution: {integrity: sha512-dxLLYZd7oxALHbg/7RpGBmO7s8ybKsrJLE3nF22Bu68pSg7jaB0EyQKBCRkZEyeW2FrGfepTQKZBBG1j5Os/SA==}
     peerDependencies:
       '@types/react': '>=16.14.0 <20.0.0'
       react: 19.3.1
@@ -3343,8 +3343,8 @@ packages:
       '@types/react':
         optional: true
 
-  '@fluentui/react-tree@9.16.10':
-    resolution: {integrity: sha512-352WhOD1C8EKdAXWAiuOuGFGRGSJwmDD/IEPGoWDaky+T95te1Rsf2ED8MBS9zWCSCgZ4WD2wC6xBxPBRCkRnw==}
+  '@fluentui/react-tree@9.17.0':
+    resolution: {integrity: sha512-BCWduX8YD3vW9A2mDXNsoTlbeIC6DsUoYbLcW/iOutzGbRkEucZqvzaK2HRRiB8GzgzAbXEjyGMYOf622kkogg==}
     peerDependencies:
       '@types/react': '>=16.14.0 <20.0.0'
       react: 19.3.1
@@ -9527,7 +9527,7 @@ snapshots:
     transitivePeerDependencies:
       - scheduler
 
-  '@fluentui/react-components@9.75.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(scheduler@0.28.0)':
+  '@fluentui/react-components@9.75.1(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(scheduler@0.28.0)':
     dependencies:
       '@fluentui/react-accordion': 9.12.5(@types/react@19.3.0)(react@19.3.1)(scheduler@0.28.0)
       '@fluentui/react-alert': 9.0.2-beta.1(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(scheduler@0.28.0)
@@ -9577,7 +9577,7 @@ snapshots:
       '@fluentui/react-table': 9.19.23(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(scheduler@0.28.0)
       '@fluentui/react-tabs': 9.12.6(@types/react@19.3.0)(react@19.3.1)(scheduler@0.28.0)
       '@fluentui/react-tabster': 9.26.19(@types/react@19.3.0)(react@19.3.1)
-      '@fluentui/react-tag-picker': 9.10.6(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(scheduler@0.28.0)
+      '@fluentui/react-tag-picker': 9.10.7(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(scheduler@0.28.0)
       '@fluentui/react-tags': 9.9.8(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(scheduler@0.28.0)
       '@fluentui/react-teaching-popover': 9.7.9(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(scheduler@0.28.0)
       '@fluentui/react-text': 9.6.21(@types/react@19.3.0)(react@19.3.1)
@@ -9586,7 +9586,7 @@ snapshots:
       '@fluentui/react-toast': 9.8.5(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       '@fluentui/react-toolbar': 9.8.7(@types/react@19.3.0)(react@19.3.1)(scheduler@0.28.0)
       '@fluentui/react-tooltip': 9.10.8(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
-      '@fluentui/react-tree': 9.16.10(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(scheduler@0.28.0)
+      '@fluentui/react-tree': 9.17.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(scheduler@0.28.0)
       '@fluentui/react-utilities': 9.27.0(@types/react@19.3.0)(react@19.3.1)
       '@fluentui/react-virtualizer': 9.0.0-alpha.116(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       '@griffel/react': 1.7.8(react@19.3.1)
@@ -10214,7 +10214,7 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.3.0
 
-  '@fluentui/react-tag-picker@9.10.6(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(scheduler@0.28.0)':
+  '@fluentui/react-tag-picker@9.10.7(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(scheduler@0.28.0)':
     dependencies:
       '@fluentui/keyboard-keys': 9.0.9
       '@fluentui/react-aria': 9.17.16(@types/react@19.3.0)(react@19.3.1)
@@ -10371,7 +10371,7 @@ snapshots:
     transitivePeerDependencies:
       - react-dom
 
-  '@fluentui/react-tree@9.16.10(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(scheduler@0.28.0)':
+  '@fluentui/react-tree@9.17.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(scheduler@0.28.0)':
     dependencies:
       '@fluentui/keyboard-keys': 9.0.9
       '@fluentui/react-aria': 9.17.16(@types/react@19.3.0)(react@19.3.1)
