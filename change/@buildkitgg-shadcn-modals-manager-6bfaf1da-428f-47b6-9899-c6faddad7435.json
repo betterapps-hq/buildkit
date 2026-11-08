@@ -1,0 +1,7 @@
+{
+  "type": "patch",
+  "comment": "Accept every kit style up to 1.x as the shadcn-baseui-kit peer, including 0.5.",
+  "packageName": "@buildkitgg/shadcn-modals-manager",
+  "email": "ajcraswell@gmail.com",
+  "dependentChangeType": "patch"
+}
