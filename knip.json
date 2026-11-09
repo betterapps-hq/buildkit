@@ -20,9 +20,12 @@
     "packages/core/typescript-utils": {
       "entry": ["src/index.ts", "src/reset.ts", "test/consumer/*.ts", "test/consumer-types/*.ts"]
     },
+    "apps/behavior-storybook": {
+      "ignoreDependencies": ["@storybook/addon-a11y", "@storybook/addon-vitest", "vitest"]
+    },
     "packages/tooling/storybook-config": {
       "entry": ["src/main.ts", "src/preview.ts", "src/ExampleFrame.tsx"],
-      "ignoreDependencies": ["@chromatic-com/storybook", "@storybook/addon-a11y", "@storybook/addon-vitest"]
+      "ignoreDependencies": ["@storybook/addon-a11y", "@storybook/addon-vitest"]
     },
     "packages/tooling/scaffolder": {
       "entry": [

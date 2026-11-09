@@ -1,7 +1,7 @@
 # @buildkitgg/storybook-config
 
-Shared Storybook configuration for React and Vite: a base `main` config with the Chromatic, accessibility and Vitest
-addons, a base preview, and frames that give example stories a consistent layout.
+Shared Storybook configuration for React and Vite: a base `main` config with the accessibility and Vitest addons, a base
+preview, and frames that give example stories a consistent layout.
 
 ```sh
 pnpm add -D @buildkitgg/storybook-config storybook @storybook/react-vite
@@ -21,8 +21,12 @@ export default defineMain({
 })
 ```
 
-The base uses the `@storybook/react-vite` framework, adds `@chromatic-com/storybook`, `@storybook/addon-a11y` and
-`@storybook/addon-vitest`, and turns off telemetry. The addons are dependencies of this package.
+The base uses the `@storybook/react-vite` framework, adds `@storybook/addon-a11y` and `@storybook/addon-vitest`, and
+turns off telemetry. The framework and addons are dependencies of this package and are named by path, so your app
+doesn't need to install them. Add app-specific addons, such as Chromatic's, under `addons` yourself.
+
+Run the Vitest addon's story tests in CI only. They're too slow to run on every local test pass, so keep them out of the
+test project your app runs locally.
 
 ## Preview
 
