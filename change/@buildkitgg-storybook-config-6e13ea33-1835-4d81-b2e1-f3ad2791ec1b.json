@@ -1,7 +1,0 @@
-{
-  "type": "minor",
-  "comment": "Name the framework and addons by path so apps under pnpm don't install them, let defineMain take a config without a framework, and drop the Chromatic addon from the base",
-  "packageName": "@buildkitgg/storybook-config",
-  "email": "ajcraswell@gmail.com",
-  "dependentChangeType": "patch"
-}

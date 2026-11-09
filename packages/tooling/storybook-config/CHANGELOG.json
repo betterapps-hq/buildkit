@@ -2,6 +2,21 @@
   "name": "@buildkitgg/storybook-config",
   "entries": [
     {
+      "date": "Mon, 09 Nov 2026 01:42:21 GMT",
+      "version": "0.2.0",
+      "tag": "@buildkitgg/storybook-config_v0.2.0",
+      "comments": {
+        "minor": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/storybook-config",
+            "commit": "f0d1699aff5d77855a8ca8f58c57f42123b3d36c",
+            "comment": "Name the framework and addons by path so apps under pnpm don't install them, let defineMain take a config without a framework, and drop the Chromatic addon from the base"
+          }
+        ]
+      }
+    },
+    {
       "date": "Tue, 03 Nov 2026 11:33:32 GMT",
       "version": "0.1.0",
       "tag": "@buildkitgg/storybook-config_v0.1.0",
