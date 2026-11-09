@@ -1,8 +1,17 @@
 # Change Log - @buildkitgg/shadcn-baseui-maia
 
-<!-- This log was last generated on Fri, 06 Nov 2026 17:40:12 GMT and should not be manually modified. -->
+<!-- This log was last generated on Mon, 09 Nov 2026 19:04:12 GMT and should not be manually modified. -->
 
 <!-- Start content -->
+
+## 0.5.1
+
+Mon, 09 Nov 2026 19:04:12 GMT
+
+### Patches
+
+- Regenerate the component catalog from upstream and update supported dependencies.
+  (41898282+github-actions[bot]@users.noreply.github.com)
 
 ## 0.5.0
 

@@ -1,6 +1,6 @@
 {
   "name": "@buildkitgg/shadcn-baseui-rhea",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Upstream shadcn Base UI components in the rhea style, with compiled CSS and TypeScript declarations.",
   "homepage": "https://github.com/betterapps-hq/buildkit/tree/main/packages/shadcn/shadcn-baseui-rhea#readme",
   "bugs": {
