@@ -1,8 +1,16 @@
 # Change Log - @buildkitgg/shadcn-modals-manager
 
-<!-- This log was last generated on Tue, 03 Nov 2026 11:33:32 GMT and should not be manually modified. -->
+<!-- This log was last generated on Mon, 09 Nov 2026 00:02:03 GMT and should not be manually modified. -->
 
 <!-- Start content -->
+
+## 1.1.4
+
+Mon, 09 Nov 2026 00:02:03 GMT
+
+### Patches
+
+- Accept every kit style up to 1.x as the shadcn-baseui-kit peer, including 0.5. (ajcraswell@gmail.com)
 
 ## 1.1.3
 
