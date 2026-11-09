@@ -32,7 +32,7 @@
   "devDependencies": {
     "@buildkitgg/typescript-config": "workspace:*",
     "@types/node": "24.19.2",
-    "oxlint": "1.89.0",
+    "oxlint": "1.91.0",
     "typescript": "catalog:",
     "vite-plus": "catalog:"
   },

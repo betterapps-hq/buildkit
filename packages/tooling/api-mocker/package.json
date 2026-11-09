@@ -30,12 +30,12 @@
     "prepack": "pnpm build"
   },
   "peerDependencies": {
-    "msw": "^3.0.3"
+    "msw": "^3.0.4"
   },
   "devDependencies": {
     "@buildkitgg/typescript-config": "workspace:*",
     "@vitest/coverage-v8": "catalog:",
-    "msw": "^3.0.3",
+    "msw": "^3.0.4",
     "typescript": "catalog:",
     "vite-plus": "catalog:",
     "vitest": "catalog:"
