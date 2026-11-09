@@ -10,7 +10,13 @@ import { StorybookConfig } from '@storybook/react-vite/node';
 export const baseConfig: Omit<StorybookConfig, "stories">;
 
 // @public
-export function defineMain(overrides: StorybookConfig): StorybookConfig;
+export function defineMain(overrides: MainOverrides): StorybookConfig;
+
+// @public
+export type MainOverrides = Omit<StorybookConfig, "framework"> & Partial<Pick<StorybookConfig, "framework">>;
+
+// @public
+export function packageFolder(name: string): string;
 
 // (No @packageDocumentation comment for this package)
 

@@ -36,7 +36,6 @@
     "prepack": "pnpm build"
   },
   "dependencies": {
-    "@chromatic-com/storybook": "^5.6.0",
     "@storybook/addon-a11y": "10.6.5",
     "@storybook/addon-vitest": "10.6.5",
     "@storybook/react": "10.6.5",
