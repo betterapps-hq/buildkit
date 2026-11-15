@@ -10,9 +10,10 @@
     "node": ">=24"
   },
   "bin": {
-    "buildkit-shadcn": "dist/bin.js"
+    "buildkit-shadcn": "bin/buildkit-shadcn.js"
   },
   "files": [
+    "bin",
     "dist/**/*.js",
     "dist/**/*.cjs",
     "dist/**/*.d.ts",
