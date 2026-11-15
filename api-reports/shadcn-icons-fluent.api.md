@@ -81,20 +81,6 @@ const fluent: {
 };
 export default fluent;
 
-// @public
-export interface ShadcnIconAdapter {
-    readonly icons: Readonly<Record<string, ShadcnIconReplacement>>;
-    readonly package: string;
-    readonly styles?: string;
-}
-
-// @public
-export interface ShadcnIconReplacement {
-    readonly module: string;
-    readonly name: string;
-    readonly props?: Readonly<Record<string, string | number | boolean>>;
-}
-
 // (No @packageDocumentation comment for this package)
 
 ```

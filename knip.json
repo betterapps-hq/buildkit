@@ -45,6 +45,30 @@
     "packages/tooling/cli": {
       "entry": ["src/index.ts", "src/bin.ts", "vitest.integration.config.ts"]
     },
+    "packages/shadcn/shadcn-sync": {
+      "entry": ["src/adapter.ts", "src/bin.ts", "src/preload.cjs"],
+      "ignoreDependencies": [
+        "@base-ui/react",
+        "@shadcn/react",
+        "class-variance-authority",
+        "cmdk",
+        "cn",
+        "date-fns",
+        "embla-carousel-react",
+        "input-otp",
+        "next-themes",
+        "react-day-picker",
+        "react-resizable-panels",
+        "recharts",
+        "shadcn",
+        "shiki",
+        "sonner",
+        "tw-animate-css"
+      ]
+    },
+    "apps/shadcn-sync-example": {
+      "ignoreDependencies": ["@fluentui/react-icons", "@buildkitgg/shadcn-icons-fluent"]
+    },
     "packages/tooling/dev-domains": {
       "entry": [
         "src/cli/main.ts",

@@ -1,0 +1,82 @@
+{
+  "name": "@buildkitgg/shadcn-sync",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "description": "Builds the shadcn components into a configurable @buildkitgg/shadcn package in your app.",
+  "type": "module",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=24"
+  },
+  "bin": {
+    "buildkit-shadcn": "dist/bin.js"
+  },
+  "files": [
+    "dist/**/*.js",
+    "dist/**/*.cjs",
+    "dist/**/*.d.ts",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "exports": {
+    "./adapter": {
+      "types": "./dist/adapter.d.ts",
+      "import": "./dist/adapter.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vp test run",
+    "test:coverage": "vp test run --coverage",
+    "prepack": "pnpm build"
+  },
+  "dependencies": {
+    "@base-ui/react": "^1.9.0",
+    "@clack/prompts": "1.8.1",
+    "@shadcn/react": "^0.3.1",
+    "citty": "0.2.2",
+    "class-variance-authority": "^0.7.1",
+    "cmdk": "^1.1.1",
+    "cn": "^0.5.0",
+    "date-fns": "^4.4.0",
+    "embla-carousel-react": "^8.6.0",
+    "input-otp": "^1.5.0",
+    "next-themes": "^0.4.6",
+    "package-manager-detector": "1.9.0",
+    "picocolors": "^1.1.1",
+    "postcss": "8.5.32",
+    "react-day-picker": "^10.0.2",
+    "react-resizable-panels": "^4.15.0",
+    "recharts": "3.10.1",
+    "shadcn": "4.23.0",
+    "shiki": "^4.5.0",
+    "sonner": "^2.0.8",
+    "tailwindcss": "^4.3.3",
+    "ts-morph": "28.0.0",
+    "tw-animate-css": "^1.4.0",
+    "typescript": "catalog:",
+    "zod": "4.6.7"
+  },
+  "peerDependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@buildkitgg/typescript-config": "workspace:*",
+    "@types/node": "24.19.2",
+    "@vitest/coverage-v8": "catalog:",
+    "vitest": "catalog:",
+    "vite-plus": "catalog:"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/betterapps-hq/buildkit.git",
+    "directory": "packages/shadcn/shadcn-sync"
+  },
+  "homepage": "https://github.com/betterapps-hq/buildkit/tree/main/packages/shadcn/shadcn-sync#readme",
+  "bugs": {
+    "url": "https://github.com/betterapps-hq/buildkit/issues"
+  }
+}

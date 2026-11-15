@@ -1,0 +1,16 @@
+{
+  "extends": "@buildkitgg/typescript-config/base.json",
+  "compilerOptions": {
+    "target": "ES2024",
+    "lib": ["ES2024", "DOM"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "types": ["node"],
+    "noUncheckedIndexedAccess": true,
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true
+  },
+  "include": ["src/**/*.ts", "src/**/*.cjs", "vitest.config.ts"]
+}

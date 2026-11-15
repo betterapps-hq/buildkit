@@ -49,6 +49,10 @@ planned move to questions, bare add-ons, version ranges and combination add-ons,
 [shadcn component styles](shadcn/README.md) documents installation, styling, and maintenance of the generated Base UI
 packages.
 
+[shadcn sync](../packages/shadcn/shadcn-sync/README.md): the `buildkit-shadcn` command that builds a configurable
+`@buildkitgg/shadcn` package inside an app, with its [example app](../apps/shadcn-sync-example/README.md) and
+[Fluent icon adapter](../packages/shadcn/shadcn-icons-fluent/README.md).
+
 [Route tabs and panels](routing.md): shared behavior and React Router / TanStack Router integrations.
 
 Configuration: [core and provider contract](../packages/core/configuration-core/README.md),

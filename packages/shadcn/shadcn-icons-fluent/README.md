@@ -11,8 +11,17 @@ fluent.styles // "@fluentui/react-icons/headless/styles.css"
 fluent.icons.XIcon // { name: "DismissRegular", module: "@fluentui/react-icons/headless/svg/dismiss" }
 ```
 
-The planned `buildkit-shadcn` command reads it at build time to swap the icons, so the built components import Fluent
-directly. `@fluentui/react-icons` 2.0.332 or later is a peer dependency, so the app controls its version.
+`buildkit-shadcn` from [`@buildkitgg/shadcn-sync`](../shadcn-sync/README.md) reads it at build time to swap the icons,
+so the built components import Fluent directly. `@fluentui/react-icons` 2.0.332 or later is a peer dependency, so the
+app controls its version.
+
+Install both packages and pass the adapter to sync:
+
+```bash
+pnpm add @fluentui/react-icons
+pnpm add -D @buildkitgg/shadcn-icons-fluent
+pnpm exec buildkit-shadcn set --icons @buildkitgg/shadcn-icons-fluent
+```
 
 ## Icons
 
@@ -51,4 +60,5 @@ longer uses, when a module doesn't export its icon, or when an icon doesn't rend
 After a shadcn update, run `pnpm fixture` in this package to record the registry's icons again, map any new ones, and
 commit both files.
 
-See the [shadcn sync plan](../../../docs/platform-planning/shadcn-sync.md#icons) for the adapter contract.
+The default export satisfies `ShadcnIconAdapter` from `@buildkitgg/shadcn-sync/adapter`. See the
+[shadcn sync plan](../../../docs/platform-planning/shadcn-sync.md#icons) for the adapter contract.

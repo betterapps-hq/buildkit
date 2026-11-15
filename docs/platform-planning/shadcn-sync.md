@@ -4,7 +4,9 @@ Plan to replace the per-style `@buildkitgg/shadcn-baseui-*` packages with one sy
 components with the shadcn CLI and compiles them into a package inside each app's `node_modules`, for the primitives,
 icon library, style and theme the app picks.
 
-**Status (2026-11-14):** proposed.
+**Status (2026-11-15):** in progress. [`@buildkitgg/shadcn-sync`](../../packages/shadcn/shadcn-sync/README.md) has
+`sync`, `update` and `set`, and [`apps/shadcn-sync-example`](../../apps/shadcn-sync-example/README.md) renders its
+output. See [Phases](#phases) for what's left.
 
 ## Why
 
@@ -109,7 +111,9 @@ buildkit-shadcn set [--base <base>] [--icons <library>] [--style <style>] [--the
 | `set`    | Changes any of the settings, in one go, and rebuilds (see [Changing settings](#changing-settings)) | Only when the base, style or theme changes                                 |
 
 `update` and `set` are for running by hand, for example `pnpm exec buildkit-shadcn update`. They read the other options
-from the `postinstall` script, so nothing needs repeating.
+from the script that runs sync, so nothing needs repeating. That's the `postinstall`, or another script when the app
+runs sync by hand, as the example app inside this repository does: a fresh clone of the repository installs before the
+sync package is built.
 
 `sync` options, all set in the `postinstall`:
 
@@ -248,6 +252,7 @@ Sync registers the generated package so the app never edits `package.json` by ha
 | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Workspace    | Create a temp project with a generated `components.json` (style, icon library, aliases, CSS path) and a `package.json`                                                                                                                                                                       |
 | Install      | Run `shadcn add --all --yes --silent` with the record-and-replay preload. The CLI applies the icon library and writes the components. The preload turns the package-manager install the CLI starts into a no-op, because `add` has no option to skip it and sync handles dependencies itself |
+| Theme        | Run `shadcn add style` with a local `registry:theme` item built from the base color the CLI fetched (`colors/<theme>.json`). The CLI writes the style's CSS imports, the theme variables and their `@theme inline` mapping, as `init` would without scaffolding a project                    |
 | Icons        | For an icon adapter, map the CLI's Lucide output to the adapter's modules, and layer its stylesheet below the components' CSS (see [Icons](#icons))                                                                                                                                          |
 | Imports      | Rewrite the `components.json` aliases to relative paths; fail on anything unresolved                                                                                                                                                                                                         |
 | JavaScript   | Compile TSX to ES modules, keeping `"use client"` directives                                                                                                                                                                                                                                 |
@@ -286,15 +291,17 @@ match exactly what was built.
 
 ### Entry points
 
-Each component entry point imports the shared stylesheet and its own, then re-exports the upstream implementation
-directly. No wrappers.
+Each component entry point re-exports the upstream implementation directly. No wrappers. The stylesheets are imported by
+the upstream module itself, because a bundler that honors `sideEffects` skips a re-export-only module and would drop any
+CSS it imported, while a module whose exports are used keeps all its imports.
 
 ```ts
 // components/button/index.js
-import "../../shared.css"
-import "./styles.css"
-
 export { Button, buttonVariants } from "../../ui/button.js"
+
+// ui/button.js, after its "use client" directive when it has one
+import "../shared.css"
+import "../components/button/styles.css"
 ```
 
 The root barrel re-exports every entry point. Sync fails on any export name collision instead of dropping a name; the
@@ -346,7 +353,8 @@ The generated code imports React, the selected primitives, the selected icon lib
 runtime libraries (cmdk, vaul, sonner, react-day-picker, embla, input-otp, recharts and so on).
 
 - `@buildkitgg/shadcn-sync` depends on both primitive sets and those runtime libraries, so the generated package
-  resolves them through the app's install.
+  resolves them through the app's install. Base UI is a dependency today; `radix-ui` isn't used anywhere in the
+  repository yet, so it waits for the owner's go-ahead, and an app on `--base radix` installs it itself.
 - The app declares its icon library (or adapter) itself. Sync fails with the package to add when it's missing.
 - React and React DOM stay peers.
 
@@ -366,8 +374,8 @@ it exactly like a built-in library.
 
 ### The adapter contract
 
-An adapter's default export is plain data, with no runtime code, typed as `ShadcnIconAdapter`. The type lives in
-`@buildkitgg/shadcn-icons-fluent` today and moves to a `@buildkitgg/shadcn-sync/adapter` entry point when sync is built:
+An adapter's default export is plain data, with no runtime code, typed as `ShadcnIconAdapter` from the
+`@buildkitgg/shadcn-sync/adapter` entry point:
 
 ```ts
 import type { ShadcnIconAdapter } from "@buildkitgg/shadcn-sync/adapter"
@@ -397,8 +405,8 @@ export default {
   component, and keeps the previous snapshot and output. The adapter's maintainers publish a new version with the
   mapping.
 - **Coverage tests.** An adapter keeps a fixture of the Lucide icons the registry uses, and tests that every one is
-  mapped, that no mapping is stale, and that every mapped export exists and renders. When sync is built, it exports a
-  `checkAdapter` helper that runs those checks against a snapshot, so other adapters don't repeat them.
+  mapped, that no mapping is stale, and that every mapped export exists and renders. Sync is to export a `checkAdapter`
+  helper that runs those checks against a snapshot, so other adapters don't repeat them; it isn't built yet.
 
 ### `@buildkitgg/shadcn-icons-fluent`
 
@@ -445,24 +453,30 @@ or doesn't render with the component's size class.
 An app ships only the CSS of the components it imports. Today's compiled stylesheet for the whole catalog is 214 KB raw
 and 30 KB gzipped.
 
-- **Per-component stylesheets.** Each component's `styles.css` holds every rule its classes need, including the classes
-  of components it composes (Calendar's buttons, for example). Rules used by several components appear in each of their
-  files.
+- **Per-component stylesheets.** Each component's `styles.css` holds the rules for its own classes and those of the
+  shared modules it imports, such as hooks. A component it composes (Calendar's buttons, for example) imports its own
+  stylesheet, so a rule appears in more than one file only when two components use the same class.
 - **Order that doesn't depend on load order.** Tailwind's output is ordered: `md:px-6` has to come after `px-4` to win
   on wide screens. Split across files, that order would depend on which component the bundler loads first. So sync
-  compiles the whole catalog once to get Tailwind's order, assigns each rule to a cascade layer in that order, and
-  starts every stylesheet with the same `@layer` order statement. Precedence then follows the layer, not the file, so a
-  rule repeated in a later file can't override one that Tailwind ordered after it.
-- **Shared stylesheet.** `shared.css` declares the layer order and holds the theme variables, the base layer and the
-  keyframes. Every entry point imports it first.
-- **Unused components drop out.** `sideEffects: ["**/*.css"]` plus a direct re-export per entry point means a production
-  build that imports only `Button` from the root includes only Button's entry point and stylesheet. The consumer tests
-  measure this.
+  compiles the whole catalog once to get Tailwind's order and puts each rule in a sublayer of `utilities`. Every
+  stylesheet starts with the same `@layer` order statement, so precedence follows the layer, not the file.
+- **Coarse layers that keep the cascade.** Layers beat specificity, so sublayers are ordered by specificity first: a
+  more specific rule still beats a less specific one. Within one specificity, a rule sits one layer above the highest
+  earlier rule it can override (the same property, or a shorthand and its longhands, such as `padding` and
+  `padding-inline`); rules that never compete share layers. The catalog needs 280 sublayers.
+- **Shared stylesheet.** `shared.css` declares the layer order and holds the theme variables, the base layer, the
+  keyframes and the icon adapter's stylesheet. Every component module imports it first.
+- **Unused components drop out.** `sideEffects: ["**/*.css"]`, a direct re-export per entry point, and stylesheet
+  imports in the component modules mean a production build includes only the components it uses and their stylesheets.
+  Button alone is 6.6 KB gzipped (2.8 KB of its own and 3.9 KB shared); the example app's 15 components are 11.6 KB.
 - **App CSS still wins.** Everything sync emits is layered, so the app's own unlayered CSS overrides it without
   specificity tricks.
-- **No prefix.** Classes are stock shadcn, so `cn()` and tailwind-merge resolve `className` overrides the usual way.
-- **No Preflight.** Instead, a small base layer scoped to `[data-slot]` gives the defaults that Tailwind utilities
-  assume (border style and width, box sizing). Nothing resets the app's own elements.
+- **No prefix.** Classes are stock shadcn, so `cn()` and tailwind-merge resolve `className` overrides the usual way. The
+  flip side: an app class named like a utility, such as `grid`, also applies to the components.
+- **No Preflight.** Instead, a small base layer gives elements that carry a `data-slot`, which every component part
+  does, the Preflight defaults the components rely on: box sizing, margins, borders, form control fonts, list styles and
+  link colors. Other elements inside components only get box sizing and the border color. Nothing resets the app's own
+  elements.
 - **Theme.** CSS variables on `:root` and `.dark`, from the selected theme item.
 - **Portals.** Styles are plain class selectors, so portalled content is styled wherever it renders.
 - **No runtime injection.** Static CSS imports only, so styles are there for the first render and for SSR.
@@ -564,9 +578,16 @@ per-component stylesheets. Settle the [open questions](#open-questions). Done wh
 installed fresh from a committed snapshot with each package manager and no network access to the registry, imports and
 renders `Button`, `Dialog`, `Input` and `Select` from `@buildkitgg/shadcn`.
 
+Built: everything above, checked with pnpm on Windows in the example app. Left: fresh, repeated and frozen-lockfile
+installs with npm, Yarn and Bun, pnpm's isolated layout outside this workspace, and macOS and Linux.
+
 **Phase 2: configuration.** The `set` command, Radix, `--css tailwind`, every built-in icon library, every style and
 theme, the adapter contract, and `@buildkitgg/shadcn-icons-fluent`. Done when changing any flag and reinstalling
 regenerates the package without touching the app's imports.
+
+Built: `set`, every style, the adapter contract and the Fluent adapter. Left: `--css tailwind`, Radix (it needs
+`radix-ui`, see [Runtime dependencies](#runtime-dependencies)), checking the built-in icon libraries other than Lucide
+and the themes other than neutral, and `checkAdapter`.
 
 **Phase 3: move over.** Point the managers, apps, Storybook and scaffolder templates at the generated package, then
 retire the style packages and the old generator.
@@ -596,20 +617,18 @@ registry requests and logged every other network call and child process.
 
 ## Open questions
 
-These need answers in phase 1, before the design is final.
+Answers so far, from pnpm on Windows:
 
-1. **Linking to a folder that doesn't exist yet.** On a fresh clone, the install reads the `@buildkitgg/shadcn` entry
-   before `postinstall` has generated anything. Check that each package manager accepts a missing target. If one
-   doesn't, sync writes a placeholder `package.json` there on its first run, and the fallback location is a gitignored
-   `.buildkit/shadcn` in the app folder.
-2. **Package managers pruning `node_modules/.buildkit`.** Check that installs leave the folder alone.
-3. **Strict resolution.** Which runtime libraries resolve from a linked folder under pnpm without hoisting.
-4. **Layer granularity.** One cascade layer per rule is always correct but makes thousands of layers. Find the coarsest
-   grouping that keeps Tailwind's order (for example one layer per variant and property-count group), and measure the
-   Button-only and full-catalog CSS against today's 30 KB gzipped. If layers can't keep the order, the fallback is a
-   bundler plugin that compiles one stylesheet from the components in the build, starting with Vite.
-5. **Tailwind mode subsetting.** In `tailwind` mode the app's Tailwind scans every generated file, so it generates
-   utilities for unused components too. Find out whether `@tailwindcss/vite` can scan only the modules in the build, or
-   whether `tailwind` mode needs the same plugin.
-6. **Theme items.** Confirm which registry item carries each `--theme` for the new styles, so the snapshot can include
-   it.
+1. **Linking to a folder that doesn't exist yet.** pnpm accepts it: a frozen-lockfile install with no generated folder
+   leaves a dangling link, and sync fills its target. npm, Yarn and Bun still need checking.
+2. **Package managers pruning `node_modules/.buildkit`.** pnpm installs leave the folder and the link alone. npm, Yarn
+   and Bun still need checking.
+3. **Strict resolution.** Not settled. Inside this workspace (`nodeLinker: hoisted`) everything resolves. Under pnpm's
+   isolated layout the generated package can't see sync's dependencies, so the app needs them in `publicHoistPattern` or
+   its own dependencies; sync names any it can't resolve.
+4. **Layer granularity.** Settled: specificity-ordered sublayers, split only where rules compete (see [CSS](#css)). 280
+   layers keep Tailwind's precedence for the whole catalog, with no bundler plugin.
+5. **Tailwind mode subsetting.** Open, with `--css tailwind`.
+6. **Theme items.** `--theme` is a registry base color for now: the CLI fetches `colors/<theme>.json`, and sync turns
+   its variables into a theme item (see [Pipeline](#pipeline)). The newer `init` themes, which are separate from base
+   colors, come from a dynamic endpoint that also encodes the icon library, so they aren't supported yet.
