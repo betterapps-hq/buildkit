@@ -19,6 +19,25 @@
       "cwd": "apps/site",
       "port": 4178,
       "url": "http://127.0.0.1:4178"
+    },
+    {
+      "name": "shadcn-sync-example",
+      "runtimeExecutable": "fnm",
+      "runtimeArgs": [
+        "--version-file-strategy=recursive",
+        "exec",
+        "--",
+        "node",
+        "../../node_modules/vite-plus/bin/vp",
+        "dev",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "4180"
+      ],
+      "cwd": "apps/shadcn-sync-example",
+      "port": 4180,
+      "url": "http://127.0.0.1:4180"
     }
   ]
 }

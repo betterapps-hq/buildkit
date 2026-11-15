@@ -13,7 +13,7 @@
     "build:packages": "vp run --cache --filter \"./packages/**\" build",
     "dev": "vp run --parallel --filter \"./apps/**\" dev",
     "verify": "pnpm check && pnpm check:unused && pnpm check:api && pnpm test:coverage && pnpm build",
-    "check": "pnpm build:packages && vp check",
+    "check": "pnpm build:packages && pnpm --filter @buildkitgg/shadcn-sync-example sync && vp check",
     "check:api": "pnpm build:packages && pnpm --filter @buildkitgg/api-tools api:check",
     "api:update": "pnpm build:packages && pnpm --filter @buildkitgg/api-tools api:update",
     "format": "vp fmt",

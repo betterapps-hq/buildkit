@@ -1,0 +1,28 @@
+{
+  "name": "@buildkitgg/shadcn-sync-example",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "sync": "buildkit-shadcn sync --base base-ui --icons lucide --style nova --theme neutral",
+    "dev": "pnpm sync && vp dev --host 127.0.0.1 --port 4180",
+    "build": "pnpm sync && vp build"
+  },
+  "dependencies": {
+    "@buildkitgg/shadcn": "link:node_modules/.buildkit/shadcn",
+    "lucide-react": "^1.62.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@buildkitgg/shadcn-icons-fluent": "workspace:*",
+    "@buildkitgg/shadcn-sync": "workspace:*",
+    "@buildkitgg/typescript-config": "workspace:*",
+    "@fluentui/react-icons": "^2.0.346",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vite-plus": "catalog:"
+  }
+}
