@@ -1,4 +1,4 @@
-import * as icons from "@fluentui/react-icons"
+import { createRequire } from "node:module"
 import type { FluentIcon } from "@fluentui/react-icons"
 import { createElement } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
@@ -7,10 +7,14 @@ import registry from "../fixtures/registry-icons.json" with { type: "json" }
 import fluent from "./index.js"
 
 const used: Readonly<Record<string, readonly string[]>> = registry.icons
+const require = createRequire(import.meta.url)
 
-// Every unsized Regular export is a FluentIcon, and the mapping only uses those.
-const regular: Readonly<Record<Extract<keyof typeof icons, `${string}Regular`>, FluentIcon>> = icons
-const library: ReadonlyMap<string, FluentIcon> = new Map(Object.entries(regular))
+async function loadIcon(module: string, name: string): Promise<FluentIcon | undefined> {
+  // Each headless module exports FluentIcon components only.
+  const exports: Readonly<Record<string, FluentIcon>> = await import(module)
+
+  return exports[name]
+}
 
 describe("Fluent icon adapter", () => {
   it("maps every Lucide icon the registry's components use", () => {
@@ -29,12 +33,22 @@ describe("Fluent icon adapter", () => {
 
   it("imports from the package it declares as a peer", () => {
     expect(fluent.package).toBe("@fluentui/react-icons")
+
+    const outside = Object.values(fluent.icons).filter(
+      (replacement) => !replacement.module.startsWith(`${fluent.package}/headless/svg/`)
+    )
+
+    expect(outside, "Replacements outside Fluent's headless icons").toEqual([])
   })
 
-  it.each(Object.entries(fluent.icons))("replaces %s with an existing Fluent icon", (_, replacement) => {
-    const Icon = library.get(replacement.name)
+  it("names a stylesheet the package exports", () => {
+    expect(require.resolve(fluent.styles)).toMatch(/styles\.css$/)
+  })
 
-    expect(Icon, `${replacement.name} isn't a Regular icon exported by @fluentui/react-icons`).toBeDefined()
+  it.each(Object.entries(fluent.icons))("replaces %s with an existing Fluent icon", async (_, replacement) => {
+    const Icon = await loadIcon(replacement.module, replacement.name)
+
+    expect(Icon, `${replacement.module} doesn't export ${replacement.name}`).toBeDefined()
 
     if (!Icon) {
       return
@@ -42,8 +56,8 @@ describe("Fluent icon adapter", () => {
 
     const markup = renderToStaticMarkup(createElement(Icon, { className: "size-4" }))
 
-    expect(markup).toMatch(/^<svg\b/)
-    // Size classes from the components must reach the svg; Fluent adds its own classes beside them.
+    // The headless stylesheet targets data-fui-icon, and size classes from the components must reach the svg.
+    expect(markup).toMatch(/^<svg\b[^>]*\bdata-fui-icon\b/)
     expect(markup).toMatch(/^<svg[^>]*\bclass="[^"]*\bsize-4\b/)
   })
 })

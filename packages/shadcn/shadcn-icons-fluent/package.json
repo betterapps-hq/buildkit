@@ -28,7 +28,7 @@
     "test:coverage": "vp test run --coverage"
   },
   "peerDependencies": {
-    "@fluentui/react-icons": "^2.0.0"
+    "@fluentui/react-icons": "^2.0.332"
   },
   "devDependencies": {
     "@buildkitgg/typescript-config": "workspace:*",

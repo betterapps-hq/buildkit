@@ -7,57 +7,75 @@
 // @public
 const fluent: {
     package: string;
+    styles: string;
     icons: {
         ArrowDownIcon: {
             name: string;
+            module: string;
         };
         CheckIcon: {
             name: string;
+            module: string;
         };
         ChevronDownIcon: {
             name: string;
+            module: string;
         };
         ChevronLeftIcon: {
             name: string;
+            module: string;
         };
         ChevronRightIcon: {
             name: string;
+            module: string;
         };
         ChevronUpIcon: {
             name: string;
+            module: string;
         };
         CircleCheckIcon: {
             name: string;
+            module: string;
         };
         CopyIcon: {
             name: string;
+            module: string;
         };
         InfoIcon: {
             name: string;
+            module: string;
         };
         Loader2Icon: {
             name: string;
+            module: string;
         };
         MinusIcon: {
             name: string;
+            module: string;
         };
         MoreHorizontalIcon: {
             name: string;
+            module: string;
         };
         OctagonXIcon: {
             name: string;
+            module: string;
         };
         PanelLeftIcon: {
             name: string;
+            module: string;
         };
         SearchIcon: {
             name: string;
+            module: string;
         };
         TriangleAlertIcon: {
             name: string;
+            module: string;
         };
         XIcon: {
             name: string;
+            module: string;
         };
     };
 };
@@ -67,13 +85,13 @@ export default fluent;
 export interface ShadcnIconAdapter {
     readonly icons: Readonly<Record<string, ShadcnIconReplacement>>;
     readonly package: string;
+    readonly styles?: string;
 }
 
 // @public
 export interface ShadcnIconReplacement {
-    // (undocumented)
+    readonly module: string;
     readonly name: string;
-    // (undocumented)
     readonly props?: Readonly<Record<string, string | number | boolean>>;
 }
 
