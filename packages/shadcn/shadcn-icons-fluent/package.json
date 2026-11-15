@@ -1,0 +1,55 @@
+{
+  "name": "@buildkitgg/shadcn-icons-fluent",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Fluent UI icons for shadcn components built by buildkit-shadcn.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist/**/*.js",
+    "dist/**/*.d.ts",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "fixture": "node scripts/update-fixture.mjs",
+    "prepack": "pnpm build",
+    "test": "vp test run",
+    "test:coverage": "vp test run --coverage"
+  },
+  "peerDependencies": {
+    "@fluentui/react-icons": "^2.0.0"
+  },
+  "devDependencies": {
+    "@buildkitgg/typescript-config": "workspace:*",
+    "@fluentui/react-icons": "^2.0.346",
+    "@types/node": "^24.19.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitest/coverage-v8": "catalog:",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "typescript": "catalog:",
+    "vite-plus": "catalog:",
+    "vitest": "catalog:"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/betterapps-hq/buildkit.git",
+    "directory": "packages/shadcn/shadcn-icons-fluent"
+  },
+  "homepage": "https://github.com/betterapps-hq/buildkit/tree/main/packages/shadcn/shadcn-icons-fluent#readme",
+  "bugs": {
+    "url": "https://github.com/betterapps-hq/buildkit/issues"
+  }
+}

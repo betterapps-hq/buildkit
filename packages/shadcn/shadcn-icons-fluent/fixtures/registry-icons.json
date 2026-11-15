@@ -1,0 +1,42 @@
+{
+  "registry": "https://ui.shadcn.com/r",
+  "styles": ["base-nova", "radix-nova"],
+  "icons": {
+    "ArrowDownIcon": ["message-scroller"],
+    "CheckIcon": [
+      "checkbox",
+      "code-block",
+      "combobox",
+      "command",
+      "context-menu",
+      "dropdown-menu",
+      "menubar",
+      "questionnaire",
+      "select"
+    ],
+    "ChevronDownIcon": ["accordion", "calendar", "combobox", "native-select", "navigation-menu", "select"],
+    "ChevronLeftIcon": ["calendar", "carousel", "pagination"],
+    "ChevronRightIcon": [
+      "breadcrumb",
+      "calendar",
+      "carousel",
+      "context-menu",
+      "dropdown-menu",
+      "menubar",
+      "pagination",
+      "trace"
+    ],
+    "ChevronUpIcon": ["accordion", "select"],
+    "CircleCheckIcon": ["sonner", "toast"],
+    "CopyIcon": ["code-block"],
+    "InfoIcon": ["sonner", "toast"],
+    "Loader2Icon": ["sonner", "spinner", "toast"],
+    "MinusIcon": ["input-otp"],
+    "MoreHorizontalIcon": ["breadcrumb", "pagination"],
+    "OctagonXIcon": ["sonner", "toast"],
+    "PanelLeftIcon": ["sidebar"],
+    "SearchIcon": ["command"],
+    "TriangleAlertIcon": ["sonner", "toast"],
+    "XIcon": ["combobox", "dialog", "sheet", "toast"]
+  }
+}

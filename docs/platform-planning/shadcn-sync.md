@@ -366,8 +366,8 @@ it exactly like a built-in library.
 
 ### The adapter contract
 
-`@buildkitgg/shadcn-sync/adapter` exports the `ShadcnIconAdapter` type and a `checkAdapter` helper. An adapter's default
-export is plain data, with no runtime code:
+An adapter's default export is plain data, with no runtime code, typed as `ShadcnIconAdapter`. The type lives in
+`@buildkitgg/shadcn-icons-fluent` today and moves to a `@buildkitgg/shadcn-sync/adapter` entry point when sync is built:
 
 ```ts
 import type { ShadcnIconAdapter } from "@buildkitgg/shadcn-sync/adapter"
@@ -390,18 +390,22 @@ export default {
 - **Unmapped icons fail.** When an `update` brings an icon the adapter doesn't map, sync stops, names the icon and the
   component, and keeps the previous snapshot and output. The adapter's maintainers publish a new version with the
   mapping.
-- **`checkAdapter(adapter, snapshot)`** lists the snapshot's icons the adapter doesn't map, and checks that every mapped
-  export exists in the icon library. Adapters run it in their tests against a snapshot fixture.
+- **Coverage tests.** An adapter keeps a fixture of the Lucide icons the registry uses, and tests that every one is
+  mapped, that no mapping is stale, and that every mapped export exists and renders. When sync is built, it exports a
+  `checkAdapter` helper that runs those checks against a snapshot, so other adapters don't repeat them.
 
 ### `@buildkitgg/shadcn-icons-fluent`
 
-Buildkit's own adapter, in `packages/shadcn/shadcn-icons-fluent`, published through the normal release pipeline.
+Buildkit's own adapter, in [`packages/shadcn/shadcn-icons-fluent`](../../packages/shadcn/shadcn-icons-fluent/README.md).
+It's private until its first publish, which is done by hand like every new package.
 
 - **Peer dependency:** `@fluentui/react-icons`.
+- **Fluent's own styles.** Fluent icons add their own classes beside the ones the components pass, and style them with
+  Griffel, Fluent's CSS-in-JS engine, at runtime. The components' size classes still reach the `svg`.
 - **Unsized exports.** It maps to Fluent's unsized icons (`ChevronDownRegular`, not `ChevronDown16Regular`). They render
   at `1em`, so the size classes the components already put on icons (`size-4`, `[&_svg]:size-4`) control the size, as
   they do for Lucide.
-- **Mapping.** The `base-nova` catalog uses 17 Lucide icons:
+- **Mapping.** The `base-nova` and `radix-nova` catalogs use the same 17 Lucide icons:
 
 | Lucide               | Fluent                   |
 | -------------------- | ------------------------ |
@@ -423,8 +427,9 @@ Buildkit's own adapter, in `packages/shadcn/shadcn-icons-fluent`, published thro
 | `TriangleAlertIcon`  | `WarningRegular`         |
 | `XIcon`              | `DismissRegular`         |
 
-`checkAdapter` confirms each Fluent export exists, and a test renders the components that use the substituted icons,
-including the spinner, which keeps its `animate-spin` class.
+The package's tests run in CI with every other package's. They read `fixtures/registry-icons.json`, recorded from both
+bases with `pnpm fixture`, and fail when an icon has no replacement, a mapping is stale, or a Fluent export is missing
+or doesn't render with the component's size class.
 
 ## CSS
 
