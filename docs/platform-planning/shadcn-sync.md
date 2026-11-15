@@ -248,7 +248,7 @@ Sync registers the generated package so the app never edits `package.json` by ha
 | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Workspace    | Create a temp project with a generated `components.json` (style, icon library, aliases, CSS path) and a `package.json`                                                                                                                                                                       |
 | Install      | Run `shadcn add --all --yes --silent` with the record-and-replay preload. The CLI applies the icon library and writes the components. The preload turns the package-manager install the CLI starts into a no-op, because `add` has no option to skip it and sync handles dependencies itself |
-| Icons        | For an icon adapter, map the CLI's Lucide output to the adapter's library (see [Icons](#icons))                                                                                                                                                                                              |
+| Icons        | For an icon adapter, map the CLI's Lucide output to the adapter's modules, and layer its stylesheet below the components' CSS (see [Icons](#icons))                                                                                                                                          |
 | Imports      | Rewrite the `components.json` aliases to relative paths; fail on anything unresolved                                                                                                                                                                                                         |
 | JavaScript   | Compile TSX to ES modules, keeping `"use client"` directives                                                                                                                                                                                                                                 |
 | Declarations | Emit `.d.ts` with native TypeScript                                                                                                                                                                                                                                                          |
@@ -374,17 +374,23 @@ import type { ShadcnIconAdapter } from "@buildkitgg/shadcn-sync/adapter"
 
 export default {
   package: "@fluentui/react-icons",
+  styles: "@fluentui/react-icons/headless/styles.css",
   icons: {
-    ChevronDownIcon: { name: "ChevronDownRegular" },
-    XIcon: { name: "DismissRegular" }
+    ChevronDownIcon: { name: "ChevronDownRegular", module: "@fluentui/react-icons/headless/svg/chevron-down" },
+    XIcon: { name: "DismissRegular", module: "@fluentui/react-icons/headless/svg/dismiss" }
   }
 } satisfies ShadcnIconAdapter
 ```
 
 - **`package`** is the icon library the generated components import from. The adapter declares it as a peer dependency,
-  so the app installs the library itself and controls its version.
-- **`icons`** maps every Lucide name the registry uses to the library's export. `props` covers a library that sizes or
+  so the app installs the library itself and controls its version. Sync fails with the package to add when it's missing.
+- **`icons`** maps every Lucide name the registry uses to an export (`name`) and the module that exports it (`module`),
+  so a library with one module per icon works as well as one with a single entry. `props` covers a library that sizes or
   labels icons differently from Lucide.
+- **`styles`** is an optional stylesheet the icons need. Sync imports it into a cascade layer below every rule it emits,
+  so the components' utilities, such as `hidden` and `size-4`, still override it. A library that styles icons with
+  unlayered CSS at runtime breaks those utilities, because unlayered CSS beats every layer; adapters map to icons styled
+  with a static stylesheet instead.
 - **Sync resolves the adapter from the app**, so it has to be in the app's `devDependencies`. It reads the mapping at
   build time; the generated package imports only the icon library, never the adapter.
 - **Unmapped icons fail.** When an `update` brings an icon the adapter doesn't map, sync stops, names the icon and the
@@ -399,9 +405,12 @@ export default {
 Buildkit's own adapter, in [`packages/shadcn/shadcn-icons-fluent`](../../packages/shadcn/shadcn-icons-fluent/README.md).
 It's private until its first publish, which is done by hand like every new package.
 
-- **Peer dependency:** `@fluentui/react-icons`.
-- **Fluent's own styles.** Fluent icons add their own classes beside the ones the components pass, and style them with
-  Griffel, Fluent's CSS-in-JS engine, at runtime. The components' size classes still reach the `svg`.
+- **Peer dependency:** `@fluentui/react-icons` 2.0.332 or later, the first release with headless icons.
+- **Headless icons.** It maps to Fluent's headless entry (`@fluentui/react-icons/headless/svg/<icon>`), one module per
+  icon, and names `@fluentui/react-icons/headless/styles.css` as its stylesheet. The default entry styles icons with
+  Griffel, Fluent's CSS-in-JS engine, which injects unlayered rules at runtime. Its `display: inline` beat the
+  accordion's `hidden` class, so both chevrons showed. The headless stylesheet holds the same defaults (inline display,
+  forced colors, and the right-to-left flip) and, layered, loses to the utilities.
 - **Unsized exports.** It maps to Fluent's unsized icons (`ChevronDownRegular`, not `ChevronDown16Regular`). They render
   at `1em`, so the size classes the components already put on icons (`size-4`, `[&_svg]:size-4`) control the size, as
   they do for Lucide.
