@@ -1,0 +1,7 @@
+{
+  "type": "patch",
+  "comment": "Leave the stylesheet imports out of the generated declarations, so an app that type-checks its dependencies with skipLibCheck off doesn't fail on .css modules",
+  "packageName": "@buildkitgg/shadcn-sync",
+  "email": "ajcraswell@gmail.com",
+  "dependentChangeType": "patch"
+}
