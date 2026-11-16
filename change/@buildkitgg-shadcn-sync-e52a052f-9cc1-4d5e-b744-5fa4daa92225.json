@@ -1,0 +1,7 @@
+{
+  "type": "patch",
+  "comment": "Publish shadcn-sync to npm",
+  "packageName": "@buildkitgg/shadcn-sync",
+  "email": "ajcraswell@gmail.com",
+  "dependentChangeType": "patch"
+}

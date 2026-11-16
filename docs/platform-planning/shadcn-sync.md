@@ -582,7 +582,7 @@ export default {
 ### `@buildkitgg/shadcn-icons-fluent`
 
 Buildkit's own adapter, in [`packages/shadcn/shadcn-icons-fluent`](../../packages/shadcn/shadcn-icons-fluent/README.md).
-It's private until its first publish, which is done by hand like every new package.
+It is published to npm with the sync package.
 
 - **Peer dependency:** `@fluentui/react-icons` 2.0.332 or later, the first release with headless icons.
 - **Headless icons.** It maps to Fluent's headless entry (`@fluentui/react-icons/headless/svg/<icon>`), one module per

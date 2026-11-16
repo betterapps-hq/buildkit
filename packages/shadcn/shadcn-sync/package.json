@@ -1,7 +1,6 @@
 {
   "name": "@buildkitgg/shadcn-sync",
   "version": "0.1.0",
-  "private": true,
   "license": "MIT",
   "description": "Builds the shadcn components into a configurable @buildkitgg/shadcn package in your app.",
   "type": "module",
