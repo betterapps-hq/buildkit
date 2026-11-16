@@ -1,7 +1,0 @@
-{
-  "type": "patch",
-  "comment": "Export hooks and lib with a swappable cn, add --css tailwind, and work under pnpm's isolated layout, npm, Yarn and Bun without @types/react",
-  "packageName": "@buildkitgg/shadcn-sync",
-  "email": "ajcraswell@gmail.com",
-  "dependentChangeType": "patch"
-}

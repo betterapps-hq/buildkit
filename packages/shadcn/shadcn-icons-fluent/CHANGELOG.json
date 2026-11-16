@@ -2,6 +2,21 @@
   "name": "@buildkitgg/shadcn-icons-fluent",
   "entries": [
     {
+      "date": "Mon, 16 Nov 2026 10:11:33 GMT",
+      "version": "0.1.2",
+      "tag": "@buildkitgg/shadcn-icons-fluent_v0.1.2",
+      "comments": {
+        "patch": [
+          {
+            "author": "beachball",
+            "package": "@buildkitgg/shadcn-icons-fluent",
+            "comment": "Bump @buildkitgg/shadcn-sync to v0.1.2",
+            "commit": "not available"
+          }
+        ]
+      }
+    },
+    {
       "date": "Mon, 16 Nov 2026 06:51:41 GMT",
       "version": "0.1.1",
       "tag": "@buildkitgg/shadcn-icons-fluent_v0.1.1",

@@ -2,6 +2,21 @@
   "name": "@buildkitgg/shadcn-sync",
   "entries": [
     {
+      "date": "Mon, 16 Nov 2026 10:11:33 GMT",
+      "version": "0.1.2",
+      "tag": "@buildkitgg/shadcn-sync_v0.1.2",
+      "comments": {
+        "patch": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/shadcn-sync",
+            "commit": "7320b669da9375d672f4841fbf846865175f3285",
+            "comment": "Export hooks and lib with a swappable cn, add --css tailwind, and work under pnpm's isolated layout, npm, Yarn and Bun without @types/react"
+          }
+        ]
+      }
+    },
+    {
       "date": "Mon, 16 Nov 2026 06:51:41 GMT",
       "version": "0.1.1",
       "tag": "@buildkitgg/shadcn-sync_v0.1.1",
