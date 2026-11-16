@@ -158,6 +158,28 @@ export async function compileSources(sourceRoot: string, outDir: string) {
       true
     )
   }
+
+  removeStyleImports(outDir)
+}
+
+/** A side-effect stylesheet import on its own line, as TypeScript emits it. */
+const styleImport = /^import "[^"]+\.css";\r?\n/gm
+
+/**
+ * Removes the stylesheet imports TypeScript copies into the declarations. The JavaScript keeps them, because they load
+ * the styles, but a declaration needs none, and an app that checks side-effect imports in its dependencies can't
+ * resolve a `.css` module without a declaration for it.
+ */
+function removeStyleImports(outDir: string) {
+  for (const file of listFiles(outDir).filter((name) => name.endsWith(".d.ts"))) {
+    const path = join(outDir, file)
+    const content = readFileSync(path, "utf8")
+    const stripped = content.replace(styleImport, "")
+
+    if (stripped !== content) {
+      writeFileSync(path, stripped)
+    }
+  }
 }
 
 /** The generated files, without the dependency links in `node_modules`. */
