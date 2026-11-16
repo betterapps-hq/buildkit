@@ -1,0 +1,7 @@
+{
+  "type": "patch",
+  "comment": "Regenerate the component catalog from upstream and update supported dependencies.",
+  "packageName": "@buildkitgg/shadcn-baseui-lyra",
+  "email": "41898282+github-actions[bot]@users.noreply.github.com",
+  "dependentChangeType": "patch"
+}
