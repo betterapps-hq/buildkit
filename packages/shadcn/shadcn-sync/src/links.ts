@@ -26,10 +26,14 @@ function link(directory: string, name: string, target: string) {
     return
   }
 
-  mkdirSync(dirname(path), { recursive: true })
-  // Junctions need no elevation on Windows and take an absolute target; elsewhere a relative link survives moves.
+  const folder = dirname(path)
+
+  mkdirSync(folder, { recursive: true })
+  // Junctions need no elevation on Windows and take an absolute target; elsewhere a relative link survives moves. A
+  // link resolves from where its folder really is, so the path is worked out between real paths: macOS's temp folder,
+  // /var/folders, is itself a link to /private/var/folders, one level deeper.
   symlinkSync(
-    process.platform === "win32" ? target : relative(dirname(path), target).split(sep).join("/"),
+    process.platform === "win32" ? target : relative(realpathSync(folder), realpathSync(target)).split(sep).join("/"),
     path,
     "junction"
   )
