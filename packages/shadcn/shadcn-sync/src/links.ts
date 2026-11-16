@@ -1,7 +1,7 @@
-import { existsSync, lstatSync, mkdirSync, symlinkSync } from "node:fs"
+import { lstatSync, mkdirSync, realpathSync, symlinkSync } from "node:fs"
 import { createRequire } from "node:module"
 import { dirname, join, relative, sep } from "node:path"
-import { findPackage } from "./resolve.js"
+import { findPackage, readManifest } from "./resolve.js"
 
 /** sync's own folder, from which its dependencies resolve under any layout. */
 const syncRoot = dirname(createRequire(import.meta.url).resolve("../package.json"))
@@ -36,36 +36,69 @@ function link(directory: string, name: string, target: string) {
 }
 
 /**
- * Links each package in `names` that the app can't resolve into `directory/node_modules`, from sync's own
- * dependencies. Under a strict layout, such as pnpm's isolated `node_modules`, sync's dependencies aren't visible from
- * the app, so the generated code couldn't import them. A package the app resolves is left alone: Node finds the app's
- * copy by walking up from `directory`, which is inside the app, so the app and the components share one copy. React
- * and React DOM are never linked. Returns the packages it linked.
+ * Where each package resolves for the build: the app's copy when it has one, else sync's own. React and React DOM come
+ * only from the app. With `withDependencies`, each package's own dependencies are added too, resolved from beside it:
+ * the components' declarations can name their types, such as React Aria's `@react-types/shared`, without the
+ * components importing them.
  */
-export function linkMissing(directory: string, names: readonly string[], appDirectory: string): string[] {
-  return names.flatMap((name) => {
-    const own = appOnly.has(name) || findPackage(name, appDirectory) ? undefined : findPackage(name, syncRoot)
+export function packageTargets(
+  names: readonly string[],
+  appDirectory: string,
+  withDependencies = false
+): Map<string, string> {
+  const targets = new Map<string, string>()
 
-    if (!own) {
-      return []
-    }
-
-    link(directory, name, own)
-
-    return [name]
-  })
-}
-
-/**
- * Links every package in `names` into `directory/node_modules`, the app's copy when it has one and sync's otherwise,
- * for a build folder outside the app that resolves nothing by walking up. React and React DOM come only from the app.
- */
-export function linkAll(directory: string, names: readonly string[], appDirectory: string) {
   for (const name of names) {
     const target = findPackage(name, appDirectory) ?? (appOnly.has(name) ? undefined : findPackage(name, syncRoot))
 
-    if (target && existsSync(target)) {
-      link(directory, name, target)
+    if (target) {
+      targets.set(name, target)
     }
   }
+
+  if (!withDependencies) {
+    return targets
+  }
+
+  const dependencies = new Map<string, string>()
+
+  for (const target of targets.values()) {
+    const beside = realpathSync(target)
+
+    for (const name of Object.keys(readManifest(target).dependencies ?? {})) {
+      const dependency =
+        targets.has(name) || dependencies.has(name) || appOnly.has(name) ? undefined : findPackage(name, beside)
+
+      if (dependency) {
+        dependencies.set(name, dependency)
+      }
+    }
+  }
+
+  return new Map([...targets, ...dependencies])
+}
+
+/** Links every target into `directory/node_modules`, for a build folder outside the app that resolves nothing itself. */
+export function linkAll(directory: string, targets: ReadonlyMap<string, string>) {
+  for (const [name, target] of targets) {
+    link(directory, name, target)
+  }
+}
+
+/**
+ * Links each target the app can't resolve into `directory/node_modules`. Under a strict layout, such as pnpm's isolated
+ * `node_modules`, sync's dependencies aren't visible from the app, so the generated code couldn't import them. A package
+ * the app resolves is left alone: Node finds the app's copy by walking up from `directory`, which is inside the app, so
+ * the app and the components share one copy. Returns the packages it linked.
+ */
+export function linkMissing(directory: string, targets: ReadonlyMap<string, string>, appDirectory: string): string[] {
+  return [...targets].flatMap(([name, target]) => {
+    if (appOnly.has(name) || findPackage(name, appDirectory)) {
+      return []
+    }
+
+    link(directory, name, target)
+
+    return [name]
+  })
 }

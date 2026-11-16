@@ -26,14 +26,19 @@ export async function detectPackageManager(appDirectory: string): Promise<Packag
 /**
  * The local-folder protocol each package manager links rather than copies, and accepts before sync has written the
  * folder. Yarn's `portal:` reads the folder's manifest while resolving, so a fresh install fails; its `link:` doesn't.
+ * Bun refuses every local protocol whose folder doesn't exist yet, so with Bun there's no entry and sync's own link is
+ * the only one.
  */
 export function dependencySpecifier(manager: PackageManager) {
-  const protocols = { pnpm: "link:", yarn: "link:", npm: "file:", bun: "file:" } satisfies Record<
-    PackageManager,
-    string
-  >
+  const protocols = new Map([
+    ["pnpm", "link:"],
+    ["yarn", "link:"],
+    ["npm", "file:"]
+  ])
 
-  return `${protocols[manager]}${outputFolder}`
+  const protocol = protocols.get(manager)
+
+  return protocol ? `${protocol}${outputFolder}` : undefined
 }
 
 const dependenciesSchema = z.record(z.string(), z.string()).optional()
@@ -67,8 +72,11 @@ export function readPackageJson(appDirectory: string) {
  * Whether `package.json` needs the generated package's entry written. In CI it fails instead: a frozen-lockfile install
  * would fail anyway, and this says why. Sync checks it before building, so CI fails fast.
  */
-export function assertRegistrable(appDirectory: string, specifier: string): boolean {
-  if (dependenciesSchema.parse(readPackageJson(appDirectory).value.dependencies)?.[generatedName] === specifier) {
+export function assertRegistrable(appDirectory: string, specifier: string | undefined): boolean {
+  if (
+    !specifier ||
+    dependenciesSchema.parse(readPackageJson(appDirectory).value.dependencies)?.[generatedName] === specifier
+  ) {
     return false
   }
 
@@ -86,8 +94,8 @@ export function assertRegistrable(appDirectory: string, specifier: string): bool
  * Makes sure the app's `package.json` lists the generated package with the right specifier. Writes only when the entry
  * is missing or points elsewhere, keeping the file's indentation, key order and final newline. Returns whether it wrote.
  */
-export function registerDependency(appDirectory: string, specifier: string): boolean {
-  if (!assertRegistrable(appDirectory, specifier)) {
+export function registerDependency(appDirectory: string, specifier: string | undefined): boolean {
+  if (!specifier || !assertRegistrable(appDirectory, specifier)) {
     return false
   }
 

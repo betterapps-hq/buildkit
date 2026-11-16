@@ -404,7 +404,10 @@ Sync registers the generated package so the app never edits `package.json` by ha
   root.
 - **Specifier.** The local-folder protocol each manager links rather than copies, and accepts before the folder exists:
   pnpm `link:`, Yarn `link:`, npm `file:`. Yarn's `portal:` reads the folder's manifest while resolving, so a fresh
-  install would fail. Bun isn't checked.
+  install would fail. Bun refuses every local protocol whose folder doesn't exist yet, so a clean frozen install would
+  fail; under Bun sync adds no entry, and its own link is the only one.
+- **Plug'n'Play.** Yarn's Plug'n'Play has no `node_modules`, where the output lives, and sync can't load its own
+  dependencies there. The command checks for it before loading anything else and says to set `nodeLinker: node-modules`.
 - **Writes only when needed.** Sync changes `package.json` only when the entry is missing or points elsewhere. It keeps
   the file's indentation, key order and final newline, and adds the entry under `dependencies`.
 - **First install.** The current install didn't know about the entry, so sync also creates the
@@ -481,6 +484,11 @@ The temp project lives in the system's temp folder rather than in the app's `nod
 package in a declaration through a path such as `node_modules/.buildkit/<folder>/node_modules`, so declarations that use
 React's types or `class-variance-authority` failed to build there under pnpm's isolated layout. The temp project links
 React's types too, from sync's own dependencies, so an app without `@types/react` still builds.
+
+Every package the build needs is linked into the temp project: the app's copy when it has one, else sync's. Each
+imported package's own dependencies are linked too, resolved from beside it, because a declaration can name a type the
+components never import, such as React Aria's `@react-types/shared`. An unemitted `src/shadcn-sync-links.d.ts` imports
+each linked package's types, so TypeScript resolves them through the links and names them by package.
 
 ### Entry points
 
@@ -830,7 +838,7 @@ renders `Button`, `Dialog`, `Input` and `Select` from `@buildkitgg/shadcn`.
 
 Built: everything above. Checked on Windows: the example app with pnpm, and Vite apps outside this workspace with pnpm's
 isolated layout, npm, and Yarn 4.18 with `nodeLinker: node-modules`, each through fresh, repeated and frozen-lockfile
-installs and a production build. Left: Bun, Yarn's Plug'n'Play, and macOS and Linux.
+installs and a production build, and Bun the same way. Yarn's Plug'n'Play stops with a message. Left: macOS and Linux.
 
 **Phase 2: configuration.** The `set` command, Radix, `--css tailwind`, every built-in icon library, every style and
 theme, the adapter contract, and `@buildkitgg/shadcn-icons-fluent`. Done when changing any flag and reinstalling
@@ -838,8 +846,8 @@ regenerates the package without touching the app's imports.
 
 Built: `set`, the installer, every style, all three bases, the adapter contract, the Fluent adapter, `--css tailwind`
 (checked in a Vite app with `@tailwindcss/vite`), the `hooks/` and `lib/` exports, and the swappable `cn`. Radix and
-React Aria build and type-check; neither has been rendered in a browser yet. Left: checking the built-in icon libraries
-other than Lucide and the themes other than neutral and zinc, and `checkAdapter`.
+React Aria build, type-check and render in a browser, including dialogs, popups, tabs and accordions. Left: checking the
+built-in icon libraries other than Lucide and the themes other than neutral and zinc, and `checkAdapter`.
 
 **Phase 3: move over.** Point the managers, apps, Storybook and scaffolder templates at the generated package, then
 retire the style packages and the old generator.
@@ -865,7 +873,7 @@ registry requests and logged every other network call and child process.
   affected.
 - **Setup notes:** `add` prints framework setup notes (wrap the app in `TooltipProvider`, for example). Sync runs it
   with `--silent`; the generated package's README should carry the providers an app needs.
-- **Not covered yet:** Radix (`radix-*` styles), themes other than the base color, and macOS and Linux.
+- **Not covered yet:** themes other than the base color, and macOS and Linux.
 
 ## Open questions
 
@@ -874,7 +882,8 @@ Answers so far, from pnpm on Windows:
 1. **Linking to a folder that doesn't exist yet.** Settled for pnpm, npm and Yarn: a clean frozen install (pnpm
    `--frozen-lockfile`, `npm ci`, Yarn `--immutable` with `nodeLinker: node-modules`) leaves a dangling link, and sync
    fills its target. Yarn needs `link:` for this. Yarn 4.10 can't install sync at all, because its built-in TypeScript
-   patch fails on TypeScript 7; 4.18 works. Bun isn't checked.
+   patch fails on TypeScript 7; 4.18 works. Bun accepts no local protocol for a missing folder, so it gets no entry and
+   relies on sync's link; its clean frozen install passes.
 2. **Package managers pruning `node_modules/.buildkit`.** Settled: repeat and forced installs with pnpm, npm and Yarn
    leave the folder and the link alone, so sync finds the output current.
 3. **Strict resolution.** Settled: sync links what the components import into the output's `node_modules` (see

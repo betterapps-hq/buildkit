@@ -102,8 +102,8 @@ lists.
 
 The app installs its icon library, `radix-ui` for `--base radix`, and `react-aria-components` for `--base aria`, along
 with any library only that base uses, such as `vaul` for Radix. The installer offers to install each of them. The
-components' other runtime libraries come with this package. They resolve from the app only when they're hoisted, so a
-pnpm app needs `nodeLinker: hoisted`, or a `publicHoistPattern` that covers them, in `pnpm-workspace.yaml`.
+components' other runtime libraries come with this package, and sync links them into the generated package when your app
+can't resolve them (see [Package managers](#package-managers)).
 
 ## Icon adapters
 
@@ -182,7 +182,7 @@ setCn(createCn({ extend: { classGroups: { "font-size": [{ text: ["2xs"] }] } } }
 
 ## Package managers
 
-Sync works with npm, pnpm and Yarn, including frozen-lockfile installs on a fresh clone. With pnpm, run
+Sync works with npm, pnpm, Yarn and Bun, including frozen-lockfile installs on a fresh clone. With pnpm, run
 `pnpm install --config.optimistic-repeat-install=false` once after the first install. pnpm skips an install when
 `package.json` hasn't changed since the last one, and sync adds the generated package during the first.
 
@@ -190,7 +190,9 @@ Sync works with npm, pnpm and Yarn, including frozen-lockfile installs on a fres
   sync links any the app can't resolve into the generated package. A package your app has, such as Base UI, is left to
   your app, so both use one copy.
 - **Yarn** needs version 4.18 or later and `nodeLinker: node-modules`, because the generated package lives in
-  `node_modules`.
+  `node_modules`. Under Plug'n'Play, sync stops and says to switch.
+- **Bun** won't install a local folder that doesn't exist yet, so sync adds no `package.json` entry under Bun. Its own
+  `node_modules/@buildkitgg/shadcn` link, which it checks on every run, is the only one.
 - **Types.** Sync type-checks the components with its own copy of React's types, so your app doesn't need
   `@types/react`.
 

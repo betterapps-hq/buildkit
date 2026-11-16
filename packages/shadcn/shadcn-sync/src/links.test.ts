@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, realpathSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { describe, expect, it } from "vite-plus/test"
-import { linkAll, linkMissing } from "./links.js"
+import { linkAll, linkMissing, packageTargets } from "./links.js"
 import { findPackage } from "./resolve.js"
 
 describe("linkMissing", () => {
@@ -15,7 +15,8 @@ describe("linkMissing", () => {
     mkdirSync(join(app, "node_modules/cn"), { recursive: true })
     writeFileSync(join(app, "node_modules/cn/package.json"), '{ "name": "cn", "version": "0.0.0" }')
 
-    const linked = linkMissing(output, ["cn", "@base-ui/react", "react", "not-a-dependency-of-sync"], app)
+    const targets = packageTargets(["cn", "@base-ui/react", "react", "not-a-dependency-of-sync"], app)
+    const linked = linkMissing(output, targets, app)
 
     expect(linked).toEqual(["@base-ui/react"])
     expect(realpathSync(join(output, "node_modules/@base-ui/react"))).toBe(
@@ -32,12 +33,16 @@ describe("linkAll", () => {
 
     mkdirSync(join(app, "node_modules/cn"), { recursive: true })
     writeFileSync(join(app, "node_modules/cn/package.json"), '{ "name": "cn", "version": "0.0.0" }')
-    linkAll(work, ["cn", "@base-ui/react", "react"], app)
+    linkAll(work, packageTargets(["cn", "@base-ui/react", "react"], app, true))
 
     expect(realpathSync(join(work, "node_modules/cn"))).toBe(realpathSync(join(app, "node_modules/cn")))
     expect(realpathSync(join(work, "node_modules/@base-ui/react"))).toBe(
       realpathSync(findPackage("@base-ui/react", import.meta.dirname) ?? "")
     )
     expect(findPackage("react", work)).toBeUndefined()
+    // Base UI's own dependencies come from beside it, so its declarations can name their types.
+    expect(realpathSync(join(work, "node_modules/@base-ui/utils"))).toBe(
+      realpathSync(findPackage("@base-ui/utils", realpathSync(join(work, "node_modules/@base-ui/react"))) ?? "")
+    )
   })
 })

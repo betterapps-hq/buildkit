@@ -21,7 +21,7 @@ import {
 } from "./generate.js"
 import { loadAdapter, type LoadedAdapter } from "./icons.js"
 import { canonicalJson, readJson } from "./json.js"
-import { linkAll, linkMissing } from "./links.js"
+import { linkAll, linkMissing, packageTargets } from "./links.js"
 import { baseTitle, isBuiltInIcons, registryStyle, type SyncSettings } from "./options.js"
 import {
   assertRegistrable,
@@ -230,7 +230,7 @@ async function buildStaging(build: StagingBuild): Promise<StagedBuild> {
   progress({ step: "catalog", mode: source.mode })
   createWorkspace(work, settings)
   // The build reads sync's own packages, such as Tailwind, shadcn's CSS and React's types, from the temp project.
-  linkAll(work, [...syncDependencies, "react", "react-dom"], build.appDirectory)
+  linkAll(work, packageTargets([...syncDependencies, "react", "react-dom"], build.appDirectory))
 
   const responses = await installCatalog(work, settings, source, build.verbose)
 
@@ -245,7 +245,15 @@ async function buildStaging(build: StagingBuild): Promise<StagedBuild> {
   const sourceRoot = join(work, "src")
   const prepared = prepareSources(sourceRoot, adapter?.adapter, settings.icons)
 
-  linkAll(work, prepared.packages, build.appDirectory)
+  const targets = packageTargets(prepared.packages, build.appDirectory, true)
+
+  linkAll(work, targets)
+  // TypeScript names a package in a declaration through a link only after resolving an import through that link, and
+  // nothing imports a dependency such as @react-types/shared directly. This unemitted file imports each one.
+  writeFileSync(
+    join(work, "src/shadcn-sync-links.d.ts"),
+    [...targets.keys()].map((name) => `import type {} from ${JSON.stringify(name)}\n`).join("")
+  )
   checkDependencies(prepared.packages, work)
   stage("compiling CSS")
   progress({ step: "css" })
@@ -269,7 +277,7 @@ async function buildStaging(build: StagingBuild): Promise<StagedBuild> {
   progress({ step: "javascript" })
   remove(staging)
   await compileSources(sourceRoot, staging)
-  linkMissing(staging, prepared.packages, build.appDirectory)
+  linkMissing(staging, targets, build.appDirectory)
 
   if (css.mode === "tailwind") {
     writeFileSync(join(staging, "tailwind.css"), css.stylesheet)
@@ -350,6 +358,6 @@ async function compiledCss(
   return { mode: "compiled" as const, styles, shared }
 }
 
-function register(appDirectory: string, specifier: string) {
+function register(appDirectory: string, specifier: string | undefined) {
   return { dependencyAdded: registerDependency(appDirectory, specifier), linked: linkOutput(appDirectory) }
 }
