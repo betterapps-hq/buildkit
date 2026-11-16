@@ -33,4 +33,4 @@ patchedDependencies:
 minimumReleaseAgeExclude:
   - rulesync@43.5.0
   - skills@1.7.6
-  - "@buildkitgg/shadcn-sync@0.1.2"
+  - "@buildkitgg/shadcn-sync"
