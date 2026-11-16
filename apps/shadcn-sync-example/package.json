@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@buildkitgg/shadcn": "link:node_modules/.buildkit/shadcn",
-    "lucide-react": "^1.62.0",
+    "lucide-react": "^1.72.0",
     "react": "19.3.1",
     "react-dom": "19.3.1"
   },
@@ -20,7 +20,7 @@
     "@fluentui/react-icons": "^2.0.346",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "@vitejs/plugin-react": "^6.1.2",
+    "@vitejs/plugin-react": "^6.3.0",
     "typescript": "catalog:",
     "vite": "catalog:",
     "vite-plus": "catalog:"
