@@ -1,9 +1,9 @@
 import { defineCommand, runMain } from "citty"
 import pc from "picocolors"
 import { SyncError } from "./errors.js"
-import { generatedName } from "./generate.js"
 import { canAsk, changeList, print, runInstaller, skipVariable } from "./installer.js"
 import { hasSettingFlags, parseSettings } from "./options.js"
+import { dependencyAddedMessage } from "./register.js"
 import { findSyncScript, findSyncScriptIfAny, scriptFlags } from "./scripts.js"
 import { snapshotFile } from "./snapshot.js"
 import { sync, type SyncResult } from "./sync.js"
@@ -13,7 +13,11 @@ const settingArgs = {
   icons: { type: "string", description: "Icon library id, or an icon adapter's package name", valueHint: "library" },
   style: { type: "string", description: "shadcn style, such as nova or vega", valueHint: "style" },
   theme: { type: "string", description: "shadcn color theme, such as neutral", valueHint: "theme" },
-  css: { type: "string", description: "CSS mode: compiled", valueHint: "mode" }
+  css: {
+    type: "string",
+    description: "CSS mode: compiled, or tailwind for an app that runs Tailwind v4",
+    valueHint: "mode"
+  }
 } as const
 
 const verboseArg = { verbose: { type: "boolean", description: "Log each stage", default: false } } as const
@@ -33,7 +37,7 @@ function report(result: SyncResult) {
   }
 
   if (result.dependencyAdded) {
-    print(`added ${generatedName} to package.json. Commit it with the lockfile after your next install.`)
+    print(dependencyAddedMessage())
   }
 }
 

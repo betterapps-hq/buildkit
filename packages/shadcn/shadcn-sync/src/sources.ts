@@ -1,7 +1,7 @@
-import { existsSync } from "node:fs"
 import { basename, dirname, join, posix, relative, sep } from "node:path"
 import { Node, Project, type SourceFile } from "ts-morph"
 import type { ShadcnIconAdapter } from "./adapter.js"
+import { swapCnImports } from "./cn.js"
 import { SyncError } from "./errors.js"
 import { applyAdapter, type UnmappedIcon } from "./icons.js"
 import { packageName } from "./resolve.js"
@@ -20,10 +20,19 @@ export interface ComponentModule {
   readonly modules: readonly string[]
 }
 
+/** A `hooks/` or `lib/` module the generated package exports at its own path, and what it exports. */
+export interface SharedModule {
+  /** Path under `src/`, with forward slashes, such as `lib/utils.ts`. */
+  readonly path: string
+  readonly values: readonly string[]
+  readonly types: readonly string[]
+}
+
 /** The installed sources after sync's rewrites, ready to compile. */
 export interface PreparedSources {
   readonly project: Project
   readonly components: readonly ComponentModule[]
+  readonly shared: readonly SharedModule[]
   /** The packages the sources import, by package name. */
   readonly packages: readonly string[]
   /** Class candidates per source path: every whitespace-separated word in a string or template literal. */
@@ -40,7 +49,7 @@ function localTarget(file: SourceFile, root: string, specifier: string): string 
     : join(dirname(file.getFilePath()), specifier)
 
   for (const candidate of [`${base}.ts`, `${base}.tsx`, join(base, "index.ts"), join(base, "index.tsx")]) {
-    if (existsSync(candidate)) {
+    if (file.getProject().getSourceFile(candidate)) {
       return candidate
     }
   }
@@ -77,13 +86,34 @@ function literalWords(file: SourceFile): Set<string> {
   return words
 }
 
+/** A module's exported names, split into values and type-only names, each sorted. */
+function exportsOf(file: SourceFile) {
+  const values: string[] = []
+  const types: string[] = []
+
+  for (const [name, declarations] of file.getExportedDeclarations()) {
+    const typeOnly = declarations.every(
+      (declaration) => Node.isInterfaceDeclaration(declaration) || Node.isTypeAliasDeclaration(declaration)
+    )
+
+    ;(typeOnly ? types : values).push(name)
+  }
+
+  return { values: values.toSorted(), types: types.toSorted() }
+}
+
 /**
- * Loads the CLI's output from `src/`, turns its aliases into relative `.js` imports, applies an icon adapter, and
- * checks that every icon placeholder was replaced and every local import resolves.
+ * Loads the CLI's output from `src/`, points `cn` imports at the swappable module, turns its aliases into relative
+ * `.js` imports, applies an icon adapter, and checks that every icon placeholder was replaced and every local import
+ * resolves.
  */
 export function prepareSources(root: string, adapter: ShadcnIconAdapter | undefined, adapterName: string) {
   const project = new Project({ skipAddingFilesFromTsConfig: true })
-  const files = project.addSourceFilesAtPaths([join(root, "**/*.ts"), join(root, "**/*.tsx")])
+
+  project.addSourceFilesAtPaths([join(root, "**/*.ts"), join(root, "**/*.tsx")])
+  swapCnImports(project, root)
+
+  const files = project.getSourceFiles()
   const unmapped: UnmappedIcon[] = []
   const packages = new Set<string>()
   const graph = new Map<string, string[]>()
@@ -169,50 +199,60 @@ export function prepareSources(root: string, adapter: ShadcnIconAdapter | undefi
   const components = files
     .filter((file) => isComponent(slashes(file.getFilePath())))
     .map((file) => {
-      const values: string[] = []
-      const types: string[] = []
-
-      for (const [name, declarations] of file.getExportedDeclarations()) {
-        const typeOnly = declarations.every(
-          (declaration) => Node.isInterfaceDeclaration(declaration) || Node.isTypeAliasDeclaration(declaration)
-        )
-
-        ;(typeOnly ? types : values).push(name)
-      }
-
       const path = slashes(file.getFilePath())
 
       return {
         name: basename(path).replace(/\.tsx?$/, ""),
         path: posix.relative(rootPath, path),
-        values: values.toSorted(),
-        types: types.toSorted(),
+        ...exportsOf(file),
         modules: ownModules(path).map((entry) => posix.relative(rootPath, entry))
       }
     })
     .toSorted((a, b) => (a.name < b.name ? -1 : 1))
 
+  const shared = files
+    .filter((file) =>
+      ["hooks", "lib"].some((folder) => posix.dirname(slashes(file.getFilePath())) === `${rootPath}/${folder}`)
+    )
+    .map((file) => ({ path: posix.relative(rootPath, slashes(file.getFilePath())), ...exportsOf(file) }))
+    .toSorted((a, b) => (a.path < b.path ? -1 : 1))
+
   const candidates = new Map(
     files.map((file) => [posix.relative(rootPath, slashes(file.getFilePath())), literalWords(file)])
   )
 
-  return { project, components, packages: [...packages].toSorted(), candidates } satisfies PreparedSources
+  return { project, components, shared, packages: [...packages].toSorted(), candidates } satisfies PreparedSources
+}
+
+/** The stylesheet of a `hooks/` or `lib/` module, beside it: `lib/highlighter.css` for `lib/highlighter.tsx`. */
+export function sharedStylesheet(path: string) {
+  return path.replace(/\.tsx?$/, ".css")
 }
 
 /**
- * Imports the shared stylesheet and the component's own into each component module. The CSS belongs to the module that
- * renders the classes: a bundler that skips a side-effect-free re-export still keeps every import of a module whose
- * exports are used.
+ * Imports the shared stylesheet and the module's own into each component module, and into each `hooks/` or `lib/`
+ * module in `styled`, the ones whose classes compile to rules. The CSS belongs to the module that renders the classes:
+ * a bundler that skips a side-effect-free re-export still keeps every import of a module whose exports are used.
  */
-export function importStyles(prepared: PreparedSources, root: string) {
-  for (const component of prepared.components) {
-    const file = prepared.project.getSourceFileOrThrow(join(root, component.path))
+export function importStyles(prepared: PreparedSources, root: string, styled: ReadonlySet<string>) {
+  const modules = [
+    ...prepared.components.map((component) => ({
+      path: component.path,
+      stylesheet: `../components/${component.name}/styles.css`
+    })),
+    ...prepared.shared
+      .filter((module) => styled.has(module.path))
+      .map((module) => ({ path: module.path, stylesheet: `./${posix.basename(sharedStylesheet(module.path))}` }))
+  ]
+
+  for (const { path, stylesheet } of modules) {
+    const file = prepared.project.getSourceFileOrThrow(join(root, path))
     const first = file.getStatements()[0]
     const directive = Node.isExpressionStatement(first) && Node.isStringLiteral(first.getExpression())
 
     file.insertImportDeclarations(directive ? 1 : 0, [
       { moduleSpecifier: "../shared.css" },
-      { moduleSpecifier: `../components/${component.name}/styles.css` }
+      { moduleSpecifier: stylesheet }
     ])
   }
 }

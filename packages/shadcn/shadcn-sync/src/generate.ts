@@ -5,9 +5,10 @@ import { dirname, join, relative, sep } from "node:path"
 import * as z from "zod"
 import { SyncError } from "./errors.js"
 import { readJson, type Json } from "./json.js"
+import { linksCurrent } from "./links.js"
 import type { SyncSettings } from "./options.js"
 import { findPackage, readManifest } from "./resolve.js"
-import type { ComponentModule } from "./sources.js"
+import type { ComponentModule, SharedModule } from "./sources.js"
 import { run } from "./spawn.js"
 
 const require = createRequire(import.meta.url)
@@ -20,6 +21,9 @@ const syncManifest = readJson(
 
 /** This package's version, which goes into the generated manifest and the fingerprint. */
 export const syncVersion = syncManifest.version
+
+/** The packages sync depends on, which it links into its build folders when the app can't resolve them. */
+export const syncDependencies = Object.keys(syncManifest.dependencies)
 
 export const typescriptVersion = readJson(typescriptManifest, z.object({ version: z.string() })).version
 
@@ -42,10 +46,20 @@ function exportList(names: readonly string[], rename: ReadonlyMap<string, string
   return names.map((name) => (rename.has(name) ? `${name} as ${rename.get(name)}` : name)).join(", ")
 }
 
+/** A `hooks/` or `lib/` module's subpath, which is its path without the extension, such as `lib/utils`. */
+function sharedSubpath(module: SharedModule) {
+  return module.path.replace(/\.tsx?$/, "")
+}
+
 /**
- * Writes each component's entry point, which re-exports the upstream module directly, and the root barrel. Fails on an export name collision instead of dropping a name.
+ * Writes each component's entry point, which re-exports the upstream module directly, and the root barrel, which also
+ * re-exports the `hooks/` and `lib/` modules. Fails on an export name collision instead of dropping a name.
  */
-export function writeEntryPoints(root: string, components: readonly ComponentModule[]) {
+export function writeEntryPoints(
+  root: string,
+  components: readonly ComponentModule[],
+  shared: readonly SharedModule[]
+) {
   const owners = new Map<string, string>()
   const barrel: string[] = []
 
@@ -80,6 +94,28 @@ export function writeEntryPoints(root: string, components: readonly ComponentMod
 
     if (component.types.length > 0) {
       barrel.push(`export type { ${exportList(component.types, rename)} } from "${entry}"`)
+    }
+  }
+
+  for (const module of shared) {
+    const subpath = sharedSubpath(module)
+
+    for (const name of [...module.values, ...module.types]) {
+      const owner = owners.get(name)
+
+      if (owner) {
+        throw new SyncError("compilation", `${owner} and ${subpath} both export ${name}.`, true)
+      }
+
+      owners.set(name, subpath)
+    }
+
+    if (module.values.length > 0) {
+      barrel.push(`export { ${exportList(module.values)} } from "./${subpath}.js"`)
+    }
+
+    if (module.types.length > 0) {
+      barrel.push(`export type { ${exportList(module.types)} } from "./${subpath}.js"`)
     }
   }
 
@@ -124,8 +160,13 @@ export async function compileSources(sourceRoot: string, outDir: string) {
   }
 }
 
+/** The generated files, without the dependency links in `node_modules`. */
 function listFiles(directory: string, base = directory): string[] {
   return readdirSync(directory).flatMap((name) => {
+    if (name === "node_modules") {
+      return []
+    }
+
     const path = join(directory, name)
 
     return statSync(path).isDirectory() ? listFiles(path, base) : [relative(base, path).split(sep).join("/")]
@@ -202,6 +243,8 @@ export interface GeneratedManifest {
   readonly settings: SyncSettings
   readonly snapshot: string
   readonly fingerprint: string
+  /** The packages the generated code needs, which sync links in when the app can't resolve them. */
+  readonly packages: readonly string[]
   readonly files: Readonly<Record<string, string>>
 }
 
@@ -216,11 +259,15 @@ const generatedManifestSchema = z.object({
   }),
   snapshot: z.string(),
   fingerprint: z.string(),
+  packages: z.array(z.string()),
   files: z.record(z.string(), z.string())
 })
 
-/** Whether the output matches the fingerprint and every file in its manifest is present and unchanged. */
-export function isCurrent(outDir: string, fingerprint: string): boolean {
+/**
+ * Whether the output matches the fingerprint, its dependency links are still the ones a build would make, and every
+ * file in its manifest is present and unchanged.
+ */
+export function isCurrent(outDir: string, fingerprint: string, appDirectory: string): boolean {
   const manifestPath = join(outDir, "manifest.json")
 
   if (!existsSync(manifestPath)) {
@@ -232,6 +279,7 @@ export function isCurrent(outDir: string, fingerprint: string): boolean {
   return (
     manifest.success &&
     manifest.data.fingerprint === fingerprint &&
+    linksCurrent(outDir, manifest.data.packages, appDirectory) &&
     Object.entries(manifest.data.files).every(([file, hash]) => {
       const path = join(outDir, file)
 
@@ -240,10 +288,17 @@ export function isCurrent(outDir: string, fingerprint: string): boolean {
   )
 }
 
+/** What the generated README says about each CSS mode. */
+const cssSetup = {
+  compiled: "Each component imports its own stylesheet, so there's no CSS to set up.",
+  tailwind: `The components import no CSS. Import their theme, variants and sources after Tailwind in the app's stylesheet:\n\n\`\`\`css\n@import "tailwindcss";\n@import "${generatedName}/tailwind.css";\n\`\`\``
+}
+
 /** Writes `package.json`, the README and `manifest.json` into the compiled output. */
 export function writePackageFiles(
   outDir: string,
   components: readonly ComponentModule[],
+  shared: readonly SharedModule[],
   peers: Record<string, string>,
   identity: Omit<GeneratedManifest, "files">
 ) {
@@ -253,7 +308,11 @@ export function writePackageFiles(
       `./${component.name}`,
       { types: `./components/${component.name}/index.d.ts`, import: `./components/${component.name}/index.js` }
     ]),
-    ...(identity.settings.css === "compiled" ? [["./shared.css", "./shared.css"]] : []),
+    ...shared.map((module) => [
+      `./${sharedSubpath(module)}`,
+      { types: `./${sharedSubpath(module)}.d.ts`, import: `./${sharedSubpath(module)}.js` }
+    ]),
+    identity.settings.css === "compiled" ? ["./shared.css", "./shared.css"] : ["./tailwind.css", "./tailwind.css"],
     ["./package.json", "./package.json"]
   ])
 
@@ -269,7 +328,7 @@ export function writePackageFiles(
   })
   write(
     join(outDir, "README.md"),
-    `# ${generatedName}\n\nGenerated by \`shadcn-sync sync\` from this app's \`shadcn-registry.json\`. Don't edit these files: sync replaces them on the next install.\n\nSettings: base ${identity.settings.base}, icons ${identity.settings.icons}, style ${identity.settings.style}, theme ${identity.settings.theme}.\n\nSome components need a provider near the root of the app: \`TooltipProvider\` for tooltips, and \`Toaster\` (or \`SonnerToaster\`) for toasts.\n`
+    `# ${generatedName}\n\nGenerated by \`shadcn-sync sync\` from this app's \`shadcn-registry.json\`. Don't edit these files: sync replaces them on the next install.\n\nSettings: base ${identity.settings.base}, icons ${identity.settings.icons}, style ${identity.settings.style}, theme ${identity.settings.theme}, CSS ${identity.settings.css}.\n\n${cssSetup[identity.settings.css]}\n\nSome components need a provider near the root of the app: \`TooltipProvider\` for tooltips, and \`Toaster\` (or \`SonnerToaster\`) for toasts.\n`
   )
 
   const manifest: GeneratedManifest = { ...identity, files: hashFiles(outDir) }
@@ -279,6 +338,7 @@ export function writePackageFiles(
     settings: { ...manifest.settings },
     snapshot: manifest.snapshot,
     fingerprint: manifest.fingerprint,
+    packages: [...manifest.packages],
     files: manifest.files
   })
 }

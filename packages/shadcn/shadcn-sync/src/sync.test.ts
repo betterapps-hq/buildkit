@@ -106,6 +106,22 @@ describe("shadcn-sync", () => {
     expect(read(`${outputFolder}/components/button/styles.css`)).toContain("@layer utilities.u")
   })
 
+  it("exports the hooks and lib modules, and merges classes through a swappable cn", () => {
+    const manifest = JSON.parse(read(`${outputFolder}/package.json`))
+
+    expect(manifest.exports["./lib/utils"]).toEqual({ types: "./lib/utils.d.ts", import: "./lib/utils.js" })
+    expect(manifest.exports["./hooks/use-mobile"]).toBeDefined()
+
+    const barrel = read(`${outputFolder}/index.js`)
+
+    expect(barrel).toContain('export { cn, setCn } from "./lib/utils.js"')
+    expect(barrel).toContain("useHighlightedCode")
+    expect(read(`${outputFolder}/ui/button.js`)).toContain('from "../lib/utils.js"')
+    expect(read(`${outputFolder}/lib/utils.js`)).toContain("export function setCn")
+    expect(read(`${outputFolder}/lib/highlighter.js`)).toContain('import "./highlighter.css"')
+    expect(read(`${outputFolder}/lib/highlighter.css`)).toContain("@layer utilities")
+  })
+
   it("skips a current output and restores a deleted file", async () => {
     expect((await cli("sync", "--icons", "lucide")).logs).toBe("")
 
@@ -138,6 +154,32 @@ describe("shadcn-sync", () => {
     expect(result.errors).toBe("")
     expect(result.logs).toContain("built 63 components (Base UI, nova, neutral, @buildkitgg/shadcn-icons-fluent icons)")
     expect(result.logs).not.toContain("updated the")
+  })
+
+  it("leaves the classes to the app's Tailwind in Tailwind mode", async () => {
+    const result = await cli("set", "--css", "tailwind")
+
+    expect(result.errors).toBe("")
+    expect(result.logs).toContain('Add @import "@buildkitgg/shadcn/tailwind.css" after @import "tailwindcss"')
+    expect(JSON.parse(read("package.json")).scripts.postinstall).toBe(
+      "shadcn-sync sync --icons @buildkitgg/shadcn-icons-fluent --css tailwind"
+    )
+
+    const manifest = JSON.parse(read(`${outputFolder}/package.json`))
+
+    expect(manifest.exports["./tailwind.css"]).toBe("./tailwind.css")
+    expect(manifest.exports["./shared.css"]).toBeUndefined()
+    expect(existsSync(join(output, "shared.css"))).toBe(false)
+    expect(existsSync(join(output, "components/button/styles.css"))).toBe(false)
+    expect(read(`${outputFolder}/ui/button.js`)).not.toContain(".css")
+
+    const stylesheet = read(`${outputFolder}/tailwind.css`)
+
+    expect(stylesheet).toContain('@source "./**/*.js";')
+    expect(stylesheet).toContain('@import "@fluentui/react-icons/headless/styles.css" layer(base);')
+    expect(stylesheet).toContain("@custom-variant data-open")
+    expect(stylesheet).toContain("@theme inline")
+    expect(stylesheet).not.toContain('@import "tailwindcss"')
   })
 
   it("stops on icons an adapter doesn't map and keeps the previous output", async () => {
