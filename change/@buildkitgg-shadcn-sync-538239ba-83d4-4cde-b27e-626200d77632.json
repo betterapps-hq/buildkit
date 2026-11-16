@@ -1,7 +1,0 @@
-{
-  "type": "patch",
-  "comment": "Link sync's build dependencies correctly when the temp folder is reached through a link, as it is on macOS",
-  "packageName": "@buildkitgg/shadcn-sync",
-  "email": "ajcraswell@gmail.com",
-  "dependentChangeType": "patch"
-}

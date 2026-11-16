@@ -1,8 +1,16 @@
 # Change Log - @buildkitgg/shadcn-icons-fluent
 
-<!-- This log was last generated on Mon, 16 Nov 2026 12:43:35 GMT and should not be manually modified. -->
+<!-- This log was last generated on Mon, 16 Nov 2026 13:35:03 GMT and should not be manually modified. -->
 
 <!-- Start content -->
+
+## 0.1.4
+
+Mon, 16 Nov 2026 13:35:03 GMT
+
+### Patches
+
+- Bump @buildkitgg/shadcn-sync to v0.1.4
 
 ## 0.1.3
 

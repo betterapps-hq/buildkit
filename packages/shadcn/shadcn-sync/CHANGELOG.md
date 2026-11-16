@@ -1,8 +1,17 @@
 # Change Log - @buildkitgg/shadcn-sync
 
-<!-- This log was last generated on Mon, 16 Nov 2026 12:43:35 GMT and should not be manually modified. -->
+<!-- This log was last generated on Mon, 16 Nov 2026 13:35:03 GMT and should not be manually modified. -->
 
 <!-- Start content -->
+
+## 0.1.4
+
+Mon, 16 Nov 2026 13:35:03 GMT
+
+### Patches
+
+- Link sync's build dependencies correctly when the temp folder is reached through a link, as it is on macOS
+  (ajcraswell@gmail.com)
 
 ## 0.1.3
 
