@@ -1,0 +1,26 @@
+{
+  "name": "@buildkitgg/shadcn-icons-fluent",
+  "entries": [
+    {
+      "date": "Mon, 16 Nov 2026 06:51:41 GMT",
+      "version": "0.1.1",
+      "tag": "@buildkitgg/shadcn-icons-fluent_v0.1.1",
+      "comments": {
+        "patch": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/shadcn-icons-fluent",
+            "commit": "0f7ddaf9e4257387ab958652256f8d783db75919",
+            "comment": "Publish the Fluent UI icon adapter to npm"
+          },
+          {
+            "author": "beachball",
+            "package": "@buildkitgg/shadcn-icons-fluent",
+            "comment": "Bump @buildkitgg/shadcn-sync to v0.1.1",
+            "commit": "not available"
+          }
+        ]
+      }
+    }
+  ]
+}

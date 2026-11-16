@@ -1,0 +1,20 @@
+{
+  "name": "@buildkitgg/shadcn-sync",
+  "entries": [
+    {
+      "date": "Mon, 16 Nov 2026 06:51:41 GMT",
+      "version": "0.1.1",
+      "tag": "@buildkitgg/shadcn-sync_v0.1.1",
+      "comments": {
+        "patch": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/shadcn-sync",
+            "commit": "0f7ddaf9e4257387ab958652256f8d783db75919",
+            "comment": "Publish shadcn-sync to npm"
+          }
+        ]
+      }
+    }
+  ]
+}
