@@ -1,33 +1,58 @@
+import { iconLibraries } from "shadcn/icons"
+import { DEFAULT_PRESET_CONFIG, PRESET_BASE_COLORS, PRESET_BASES, PRESET_STYLES } from "shadcn/preset"
 import { SyncError } from "./errors.js"
 
-export const bases = ["base-ui", "radix"] as const
-export const styles = ["nova", "vega", "luma", "lyra", "maia", "mira", "rhea", "sera"] as const
+// The choices come from the pinned shadcn CLI's own data, so they follow upstream when the shadcn version changes.
+export const bases: readonly string[] = PRESET_BASES
+export const styles: readonly string[] = PRESET_STYLES
+export const themes: readonly string[] = PRESET_BASE_COLORS
 export const cssModes = ["compiled", "tailwind"] as const
 
-/** The icon libraries the registry's `IconPlaceholder` carries names for, so the shadcn CLI applies them itself. */
-export const builtInIcons = ["lucide", "tabler", "hugeicons", "phosphor", "remixicon"] as const
+/** The icon libraries the shadcn CLI applies itself, with their titles and the packages their imports need. */
+export const builtInIcons: ReadonlyMap<string, { readonly title: string; readonly packages: readonly string[] }> =
+  new Map(Object.values(iconLibraries).map((library) => [library.name, library]))
 
-export type Base = (typeof bases)[number]
+/**
+ * What shadcn's data doesn't say about each base: its name, and the primitives package its components import. A base
+ * missing here still works, shown by its id; sync then finds its package when it checks the build's imports.
+ */
+const baseDetails = new Map([
+  ["base", { title: "Base UI", package: "@base-ui/react" }],
+  ["radix", { title: "Radix", package: "radix-ui" }],
+  ["aria", { title: "React Aria", package: "react-aria-components" }]
+])
 
-export type Style = (typeof styles)[number]
+export function baseTitle(base: string): string {
+  return baseDetails.get(base)?.title ?? base
+}
+
+export function basePackage(base: string): string | undefined {
+  return baseDetails.get(base)?.package
+}
+
+/** A registry id as shadcn shows it, such as `nova` as Nova. */
+export function titleCase(id: string): string {
+  return id.charAt(0).toUpperCase() + id.slice(1)
+}
 
 export type CssMode = (typeof cssModes)[number]
 
 /** The settings an app picks in its `postinstall`. */
 export interface SyncSettings {
-  readonly base: Base
+  /** A shadcn base: `base` (Base UI), `radix` or `aria` (React Aria). */
+  readonly base: string
   /** A built-in icon library id, or the package name of an icon adapter. */
   readonly icons: string
-  readonly style: Style
+  readonly style: string
   readonly theme: string
   readonly css: CssMode
 }
 
 export const defaultSettings: SyncSettings = {
-  base: "base-ui",
-  icons: "lucide",
-  style: "nova",
-  theme: "neutral",
+  base: "base",
+  icons: DEFAULT_PRESET_CONFIG.iconLibrary,
+  style: DEFAULT_PRESET_CONFIG.style,
+  theme: DEFAULT_PRESET_CONFIG.baseColor,
   css: "compiled"
 }
 
@@ -38,6 +63,13 @@ export interface SettingFlags {
   readonly style?: string | undefined
   readonly theme?: string | undefined
   readonly css?: string | undefined
+}
+
+export const settingKeys = ["base", "icons", "style", "theme", "css"] as const
+
+/** Whether any setting flag was given. */
+export function hasSettingFlags(flags: SettingFlags): boolean {
+  return settingKeys.some((key) => flags[key] !== undefined)
 }
 
 function pick<Value extends string>(flag: string, value: string, allowed: readonly Value[]): Value {
@@ -54,12 +86,7 @@ function pick<Value extends string>(flag: string, value: string, allowed: readon
 }
 
 export function parseSettings(flags: SettingFlags, base: SyncSettings = defaultSettings): SyncSettings {
-  const theme = flags.theme ?? base.theme
   const icons = flags.icons ?? base.icons
-
-  if (!/^[a-z0-9-]+$/.test(theme)) {
-    throw new SyncError("configuration", `--theme ${theme} isn't a registry theme name.`)
-  }
 
   if (!/^(@[a-z0-9-~][a-z0-9-._~]*\/)?[a-z0-9-~][a-z0-9-._~]*$/.test(icons)) {
     throw new SyncError("configuration", `--icons ${icons} isn't an icon library id or a package name.`)
@@ -69,7 +96,7 @@ export function parseSettings(flags: SettingFlags, base: SyncSettings = defaultS
     base: pick("base", flags.base ?? base.base, bases),
     icons,
     style: pick("style", flags.style ?? base.style, styles),
-    theme,
+    theme: pick("theme", flags.theme ?? base.theme, themes),
     css: pick("css", flags.css ?? base.css, cssModes)
   }
 
@@ -82,9 +109,9 @@ export function parseSettings(flags: SettingFlags, base: SyncSettings = defaultS
 
 /** The registry style that holds the items for a base and style, such as `base-nova` or `radix-vega`. */
 export function registryStyle(settings: SyncSettings): string {
-  return `${settings.base === "base-ui" ? "base" : "radix"}-${settings.style}`
+  return `${settings.base}-${settings.style}`
 }
 
 export function isBuiltInIcons(icons: string): boolean {
-  return builtInIcons.some((library) => library === icons)
+  return builtInIcons.has(icons)
 }

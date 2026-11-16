@@ -18,7 +18,7 @@ import {
 } from "./generate.js"
 import { loadAdapter, type LoadedAdapter } from "./icons.js"
 import { canonicalJson, readJson } from "./json.js"
-import { isBuiltInIcons, registryStyle, type SyncSettings } from "./options.js"
+import { baseTitle, isBuiltInIcons, registryStyle, type SyncSettings } from "./options.js"
 import {
   assertRegistrable,
   dependencySpecifier,
@@ -49,7 +49,14 @@ export interface SyncRequest {
   readonly force?: boolean
   readonly verbose?: boolean
   readonly log?: (line: string) => void
+  /** Called as each long step starts, so a caller can show progress. */
+  readonly progress?: (step: SyncStep) => void
 }
+
+/** The long steps of a build, in order. `catalog` downloads from the registry when recording. */
+export type SyncStep =
+  | { readonly step: "catalog"; readonly mode: RegistrySource["mode"] }
+  | { readonly step: "rewrite" | "javascript" | "css" }
 
 /** What a sync run did. */
 export interface SyncResult {
@@ -57,6 +64,8 @@ export interface SyncResult {
   readonly snapshotWritten: boolean
   readonly dependencyAdded: boolean
   readonly linked: boolean
+  /** How many components the build produced, when it built. */
+  readonly count?: number
   readonly changes?: ReturnType<typeof compareSnapshots>
 }
 
@@ -110,7 +119,7 @@ export async function sync(request: SyncRequest): Promise<SyncResult> {
 
   const stage = (line: string) => {
     if (verbose) {
-      log(pc.dim(`buildkit-shadcn: ${line}`))
+      log(pc.dim(`shadcn-sync: ${line}`))
     }
   }
 
@@ -146,7 +155,8 @@ export async function sync(request: SyncRequest): Promise<SyncResult> {
   const work = join(appDirectory, "node_modules/.buildkit/shadcn.work")
   const staging = join(appDirectory, "node_modules/.buildkit/shadcn.staging")
   const source: RegistrySource = needsRecord || !existing ? { mode: "record" } : { mode: "replay", snapshot: existing }
-  const build = { appDirectory, settings, source, adapter, icons, work, staging, verbose, stage }
+  const progress = request.progress ?? (() => undefined)
+  const build = { appDirectory, settings, source, adapter, icons, work, staging, verbose, stage, progress }
   let built: StagedBuild
 
   try {
@@ -178,10 +188,10 @@ export async function sync(request: SyncRequest): Promise<SyncResult> {
 
   remove(work)
   log(
-    `buildkit-shadcn: built ${built.count} components (${settings.base}, ${settings.style}, ${settings.theme}, ${settings.icons} icons).`
+    `shadcn-sync: built ${built.count} components (${baseTitle(settings.base)}, ${settings.style}, ${settings.theme}, ${settings.icons} icons).`
   )
 
-  const result: SyncResult = { built: true, snapshotWritten, ...register(appDirectory, specifier) }
+  const result: SyncResult = { built: true, snapshotWritten, count: built.count, ...register(appDirectory, specifier) }
 
   return source.mode === "record" ? { ...result, changes: compareSnapshots(existing, built.snapshot) } : result
 }
@@ -197,6 +207,7 @@ interface StagingBuild {
   readonly staging: string
   readonly verbose: boolean
   readonly stage: (line: string) => void
+  readonly progress: (step: SyncStep) => void
 }
 
 /** A validated package in the staging folder, and the snapshot it was built from. */
@@ -207,12 +218,13 @@ interface StagedBuild {
 
 /** Installs, rewrites, compiles and validates the package into the staging folder. */
 async function buildStaging(build: StagingBuild): Promise<StagedBuild> {
-  const { settings, source, adapter, work, staging, stage } = build
+  const { settings, source, adapter, work, staging, stage, progress } = build
 
   stage(`installing the ${registryStyle(settings)} catalog with shadcn ${shadcnVersion} (${source.mode})`)
+  progress({ step: "catalog", mode: source.mode })
   createWorkspace(work, settings)
 
-  const responses = installCatalog(work, settings, source, build.verbose)
+  const responses = await installCatalog(work, settings, source, build.verbose)
 
   const snapshot =
     source.mode === "replay"
@@ -220,6 +232,7 @@ async function buildStaging(build: StagingBuild): Promise<StagedBuild> {
       : createSnapshot(registryStyle(settings), settings.theme, shadcnVersion, responses)
 
   stage("rewriting imports and icons")
+  progress({ step: "rewrite" })
 
   const sourceRoot = join(work, "src")
   const prepared = prepareSources(sourceRoot, adapter?.adapter, settings.icons)
@@ -233,9 +246,11 @@ async function buildStaging(build: StagingBuild): Promise<StagedBuild> {
   await prepared.project.save()
   writeEntryPoints(sourceRoot, prepared.components)
   stage("compiling JavaScript and declarations")
+  progress({ step: "javascript" })
   remove(staging)
-  compileSources(sourceRoot, staging)
+  await compileSources(sourceRoot, staging)
   stage("compiling CSS")
+  progress({ step: "css" })
 
   const all = new Set([...prepared.candidates.values()].flatMap((words) => [...words]))
 

@@ -10,7 +10,7 @@ export interface ShadcnIconReplacement {
 
 /**
  * Maps every Lucide icon the shadcn registry uses to another icon library. An adapter package's default export is this
- * plain data; `buildkit-shadcn` reads it at build time and the generated components import only the icon library.
+ * plain data; `shadcn-sync` reads it at build time and the generated components import only the icon library.
  */
 export interface ShadcnIconAdapter {
   /** The icon library the generated components import from. The app installs it; the adapter declares it as a peer. */

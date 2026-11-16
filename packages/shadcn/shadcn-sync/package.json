@@ -10,7 +10,7 @@
     "node": ">=24"
   },
   "bin": {
-    "buildkit-shadcn": "bin/buildkit-shadcn.js"
+    "shadcn-sync": "bin/shadcn-sync.js"
   },
   "files": [
     "bin",

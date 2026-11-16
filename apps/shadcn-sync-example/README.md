@@ -1,7 +1,7 @@
 # shadcn sync example
 
 A Vite app without Tailwind that renders components from `@buildkitgg/shadcn`, built by
-[`buildkit-shadcn`](../../packages/shadcn/shadcn-sync/README.md) from the committed `shadcn-registry.json`.
+[`shadcn-sync`](../../packages/shadcn/shadcn-sync/README.md) from the committed `shadcn-registry.json`.
 
 ```bash
 pnpm --filter @buildkitgg/shadcn-sync-example dev
@@ -14,7 +14,7 @@ is built.
 To try the Fluent icon adapter, run this in the app's folder:
 
 ```bash
-pnpm exec buildkit-shadcn set --icons @buildkitgg/shadcn-icons-fluent
+pnpm exec shadcn-sync set --icons @buildkitgg/shadcn-icons-fluent
 ```
 
 `set --icons lucide` switches back. Neither needs the network, because icons aren't part of the snapshot.

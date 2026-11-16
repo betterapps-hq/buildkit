@@ -21,7 +21,17 @@ function read(path: string) {
 function writeManifest(scripts: Record<string, string>, dependencies: Record<string, string> = {}) {
   writeFileSync(
     join(app, "package.json"),
-    JSON.stringify({ name: "test-app", private: true, scripts, dependencies }, null, 2) + "\n"
+    JSON.stringify(
+      {
+        name: "test-app",
+        private: true,
+        scripts,
+        dependencies,
+        devDependencies: { "@buildkitgg/shadcn-sync": "workspace:*" }
+      },
+      null,
+      2
+    ) + "\n"
   )
 }
 
@@ -51,7 +61,7 @@ beforeAll(() => {
   rmSync(app, { recursive: true, force: true })
   mkdirSync(app, { recursive: true })
   copyFileSync(snapshot, join(app, "shadcn-registry.json"))
-  writeManifest({ postinstall: "buildkit-shadcn sync --icons lucide" })
+  writeManifest({ postinstall: "shadcn-sync sync --icons lucide" })
   delete process.env.CI
   process.env.npm_config_user_agent = "pnpm/12.10.1 npm/? node/v24"
   process.chdir(app)
@@ -72,7 +82,7 @@ afterAll(() => {
   rmSync(app, { recursive: true, force: true })
 })
 
-describe("buildkit-shadcn", () => {
+describe("shadcn-sync", () => {
   it("builds the package from the snapshot, registers it and links it", async () => {
     const result = await cli("sync", "--icons", "lucide")
 
@@ -111,15 +121,23 @@ describe("buildkit-shadcn", () => {
 
     expect(result.errors).toBe("")
     expect(result.logs).toContain('updated the "postinstall" script')
-    expect(result.logs).toContain("no longer import lucide-react")
+    expect(result.logs).toContain("no longer use lucide-react")
     expect(JSON.parse(read("package.json")).scripts.postinstall).toBe(
-      "buildkit-shadcn sync --icons @buildkitgg/shadcn-icons-fluent"
+      "shadcn-sync sync --icons @buildkitgg/shadcn-icons-fluent"
     )
     expect(read(`${outputFolder}/ui/dialog.js`)).toContain("@fluentui/react-icons/headless/svg/dismiss")
     expect(read(`${outputFolder}/shared.css`)).toContain(
       '@import "@fluentui/react-icons/headless/styles.css" layer(base);'
     )
     expect(read("shadcn-registry.json")).toBe(before)
+  })
+
+  it("runs the installer without questions outside a terminal, keeping the current settings", async () => {
+    const result = await cli()
+
+    expect(result.errors).toBe("")
+    expect(result.logs).toContain("built 63 components (Base UI, nova, neutral, @buildkitgg/shadcn-icons-fluent icons)")
+    expect(result.logs).not.toContain("updated the")
   })
 
   it("stops on icons an adapter doesn't map and keeps the previous output", async () => {
@@ -181,10 +199,10 @@ describe("buildkit-shadcn", () => {
     process.env.CI = "true"
 
     expect((await cli("sync", "--style", "vega")).errors).toContain(
-      "shadcn-registry.json is missing or doesn't match --base base-ui, --style vega and --theme neutral, and CI is set."
+      "shadcn-registry.json is missing or doesn't match --base base, --style vega and --theme neutral, and CI is set."
     )
 
-    writeManifest({ postinstall: "buildkit-shadcn sync" })
+    writeManifest({ postinstall: "shadcn-sync sync" })
 
     expect((await cli("sync")).errors).toContain("@buildkitgg/shadcn is missing from package.json, and CI is set.")
   })
@@ -192,7 +210,7 @@ describe("buildkit-shadcn", () => {
   it("explains a missing sync script and a bad flag", async () => {
     writeManifest({ build: "vite build" }, { "@buildkitgg/shadcn": `link:${outputFolder}` })
 
-    expect((await cli("update")).errors).toContain("no script that runs buildkit-shadcn sync")
-    expect((await cli("sync", "--base", "mui")).errors).toContain("--base mui isn't valid. Use base-ui or radix.")
+    expect((await cli("update")).errors).toContain("no script that runs shadcn-sync sync")
+    expect((await cli("sync", "--base", "mui")).errors).toContain("--base mui isn't valid. Use radix, base, or aria.")
   })
 })
