@@ -1,0 +1,7 @@
+{
+  "type": "patch",
+  "comment": "Publish the Fluent UI icon adapter to npm",
+  "packageName": "@buildkitgg/shadcn-icons-fluent",
+  "email": "ajcraswell@gmail.com",
+  "dependentChangeType": "patch"
+}
