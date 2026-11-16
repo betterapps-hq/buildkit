@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, realpathSync, writeFileSync } from "node:fs"
+import { mkdirSync, mkdtempSync, realpathSync, symlinkSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { describe, expect, it } from "vite-plus/test"
@@ -44,5 +44,16 @@ describe("linkAll", () => {
     expect(realpathSync(join(work, "node_modules/@base-ui/utils"))).toBe(
       realpathSync(findPackage("@base-ui/utils", realpathSync(join(work, "node_modules/@base-ui/react"))) ?? "")
     )
+  })
+
+  it("links into a folder reached through a link to a deeper folder, as macOS's temp folder is", () => {
+    const real = join(mkdtempSync(join(tmpdir(), "shadcn-sync-real-")), "nested")
+    const alias = join(mkdtempSync(join(tmpdir(), "shadcn-sync-alias-")), "work")
+
+    mkdirSync(real)
+    symlinkSync(real, alias, "junction")
+    linkAll(alias, packageTargets(["@base-ui/react"], alias))
+
+    expect(findPackage("@base-ui/react", alias)).toBe(join(alias, "node_modules/@base-ui/react"))
   })
 })
