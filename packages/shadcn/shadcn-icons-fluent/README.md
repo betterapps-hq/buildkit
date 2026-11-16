@@ -51,6 +51,35 @@ imports that stylesheet into a cascade layer below the components' utilities, so
 | `TriangleAlertIcon`  | `WarningRegular`         |
 | `XIcon`              | `DismissRegular`         |
 
+## Fluent icons in your own code
+
+Import Fluent icons in your app as usual:
+
+```tsx
+import { AddRegular } from "@fluentui/react-icons"
+```
+
+The headless icons stay inside the generated shadcn components. Both sets draw the same icons and keep their own styles,
+so they work side by side.
+
+Icons from `@fluentui/react-icons` style themselves with Griffel, Fluent's CSS-in-JS engine. Griffel sets `display` and
+`line-height` on each icon with CSS outside any cascade layer, and that CSS beats Tailwind's utilities, which are
+layered. So Tailwind classes for those two properties have no effect on the icon itself:
+
+- `size-*`, colors, margins, `shrink-0`, `rotate-*`, `animate-spin` and `opacity-*` work as usual.
+- `hidden`, `md:hidden`, `block`, `inline-flex` and `leading-*` don't.
+
+To hide or show an icon, put the class on a wrapper, or use Tailwind's important modifier. An important rule in a layer
+beats CSS outside any layer.
+
+```tsx
+<span className="md:hidden">
+  <AddRegular />
+</span>
+
+<AddRegular className="hidden! md:inline!" />
+```
+
 ## Keeping the mapping complete
 
 `fixtures/registry-icons.json` records which Lucide icons the registry's components use, and the components that use
