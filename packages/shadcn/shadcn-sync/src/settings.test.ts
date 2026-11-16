@@ -23,8 +23,7 @@ describe("parseSettings", () => {
     [{ base: "mui" }, "--base mui isn't valid. Use radix, base, or aria."],
     [{ style: "nope" }, "--style nope isn't valid. Use nova,"],
     [{ theme: "slate" }, "--theme slate isn't valid. Use neutral, stone,"],
-    [{ icons: "../icons" }, "--icons ../icons isn't an icon library id or a package name."],
-    [{ css: "tailwind" }, "--css tailwind isn't available yet."]
+    [{ icons: "../icons" }, "--icons ../icons isn't an icon library id or a package name."]
   ])("rejects %o", (flags, message) => {
     expect(() => parseSettings(flags)).toThrow(message)
   })

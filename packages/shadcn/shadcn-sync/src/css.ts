@@ -84,11 +84,74 @@ export function tailwindInput(cliCss: string): string {
   return `${tailwindLayers}\n@import "tailwindcss/theme.css" layer(theme);\n@import "tailwindcss/utilities.css" layer(utilities);\n${root.toString()}\n`
 }
 
+/** Finds a stylesheet an `@import` names, the way Tailwind resolves it: relative to the importer, or a package's CSS. */
+function stylesheetPath(id: string, from: string) {
+  return id.startsWith(".") ? resolve(from, id) : resolveFile(id, from, ["style", "default"])
+}
+
+/** Replaces each `@import` under `container` with the stylesheet it names, except Tailwind's own. */
+function inlineImports(container: Container<ChildNode>, from: string) {
+  container.walkAtRules("import", (rule) => {
+    const match = /^(["'])(.+?)\1$/.exec(rule.params.trim())
+
+    if (!match?.[2]) {
+      throw new SyncError("css", `Sync can't inline @import ${rule.params}: it only inlines plain imports.`, true)
+    }
+
+    const id = match[2]
+
+    if (id === "tailwindcss") {
+      rule.remove()
+
+      return
+    }
+
+    const path = stylesheetPath(id, from)
+    const imported = postcss.parse(readFileSync(path, "utf8"))
+
+    inlineImports(imported, dirname(path))
+    rule.replaceWith(imported.nodes)
+  })
+}
+
+/**
+ * The stylesheet a Tailwind app imports after its own `@import "tailwindcss"`. It starts with an `@source` for the
+ * generated JavaScript, so the app's Tailwind emits the components' utilities with its own, once. Then comes the CLI's
+ * stylesheet as `shadcn init` would leave it in an app: the theme variables, the dark variant, the `@theme inline`
+ * mapping and the style's base layer, with the style's imports (shadcn's custom variants and animations, and
+ * tw-animate-css) inlined so nothing has to resolve from the generated folder.
+ */
+export function tailwindStylesheet(cliCss: string, base: string, iconStyles: string | undefined): string {
+  const root = postcss.parse(cliCss)
+
+  inlineImports(root, base)
+
+  // Tailwind needs imports before everything else, so the icon library's stylesheet comes first.
+  const iconImport = iconStyles ? `@import ${JSON.stringify(iconStyles)} layer(base);\n` : ""
+
+  return `${iconImport}@source "./**/*.js";\n\n${root.toString().trim()}\n`
+}
+
+/**
+ * Compiles a Tailwind mode stylesheet the way an app would, after Tailwind itself, with the candidates the components
+ * use, so a stylesheet an app's Tailwind can't read fails the build instead. Returns the compiled CSS.
+ */
+export async function checkTailwindStylesheet(
+  stylesheet: string,
+  base: string,
+  candidates: Iterable<string>
+): Promise<string> {
+  // The icon library's stylesheet resolves from the app, not from the temp project this runs in.
+  const input = `@import "tailwindcss";\n${stylesheet.replace(/^@import (?!"tailwindcss").*\n/m, "")}`
+
+  return (await compileCandidates(input, base, candidates)).toString()
+}
+
 async function compileCandidates(input: string, base: string, candidates: Iterable<string>): Promise<Root> {
   const compiler = await compile(input, {
     base,
     async loadStylesheet(id, from) {
-      const path = id.startsWith(".") ? resolve(from, id) : resolveFile(id, from, ["style", "default"])
+      const path = stylesheetPath(id, from)
 
       return { path, base: dirname(path), content: readFileSync(path, "utf8") }
     },

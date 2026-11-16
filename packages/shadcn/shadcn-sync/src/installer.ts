@@ -31,7 +31,7 @@ import {
   type SettingFlags,
   type SyncSettings
 } from "./options.js"
-import { detectPackageManager, outputFolder } from "./register.js"
+import { dependencyAddedMessage, detectPackageManager, outputFolder } from "./register.js"
 import { findPackage } from "./resolve.js"
 import {
   addedSyncScript,
@@ -73,12 +73,8 @@ function iconTitle(icons: string) {
   return builtInIcons.get(icons)?.title ?? icons
 }
 
-/** The packages the app is missing for the settings: runtime libraries, and build-time packages for devDependencies. */
-async function missingPackages(settings: SyncSettings, appDirectory: string) {
-  const primitives = basePackage(settings.base)
-  const runtime = primitives ? [primitives] : []
-  const build: string[] = []
-
+/** The packages the app's own package.json lists, in dependencies or devDependencies. */
+function appDependencies(appDirectory: string) {
   const app = readJson(
     join(appDirectory, "package.json"),
     z.looseObject({
@@ -87,7 +83,16 @@ async function missingPackages(settings: SyncSettings, appDirectory: string) {
     })
   )
 
-  if (!{ ...app.dependencies, ...app.devDependencies }[syncPackage]) {
+  return new Set(Object.keys({ ...app.dependencies, ...app.devDependencies }))
+}
+
+/** The packages the app is missing for the settings: runtime libraries, and build-time packages for devDependencies. */
+async function missingPackages(settings: SyncSettings, appDirectory: string) {
+  const primitives = basePackage(settings.base)
+  const runtime = primitives ? [primitives] : []
+  const build: string[] = []
+
+  if (!appDependencies(appDirectory).has(syncPackage)) {
     build.push(syncPackage)
   }
 
@@ -165,6 +170,9 @@ interface Display {
   interrupt(label: string): void
   fail(): void
 }
+
+/** What a Tailwind mode app imports after Tailwind. */
+const tailwindImport = `${generatedName}/tailwind.css`
 
 const stepLabels = new Map([
   ["record", ["Downloading components from shadcn", "Downloaded components from shadcn"]],
@@ -371,6 +379,14 @@ async function apply(request: ApplyRequest, display: Display) {
       ? [
           `${baseTitle(request.previous.base)} and ${baseTitle(settings.base)} components take different props. Check the app's component code.`
         ]
+      : []),
+    ...(settings.css === "tailwind" && request.previous?.css !== "tailwind"
+      ? [
+          `The components import no CSS. Add @import "${tailwindImport}" after @import "tailwindcss" in the app's stylesheet.`
+        ]
+      : []),
+    ...(settings.css === "compiled" && request.previous?.css === "tailwind"
+      ? [`The components bring their own CSS now. Remove @import "${tailwindImport}" from the app's stylesheet.`]
       : [])
   ]
 
@@ -397,7 +413,7 @@ async function apply(request: ApplyRequest, display: Display) {
     }
 
     if (result.dependencyAdded) {
-      print(`added ${generatedName} to package.json. Commit it with the lockfile after your next install.`)
+      print(dependencyAddedMessage())
     }
 
     for (const note of notes) {
@@ -425,8 +441,11 @@ async function apply(request: ApplyRequest, display: Display) {
     prompts.log.warn(note)
   }
 
+  const sample =
+    settings.css === "tailwind" ? `${pc.cyan(`@import "tailwindcss";\n@import "${tailwindImport}";`)}\n\n` : ""
+
   prompts.log.message(
-    `${pc.cyan(`import { Button } from "${generatedName}"`)}\n\nSee your choices at ${pc.underline(previewUrl(settings))}`
+    `${sample}${pc.cyan(`import { Button } from "${generatedName}"`)}\n\nSee your choices at ${pc.underline(previewUrl(settings))}`
   )
   prompts.outro(`Done. ${commit}`)
 }
@@ -543,15 +562,37 @@ async function askSettings(current: SyncSettings, flags: SettingFlags, appDirect
 
   const icons = flags.icons ?? (await askIcons(current.icons, appDirectory))
 
-  return parseSettings({ base, style, theme, icons, css: flags.css ?? current.css })
+  // Only an app that runs Tailwind itself can build the components' classes, so only it is asked. A Tailwind that is
+  // merely resolvable, hoisted from another package, doesn't count.
+  const css =
+    flags.css ??
+    (current.css === "tailwind" || appDependencies(appDirectory).has("tailwindcss")
+      ? answer(
+          await prompts.select({
+            message: "Where should the components' CSS come from?",
+            initialValue: current.css,
+            options: [
+              { value: "compiled", label: cssTitles.compiled, hint: "each component imports its own stylesheet" },
+              { value: "tailwind", label: cssTitles.tailwind, hint: `import ${tailwindImport} after Tailwind` }
+            ]
+          })
+        )
+      : current.css)
+
+  return parseSettings({ base, style, theme, icons, css })
 }
 
-const labels = { base: "Primitives", style: "Style", theme: "Theme", icons: "Icons" } as const
-const shownKeys = ["base", "style", "theme", "icons"] as const
+const labels = { base: "Primitives", style: "Style", theme: "Theme", icons: "Icons", css: "CSS" } as const
+const shownKeys = ["base", "style", "theme", "icons", "css"] as const
+const cssTitles = { compiled: "Compiled stylesheets", tailwind: "The app's own Tailwind" } as const
 
 function settingTitle(key: keyof typeof labels, settings: SyncSettings) {
   if (key === "base") {
     return baseTitle(settings.base)
+  }
+
+  if (key === "css") {
+    return cssTitles[settings.css]
   }
 
   return key === "icons" ? iconTitle(settings.icons) : titleCase(settings[key])
@@ -565,7 +606,7 @@ function settingsTable(settings: SyncSettings) {
 async function confirmChanges(previous: SyncSettings, next: SyncSettings) {
   const keys = shownKeys.filter((key) => previous[key] !== next[key])
 
-  if (keys.length === 0 && previous.css === next.css) {
+  if (keys.length === 0) {
     prompts.outro("Those are the current settings. Nothing changed.")
 
     return false

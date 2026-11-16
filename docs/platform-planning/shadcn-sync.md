@@ -402,16 +402,26 @@ Sync registers the generated package so the app never edits `package.json` by ha
 - **Package manager.** Detected with `package-manager-detector`, as `dev-domains` already does: the
   `npm_config_user_agent` of the running install first, then the `packageManager` field and lockfile up to the workspace
   root.
-- **Specifier.** The local-folder protocol each manager links rather than copies: pnpm `link:`, Yarn `portal:`, npm
-  `file:`. Bun's handling of `file:` folders needs checking in phase 1.
+- **Specifier.** The local-folder protocol each manager links rather than copies, and accepts before the folder exists:
+  pnpm `link:`, Yarn `link:`, npm `file:`. Yarn's `portal:` reads the folder's manifest while resolving, so a fresh
+  install would fail. Bun isn't checked.
 - **Writes only when needed.** Sync changes `package.json` only when the entry is missing or points elsewhere. It keeps
   the file's indentation, key order and final newline, and adds the entry under `dependencies`.
 - **First install.** The current install didn't know about the entry, so sync also creates the
   `node_modules/@buildkitgg/shadcn` link itself. It then prints that `package.json` changed and that the next install
-  updates the lockfile, and that both files should be committed.
+  updates the lockfile, and that both files should be committed. pnpm skips an install when `package.json` hasn't
+  changed since the last one, and counts a change made during an install as before it. So during a pnpm install, sync
+  says to run `pnpm install --config.optimistic-repeat-install=false` instead.
 - **CI.** When `CI` is set and the entry is missing, sync fails with that instruction instead of editing the file. A
   frozen-lockfile install would fail anyway, and this message says why.
-- **Workspaces.** `postinstall` runs in each app's folder, so each app registers and links its own output.
+- **Workspaces.** `postinstall` runs in each app's folder, so each app registers and links its own output. A source-only
+  workspace package that imports `@buildkitgg/shadcn` and is bundled by one app lists that app's output itself, as
+  `"@buildkitgg/shadcn": "link:../../apps/web/node_modules/.buildkit/shadcn"`. Under pnpm's isolated layout it can't see
+  the app's `node_modules`.
+- **Strict layouts.** The generated code imports sync's own dependencies, such as `cmdk` and `recharts`, which pnpm's
+  isolated layout hides from the app. Sync links each one the app can't resolve into the output's own `node_modules`,
+  from sync's install. A package the app has is left to the app, so the two share one copy. React and React DOM always
+  come from the app. No `publicHoistPattern` is needed.
 - **Every run.** After generating, sync checks that `node_modules/@buildkitgg/shadcn` resolves to the output and repairs
   the link if the package manager copied the folder or left the link dangling.
 
@@ -419,11 +429,11 @@ Sync registers the generated package so the app never edits `package.json` by ha
 
 | Stage        | Work                                                                                                                                                                                                                                                                                         |
 | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Workspace    | Create a temp project with a generated `components.json` (style, icon library, aliases, CSS path) and a `package.json`                                                                                                                                                                       |
+| Workspace    | Create a temp project outside the app, with a generated `components.json` (style, icon library, aliases, CSS path), a `package.json`, and links to every package the build reads, from the app or else from sync (see below)                                                                 |
 | Install      | Run `shadcn add --all --yes --silent` with the record-and-replay preload. The CLI applies the icon library and writes the components. The preload turns the package-manager install the CLI starts into a no-op, because `add` has no option to skip it and sync handles dependencies itself |
 | Theme        | Run `shadcn add style` with a local `registry:theme` item built from the base color the CLI fetched (`colors/<theme>.json`). The CLI writes the style's CSS imports, the theme variables and their `@theme inline` mapping, as `init` would without scaffolding a project                    |
 | Icons        | For an icon adapter, map the CLI's Lucide output to the adapter's modules, and layer its stylesheet below the components' CSS (see [Icons](#icons))                                                                                                                                          |
-| Imports      | Rewrite the `components.json` aliases to relative paths; fail on anything unresolved                                                                                                                                                                                                         |
+| Imports      | Rewrite the `components.json` aliases to relative paths and point `cn` imports at `lib/utils` (see [Class merging](#class-merging)); fail on anything unresolved                                                                                                                             |
 | JavaScript   | Compile TSX to ES modules, keeping `"use client"` directives                                                                                                                                                                                                                                 |
 | Declarations | Emit `.d.ts` with native TypeScript                                                                                                                                                                                                                                                          |
 | CSS          | Compile the stylesheets with Tailwind from the installed sources and the theme item (see [CSS](#css))                                                                                                                                                                                        |
@@ -452,11 +462,25 @@ node_modules/.buildkit/shadcn/
     button.d.ts
     ...
   hooks/
+    use-mobile.js
+    use-mobile.d.ts
+    ...
   lib/
+    highlighter.js
+    highlighter.d.ts
+    highlighter.css
+    utils.js
+    utils.d.ts
 ```
 
 Because the folder belongs to one project, nothing is shared through a package store, and the export map is generated to
-match exactly what was built.
+match exactly what was built. Its own `node_modules` holds only the links described in
+[Dependency registration](#dependency-registration).
+
+The temp project lives in the system's temp folder rather than in the app's `node_modules`. TypeScript won't name a
+package in a declaration through a path such as `node_modules/.buildkit/<folder>/node_modules`, so declarations that use
+React's types or `class-variance-authority` failed to build there under pnpm's isolated layout. The temp project links
+React's types too, from sync's own dependencies, so an app without `@types/react` still builds.
 
 ### Entry points
 
@@ -473,8 +497,43 @@ import "../shared.css"
 import "../components/button/styles.css"
 ```
 
-The root barrel re-exports every entry point. Sync fails on any export name collision instead of dropping a name; the
-current generator's `SonnerToaster` rename is how collisions are resolved.
+Each module in `hooks/` and `lib/` is exported at its own path, such as `./hooks/use-mobile` and `./lib/utils`, which
+points straight at the module, with no entry point in between. A module whose classes compile to rules, such as the
+highlighter with its token colors, gets a stylesheet beside it and imports it the same way:
+
+```ts
+// lib/highlighter.js
+import "../shared.css"
+import "./highlighter.css"
+```
+
+The root barrel re-exports every component entry point and every `hooks/` and `lib/` module. Sync fails on any export
+name collision instead of dropping a name; the current generator's `SonnerToaster` rename is how collisions are
+resolved.
+
+### Class merging
+
+The registry's components import `cn` from the `cn` package, shadcn's compiled clsx and tailwind-merge. Sync points
+every one of those imports at `lib/utils.js`, which it writes itself:
+
+```ts
+// lib/utils.ts
+import { cn as compiledCn, type ClassValue, type CnFunction } from "cn"
+
+let merge: CnFunction = compiledCn
+
+export function cn(...inputs: ClassValue[]): string {
+  return merge(...inputs)
+}
+
+export function setCn(next: CnFunction) {
+  merge = next
+}
+```
+
+An app whose Tailwind theme adds classes the default merger doesn't know calls `setCn` before the first render, with a
+merger built by `createCn` from `cn/config`. Both `cn` and `setCn` are root exports. Sync fails when a module imports
+anything else from `cn`, because `lib/utils.js` doesn't re-export it.
 
 ### `package.json`
 
@@ -486,7 +545,9 @@ current generator's `SonnerToaster` rename is how collisions are resolved.
   "sideEffects": ["**/*.css"],
   "exports": {
     ".": { "types": "./index.d.ts", "import": "./index.js" },
-    "./button": { "types": "./components/button/index.d.ts", "import": "./components/button/index.js" }
+    "./button": { "types": "./components/button/index.d.ts", "import": "./components/button/index.js" },
+    "./hooks/use-mobile": { "types": "./hooks/use-mobile.d.ts", "import": "./hooks/use-mobile.js" },
+    "./lib/utils": { "types": "./lib/utils.d.ts", "import": "./lib/utils.js" }
   },
   "peerDependencies": {
     "react": "^19.2.0",
@@ -521,16 +582,17 @@ File hashes let sync notice a missing or edited file and regenerate even when th
 The generated code imports React, the selected primitives, the selected icon library and the registry items' other
 runtime libraries (cmdk, vaul, sonner, react-day-picker, embla, input-otp, recharts and so on).
 
-- `@buildkitgg/shadcn-sync` depends on Base UI and the shared runtime libraries, so the generated package resolves them
-  through the app's install. An app on `--base radix` installs `radix-ui`, and one on `--base aria` installs
+- `@buildkitgg/shadcn-sync` depends on Base UI and the shared runtime libraries, and `react-is` for Recharts, whose peer
+  Yarn doesn't install itself. The generated package resolves them through the app's install, or through the links sync
+  makes when the layout hides them. An app on `--base radix` installs `radix-ui`, and one on `--base aria` installs
   `react-aria-components`; the installer does it after asking. A base's extra libraries, such as `vaul` for Radix, are
   installed by the app the same way.
 - The app declares its icon library (or adapter) itself. Sync fails with the package to add when it's missing.
 - React and React DOM stay peers.
 
-The generated package is a linked folder, so its imports resolve from the app. Under pnpm's strict layout that means the
-app's own dependencies plus hoisted ones; phase 1 confirms which runtime libraries need `publicHoistPattern` or must
-move to the app's dependencies instead.
+The generated package is a linked folder, so its imports resolve from the app first. Under pnpm's isolated layout the
+rest resolve through the links in the output's own `node_modules` (see
+[Dependency registration](#dependency-registration)).
 
 ## Icons
 
@@ -626,7 +688,8 @@ and 30 KB gzipped.
 
 - **Per-component stylesheets.** Each component's `styles.css` holds the rules for its own classes and those of the
   shared modules it imports, such as hooks. A component it composes (Calendar's buttons, for example) imports its own
-  stylesheet, so a rule appears in more than one file only when two components use the same class.
+  stylesheet, so a rule appears in more than one file only when two components use the same class. A `hooks/` or `lib/`
+  module with classes of its own also has a stylesheet, so importing it alone still brings its CSS.
 - **Order that doesn't depend on load order.** Tailwind's output is ordered: `md:px-6` has to come after `px-4` to win
   on wide screens. Split across files, that order would depend on which component the bundler loads first. So sync
   compiles the whole catalog once to get Tailwind's order and puts each rule in a sublayer of `utilities`. Every
@@ -662,14 +725,30 @@ the rest. `--css` picks one source for those rules so they never exist twice.
 | `compiled` (default) | Apps without Tailwind | `shared.css` and the component's `styles.css` | Nothing                                                                   |
 | `tailwind`           | Apps with Tailwind v4 | No CSS                                        | `@import "@buildkitgg/shadcn/tailwind.css"` after `@import "tailwindcss"` |
 
-In `tailwind` mode, sync writes `tailwind.css` instead of the compiled stylesheets. It holds:
+In `tailwind` mode, sync writes `tailwind.css` instead of the compiled stylesheets, exported as
+`@buildkitgg/shadcn/tailwind.css`. It's the stylesheet the shadcn CLI left in the temp project, which is what
+`shadcn init` would write into an app, with two changes: Tailwind's own import is gone, because the app imports
+Tailwind, and the style's imports are inlined. It holds:
 
-- an `@source` pointing at the generated JavaScript, so the app's Tailwind generates the utilities the components use;
-- the selected theme's variables and the `@theme inline` block that maps them to Tailwind colors and radii;
-- the style's CSS and the animations.
+- `@source "./**/*.js"`, so the app's Tailwind scans the generated JavaScript, `lib/` included, and emits the utilities
+  the components use;
+- the selected theme's variables on `:root` and `.dark`, and the `@theme inline` block that maps them to Tailwind colors
+  (`bg-muted`) and radii;
+- the `dark` variant (`&:is(.dark *)`);
+- the style's CSS: shadcn's `shadcn/tailwind.css`, with its custom variants (`data-open:`, `data-checked:` and the rest)
+  and its accordion keyframes, and `tw-animate-css` for `animate-in` and friends;
+- the style's base layer: the border and outline colors on every element, and the background and text colors on `body`;
+- the icon adapter's stylesheet, imported into the `base` layer, when the adapter has one.
+
+Inlining means nothing in the file resolves from `node_modules/.buildkit`, so pnpm's strict layout doesn't matter to it.
+The app's own classes can use the same colors and variants. Everything else in the theme, such as `--text-sm`, stays the
+app's, and nothing in `tailwind.css` sets it. Before swapping the output in, sync compiles `tailwind.css` after
+`@import "tailwindcss"` with every class the components use, so a stylesheet an app's Tailwind can't read fails the
+build.
 
 The app's Tailwind then emits each utility once, for its own classes and the components' together, with Preflight as the
-app configures it. That one import is the only setup `tailwind` mode needs; the scaffolder's templates include it.
+app configures it. That one import is the only setup `tailwind` mode needs; the scaffolder's templates include it. The
+installer asks which mode to use when the app has `tailwindcss` installed.
 
 ## Validation
 
@@ -749,16 +828,18 @@ per-component stylesheets. Settle the [open questions](#open-questions). Done wh
 installed fresh from a committed snapshot with each package manager and no network access to the registry, imports and
 renders `Button`, `Dialog`, `Input` and `Select` from `@buildkitgg/shadcn`.
 
-Built: everything above, checked with pnpm on Windows in the example app. Left: fresh, repeated and frozen-lockfile
-installs with npm, Yarn and Bun, pnpm's isolated layout outside this workspace, and macOS and Linux.
+Built: everything above. Checked on Windows: the example app with pnpm, and Vite apps outside this workspace with pnpm's
+isolated layout, npm, and Yarn 4.18 with `nodeLinker: node-modules`, each through fresh, repeated and frozen-lockfile
+installs and a production build. Left: Bun, Yarn's Plug'n'Play, and macOS and Linux.
 
 **Phase 2: configuration.** The `set` command, Radix, `--css tailwind`, every built-in icon library, every style and
 theme, the adapter contract, and `@buildkitgg/shadcn-icons-fluent`. Done when changing any flag and reinstalling
 regenerates the package without touching the app's imports.
 
-Built: `set`, the installer, every style, all three bases, the adapter contract and the Fluent adapter. Radix and React
-Aria build and type-check; neither has been rendered in a browser yet. Left: `--css tailwind`, checking the built-in
-icon libraries other than Lucide and the themes other than neutral and zinc, and `checkAdapter`.
+Built: `set`, the installer, every style, all three bases, the adapter contract, the Fluent adapter, `--css tailwind`
+(checked in a Vite app with `@tailwindcss/vite`), the `hooks/` and `lib/` exports, and the swappable `cn`. Radix and
+React Aria build and type-check; neither has been rendered in a browser yet. Left: checking the built-in icon libraries
+other than Lucide and the themes other than neutral and zinc, and `checkAdapter`.
 
 **Phase 3: move over.** Point the managers, apps, Storybook and scaffolder templates at the generated package, then
 retire the style packages and the old generator.
@@ -790,13 +871,15 @@ registry requests and logged every other network call and child process.
 
 Answers so far, from pnpm on Windows:
 
-1. **Linking to a folder that doesn't exist yet.** pnpm accepts it: a frozen-lockfile install with no generated folder
-   leaves a dangling link, and sync fills its target. npm, Yarn and Bun still need checking.
-2. **Package managers pruning `node_modules/.buildkit`.** pnpm installs leave the folder and the link alone. npm, Yarn
-   and Bun still need checking.
-3. **Strict resolution.** Not settled. Inside this workspace (`nodeLinker: hoisted`) everything resolves. Under pnpm's
-   isolated layout the generated package can't see sync's dependencies, so the app needs them in `publicHoistPattern` or
-   its own dependencies; sync names any it can't resolve.
+1. **Linking to a folder that doesn't exist yet.** Settled for pnpm, npm and Yarn: a clean frozen install (pnpm
+   `--frozen-lockfile`, `npm ci`, Yarn `--immutable` with `nodeLinker: node-modules`) leaves a dangling link, and sync
+   fills its target. Yarn needs `link:` for this. Yarn 4.10 can't install sync at all, because its built-in TypeScript
+   patch fails on TypeScript 7; 4.18 works. Bun isn't checked.
+2. **Package managers pruning `node_modules/.buildkit`.** Settled: repeat and forced installs with pnpm, npm and Yarn
+   leave the folder and the link alone, so sync finds the output current.
+3. **Strict resolution.** Settled: sync links what the components import into the output's `node_modules` (see
+   [Dependency registration](#dependency-registration)), so pnpm's isolated layout needs no `publicHoistPattern`.
+   Checked on Windows with pnpm 12 outside this workspace, including a source-only workspace package.
 4. **Layer granularity.** Settled: specificity-ordered sublayers, split only where rules compete (see [CSS](#css)). 280
    layers keep Tailwind's precedence for the whole catalog, with no bundler plugin.
 5. **Tailwind mode subsetting.** Open, with `--css tailwind`.

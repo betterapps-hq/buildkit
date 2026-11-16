@@ -92,19 +92,13 @@ export function parseSettings(flags: SettingFlags, base: SyncSettings = defaultS
     throw new SyncError("configuration", `--icons ${icons} isn't an icon library id or a package name.`)
   }
 
-  const settings: SyncSettings = {
+  return {
     base: pick("base", flags.base ?? base.base, bases),
     icons,
     style: pick("style", flags.style ?? base.style, styles),
     theme: pick("theme", flags.theme ?? base.theme, themes),
     css: pick("css", flags.css ?? base.css, cssModes)
   }
-
-  if (settings.css === "tailwind") {
-    throw new SyncError("configuration", "--css tailwind isn't available yet. Use --css compiled.")
-  }
-
-  return settings
 }
 
 /** The registry style that holds the items for a base and style, such as `base-nova` or `radix-vega`. */

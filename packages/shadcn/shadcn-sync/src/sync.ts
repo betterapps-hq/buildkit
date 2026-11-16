@@ -1,16 +1,19 @@
 import { createHash } from "node:crypto"
 import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs"
 import { createRequire } from "node:module"
+import { tmpdir } from "node:os"
 import { join, resolve } from "node:path"
 import pc from "picocolors"
+import postcss from "postcss"
 import * as z from "zod"
-import { compileStyles } from "./css.js"
+import { checkTailwindStylesheet, compileStyles, tailwindStylesheet } from "./css.js"
 import { SyncError } from "./errors.js"
 import {
   checkDependencies,
   compileSources,
   isCurrent,
   peerRanges,
+  syncDependencies,
   syncVersion,
   typescriptVersion,
   writeEntryPoints,
@@ -18,6 +21,7 @@ import {
 } from "./generate.js"
 import { loadAdapter, type LoadedAdapter } from "./icons.js"
 import { canonicalJson, readJson } from "./json.js"
+import { linkAll, linkMissing } from "./links.js"
 import { baseTitle, isBuiltInIcons, registryStyle, type SyncSettings } from "./options.js"
 import {
   assertRegistrable,
@@ -37,7 +41,7 @@ import {
   writeSnapshot,
   type RegistrySnapshot
 } from "./snapshot.js"
-import { importStyles, prepareSources } from "./sources.js"
+import { importStyles, prepareSources, sharedStylesheet, type PreparedSources } from "./sources.js"
 
 /** What a sync run is asked to do. */
 export interface SyncRequest {
@@ -56,7 +60,7 @@ export interface SyncRequest {
 /** The long steps of a build, in order. `catalog` downloads from the registry when recording. */
 export type SyncStep =
   | { readonly step: "catalog"; readonly mode: RegistrySource["mode"] }
-  | { readonly step: "rewrite" | "javascript" | "css" }
+  | { readonly step: "rewrite" | "css" | "javascript" }
 
 /** What a sync run did. */
 export interface SyncResult {
@@ -152,7 +156,9 @@ export async function sync(request: SyncRequest): Promise<SyncResult> {
     return { built: false, snapshotWritten: false, ...register(appDirectory, specifier) }
   }
 
-  const work = join(appDirectory, "node_modules/.buildkit/shadcn.work")
+  // TypeScript won't name a package in a declaration through a path like node_modules/.buildkit/<dir>/node_modules,
+  // so the build runs in a temp folder outside the app, with every package it needs linked in.
+  const work = join(tmpdir(), "shadcn-sync", createHash("sha256").update(appDirectory).digest("hex").slice(0, 16))
   const staging = join(appDirectory, "node_modules/.buildkit/shadcn.staging")
   const source: RegistrySource = needsRecord || !existing ? { mode: "record" } : { mode: "replay", snapshot: existing }
   const progress = request.progress ?? (() => undefined)
@@ -223,6 +229,8 @@ async function buildStaging(build: StagingBuild): Promise<StagedBuild> {
   stage(`installing the ${registryStyle(settings)} catalog with shadcn ${shadcnVersion} (${source.mode})`)
   progress({ step: "catalog", mode: source.mode })
   createWorkspace(work, settings)
+  // The build reads sync's own packages, such as Tailwind, shadcn's CSS and React's types, from the temp project.
+  linkAll(work, [...syncDependencies, "react", "react-dom"], build.appDirectory)
 
   const responses = await installCatalog(work, settings, source, build.verbose)
 
@@ -237,41 +245,53 @@ async function buildStaging(build: StagingBuild): Promise<StagedBuild> {
   const sourceRoot = join(work, "src")
   const prepared = prepareSources(sourceRoot, adapter?.adapter, settings.icons)
 
+  linkAll(work, prepared.packages, build.appDirectory)
   checkDependencies(prepared.packages, work)
-
-  if (settings.css === "compiled") {
-    importStyles(prepared, sourceRoot)
-  }
-
-  await prepared.project.save()
-  writeEntryPoints(sourceRoot, prepared.components)
-  stage("compiling JavaScript and declarations")
-  progress({ step: "javascript" })
-  remove(staging)
-  await compileSources(sourceRoot, staging)
   stage("compiling CSS")
   progress({ step: "css" })
 
   const all = new Set([...prepared.candidates.values()].flatMap((words) => [...words]))
 
-  const perComponent = new Map(
-    prepared.components.map((component) => [
-      component.name,
-      new Set(component.modules.flatMap((path) => [...(prepared.candidates.get(path) ?? [])]))
-    ])
-  )
-
   const cliCss = readFileSync(join(sourceRoot, "index.css"), "utf8")
-  const styles = await compileStyles(cliCss, sourceRoot, all, perComponent, adapter?.adapter.styles)
 
-  writeFileSync(join(staging, "shared.css"), styles.shared)
+  const css =
+    settings.css === "tailwind"
+      ? await tailwindCss(build, cliCss, all)
+      : await compiledCss(build, prepared, cliCss, all)
 
-  for (const [name, css] of styles.components) {
-    writeFileSync(join(staging, "components", name, "styles.css"), css)
+  if (css.mode === "compiled") {
+    importStyles(prepared, sourceRoot, new Set(css.shared.keys()))
   }
 
-  stage(`wrote ${styles.components.size} component stylesheets in ${styles.layers} utility layers`)
-  writePackageFiles(staging, prepared.components, peerRanges(prepared.packages, build.appDirectory), {
+  await prepared.project.save()
+  writeEntryPoints(sourceRoot, prepared.components, prepared.shared)
+  stage("compiling JavaScript and declarations")
+  progress({ step: "javascript" })
+  remove(staging)
+  await compileSources(sourceRoot, staging)
+  linkMissing(staging, prepared.packages, build.appDirectory)
+
+  if (css.mode === "tailwind") {
+    writeFileSync(join(staging, "tailwind.css"), css.stylesheet)
+    stage("wrote tailwind.css")
+  } else {
+    writeFileSync(join(staging, "shared.css"), css.styles.shared)
+
+    for (const component of prepared.components) {
+      writeFileSync(
+        join(staging, "components", component.name, "styles.css"),
+        css.styles.components.get(component.name) ?? ""
+      )
+    }
+
+    for (const [module, stylesheet] of css.shared) {
+      writeFileSync(join(staging, sharedStylesheet(module)), stylesheet)
+    }
+
+    stage(`wrote ${prepared.components.length + css.shared.size} stylesheets in ${css.styles.layers} utility layers`)
+  }
+
+  writePackageFiles(staging, prepared.components, prepared.shared, peerRanges(prepared.packages, build.appDirectory), {
     generatorVersion: syncVersion,
     settings,
     snapshot: snapshot.hash,
@@ -279,6 +299,55 @@ async function buildStaging(build: StagingBuild): Promise<StagedBuild> {
   })
 
   return { snapshot, count: prepared.components.length }
+}
+
+/** The stylesheet a Tailwind mode build exports, checked by compiling it after Tailwind with every component class. */
+async function tailwindCss(build: StagingBuild, cliCss: string, candidates: ReadonlySet<string>) {
+  const sourceRoot = join(build.work, "src")
+  const stylesheet = tailwindStylesheet(cliCss, sourceRoot, build.adapter?.adapter.styles)
+
+  await checkTailwindStylesheet(stylesheet, sourceRoot, candidates)
+
+  return { mode: "tailwind" as const, stylesheet }
+}
+
+/**
+ * The compiled stylesheets: one per component, and one for each `hooks/` or `lib/` module whose classes compile to
+ * rules, such as the highlighter's token colors.
+ */
+async function compiledCss(
+  build: StagingBuild,
+  prepared: PreparedSources,
+  cliCss: string,
+  candidates: ReadonlySet<string>
+) {
+  const words = (paths: readonly string[]) =>
+    new Set(paths.flatMap((path) => [...(prepared.candidates.get(path) ?? [])]))
+
+  const perModule = new Map([
+    ...prepared.components.map((component) => [component.name, words(component.modules)] as const),
+    ...prepared.shared.map((module) => [module.path, words([module.path])] as const)
+  ])
+
+  const styles = await compileStyles(
+    cliCss,
+    join(build.work, "src"),
+    candidates,
+    perModule,
+    build.adapter?.adapter.styles
+  )
+
+  const shared = new Map(
+    prepared.shared.flatMap((module) => {
+      const stylesheet = styles.components.get(module.path)
+
+      return stylesheet && postcss.parse(stylesheet).some((node) => node.type === "atrule" && Boolean(node.nodes))
+        ? [[module.path, stylesheet] as const]
+        : []
+    })
+  )
+
+  return { mode: "compiled" as const, styles, shared }
 }
 
 function register(appDirectory: string, specifier: string) {

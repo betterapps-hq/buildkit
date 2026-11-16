@@ -50,6 +50,8 @@
       "ignoreDependencies": [
         "@base-ui/react",
         "@shadcn/react",
+        "@types/react",
+        "@types/react-dom",
         "class-variance-authority",
         "cmdk",
         "cn",
@@ -58,6 +60,7 @@
         "input-otp",
         "next-themes",
         "react-day-picker",
+        "react-is",
         "react-resizable-panels",
         "recharts",
         "shadcn",

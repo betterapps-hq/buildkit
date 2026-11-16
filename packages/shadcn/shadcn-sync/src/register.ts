@@ -23,9 +23,12 @@ export async function detectPackageManager(appDirectory: string): Promise<Packag
   return agent === "pnpm" || agent === "yarn" || agent === "bun" ? agent : "npm"
 }
 
-/** The local-folder protocol each package manager links rather than copies. */
+/**
+ * The local-folder protocol each package manager links rather than copies, and accepts before sync has written the
+ * folder. Yarn's `portal:` reads the folder's manifest while resolving, so a fresh install fails; its `link:` doesn't.
+ */
 export function dependencySpecifier(manager: PackageManager) {
-  const protocols = { pnpm: "link:", yarn: "portal:", npm: "file:", bun: "file:" } satisfies Record<
+  const protocols = { pnpm: "link:", yarn: "link:", npm: "file:", bun: "file:" } satisfies Record<
     PackageManager,
     string
   >
@@ -34,6 +37,20 @@ export function dependencySpecifier(manager: PackageManager) {
 }
 
 const dependenciesSchema = z.record(z.string(), z.string()).optional()
+
+/**
+ * What sync says after adding the generated package to `package.json`. pnpm skips an install when `package.json` hasn't
+ * changed since the last one, and a change made during an install counts as before it, so after a pnpm install the
+ * next plain `pnpm install` wouldn't record the entry in the lockfile.
+ */
+export function dependencyAddedMessage() {
+  const duringPnpmInstall =
+    Boolean(process.env.npm_lifecycle_event) && process.env.npm_config_user_agent?.startsWith("pnpm/") === true
+
+  return duringPnpmInstall
+    ? `added ${generatedName} to package.json during this install, which a plain pnpm install won't notice. Run pnpm install --config.optimistic-repeat-install=false to add it to the lockfile, then commit package.json and the lockfile.`
+    : `added ${generatedName} to package.json. Commit it with the lockfile after your next install.`
+}
 
 /** Reads `package.json` as written, so rewriting it keeps every key where it was. */
 export function readPackageJson(appDirectory: string) {
