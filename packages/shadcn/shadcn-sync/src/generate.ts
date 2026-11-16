@@ -259,8 +259,11 @@ const generatedManifestSchema = z.object({
   files: z.record(z.string(), z.string())
 })
 
-/** Whether every dependency link in the output still points at an installed package. */
-function linksResolve(outDir: string) {
+/**
+ * Whether every dependency link in the output still points at an installed package the app can't resolve itself. Once
+ * the app installs its own copy of a linked package, the link has to go, so the components use the app's version.
+ */
+function linksResolve(outDir: string, appDirectory: string) {
   const modules = join(outDir, "node_modules")
 
   if (!existsSync(modules)) {
@@ -271,11 +274,17 @@ function linksResolve(outDir: string) {
     name.startsWith("@") ? readdirSync(join(modules, name)).map((scoped) => join(name, scoped)) : [name]
   )
 
-  return entries.every((entry) => existsSync(join(modules, entry, "package.json")))
+  return entries.every(
+    (entry) =>
+      existsSync(join(modules, entry, "package.json")) && !findPackage(entry.split(sep).join("/"), appDirectory)
+  )
 }
 
-/** Whether the output matches the fingerprint and every file in its manifest is present and unchanged. */
-export function isCurrent(outDir: string, fingerprint: string): boolean {
+/**
+ * Whether the output matches the fingerprint, its dependency links are still the ones a build would make, and every
+ * file in its manifest is present and unchanged.
+ */
+export function isCurrent(outDir: string, fingerprint: string, appDirectory: string): boolean {
   const manifestPath = join(outDir, "manifest.json")
 
   if (!existsSync(manifestPath)) {
@@ -287,7 +296,7 @@ export function isCurrent(outDir: string, fingerprint: string): boolean {
   return (
     manifest.success &&
     manifest.data.fingerprint === fingerprint &&
-    linksResolve(outDir) &&
+    linksResolve(outDir, appDirectory) &&
     Object.entries(manifest.data.files).every(([file, hash]) => {
       const path = join(outDir, file)
 

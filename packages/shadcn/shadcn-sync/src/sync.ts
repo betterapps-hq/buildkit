@@ -150,7 +150,12 @@ export async function sync(request: SyncRequest): Promise<SyncResult> {
   const output = join(appDirectory, outputFolder)
   const icons = iconVersion(settings, adapter, appDirectory)
 
-  if (!needsRecord && existing && !request.force && isCurrent(output, fingerprint(settings, existing, icons))) {
+  if (
+    !needsRecord &&
+    existing &&
+    !request.force &&
+    isCurrent(output, fingerprint(settings, existing, icons), appDirectory)
+  ) {
     stage("output is current")
 
     return { built: false, snapshotWritten: false, ...register(appDirectory, specifier) }

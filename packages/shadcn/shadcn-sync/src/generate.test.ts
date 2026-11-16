@@ -1,8 +1,8 @@
-import { mkdtempSync, readFileSync } from "node:fs"
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { describe, expect, it } from "vite-plus/test"
-import { writeEntryPoints, writePackageFiles } from "./generate.js"
+import { isCurrent, writeEntryPoints, writePackageFiles } from "./generate.js"
 import type { ComponentModule, SharedModule } from "./sources.js"
 
 const components: ComponentModule[] = [
@@ -83,5 +83,26 @@ describe("writePackageFiles", () => {
       types: "./hooks/use-mobile.d.ts",
       import: "./hooks/use-mobile.js"
     })
+  })
+})
+
+describe("isCurrent", () => {
+  function installed(directory: string, name: string) {
+    mkdirSync(join(directory, "node_modules", name), { recursive: true })
+    writeFileSync(join(directory, "node_modules", name, "package.json"), JSON.stringify({ name, version: "1.0.0" }))
+  }
+
+  it("rebuilds once the app installs its own copy of a package sync linked", () => {
+    const app = temporary()
+    const outDir = join(app, "node_modules/.buildkit/shadcn")
+
+    writePackageFiles(outDir, components, shared, {}, identity)
+    installed(outDir, "cmdk")
+
+    expect(isCurrent(outDir, identity.fingerprint, app)).toBe(true)
+
+    installed(app, "cmdk")
+
+    expect(isCurrent(outDir, identity.fingerprint, app)).toBe(false)
   })
 })

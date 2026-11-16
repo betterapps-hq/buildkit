@@ -424,7 +424,8 @@ Sync registers the generated package so the app never edits `package.json` by ha
 - **Strict layouts.** The generated code imports sync's own dependencies, such as `cmdk` and `recharts`, which pnpm's
   isolated layout hides from the app. Sync links each one the app can't resolve into the output's own `node_modules`,
   from sync's install. A package the app has is left to the app, so the two share one copy. React and React DOM always
-  come from the app. No `publicHoistPattern` is needed.
+  come from the app. No `publicHoistPattern` is needed. Once the app installs its own copy of a linked package, the
+  output no longer counts as current, and the rebuild drops the link.
 - **Every run.** After generating, sync checks that `node_modules/@buildkitgg/shadcn` resolves to the output and repairs
   the link if the package manager copied the folder or left the link dangling.
 
