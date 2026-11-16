@@ -255,7 +255,7 @@ async function installMissing(
 
   if (!request.install) {
     const confirmed = answer(
-      await choose({
+      await prompts.select({
         message: `Install the packages these settings need?\n${pc.dim(commands.join("\n"))}`,
         options: [
           { value: true, label: "Yes" },
@@ -431,14 +431,6 @@ async function apply(request: ApplyRequest, display: Display) {
   prompts.outro(`Done. ${commit}`)
 }
 
-/**
- * A list question. clack's key hint below the list separates its parts with a dot, which Buildkit's interface text
- * never uses, so every list question goes through here with the hint off.
- */
-function choose<Value>(options: prompts.SelectOptions<Value>) {
-  return prompts.select({ ...options, showInstructions: false })
-}
-
 class Canceled extends Error {}
 
 /** A prompt's answer, or `Canceled` when the person pressed Ctrl+C: clack answers a cancel with a symbol. */
@@ -470,7 +462,7 @@ async function askIcons(initial: string, appDirectory: string): Promise<string> 
   const adapters = [...found.values()]
 
   const choice = answer(
-    await choose({
+    await prompts.select({
       message: "Which icons?",
       initialValue: initial,
       options: [
@@ -514,7 +506,7 @@ async function askSettings(current: SyncSettings, flags: SettingFlags, appDirect
   const base =
     flags.base ??
     answer(
-      await choose({
+      await prompts.select({
         message: "Which primitives should the components use?",
         initialValue: current.base,
         // The recommended base first, then the rest in shadcn's order.
@@ -532,7 +524,7 @@ async function askSettings(current: SyncSettings, flags: SettingFlags, appDirect
   const style =
     flags.style ??
     answer(
-      await choose({
+      await prompts.select({
         message: "Which style?",
         initialValue: current.style,
         options: styles.map((value) => ({ value, label: titleCase(value) }))
@@ -542,7 +534,7 @@ async function askSettings(current: SyncSettings, flags: SettingFlags, appDirect
   const theme =
     flags.theme ??
     answer(
-      await choose({
+      await prompts.select({
         message: "Which color theme?",
         initialValue: current.theme,
         options: themes.map((value) => ({ value, label: titleCase(value) }))
@@ -584,7 +576,7 @@ async function confirmChanges(previous: SyncSettings, next: SyncSettings) {
   )
 
   const confirmed = answer(
-    await choose({
+    await prompts.select({
       message: `Apply these changes?\n${pc.dim(lines.join("\n"))}`,
       options: [
         { value: true, label: "Yes, rebuild" },
@@ -699,7 +691,7 @@ export async function runInstaller(request: InstallerRequest) {
       prompts.note(settingsTable(current), "Current settings")
 
       const action = answer(
-        await choose({
+        await prompts.select({
           message: "What do you want to do?",
           options: [
             { value: "rebuild", label: "Rebuild" },

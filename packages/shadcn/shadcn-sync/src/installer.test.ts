@@ -28,16 +28,7 @@ vi.mock("@clack/prompts", () => ({
     error: (message: string) => shown.push(`failed ${message}`),
     clear: () => undefined
   }),
-  select: async (options: {
-    message: string
-    options: { value: unknown; label: string }[]
-    showInstructions?: boolean
-  }) => {
-    // clack's key hint separates its parts with a dot, which Buildkit's interface text never uses.
-    if (options.showInstructions !== false) {
-      throw new Error(`"${options.message}" shows clack's key hint`)
-    }
-
+  select: async (options: { message: string; options: { value: unknown; label: string }[] }) => {
     shown.push(`select ${options.message}\n${options.options.map((option) => option.label).join("\n")}`)
 
     const value = answers.shift()
