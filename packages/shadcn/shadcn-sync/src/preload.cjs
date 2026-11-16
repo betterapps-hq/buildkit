@@ -33,7 +33,7 @@ function emit(event) {
  */
 function blocked(url) {
   emit({ type: "blocked", url })
-  throw new Error(`buildkit-shadcn blocked a request to ${url}`)
+  throw new Error(`shadcn-sync blocked a request to ${url}`)
 }
 
 /** @type {Readonly<Record<string, import("./json.js").Json>>} */

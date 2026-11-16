@@ -2,38 +2,63 @@ import { readFileSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import * as z from "zod"
 import { SyncError } from "./errors.js"
-import { defaultSettings, type SettingFlags, type SyncSettings } from "./options.js"
+import { defaultSettings, settingKeys, type SettingFlags, type SyncSettings } from "./options.js"
 import { readPackageJson } from "./register.js"
 
-const settingKeys = ["base", "icons", "style", "theme", "css"] as const
-const syncCall = /\bbuildkit-shadcn\s+sync\b[^&|;]*/
+const syncCall = /\bshadcn-sync\s+sync\b[^&|;]*/
 
 const manifestSchema = z.looseObject({ scripts: z.record(z.string(), z.string()).optional() })
 
-/** The app's script that runs `buildkit-shadcn sync`: the `postinstall`, or another script when the app runs it by hand. */
+/** The app's script that runs `shadcn-sync sync`: the `postinstall`, or another script when the app runs it by hand. */
 export interface SyncScript {
   readonly name: string
   readonly command: string
 }
 
-export function findSyncScript(appDirectory: string): SyncScript {
-  const scripts =
-    manifestSchema.parse(JSON.parse(readFileSync(join(appDirectory, "package.json"), "utf8"))).scripts ?? {}
+function readScripts(appDirectory: string) {
+  return manifestSchema.parse(JSON.parse(readFileSync(join(appDirectory, "package.json"), "utf8"))).scripts ?? {}
+}
 
+/** The app's sync script, or `undefined` when no script runs sync yet. */
+export function findSyncScriptIfAny(appDirectory: string): SyncScript | undefined {
+  const scripts = readScripts(appDirectory)
   const names = ["postinstall", ...Object.keys(scripts).filter((name) => name !== "postinstall")]
   const name = names.find((entry) => syncCall.test(scripts[entry] ?? ""))
 
-  if (!name) {
+  return name ? { name, command: scripts[name] ?? "" } : undefined
+}
+
+export function findSyncScript(appDirectory: string): SyncScript {
+  const script = findSyncScriptIfAny(appDirectory)
+
+  if (!script) {
     throw new SyncError(
       "configuration",
-      'package.json has no script that runs buildkit-shadcn sync. Add it to "postinstall", then run this command again.'
+      'package.json has no script that runs shadcn-sync sync. Add it to "postinstall", then run this command again.'
     )
   }
 
-  return { name, command: scripts[name] ?? "" }
+  return script
 }
 
-/** Reads the setting flags from the script's `buildkit-shadcn sync` call. */
+/**
+ * The `postinstall` that runs sync with the settings, after whatever the app's `postinstall` already runs. Spells out
+ * the main settings so the app's choices read at a glance.
+ */
+export function addedSyncScript(appDirectory: string, settings: SyncSettings): SyncScript {
+  const existing = readScripts(appDirectory).postinstall?.trim()
+  const flags = (["base", "icons", "style", "theme"] as const).map((key) => `--${key} ${settings[key]}`)
+
+  const call = [
+    "shadcn-sync sync",
+    ...flags,
+    ...(settings.css === defaultSettings.css ? [] : [`--css ${settings.css}`])
+  ]
+
+  return { name: "postinstall", command: existing ? `${existing} && ${call.join(" ")}` : call.join(" ") }
+}
+
+/** Reads the setting flags from the script's `shadcn-sync sync` call. */
 export function scriptFlags(command: string): SettingFlags {
   const words = (syncCall.exec(command)?.[0] ?? "").trim().split(/\s+/)
   const flags: Partial<Record<(typeof settingKeys)[number], string>> = {}
@@ -76,7 +101,7 @@ export function withSettings(command: string, settings: SyncSettings): string {
 /** Rewrites one script in `package.json`, keeping the file's indentation and final newline. */
 export function writeScript(appDirectory: string, name: string, command: string) {
   const { indent, newline, value } = readPackageJson(appDirectory)
-  const scripts = { ...z.record(z.string(), z.string()).parse(value.scripts), [name]: command }
+  const scripts = { ...z.record(z.string(), z.string()).optional().parse(value.scripts), [name]: command }
 
   writeFileSync(
     join(appDirectory, "package.json"),

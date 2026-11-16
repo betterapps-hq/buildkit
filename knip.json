@@ -46,7 +46,7 @@
       "entry": ["src/index.ts", "src/bin.ts", "vitest.integration.config.ts"]
     },
     "packages/shadcn/shadcn-sync": {
-      "entry": ["src/adapter.ts", "src/bin.ts", "bin/buildkit-shadcn.js", "src/preload.cjs"],
+      "entry": ["src/adapter.ts", "src/bin.ts", "bin/shadcn-sync.js", "src/preload.cjs"],
       "ignoreDependencies": [
         "@base-ui/react",
         "@shadcn/react",

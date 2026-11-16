@@ -1,4 +1,3 @@
-import { spawnSync } from "node:child_process"
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
@@ -8,6 +7,7 @@ import { json, readJson, type Json } from "./json.js"
 import { isBuiltInIcons, registryStyle, type SyncSettings } from "./options.js"
 import { findPackage } from "./resolve.js"
 import { registryUrl, type RegistryResponses, type RegistrySnapshot, snapshotFile } from "./snapshot.js"
+import { run } from "./spawn.js"
 
 // shadcn doesn't export its package.json, so its folder is found the way Node finds packages.
 const shadcnDirectory = findPackage("shadcn", import.meta.dirname) ?? "shadcn"
@@ -59,7 +59,7 @@ export function createWorkspace(directory: string, settings: SyncSettings) {
     aliases
   })
   writeJsonFile(join(directory, "package.json"), {
-    name: "buildkit-shadcn-workspace",
+    name: "shadcn-sync-workspace",
     private: true,
     type: "module",
     dependencies: { react: "^19.2.0", "react-dom": "^19.2.0", tailwindcss: "^4.0.0" }
@@ -100,7 +100,12 @@ interface ShadcnRun {
   readonly output: string
 }
 
-function runShadcn(directory: string, args: readonly string[], source: RegistrySource, verbose: boolean): ShadcnRun {
+async function runShadcn(
+  directory: string,
+  args: readonly string[],
+  source: RegistrySource,
+  verbose: boolean
+): Promise<ShadcnRun> {
   const events = join(directory, ".shadcn-events.jsonl")
   const snapshotPath = join(directory, ".shadcn-responses.json")
 
@@ -113,20 +118,18 @@ function runShadcn(directory: string, args: readonly string[], source: RegistryS
   const bin = join(shadcnDirectory, "dist/index.js")
 
   // The CLI runs in the temp project with relative arguments: it reads Windows paths such as `D:/` as URLs.
-  const result = spawnSync(process.execPath, ["--require", preload, bin, ...args], {
+  const result = await run(process.execPath, ["--require", preload, bin, ...args], {
     cwd: directory,
-    encoding: "utf8",
     env: {
       ...process.env,
       BUILDKIT_SHADCN_MODE: source.mode,
       BUILDKIT_SHADCN_REGISTRY: `${registryUrl}/`,
       BUILDKIT_SHADCN_EVENTS: events,
       BUILDKIT_SHADCN_RESPONSES: snapshotPath
-    },
-    stdio: ["ignore", "pipe", "pipe"]
+    }
   })
 
-  const output = `${result.stdout}${result.stderr}`
+  const output = result.output
   const log = existsSync(events) ? readFileSync(events, "utf8").trim().split("\n").filter(Boolean) : []
   const responses: Record<string, Json> = {}
 
@@ -185,18 +188,18 @@ function runShadcn(directory: string, args: readonly string[], source: RegistryS
  * Installs the whole catalog and the theme into the temp project with the shadcn CLI. Returns every registry response
  * the CLI received, recorded live or replayed from the snapshot.
  */
-export function installCatalog(
+export async function installCatalog(
   directory: string,
   settings: SyncSettings,
   source: RegistrySource,
   verbose: boolean
-): RegistryResponses {
-  const catalog = runShadcn(directory, ["add", "--all", "--yes", "--silent"], source, verbose)
+): Promise<RegistryResponses> {
+  const catalog = await runShadcn(directory, ["add", "--all", "--yes", "--silent"], source, verbose)
   const known = source.mode === "replay" ? source.snapshot.responses : catalog.responses
 
   writeJsonFile(join(directory, "buildkit-theme.json"), themeItem(known, settings.theme))
 
-  const theme = runShadcn(
+  const theme = await runShadcn(
     directory,
     ["add", "style", "./buildkit-theme.json", "--yes", "--silent", "--overwrite"],
     source,
