@@ -1,4 +1,4 @@
-import { lstatSync, mkdirSync, realpathSync, symlinkSync } from "node:fs"
+import { existsSync, lstatSync, mkdirSync, realpathSync, symlinkSync } from "node:fs"
 import { createRequire } from "node:module"
 import { dirname, join, relative, sep } from "node:path"
 import { findPackage, readManifest } from "./resolve.js"
@@ -83,6 +83,23 @@ export function linkAll(directory: string, targets: ReadonlyMap<string, string>)
   for (const [name, target] of targets) {
     link(directory, name, target)
   }
+}
+
+/**
+ * Whether `directory/node_modules` holds exactly the links `linkMissing` would make now: one for each package the app
+ * can't resolve, pointing at an installed package, and none for a package the app has. An app that adds or drops a
+ * package after a build changes which links the output needs.
+ */
+export function linksCurrent(directory: string, names: readonly string[], appDirectory: string): boolean {
+  return names.every((name) => {
+    if (appOnly.has(name)) {
+      return true
+    }
+
+    const linked = existsSync(join(directory, "node_modules", ...name.split("/"), "package.json"))
+
+    return linked !== Boolean(findPackage(name, appDirectory))
+  })
 }
 
 /**

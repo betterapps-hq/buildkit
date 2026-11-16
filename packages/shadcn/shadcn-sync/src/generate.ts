@@ -5,6 +5,7 @@ import { dirname, join, relative, sep } from "node:path"
 import * as z from "zod"
 import { SyncError } from "./errors.js"
 import { readJson, type Json } from "./json.js"
+import { linksCurrent } from "./links.js"
 import type { SyncSettings } from "./options.js"
 import { findPackage, readManifest } from "./resolve.js"
 import type { ComponentModule, SharedModule } from "./sources.js"
@@ -242,6 +243,8 @@ export interface GeneratedManifest {
   readonly settings: SyncSettings
   readonly snapshot: string
   readonly fingerprint: string
+  /** The packages the generated code needs, which sync links in when the app can't resolve them. */
+  readonly packages: readonly string[]
   readonly files: Readonly<Record<string, string>>
 }
 
@@ -256,29 +259,9 @@ const generatedManifestSchema = z.object({
   }),
   snapshot: z.string(),
   fingerprint: z.string(),
+  packages: z.array(z.string()),
   files: z.record(z.string(), z.string())
 })
-
-/**
- * Whether every dependency link in the output still points at an installed package the app can't resolve itself. Once
- * the app installs its own copy of a linked package, the link has to go, so the components use the app's version.
- */
-function linksResolve(outDir: string, appDirectory: string) {
-  const modules = join(outDir, "node_modules")
-
-  if (!existsSync(modules)) {
-    return true
-  }
-
-  const entries = readdirSync(modules).flatMap((name) =>
-    name.startsWith("@") ? readdirSync(join(modules, name)).map((scoped) => join(name, scoped)) : [name]
-  )
-
-  return entries.every(
-    (entry) =>
-      existsSync(join(modules, entry, "package.json")) && !findPackage(entry.split(sep).join("/"), appDirectory)
-  )
-}
 
 /**
  * Whether the output matches the fingerprint, its dependency links are still the ones a build would make, and every
@@ -296,7 +279,7 @@ export function isCurrent(outDir: string, fingerprint: string, appDirectory: str
   return (
     manifest.success &&
     manifest.data.fingerprint === fingerprint &&
-    linksResolve(outDir, appDirectory) &&
+    linksCurrent(outDir, manifest.data.packages, appDirectory) &&
     Object.entries(manifest.data.files).every(([file, hash]) => {
       const path = join(outDir, file)
 
@@ -355,6 +338,7 @@ export function writePackageFiles(
     settings: { ...manifest.settings },
     snapshot: manifest.snapshot,
     fingerprint: manifest.fingerprint,
+    packages: [...manifest.packages],
     files: manifest.files
   })
 }

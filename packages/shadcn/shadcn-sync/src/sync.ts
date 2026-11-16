@@ -308,7 +308,8 @@ async function buildStaging(build: StagingBuild): Promise<StagedBuild> {
     generatorVersion: syncVersion,
     settings,
     snapshot: snapshot.hash,
-    fingerprint: fingerprint(settings, snapshot, build.icons)
+    fingerprint: fingerprint(settings, snapshot, build.icons),
+    packages: [...targets.keys()]
   })
 
   return { snapshot, count: prepared.components.length }

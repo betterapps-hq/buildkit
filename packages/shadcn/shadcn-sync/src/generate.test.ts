@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs"
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { describe, expect, it } from "vite-plus/test"
@@ -26,7 +26,8 @@ const identity = {
   generatorVersion: "0.0.0",
   settings: { base: "base", icons: "lucide", style: "nova", theme: "neutral", css: "compiled" as const },
   snapshot: "sha256-snapshot",
-  fingerprint: "sha256-fingerprint"
+  fingerprint: "sha256-fingerprint",
+  packages: ["cmdk", "react"]
 }
 
 function temporary() {
@@ -102,6 +103,20 @@ describe("isCurrent", () => {
     expect(isCurrent(outDir, identity.fingerprint, app)).toBe(true)
 
     installed(app, "cmdk")
+
+    expect(isCurrent(outDir, identity.fingerprint, app)).toBe(false)
+  })
+
+  it("rebuilds once the app drops a package it provided, so sync links its own copy", () => {
+    const app = temporary()
+    const outDir = join(app, "node_modules/.buildkit/shadcn")
+
+    writePackageFiles(outDir, components, shared, {}, identity)
+    installed(app, "cmdk")
+
+    expect(isCurrent(outDir, identity.fingerprint, app)).toBe(true)
+
+    rmSync(join(app, "node_modules/cmdk"), { recursive: true })
 
     expect(isCurrent(outDir, identity.fingerprint, app)).toBe(false)
   })
