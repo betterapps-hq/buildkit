@@ -11,16 +11,16 @@ fluent.styles // "@fluentui/react-icons/headless/styles.css"
 fluent.icons.XIcon // { name: "DismissRegular", module: "@fluentui/react-icons/headless/svg/dismiss" }
 ```
 
-`buildkit-shadcn` from [`@buildkitgg/shadcn-sync`](../shadcn-sync/README.md) reads it at build time to swap the icons,
-so the built components import Fluent directly. `@fluentui/react-icons` 2.0.332 or later is a peer dependency, so the
-app controls its version.
+`shadcn-sync` from [`@buildkitgg/shadcn-sync`](../shadcn-sync/README.md) reads it at build time to swap the icons, so
+the built components import Fluent directly. `@fluentui/react-icons` 2.0.332 or later is a peer dependency, so the app
+controls its version.
 
 Install both packages and pass the adapter to sync:
 
 ```bash
 pnpm add @fluentui/react-icons
 pnpm add -D @buildkitgg/shadcn-icons-fluent
-pnpm exec buildkit-shadcn set --icons @buildkitgg/shadcn-icons-fluent
+pnpm exec shadcn-sync set --icons @buildkitgg/shadcn-icons-fluent
 ```
 
 ## Icons

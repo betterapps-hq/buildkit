@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "sync": "buildkit-shadcn sync --base base-ui --icons lucide --style nova --theme neutral",
+    "sync": "shadcn-sync sync --base base --icons lucide --style nova --theme neutral",
     "dev": "pnpm sync && vp dev --host 127.0.0.1 --port 4180",
     "build": "pnpm sync && vp build"
   },

@@ -11,7 +11,7 @@ const responses = {
 
 describe("registry snapshot", () => {
   it("sorts responses and survives reformatting, but not edits", () => {
-    const directory = mkdtempSync(join(tmpdir(), "buildkit-shadcn-snapshot-"))
+    const directory = mkdtempSync(join(tmpdir(), "shadcn-sync-snapshot-"))
     const path = join(directory, "shadcn-registry.json")
     const snapshot = createSnapshot("base-nova", "neutral", "4.23.0", responses)
 

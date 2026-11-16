@@ -4,9 +4,10 @@ Plan to replace the per-style `@buildkitgg/shadcn-baseui-*` packages with one sy
 components with the shadcn CLI and compiles them into a package inside each app's `node_modules`, for the primitives,
 icon library, style and theme the app picks.
 
-**Status (2026-11-15):** in progress. [`@buildkitgg/shadcn-sync`](../../packages/shadcn/shadcn-sync/README.md) has
-`sync`, `update` and `set`, and [`apps/shadcn-sync-example`](../../apps/shadcn-sync-example/README.md) renders its
-output. See [Phases](#phases) for what's left.
+**Status (2026-11-15):** in progress. [`@buildkitgg/shadcn-sync`](../../packages/shadcn/shadcn-sync/README.md) has the
+`shadcn-sync` installer and its `sync`, `update` and `set` commands, and
+[`apps/shadcn-sync-example`](../../apps/shadcn-sync-example/README.md) renders its output. See [Phases](#phases) for
+what's left.
 
 ## Why
 
@@ -26,16 +27,27 @@ output. See [Phases](#phases) for what's left.
 | **Sync adds the generated package to the app's `dependencies`**            | Linking the generated package is never a manual step                            |
 | **Apps ship only the CSS of the components they import**                   | Per-component stylesheets whose order can't break (see [CSS](#css))             |
 | **Generated output lives per project, outside the installed sync package** | Two apps, or two projects sharing a package store, never overwrite each other   |
-| **Base UI or Radix, Base UI by default**                                   | `--base` picks which upstream registry style the snapshot holds                 |
+| **Base UI, Radix or React Aria, Base UI by default**                       | `--base` picks which upstream registry style the snapshot holds                 |
 | **A Tailwind mode with no duplicate rules**                                | `--css tailwind` leaves compiled CSS out; the app's own Tailwind builds it      |
 | **Three commands: `sync`, `update` and `set`**                             | Updating and changing the configuration never need hand edits to `package.json` |
 
+## Owner decisions (2026-11-15)
+
+| Decision                                                 | What it changes                                                                                 |
+| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| **The command is `shadcn-sync`**                         | Same name as the package, so `pnpm dlx @buildkitgg/shadcn-sync` and the command match           |
+| **Running it with no command opens an installer**        | A person at a terminal answers questions instead of writing flags (see [Installer](#installer)) |
+| **Choices come from the pinned shadcn CLI's own data**   | No list of styles, themes, icon libraries or bases to maintain; no style descriptions           |
+| **`--base` takes shadcn's ids: `base`, `radix`, `aria`** | Matches the shadcn CLI's own `--base`; a new upstream base needs no code change to be offered   |
+| **`radix-ui` and `react-aria-components` are approved**  | The installer offers all three bases; the app installs the primitives for Radix and React Aria  |
+| **No list of which components a base lacks**             | The installer never calculates or shows it; sync builds whatever the chosen base has            |
+
 ## Packages
 
-| Package                   | What it is                                                                                          | Published |
-| ------------------------- | --------------------------------------------------------------------------------------------------- | --------- |
-| `@buildkitgg/shadcn-sync` | The `buildkit-shadcn` bin, the build pipeline around the shadcn CLI, and the icon adapter interface | Yes       |
-| `@buildkitgg/shadcn`      | The generated component library, written by sync into the app and linked as a dependency            | No        |
+| Package                   | What it is                                                                                      | Published |
+| ------------------------- | ----------------------------------------------------------------------------------------------- | --------- |
+| `@buildkitgg/shadcn-sync` | The `shadcn-sync` bin, the build pipeline around the shadcn CLI, and the icon adapter interface | Yes       |
+| `@buildkitgg/shadcn`      | The generated component library, written by sync into the app and linked as a dependency        | No        |
 
 `@buildkitgg/shadcn` never exists on npm. Its name belongs to the generated package so the import path stays
 `@buildkitgg/shadcn` whatever the configuration. Reserve the name on npm so nobody else can publish it.
@@ -48,7 +60,7 @@ discussion.
 | Need                           | Package                                                                                        |
 | ------------------------------ | ---------------------------------------------------------------------------------------------- |
 | Commands and arguments         | `citty`, as in `dev-domains` and `@buildkitgg/cli`                                             |
-| The `set` prompts              | `@clack/prompts`                                                                               |
+| The installer's questions      | `@clack/prompts`, for its prompts and spinners                                                 |
 | Terminal colors                | `picocolors`                                                                                   |
 | Package manager and specifiers | `package-manager-detector`                                                                     |
 | Installing components          | `shadcn`, pinned to an exact version and run with the record-and-replay preload                |
@@ -58,7 +70,14 @@ discussion.
 
 ## Developer experience
 
-The app adds the sync package and a `postinstall`:
+The quickest start is the installer, run in the app's folder:
+
+```bash
+pnpm dlx @buildkitgg/shadcn-sync
+```
+
+It asks for the primitives, style, theme and icons, installs what they need, builds, and writes the `postinstall` (see
+[Installer](#installer)). The result is the same as adding the sync package and a `postinstall` by hand:
 
 ```json
 {
@@ -66,7 +85,7 @@ The app adds the sync package and a `postinstall`:
     "@buildkitgg/shadcn-sync": "^1.0.0"
   },
   "scripts": {
-    "postinstall": "buildkit-shadcn sync --base base-ui --icons lucide --style nova --theme neutral"
+    "postinstall": "shadcn-sync sync --base base --icons lucide --style nova --theme neutral"
   }
 }
 ```
@@ -83,7 +102,7 @@ package (the specifier depends on the package manager, see [Dependency registrat
 ```
 
 The app commits both files. Every later install, fresh clone and CI run builds from the snapshot without a registry
-request, so everyone gets the same components until someone runs `buildkit-shadcn update`.
+request, so everyone gets the same components until someone runs `shadcn-sync update`.
 
 The app imports from the package root or a component subpath:
 
@@ -99,35 +118,44 @@ component APIs, because each comes from its own upstream implementation.
 ## CLI
 
 ```bash
-buildkit-shadcn sync [options]
-buildkit-shadcn update
-buildkit-shadcn set [--base <base>] [--icons <library>] [--style <style>] [--theme <theme>] [--css <mode>]
+shadcn-sync [settings] [--yes]
+shadcn-sync sync [settings] [--force]
+shadcn-sync update
+shadcn-sync set [settings] [--yes]
 ```
 
 | Command  | What it does                                                                                       | Network                                                                    |
 | -------- | -------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| (none)   | The [installer](#installer): asks for each setting, installs what they need, builds                | For a new base, style or theme, and to look up icon adapters               |
 | `sync`   | Builds the package from the snapshot. Runs on every install from the `postinstall`                 | Only when there's no snapshot, or `--base`, `--style` or `--theme` changed |
 | `update` | Records a fresh snapshot from the live registry and rebuilds (see [Updating](#updating))           | Yes                                                                        |
 | `set`    | Changes any of the settings, in one go, and rebuilds (see [Changing settings](#changing-settings)) | Only when the base, style or theme changes                                 |
 
-`update` and `set` are for running by hand, for example `pnpm exec buildkit-shadcn update`. They read the other options
-from the script that runs sync, so nothing needs repeating. That's the `postinstall`, or another script when the app
-runs sync by hand, as the example app inside this repository does: a fresh clone of the repository installs before the
-sync package is built.
+`update` and `set` are for running by hand, for example `pnpm exec shadcn-sync update`. They read the other options from
+the script that runs sync, so nothing needs repeating. That's the `postinstall`, or another script when the app runs
+sync by hand, as the example app inside this repository does: a fresh clone of the repository installs before the sync
+package is built.
 
-`sync` options, all set in the `postinstall`:
+Settings, taken by the installer, `sync` and `set`:
 
-| Option      | Values                                                                            | Default    |
-| ----------- | --------------------------------------------------------------------------------- | ---------- |
-| `--base`    | `base-ui`, `radix`                                                                | `base-ui`  |
-| `--icons`   | An upstream library id, or the package name of an icon adapter                    | `lucide`   |
-| `--style`   | An upstream style: `nova`, `vega`, `luma`, `lyra`, `maia`, `mira`, `rhea`, `sera` | `nova`     |
-| `--theme`   | An upstream color theme                                                           | `neutral`  |
-| `--css`     | `compiled`, `tailwind` (see [CSS modes](#css-modes))                              | `compiled` |
-| `--force`   | Regenerate even when the output is current                                        | `false`    |
-| `--verbose` | Log each stage                                                                    | `false`    |
+| Option    | Values                                                                                                  | Default    |
+| --------- | ------------------------------------------------------------------------------------------------------- | ---------- |
+| `--base`  | A shadcn base: `base` (Base UI), `radix` or `aria` (React Aria)                                         | `base`     |
+| `--icons` | A shadcn icon library (`lucide`, `tabler`, `hugeicons`, `phosphor`, `remixicon`), or an adapter package | `lucide`   |
+| `--style` | A shadcn style: `nova`, `vega`, `maia`, `lyra`, `mira`, `luma`, `sera`, `rhea`                          | `nova`     |
+| `--theme` | A shadcn base color: `neutral`, `stone`, `zinc`, `gray`, `mauve`, `olive`, `mist`, `taupe`              | `neutral`  |
+| `--css`   | `compiled`, `tailwind` (see [CSS modes](#css-modes))                                                    | `compiled` |
 
-`update` and `set` also take `--verbose`.
+The bases, styles, themes and icon libraries are read from the pinned shadcn CLI's own data (`shadcn/preset` and
+`shadcn/icons`), so the lists above follow upstream whenever sync moves to a new shadcn version.
+
+Other options:
+
+| Option        | Commands      | What it does                                                                   |
+| ------------- | ------------- | ------------------------------------------------------------------------------ |
+| `--yes`, `-y` | (none), `set` | No questions: the current settings or the defaults, and install what's missing |
+| `--force`     | `sync`        | Regenerate even when the output is current                                     |
+| `--verbose`   | All           | Log each stage                                                                 |
 
 The spec draft used `--theme nova`, but `nova` is a style. Styles change component classes; themes are the color
 variables. Both are selectable.
@@ -148,7 +176,148 @@ Defaults stay fixed within a major version.
 7. Swap the staging folder in for the previous output. A failure at any earlier step leaves the previous output alone.
 8. Make sure the app's `package.json` declares the generated package and that it resolves from `node_modules`.
 
-Sync never runs an install in the app.
+Sync never runs an install in the app; only the installer does, after asking.
+
+## Installer
+
+`shadcn-sync` with no command asks what to build. `sync` also opens it when it runs at a terminal with no setting flags
+in an app that has no sync script yet, and `set` with no options goes straight to its settings questions.
+
+### When it asks
+
+It asks only when stdin and stdout are both terminals, `CI` isn't set, and no install script is running it
+(`npm_lifecycle_event` isn't `preinstall`, `install`, `postinstall` or `prepare`). Every package manager sets that
+variable, so an install stays silent with no flag. A setting passed as a flag skips its question. `--yes` skips every
+question: it takes the current settings, or the defaults on a first run, and installs whatever is missing. Without a
+terminal and without `--yes`, a missing package fails with the install command instead.
+
+### Screens
+
+A first run asks four questions, then builds:
+
+```text
+┌  shadcn-sync
+│
+◆  Which primitives should the components use?
+│  ● Base UI (Recommended)
+│  ○ Radix
+│  ○ React Aria
+└
+```
+
+```text
+│  Preview the styles at https://ui.shadcn.com/create
+│
+◆  Which style?
+│  ● Nova
+│  ○ Vega
+│  ○ …
+└
+```
+
+```text
+◆  Which color theme?
+│  ● Neutral
+│  ○ Stone
+│  ○ …
+└
+```
+
+```text
+◆  Which icons?
+│  ● Lucide (lucide-react)
+│  ○ Tabler Icons
+│  ○ HugeIcons
+│  ○ Phosphor Icons
+│  ○ Remix Icon
+│  ○ @buildkitgg/shadcn-icons-fluent
+│  ○ Another icon adapter…
+└
+```
+
+When the settings need packages the app doesn't have, it shows the command for the app's package manager and asks before
+running it. "No" stops with nothing changed.
+
+```text
+◆  Install the packages these settings need?
+│  pnpm add @phosphor-icons/react
+│  ● Yes
+│  ○ No, I'll install them myself
+└
+```
+
+Each long step has its own spinner, which stops with a finished line when the next step starts:
+
+```text
+◇  Installed 1 package
+◇  Downloaded components from shadcn
+◇  Rewrote imports and icons
+◇  Compiled JavaScript and types
+◇  Compiled CSS
+◇  Built 63 components
+◇  Linked @buildkitgg/shadcn
+```
+
+It ends with what changed, a sample import and a link to shadcn's theme builder showing the same choices:
+
+```text
+◇  Changed ──────────────────────────────────────╮
+│                                                │
+│  package.json           "postinstall" script   │
+│                         @buildkitgg/shadcn     │
+│  shadcn-registry.json   new registry snapshot  │
+│                                                │
+├────────────────────────────────────────────────╯
+│
+│  import { Button } from "@buildkitgg/shadcn"
+│
+│  See your choices at https://ui.shadcn.com/create?preset=b0&base=base
+│
+└  Done. Commit package.json and shadcn-registry.json.
+```
+
+In an app that already has settings, it shows them and asks what to do:
+
+```text
+◇  Current settings ────╮
+│                       │
+│  Primitives  Base UI  │
+│  Style       Nova     │
+│  Theme       Neutral  │
+│  Icons       Lucide   │
+├───────────────────────╯
+◆  What do you want to do?
+│  ● Rebuild
+│  ○ Change settings
+│  ○ Get the latest components from shadcn
+└
+```
+
+Changing settings asks the same four questions with the current answers selected, then lists each change and asks "Apply
+these changes?" before installing or building. Getting the latest components runs `update` and lists what was added,
+removed and changed. Ctrl+C at any question ends with "Canceled. Nothing changed."
+
+### Where the choices come from
+
+- **Bases, styles and themes:** `PRESET_BASES`, `PRESET_STYLES` and `PRESET_BASE_COLORS` from `shadcn/preset`. Styles
+  and themes show as their id with a capital letter, as shadcn shows them. The registry's own `styles/index.json` still
+  lists only New York and Default, so it isn't used, and nothing upstream describes the styles, so the installer shows
+  none. Bases have a small table of names ("Base UI") and primitives packages; a base missing from it shows by its id.
+- **Icon libraries:** `iconLibraries` from `shadcn/icons`, with each library's title and packages.
+- **Icon adapters:** the app's installed dependencies whose `package.json` has the `shadcn-sync-icons` keyword, and
+  packages with that keyword on npm, looked up with a three-second limit and skipped offline. "Another icon adapter…"
+  takes any package name.
+- **The theme builder link:** shadcn's own `encodePreset`, with the chosen style, theme and icon library, and the base
+  as `&base=`. An adapter's icons have no preview, so the link shows Lucide.
+
+### Installing
+
+The installer runs the package manager's own add command, with the runtime packages in `dependencies` and the sync
+package and any icon adapter in `devDependencies`. It sets `SHADCN_SYNC_SKIP` while the install runs, so the app's
+`postinstall` sync skips and the installer builds once the packages are in. An adapter's icon library is known only once
+the adapter is installed, so it installs that next, in the same step. When a build finds that the components import a
+package the app lacks, such as the `vaul` that Radix's drawer uses, the installer offers to install it and builds again.
+It writes the `postinstall` only after the build passes, after any `postinstall` the app already had.
 
 ## Registry snapshot
 
@@ -192,7 +361,7 @@ as the registry served it. It's the pin, so it's committed with the app.
 ### Updating
 
 ```bash
-pnpm exec buildkit-shadcn update
+pnpm exec shadcn-sync update
 ```
 
 `update` records a fresh snapshot from the live registry, builds and validates it exactly like `sync`, and only then
@@ -205,7 +374,7 @@ app's installed versions and lists any the app needs to add or raise.
 `set` changes any combination of settings in one command. Pass only the ones that change; the rest stay as they are.
 
 ```bash
-pnpm exec buildkit-shadcn set --icons phosphor --style vega --theme zinc
+pnpm exec shadcn-sync set --icons phosphor --style vega --theme zinc
 ```
 
 Run with no options, it asks for each setting in turn, with the current value selected.
@@ -213,15 +382,15 @@ Run with no options, it asks for each setting in turn, with the current value se
 1. Validate the values. Styles and themes are checked against the registry's list, so a typo fails before anything
    changes.
 2. Check that the packages the new settings need are installed: the icon library (or the adapter and its library) and,
-   for a new base, its primitives. If any are missing, stop and print the install command for the app's package manager.
-   `set` never installs anything itself.
+   for a new base, its primitives. If any are missing, ask before installing them at a terminal, install them with
+   `--yes`, and otherwise stop and print the install command for the app's package manager.
 3. Rebuild with the new settings. A new base, style or theme needs new registry items, so `set` records a fresh
    snapshot. Icons and the CSS mode aren't in the snapshot, so changing only those rebuilds from the existing one with
    no network.
 4. Only when the build passes, update the options in the `postinstall`, write the snapshot if it changed, and swap the
    output in. A failed build leaves all three alone.
 5. List the packages the app no longer imports (an old icon library, or the old base's primitives) so they can be
-   removed. When the base changed, warn that Base UI and Radix components can differ in their props.
+   removed. When the base changed, warn that the two bases' components can differ in their props.
 
 The app commits `package.json` and, when it changed, `shadcn-registry.json`. Every other machine picks up the change on
 its next install.
@@ -335,7 +504,7 @@ The peer list is generated from the imports the build actually contains.
 ```json
 {
   "generatorVersion": "1.0.0",
-  "base": "base-ui",
+  "base": "base",
   "icons": "lucide",
   "style": "nova",
   "theme": "neutral",
@@ -352,9 +521,10 @@ File hashes let sync notice a missing or edited file and regenerate even when th
 The generated code imports React, the selected primitives, the selected icon library and the registry items' other
 runtime libraries (cmdk, vaul, sonner, react-day-picker, embla, input-otp, recharts and so on).
 
-- `@buildkitgg/shadcn-sync` depends on both primitive sets and those runtime libraries, so the generated package
-  resolves them through the app's install. Base UI is a dependency today; `radix-ui` isn't used anywhere in the
-  repository yet, so it waits for the owner's go-ahead, and an app on `--base radix` installs it itself.
+- `@buildkitgg/shadcn-sync` depends on Base UI and the shared runtime libraries, so the generated package resolves them
+  through the app's install. An app on `--base radix` installs `radix-ui`, and one on `--base aria` installs
+  `react-aria-components`; the installer does it after asking. A base's extra libraries, such as `vaul` for Radix, are
+  installed by the app the same way.
 - The app declares its icon library (or adapter) itself. Sync fails with the package to add when it's missing.
 - React and React DOM stay peers.
 
@@ -399,6 +569,7 @@ export default {
   so the components' utilities, such as `hidden` and `size-4`, still override it. A library that styles icons with
   unlayered CSS at runtime breaks those utilities, because unlayered CSS beats every layer; adapters map to icons styled
   with a static stylesheet instead.
+- **The `shadcn-sync-icons` keyword** in the adapter's `package.json` lets the installer list it, installed or on npm.
 - **Sync resolves the adapter from the app**, so it has to be in the app's `devDependencies`. It reads the mapping at
   build time; the generated package imports only the icon library, never the adapter.
 - **Unmapped icons fail.** When an `update` brings an icon the adapter doesn't map, sync stops, names the icon and the
@@ -514,7 +685,7 @@ the declarations type-check, every export in the barrel exists, and the styleshe
 - `update` rewrites the snapshot only when the new build passes; `set` changes the `postinstall` only when the new build
   passes, and an icons or CSS-only `set` makes no network requests.
 - A hand-edited snapshot is refused.
-- Install with scripts disabled, then `buildkit-shadcn sync` by hand recovers.
+- Install with scripts disabled, then `shadcn-sync sync` by hand recovers.
 - A deleted or edited generated file is restored.
 - Two apps in one workspace with different flags keep their own output.
 - Two projects sharing a pnpm store, including with the global virtual store, keep their own output.
@@ -529,36 +700,36 @@ Every failure exits nonzero and names the stage: configuration, registry, depend
 registration. A failure before the swap ends with "Previous output kept."
 
 ```text
-buildkit-shadcn: "@buildkitgg/shadcn-icons-fluent" can't map ArrowUpRightIcon, used in sidebar.
+shadcn-sync: "@buildkitgg/shadcn-icons-fluent" can't map ArrowUpRightIcon, used in sidebar.
 Add the icon to the adapter, or pick another icon library. Previous output kept.
 ```
 
 ```text
-buildkit-shadcn: lucide-react isn't installed. Add it to this app's dependencies, then install again.
+shadcn-sync: lucide-react isn't installed. Add it to this app's dependencies, then install again.
 ```
 
 ```text
-buildkit-shadcn: @buildkitgg/shadcn is missing from package.json, and CI is set.
+shadcn-sync: @buildkitgg/shadcn is missing from package.json, and CI is set.
 Run an install locally and commit package.json and the lockfile.
 ```
 
 ```text
-buildkit-shadcn: shadcn-registry.json is missing or doesn't match --style vega, and CI is set.
+shadcn-sync: shadcn-registry.json is missing or doesn't match --style vega, and CI is set.
 Run an install locally and commit shadcn-registry.json.
 ```
 
 ```text
-buildkit-shadcn: shadcn-registry.json was edited by hand.
+shadcn-sync: shadcn-registry.json was edited by hand.
 Restore it from git, or run update to fetch a fresh copy.
 ```
 
 ```text
-buildkit-shadcn: shadcn 4.24.0 asked for styles/base-nova/registry.json, which shadcn-registry.json doesn't have.
+shadcn-sync: shadcn 4.24.0 asked for styles/base-nova/registry.json, which shadcn-registry.json doesn't have.
 Run update to record a fresh snapshot. Previous output kept.
 ```
 
 ```text
-buildkit-shadcn: Can't reach https://ui.shadcn.com/r to fetch the base-nova registry.
+shadcn-sync: Can't reach https://ui.shadcn.com/r to fetch the base-nova registry.
 Check your connection and try again. Previous output kept.
 ```
 
@@ -585,9 +756,9 @@ installs with npm, Yarn and Bun, pnpm's isolated layout outside this workspace, 
 theme, the adapter contract, and `@buildkitgg/shadcn-icons-fluent`. Done when changing any flag and reinstalling
 regenerates the package without touching the app's imports.
 
-Built: `set`, every style, the adapter contract and the Fluent adapter. Left: `--css tailwind`, Radix (it needs
-`radix-ui`, see [Runtime dependencies](#runtime-dependencies)), checking the built-in icon libraries other than Lucide
-and the themes other than neutral, and `checkAdapter`.
+Built: `set`, the installer, every style, all three bases, the adapter contract and the Fluent adapter. Radix and React
+Aria build and type-check; neither has been rendered in a browser yet. Left: `--css tailwind`, checking the built-in
+icon libraries other than Lucide and the themes other than neutral and zinc, and `checkAdapter`.
 
 **Phase 3: move over.** Point the managers, apps, Storybook and scaffolder templates at the generated package, then
 retire the style packages and the old generator.

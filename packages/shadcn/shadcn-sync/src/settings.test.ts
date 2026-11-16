@@ -20,9 +20,9 @@ describe("parseSettings", () => {
   })
 
   it.each([
-    [{ base: "mui" }, "--base mui isn't valid. Use base-ui or radix."],
+    [{ base: "mui" }, "--base mui isn't valid. Use radix, base, or aria."],
     [{ style: "nope" }, "--style nope isn't valid. Use nova,"],
-    [{ theme: "Neutral!" }, "--theme Neutral! isn't a registry theme name."],
+    [{ theme: "slate" }, "--theme slate isn't valid. Use neutral, stone,"],
     [{ icons: "../icons" }, "--icons ../icons isn't an icon library id or a package name."],
     [{ css: "tailwind" }, "--css tailwind isn't available yet."]
   ])("rejects %o", (flags, message) => {
@@ -47,38 +47,38 @@ describe("canonicalJson", () => {
 })
 
 describe("sync scripts", () => {
-  const command = "buildkit-shadcn sync --base base-ui --icons=lucide --style nova && echo done"
+  const command = "shadcn-sync sync --base base --icons=lucide --style nova && echo done"
 
   it("reads the flags from the sync call only", () => {
-    expect(scriptFlags(command)).toEqual({ base: "base-ui", icons: "lucide", style: "nova" })
+    expect(scriptFlags(command)).toEqual({ base: "base", icons: "lucide", style: "nova" })
   })
 
   it("replaces flags in place and adds missing ones that aren't defaults", () => {
     const next = withSettings(command, { ...defaultSettings, icons: "phosphor", theme: "zinc" })
 
-    expect(next).toBe("buildkit-shadcn sync --base base-ui --icons=phosphor --style nova --theme zinc && echo done")
+    expect(next).toBe("shadcn-sync sync --base base --icons=phosphor --style nova --theme zinc && echo done")
   })
 
   it("prefers the postinstall, then any script that runs sync", () => {
-    const app = mkdtempSync(join(tmpdir(), "buildkit-shadcn-scripts-"))
+    const app = mkdtempSync(join(tmpdir(), "shadcn-sync-scripts-"))
 
     writeFileSync(
       join(app, "package.json"),
-      JSON.stringify({ scripts: { build: "vite build", sync: "buildkit-shadcn sync --style vega" } }, null, 4)
+      JSON.stringify({ scripts: { build: "vite build", sync: "shadcn-sync sync --style vega" } }, null, 4)
     )
 
-    expect(findSyncScript(app)).toEqual({ name: "sync", command: "buildkit-shadcn sync --style vega" })
+    expect(findSyncScript(app)).toEqual({ name: "sync", command: "shadcn-sync sync --style vega" })
 
-    writeScript(app, "sync", "buildkit-shadcn sync --style luma")
+    writeScript(app, "sync", "shadcn-sync sync --style luma")
 
     const text = readFileSync(join(app, "package.json"), "utf8")
 
     expect(text).toContain('    "scripts": {')
     expect(text.endsWith("\n")).toBe(false)
-    expect(findSyncScript(app).command).toBe("buildkit-shadcn sync --style luma")
+    expect(findSyncScript(app).command).toBe("shadcn-sync sync --style luma")
 
     writeFileSync(join(app, "package.json"), JSON.stringify({ scripts: { build: "vite build" } }))
 
-    expect(() => findSyncScript(app)).toThrow("no script that runs buildkit-shadcn sync")
+    expect(() => findSyncScript(app)).toThrow("no script that runs shadcn-sync sync")
   })
 })

@@ -80,7 +80,7 @@ export function App() {
       <header className="app-header">
         <h1>Workspace settings</h1>
         <p>
-          Components from <code>@buildkitgg/shadcn</code>, built by <code>buildkit-shadcn sync</code>. This app has no
+          Components from <code>@buildkitgg/shadcn</code>, built by <code>shadcn-sync sync</code>. This app has no
           Tailwind.
         </p>
       </header>
