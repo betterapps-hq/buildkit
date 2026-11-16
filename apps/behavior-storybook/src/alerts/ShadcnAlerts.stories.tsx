@@ -1,5 +1,5 @@
+import { Alert, AlertTitle, AlertDescription, Button } from "@buildkitgg/shadcn"
 import { createAlertManager, AlertRegion, alertComponents } from "@buildkitgg/shadcn-alerts-manager"
-import { Alert, AlertTitle, AlertDescription, Button } from "@buildkitgg/shadcn-baseui-kit"
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { useState } from "react"
 import { AlertExamples, alertStory, type AlertScenario } from "./AlertExamples.js"

@@ -1,5 +1,4 @@
 import { Dialog as Primitive } from "@base-ui/react/dialog"
-import { ShadcnLocalizationProvider } from "@buildkitgg/shadcn-baseui-kit"
 import * as Radix from "@radix-ui/react-dialog"
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { StrictMode } from "react"
@@ -7,14 +6,9 @@ import { afterEach, describe, expect, it, vi } from "vite-plus/test"
 import { baseUiComponents, createModalManager, ModalRenderer, radixComponents } from "./index.js"
 import type { BaseUiModalComponents, RadixModalComponents } from "./index.js"
 
-it("updates provider labels while preserving manager and per-modal overrides", async () => {
+it("prefers per-modal labels, then manager labels, then English defaults", async () => {
   const manager = createModalManager({ labels: { confirm: "Approve" } })
-
-  const view = render(
-    <ShadcnLocalizationProvider strings={{ cancel: "Annuler" }}>
-      <ModalRenderer manager={manager} />
-    </ShadcnLocalizationProvider>
-  )
+  render(<ModalRenderer manager={manager} />)
 
   act(() => {
     void manager.confirm({ title: "Confirm", cancelLabel: "Keep" })
@@ -25,13 +19,7 @@ it("updates provider labels while preserving manager and per-modal overrides", a
   act(() => {
     void manager.confirm({ title: "Again" })
   })
-  expect(await screen.findByRole("button", { name: "Annuler" })).toBeTruthy()
-  view.rerender(
-    <ShadcnLocalizationProvider strings={{ cancel: "Abbrechen" }}>
-      <ModalRenderer manager={manager} />
-    </ShadcnLocalizationProvider>
-  )
-  expect(screen.getByRole("button", { name: "Abbrechen" })).toBeTruthy()
+  expect(await screen.findByRole("button", { name: "Cancel" })).toBeTruthy()
   act(() => manager.clear())
 })
 

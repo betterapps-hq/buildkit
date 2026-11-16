@@ -5,6 +5,8 @@ export default defineConfig({
     fsModuleCachePath: "node_modules/.vitest-cache",
     environment: "happy-dom",
     include: ["src/**/*.test.{ts,tsx}"],
+    // The generated components import their CSS, which Node can't load, so Vite processes them.
+    server: { deps: { inline: [/[/\\]\.buildkit[/\\]shadcn[/\\]/] } },
     coverage: {
       provider: "v8",
       include: ["src/**/*.{ts,tsx}"],

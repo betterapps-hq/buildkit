@@ -1,5 +1,5 @@
 import { createPreferences, usePreference } from "@buildkitgg/react-preferences"
-import { Button, ButtonGroup } from "@buildkitgg/shadcn-baseui-kit"
+import { Button, ButtonGroup } from "@buildkitgg/shadcn"
 
 const TEXT_SIZES = { Small: 14, Medium: 16, Large: 18 }
 

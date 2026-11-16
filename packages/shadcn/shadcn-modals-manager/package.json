@@ -3,19 +3,15 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
-    },
-    "./styles.css": {
-      "types": "./dist/styles.d.ts",
-      "default": "./styles.css"
     }
   },
   "name": "@buildkitgg/shadcn-modals-manager",
   "description": "Typed shadcn modal management with default components and optional Base UI or Radix adapters.",
   "license": "MIT",
   "peerDependencies": {
+    "@buildkitgg/shadcn": "*",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0",
-    "@buildkitgg/shadcn-baseui-kit": ">=0.3.0 <2.0.0"
+    "react-dom": "^19.2.0"
   },
   "sideEffects": [
     "**/*.css"
@@ -26,7 +22,6 @@
   "files": [
     "dist/**/*.js",
     "dist/**/*.d.ts",
-    "styles.css",
     "README.md",
     "docs/*.md",
     "LICENSE",
@@ -43,8 +38,9 @@
   "devDependencies": {
     "@base-ui/react": "^1.9.0",
     "@buildkitgg/fluentui-modals-manager": "workspace:*",
-    "@radix-ui/react-dialog": "^1.3.1",
+    "@buildkitgg/shadcn": "link:../../../apps/behavior-storybook/node_modules/.buildkit/shadcn",
     "@buildkitgg/typescript-config": "workspace:*",
+    "@radix-ui/react-dialog": "^1.3.1",
     "@testing-library/react": "^16.3.3",
     "@testing-library/user-event": "14.6.8",
     "@types/node": "^24.19.2",
@@ -55,9 +51,8 @@
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "typescript": "catalog:",
-    "vitest": "catalog:",
-    "@buildkitgg/shadcn-baseui-kit": "workspace:@buildkitgg/shadcn-baseui-nova@*",
-    "vite-plus": "catalog:"
+    "vite-plus": "catalog:",
+    "vitest": "catalog:"
   },
   "types": "./dist/index.d.ts",
   "repository": {

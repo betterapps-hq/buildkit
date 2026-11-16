@@ -46,21 +46,16 @@ Package-specific docs live in each package’s `docs/README.md`. Start with
 product's catalog, installed by name. [Templates for platforms](platform-planning/scaffolder-platform-templates.md): the
 planned move to questions, bare add-ons, version ranges and combination add-ons, so a platform can ship many starters.
 
-[shadcn component styles](shadcn/README.md) documents installation, styling, and maintenance of the generated Base UI
-packages.
-
-[shadcn sync](../packages/shadcn/shadcn-sync/README.md): the `shadcn-sync` command that builds a configurable
-`@buildkitgg/shadcn` package inside an app, with its [example app](../apps/shadcn-sync-example/README.md) and
+[shadcn components](shadcn/README.md): the [`shadcn-sync`](../packages/shadcn/shadcn-sync/README.md) command builds a
+configurable `@buildkitgg/shadcn` package inside an app. Guides: [choosing components](shadcn/styles.md),
+[theming](shadcn/theming.md), [text direction and labels](shadcn/localization.md) and
+[framework integration](shadcn/integration.md). See also its [example app](../apps/shadcn-sync-example/README.md) and
 [Fluent icon adapter](../packages/shadcn/shadcn-icons-fluent/README.md).
 
 [Route tabs and panels](routing.md): shared behavior and React Router / TanStack Router integrations.
 
 Configuration: [core and provider contract](../packages/core/configuration-core/README.md),
 [React subscriptions](../packages/react/react-configuration/README.md).
-
-[Generated shadcn styles and dependency aliases](shadcn/styles.md).
-
-[Shadcn localization, RTL, and class merging](shadcn/localization.md).
 
 [Better Apps](https://github.com/betterapps-hq/better-apps), the app features the scaffolder's add-ons use, lives in its
 own repository.

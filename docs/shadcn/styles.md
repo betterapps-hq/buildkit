@@ -1,103 +1,53 @@
-# Selecting a component style
+# Choosing components
 
-Install one generated Base UI style under the kit's stable package name:
+[shadcn components](README.md)
+
+Sync builds the whole shadcn catalog for one set of choices. The installer asks for each of them, and the `postinstall`
+records them as flags:
+
+```json
+{
+  "scripts": {
+    "postinstall": "shadcn-sync sync --base base --icons lucide --style nova --theme neutral"
+  }
+}
+```
+
+The bases, styles, themes and built-in icon libraries come from the shadcn CLI that sync pins, so they follow shadcn's
+own lists. See the [options table](../../packages/shadcn/shadcn-sync/README.md#options) for every value.
+
+## Primitives
+
+`--base` picks the upstream implementation: `base` (Base UI, the default), `radix` or `aria` (React Aria). The app
+installs `radix-ui` for Radix and `react-aria-components` for React Aria. Each base has its own component APIs, such as
+Base UI's `render` prop and Radix's `asChild`, so changing it can mean changing how the app composes components. Sync
+builds whatever components the chosen base has.
+
+## Style and theme
+
+`--style` picks a shadcn style. Styles change layout and component classes as well as colors, so they aren't just
+palettes. `--theme` picks the color theme, which sets the CSS variables. Override those variables to brand an app (see
+[theming](theming.md)).
+
+## Icons
+
+`--icons` takes a built-in icon library, such as `lucide` or `phosphor`, or the package name of an icon adapter, such as
+[`@buildkitgg/shadcn-icons-fluent`](../../packages/shadcn/shadcn-icons-fluent/README.md). The app installs the icon
+library itself. See [icon adapters](../../packages/shadcn/shadcn-sync/README.md#icon-adapters) to publish one.
+
+## CSS
+
+`--css compiled`, the default, has sync compile each component's CSS, so the app needs no Tailwind. An app that already
+runs Tailwind v4 can pass `--css tailwind` and import `@buildkitgg/shadcn/tailwind.css` after Tailwind, so each class is
+built once (see [Tailwind mode](../../packages/shadcn/shadcn-sync/README.md#tailwind-mode)).
+
+## Changing a choice
+
+Run `set` with the new value. It rebuilds the package and updates the `postinstall`:
 
 ```sh
-pnpm add @buildkitgg/shadcn-baseui-kit@npm:@buildkitgg/shadcn-baseui-vega
-pnpm add @buildkitgg/shadcn-modals-manager @buildkitgg/shadcn-alerts-manager
+pnpm exec shadcn-sync set --icons phosphor
 ```
 
-```tsx
-import { Button } from "@buildkitgg/shadcn-baseui-kit"
-import "@buildkitgg/shadcn-baseui-kit/styles.css"
-import { createModalManager } from "@buildkitgg/shadcn-modals-manager"
-
-export const modals = createModalManager()
-```
-
-The app and both managers resolve the same installed component package. No renderer adapter, theme prop, runtime
-provider, or bundler alias is needed. The managers declare the kit as a peer dependency and leave its imports external.
-Import the kit stylesheet once; manager stylesheets also resolve that same peer's no-reset stylesheet.
-
-Select another style by replacing the dependency alias. Install the alias in each app that consumes the managers, not
-only at the monorepo root. Use compatible versions for the style package and managers. The kit name is only the shared
-alias; always select a named style package.
-
-Styles are generated from the upstream catalog. They change layout and component classes as well as appearance; they are
-not interchangeable color palettes. Light/dark mode and brand colors remain CSS-variable overrides. This mechanism
-selects one Base UI implementation per app. It does not automatically discover components copied from the registry, or
-switch between Radix and Base UI.
-
-## Updating upstream
-
-Run these commands from the repository root:
-
-```sh
-pnpm update:shadcn
-pnpm generate
-pnpm validate
-```
-
-`update:shadcn` downloads a pinned Git commit and updates the shadcn generator and Base UI dependencies. The snapshot
-records the revision and SHA-256 hashes of the downloaded files. `generate` derives style packages, exports, component
-source, and stylesheets from that snapshot. Builds do not access the network. A shared adaptation pass adds logical
-direction, localized labels, accessible combobox actions, and shared class merging. It also gives every menu item,
-checkbox item, radio item and sub-trigger the icon size of its menu's plain item, which upstream leaves off menubar
-checkbox items. The upstream snapshot remains unchanged.
-
-`validate` runs repository verification, including API Extractor baselines, then compares every generated declaration
-across styles and installs packed artifacts in standalone consumers. Consumers check strict peer resolution, TypeScript,
-server rendering, and Vite production builds both without Tailwind and with a consumer-owned Tailwind build. Browser
-acceptance remains necessary for visual changes.
-
-If upstream introduces an import outside the supported catalog or an incompatible public API, generation or validation
-fails. Review the change; do not add a silent fallback. `pnpm api:update` explicitly accepts reviewed API baseline
-changes. The weekly updater never calls that command automatically.
-
-All style packages come from one source snapshot. Generated files in `.generated` and `dist` are disposable; do not edit
-them. The updater owns the generated package metadata; Beachball owns versions and changelogs.
-
-## Design tokens
-
-The alias applies to asset exports as well as components:
-
-```ts
-import { readFile } from "node:fs/promises"
-const url = import.meta.resolve("@buildkitgg/shadcn-baseui-kit/tokens.json")
-const tokens = JSON.parse(await readFile(new URL(url), "utf8"))
-```
-
-`tokens.json` is a [DTCG](https://www.designtokens.org/) resolver (the Format and Resolver modules, 2025.10), so any
-tool that reads DTCG reads it. Its `shadcn` set holds the light values. The `theme` modifier's `dark` context replaces
-the tokens that change in dark mode. A token's path is its CSS variable's name split at each hyphen: `card.foreground`
-is `--card-foreground`. A name that others extend keeps its own token in `$root`, as `radius.$root` is `--radius`.
-
-Every token has a `$type` and a `$description`. Colors keep the color space upstream writes them in, usually oklch. DTCG
-has no form for `calc()`, so a value such as `--radius-sm` is computed (`0.375rem`), and its CSS is kept in
-`$extensions["gg.buildkit"].css`. A variable that only refers to another is an alias, as `radius.lg` is
-`{radius.$root}`. The resolver's own `$extensions["gg.buildkit"]` names the style, palette, and upstream revision.
-
-Descriptions live in `packages/tooling/shadcn-generator/src/token-descriptions.mjs`. When upstream adds a variable that
-has no description, generation fails, so the weekly update stops for review. The tokens come from the same upstream data
-as the CSS. They're the package defaults, not values after an app's CSS overrides. Component utility classes aren't
-turned into a second token system.
-
-## Weekly updates
-
-The weekly GitHub workflow runs on Monday. It updates, regenerates, checks the committed API baselines, prepares
-Beachball patch versions, and runs `pnpm validate`. Compatible updates open a pull request that merges automatically
-after required CI checks pass. Main CI then starts trusted publishing automatically. Git hooks and branch protections
-apply throughout.
-
-Failed updates open a review PR. API changes require review and an explicit `pnpm api:update`; API-compatible visual
-changes can still need manual assessment. New npm package names require their initial publication and trusted-publisher
-setup; the workflow cannot authorize those automatically. Publication of configured packages has no manual approval
-gate.
-
-## Shared runtime and update checks
-
-All styles depend on `@buildkitgg/shadcn-runtime` and re-export its provider and configuration. The generator rewrites
-imports and semantic label nodes once for every style. Unknown static UI labels stop generation for review. Do not edit
-generated output or automatically accept changed API baselines. Regression tests exercise all upstream styles,
-localization defaults and overrides, shared class merging, and RTL transformations. Packed consumers include the runtime
-and test both stylesheet paths.
+A new base, style or theme fetches the registry once. Run `update` to record the latest components from the registry.
+Commit the changed `shadcn-registry.json` and `package.json`.

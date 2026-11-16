@@ -2,7 +2,6 @@
 import "./server"
 import "@fontsource-variable/geist"
 import "@fontsource-variable/geist-mono"
-import "@buildkitgg/shadcn-baseui-kit/styles.css"
 import "./frame.css"
 import { StrictMode, type ComponentType } from "react"
 import { createRoot } from "react-dom/client"

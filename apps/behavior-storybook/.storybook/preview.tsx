@@ -1,11 +1,10 @@
 // Vite types the stylesheet imports. Referenced here too, so checking this file on its own finds them.
 /// <reference types="vite/client" />
-import { TooltipProvider } from "@buildkitgg/shadcn-baseui-kit"
+import { TooltipProvider } from "@buildkitgg/shadcn"
 import { ExampleFrame } from "@buildkitgg/storybook-config/examples"
 import { definePreview } from "@buildkitgg/storybook-config/preview"
 import { StrictMode } from "react"
 import { ErrorBoundary } from "react-error-boundary"
-import "@buildkitgg/shadcn-baseui-kit/styles.css"
 import "../src/styles.css"
 
 export default definePreview({

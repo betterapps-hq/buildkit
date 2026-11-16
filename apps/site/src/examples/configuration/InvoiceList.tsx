@@ -1,4 +1,4 @@
-import { buttonVariants } from "@buildkitgg/shadcn-baseui-kit"
+import { buttonVariants } from "@buildkitgg/shadcn"
 import { useSetting } from "./config"
 
 export type Invoice = { id: string; issuedAt: string; total: number }

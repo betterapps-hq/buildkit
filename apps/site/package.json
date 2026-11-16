@@ -5,14 +5,16 @@
   "scripts": {
     "dev": "vp dev --host 127.0.0.1 --port 4178",
     "build": "vp build && vp build --ssr src/prerender.tsx --outDir .generated/server && node .generated/server/prerender.js",
-    "preview": "vp preview --host 127.0.0.1 --port 4179"
+    "preview": "vp preview --host 127.0.0.1 --port 4179",
+    "postinstall": "shadcn-sync sync --base base --icons lucide --style vega --theme neutral"
   },
   "dependencies": {
+    "@base-ui/react": "^1.9.0",
     "@buildkitgg/react-configuration": "workspace:*",
     "@buildkitgg/react-preferences": "workspace:*",
     "@buildkitgg/react-router": "workspace:*",
+    "@buildkitgg/shadcn": "link:node_modules/.buildkit/shadcn",
     "@buildkitgg/shadcn-alerts-manager": "workspace:*",
-    "@buildkitgg/shadcn-baseui-kit": "workspace:@buildkitgg/shadcn-baseui-vega@*",
     "@buildkitgg/shadcn-modals-manager": "workspace:*",
     "@fontsource-variable/geist": "^5.3.0",
     "@fontsource-variable/geist-mono": "^5.3.0",
@@ -24,6 +26,7 @@
     "react-router": "^8.5.1"
   },
   "devDependencies": {
+    "@buildkitgg/shadcn-sync": "^0.1.2",
     "@buildkitgg/typescript-config": "workspace:*",
     "@types/node": "24.19.2",
     "@types/react": "^19.3.0",

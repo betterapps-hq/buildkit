@@ -1,5 +1,5 @@
 import { AlertRegion, createAlertManager } from "@buildkitgg/shadcn-alerts-manager"
-import { Button, Field, FieldLabel, Input } from "@buildkitgg/shadcn-baseui-kit"
+import { Button, Field, FieldLabel, Input } from "@buildkitgg/shadcn"
 import { useId, useTransition, type FormEvent } from "react"
 import { updateProject, type Project } from "./api"
 

@@ -8,7 +8,7 @@ import "./tooling.css"
 const TOOLS = [
   { id: "dev-domains", icon: GlobeLock, name: "Dev domains", Panel: DevDomains },
   { id: "scaffolder", icon: Blocks, name: "Scaffolder", Panel: Scaffolder },
-  { id: "shadcn", icon: Palette, name: "shadcn kit", Panel: ShadcnKit }
+  { id: "shadcn", icon: Palette, name: "shadcn-sync", Panel: ShadcnKit }
 ]
 
 type ToolId = (typeof TOOLS)[number]["id"]

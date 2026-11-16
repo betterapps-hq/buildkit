@@ -1,42 +1,38 @@
 # Buildkit
 
-TypeScript behavior packages with React bindings and shadcn and Fluent UI integrations.
+TypeScript behavior packages with React bindings and adapters for your UI library.
 
 The Buildkit.gg landing page lives in `apps/site`; run `pnpm --filter @buildkitgg/site dev` to preview it. See
 [website deployment](docs/website.md) and the [automated API report workflow](api-reports/README.md).
 
 ## Using shadcn components
 
-Select a style once with an npm dependency alias:
+Run the installer in an app's folder:
 
 ```sh
-pnpm add @buildkitgg/shadcn-baseui-kit@npm:@buildkitgg/shadcn-baseui-vega
+pnpm dlx @buildkitgg/shadcn-sync
 ```
+
+It builds stock shadcn components, for the primitives, icons, style and theme you pick, into a `@buildkitgg/shadcn`
+package inside the app:
 
 ```tsx
-import { Button } from "@buildkitgg/shadcn-baseui-kit"
-import "@buildkitgg/shadcn-baseui-kit/styles.css"
+import { Button } from "@buildkitgg/shadcn"
 ```
 
-This installs the selected style under a shared import name, without an additional kit dependency. Buildkit's shadcn
-managers use the same application-supplied peer. Change the dependency alias to select another style; keep the imports.
-See [installation and style selection](docs/shadcn/README.md).
+Buildkit's shadcn managers use the same package as a peer. See [shadcn components](docs/shadcn/README.md).
 
 ## Development
 
 Use Node 24+ and pnpm 12. Run `pnpm install`, then `pnpm verify` (format, lint, types, unused code, coverage, and
 builds).
 
-For upstream component updates, run `pnpm update:shadcn`, `pnpm generate`, then `pnpm validate`. The private
-`@buildkitgg/shadcn-generator` package owns generation and token resolution; published style packages contain the
-generated artifacts only.
-
 ## Packages
 
 - [Preferences](packages/core/preferences-core/README.md): typed defaults, overrides, storage, and JSON import/export.
 - [Themes](packages/core/theme-core/README.md): system/light/dark selection with shadcn and Fluent UI integrations.
 - [Modals](docs/modals.md): typed results, stack lifecycle, React bindings, and both UI adapters.
-- [shadcn component styles](docs/shadcn/README.md): compiled Base UI components and styles.
+- [shadcn components](docs/shadcn/README.md): `shadcn-sync` builds stock shadcn into a package inside each app.
 - [@buildkitgg/dev-domains](packages/tooling/dev-domains/README.md): Portless domain CLI with typed configuration,
   guided setup, and webhook tunnels.
 - `@buildkitgg/typescript-config`, `@buildkitgg/oxlint-config` and `@buildkitgg/storybook-config` share TypeScript,

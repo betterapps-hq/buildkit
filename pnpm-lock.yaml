@@ -215,6 +215,9 @@ importers:
 
   apps/behavior-storybook:
     dependencies:
+      '@base-ui/react':
+        specifier: ^1.9.0
+        version: 1.9.0(@date-fns/tz@1.5.0)(@types/react@19.3.0)(date-fns@4.4.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       '@buildkitgg/alert-core':
         specifier: workspace:*
         version: link:../../packages/core/alert-core
@@ -251,12 +254,12 @@ importers:
       '@buildkitgg/react-routing':
         specifier: workspace:*
         version: link:../../packages/react/react-routing
+      '@buildkitgg/shadcn':
+        specifier: link:node_modules/.buildkit/shadcn
+        version: link:node_modules/.buildkit/shadcn
       '@buildkitgg/shadcn-alerts-manager':
         specifier: workspace:*
         version: link:../../packages/shadcn/shadcn-alerts-manager
-      '@buildkitgg/shadcn-baseui-kit':
-        specifier: workspace:@buildkitgg/shadcn-baseui-nova@*
-        version: link:../../packages/shadcn/shadcn-baseui-nova
       '@buildkitgg/shadcn-modals-manager':
         specifier: workspace:*
         version: link:../../packages/shadcn/shadcn-modals-manager
@@ -272,6 +275,9 @@ importers:
       '@tanstack/react-router':
         specifier: ^1.170.46
         version: 1.170.46(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      lucide-react:
+        specifier: ^1.62.0
+        version: 1.64.0(@types/react@19.3.0)(react@19.3.1)
       react:
         specifier: 19.3.1
         version: 19.3.1
@@ -285,6 +291,9 @@ importers:
         specifier: ^8.5.1
         version: 8.5.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
     devDependencies:
+      '@buildkitgg/shadcn-sync':
+        specifier: ^0.1.2
+        version: 0.1.2(@date-fns/tz@1.5.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(redux@5.0.1)(supports-color@8.1.1)
       '@buildkitgg/storybook-config':
         specifier: workspace:*
         version: link:../../packages/tooling/storybook-config
@@ -445,6 +454,9 @@ importers:
 
   apps/site:
     dependencies:
+      '@base-ui/react':
+        specifier: ^1.9.0
+        version: 1.9.0(@date-fns/tz@1.5.0)(@types/react@19.3.0)(date-fns@4.4.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       '@buildkitgg/react-configuration':
         specifier: workspace:*
         version: link:../../packages/react/react-configuration
@@ -454,12 +466,12 @@ importers:
       '@buildkitgg/react-router':
         specifier: workspace:*
         version: link:../../packages/react/react-router
+      '@buildkitgg/shadcn':
+        specifier: link:node_modules/.buildkit/shadcn
+        version: link:node_modules/.buildkit/shadcn
       '@buildkitgg/shadcn-alerts-manager':
         specifier: workspace:*
         version: link:../../packages/shadcn/shadcn-alerts-manager
-      '@buildkitgg/shadcn-baseui-kit':
-        specifier: workspace:@buildkitgg/shadcn-baseui-vega@*
-        version: link:../../packages/shadcn/shadcn-baseui-vega
       '@buildkitgg/shadcn-modals-manager':
         specifier: workspace:*
         version: link:../../packages/shadcn/shadcn-modals-manager
@@ -488,6 +500,9 @@ importers:
         specifier: ^8.5.1
         version: 8.5.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
     devDependencies:
+      '@buildkitgg/shadcn-sync':
+        specifier: ^0.1.2
+        version: 0.1.2(@date-fns/tz@1.5.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(redux@5.0.1)(supports-color@8.1.1)
       '@buildkitgg/typescript-config':
         specifier: workspace:*
         version: link:../../packages/tooling/typescript-config
@@ -1214,9 +1229,9 @@ importers:
         specifier: ^1.62.0
         version: 1.64.0(@types/react@19.3.0)(react@19.3.1)
     devDependencies:
-      '@buildkitgg/shadcn-baseui-kit':
-        specifier: workspace:@buildkitgg/shadcn-baseui-nova@*
-        version: link:../shadcn-baseui-nova
+      '@buildkitgg/shadcn':
+        specifier: link:../../../apps/behavior-storybook/node_modules/.buildkit/shadcn
+        version: link:../../../apps/behavior-storybook/node_modules/.buildkit/shadcn
       '@buildkitgg/typescript-config':
         specifier: workspace:*
         version: link:../../tooling/typescript-config
@@ -1772,9 +1787,9 @@ importers:
       '@buildkitgg/fluentui-modals-manager':
         specifier: workspace:*
         version: link:../../fluentui/fluentui-modals-manager
-      '@buildkitgg/shadcn-baseui-kit':
-        specifier: workspace:@buildkitgg/shadcn-baseui-nova@*
-        version: link:../shadcn-baseui-nova
+      '@buildkitgg/shadcn':
+        specifier: link:../../../apps/behavior-storybook/node_modules/.buildkit/shadcn
+        version: link:../../../apps/behavior-storybook/node_modules/.buildkit/shadcn
       '@buildkitgg/typescript-config':
         specifier: workspace:*
         version: link:../../tooling/typescript-config
@@ -2578,6 +2593,14 @@ packages:
 
   '@blazediff/core@1.10.0':
     resolution: {integrity: sha512-AOQff0zgR7cGsZL+4E7hVkmujoPUpm0J9xzWGWZj5wCjd3gmxESXAPfKyuzs93VdpQNFhHlBhfOjrcZ+XTERtQ==}
+
+  '@buildkitgg/shadcn-sync@0.1.2':
+    resolution: {integrity: sha512-LvmI0/JemjCmHTcvjXpbMS9rb3TKLt907VkeoLl/an0X402WgNcVdiyR/VzByzfWSALOK3n/ImpW5jjhTxRm8Q==}
+    engines: {node: '>=24'}
+    hasBin: true
+    peerDependencies:
+      react: 19.3.1
+      react-dom: 19.3.1
 
   '@clack/core@1.5.1':
     resolution: {integrity: sha512-iHTrHA8MtVuLl2TfZySmcKv1qO2PoyC9Z7pfSDozEuV5vtY3/wcOPKJXlqJ5Oq2Cx5DDGQGAMVx6HZfRRoVEbQ==}
@@ -9179,6 +9202,44 @@ snapshots:
       - supports-color
 
   '@blazediff/core@1.10.0': {}
+
+  '@buildkitgg/shadcn-sync@0.1.2(@date-fns/tz@1.5.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(redux@5.0.1)(supports-color@8.1.1)':
+    dependencies:
+      '@base-ui/react': 1.9.0(@date-fns/tz@1.5.0)(@types/react@19.3.0)(date-fns@4.4.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@clack/prompts': 1.8.1
+      '@shadcn/react': 0.3.1(@types/react@19.3.0)(react@19.3.1)
+      '@types/react': 19.3.0
+      '@types/react-dom': 19.3.0(@types/react@19.3.0)
+      citty: 0.2.2
+      class-variance-authority: 0.7.1
+      cmdk: 1.1.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      cn: 0.5.0
+      date-fns: 4.4.0
+      embla-carousel-react: 8.6.0(react@19.3.1)
+      input-otp: 1.5.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      next-themes: 0.4.6(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      package-manager-detector: 1.9.0
+      picocolors: 1.1.1
+      postcss: 8.5.32
+      react: 19.3.1
+      react-day-picker: 10.0.2(@types/react@19.3.0)(react@19.3.1)
+      react-dom: 19.3.1(react@19.3.1)
+      react-is: 19.3.1
+      react-resizable-panels: 4.15.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      recharts: 3.10.1(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react-is@19.3.1)(react@19.3.1)(redux@5.0.1)
+      shadcn: 4.23.0(supports-color@8.1.1)
+      shiki: 4.5.0
+      sonner: 2.0.8(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      tailwindcss: 4.3.3
+      ts-morph: 28.0.0
+      tw-animate-css: 1.4.0
+      typescript: 7.0.2
+      zod: 4.6.7
+    transitivePeerDependencies:
+      - '@date-fns/tz'
+      - babel-plugin-macros
+      - redux
+      - supports-color
 
   '@clack/core@1.5.1':
     dependencies:

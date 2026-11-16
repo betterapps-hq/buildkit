@@ -91,7 +91,7 @@
       "entry": ["src/index.tsx"]
     },
     "packages/shadcn/shadcn-modals-manager": {
-      "entry": ["src/index.tsx", "src/styles.ts"]
+      "entry": ["src/index.tsx"]
     },
     "packages/core/alert-core": {
       "entry": ["src/index.ts"]
@@ -100,7 +100,7 @@
       "entry": ["src/index.ts"]
     },
     "packages/shadcn/shadcn-alerts-manager": {
-      "entry": ["src/index.tsx", "src/styles.ts"]
+      "entry": ["src/index.tsx"]
     },
     "packages/fluentui/fluentui-alerts-manager": {
       "entry": ["src/index.tsx"]

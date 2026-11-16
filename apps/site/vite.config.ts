@@ -45,9 +45,9 @@ export default defineConfig(({ command, isSsrBuild }) => {
   return {
     base,
     plugins: lazyPlugins(() => [exampleFrames(), react({ compiler: true })]),
-    // The shadcn managers take the kit as a peer, so they use the app's own. In this workspace their development
-    // dependency is another style, so the site's kit is resolved for them too.
-    resolve: { dedupe: ["@buildkitgg/shadcn-baseui-kit"] },
+    // The shadcn managers import the app's generated `@buildkitgg/shadcn`. In this workspace they could find another
+    // app's build, so the site's own is resolved for them too.
+    resolve: { dedupe: ["@buildkitgg/shadcn"] },
     define: {
       __DOCS_URL__: JSON.stringify(command === "serve" ? "http://127.0.0.1:4180/docs/" : `${base}docs/`),
       __STORYBOOK_URL__: JSON.stringify(command === "serve" ? "http://127.0.0.1:6009/" : `${base}storybook/`)

@@ -6,7 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription
-} from "@buildkitgg/shadcn-baseui-kit"
+} from "@buildkitgg/shadcn"
 import { createShadcnTheme, useTheme, type ShadcnThemeOptions } from "@buildkitgg/shadcn-theme"
 import { ExampleResult } from "@buildkitgg/storybook-config/examples"
 import { useEffect, useState } from "react"

@@ -5,38 +5,18 @@ import {
   ModalRenderer as ReactModalRenderer
 } from "@buildkitgg/react-modals"
 import type { ModalManagerOptions, ModalSurfaceOptions } from "@buildkitgg/react-modals"
-import {
-  Button,
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogTitle,
-  useShadcnLocalization
-} from "@buildkitgg/shadcn-baseui-kit"
+import { Button } from "@buildkitgg/shadcn/button"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle } from "@buildkitgg/shadcn/dialog"
 import { baseUiComponents } from "./baseUiComponents.js"
 import type { ModalManager, ModalRendererProps } from "./types.js"
 
 const defaultAdapter = baseUiComponents({ Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle })
 
 export function createModalManager(options?: ModalManagerOptions): ModalManager {
-  return createReactModalManager<ModalSurfaceOptions>({
-    ...options,
-    labels: {
-      close: <LocalizedLabel name="close" />,
-      cancel: <LocalizedLabel name="cancel" />,
-      confirm: <LocalizedLabel name="confirm" />,
-      ...options?.labels
-    },
-    adapter: options?.adapter ?? defaultAdapter
-  })
+  return createReactModalManager<ModalSurfaceOptions>({ ...options, adapter: options?.adapter ?? defaultAdapter })
 }
 
-function LocalizedLabel({ name }: { name: "close" | "cancel" | "confirm" }) {
-  return useShadcnLocalization().strings[name]
-}
-
-/** Renders the manager's adapter. Default components use the package stylesheet. */
+/** Renders the manager's adapter. Default components bring their own CSS from the app's `@buildkitgg/shadcn`. */
 export function ModalRenderer(props: ModalRendererProps) {
   return <ReactModalRenderer {...props} />
 }

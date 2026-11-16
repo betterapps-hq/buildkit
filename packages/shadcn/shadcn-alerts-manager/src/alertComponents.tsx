@@ -1,6 +1,6 @@
 import type { AlertAdapter, AlertIntent, AlertRendererProps } from "@buildkitgg/react-alerts"
 import { CircleAlertIcon, CircleCheckIcon, InfoIcon, TriangleAlertIcon, XIcon, type LucideIcon } from "lucide-react"
-import type { ComponentType, HTMLAttributes, ReactNode } from "react"
+import type { ComponentType, CSSProperties, HTMLAttributes, ReactNode } from "react"
 
 export type AlertComponents = {
   Alert: ComponentType<HTMLAttributes<HTMLDivElement> & { variant?: "default" | "destructive" }>
@@ -27,7 +27,7 @@ const ICONS: Record<AlertIntent, LucideIcon> = {
 
 /**
  * The color each intent tints its alert with: the icon, the border and a wash over the card. Info stays neutral. Set
- * `--alert-success` or `--alert-warning` to match your theme; errors use the kit's destructive color.
+ * `--alert-success` or `--alert-warning` to match your theme; errors use shadcn's destructive color.
  */
 const TONES: Record<AlertIntent, string | null> = {
   info: null,
@@ -35,6 +35,12 @@ const TONES: Record<AlertIntent, string | null> = {
   warning: "var(--alert-warning, oklch(0.769 0.188 70.08))",
   error: "var(--destructive)"
 }
+
+/**
+ * Lays out the inline action and dismiss buttons. Inline styles, because the compiled components ship only the classes
+ * they use themselves.
+ */
+const ACTIONS_STYLE: CSSProperties = { display: "flex", flexWrap: "wrap", gap: "0.5rem", marginTop: "0.5rem" }
 
 /** Structural component contract works with Base UI and Radix shadcn registry components. */
 export function alertComponents({
@@ -88,7 +94,7 @@ export function alertComponents({
           <AlertDescription>
             {entry.body && <div>{entry.body}</div>}
             {inline && (
-              <div className="mt-2 flex flex-wrap gap-2">
+              <div style={ACTIONS_STYLE}>
                 {action}
                 {!AlertAction && dismissal}
               </div>

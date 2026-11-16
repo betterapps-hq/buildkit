@@ -132,7 +132,7 @@ export const packages = [
   {
     name: "shadcn-theme",
     group: "shadcn",
-    summary: "Theme selection for registry-installed shadcn components or the Buildkit component kit.",
+    summary: "Theme selection for shadcn components, from shadcn-sync or the shadcn registry.",
     code: 'import { createShadcnTheme, useTheme } from "@buildkitgg/shadcn-theme"\n\nexport const theme = createShadcnTheme({\n  defaultTheme: "system",\n  storageKey: "my-app-theme"\n})\nconst stop = theme.start() // At browser startup.\n// Call stop() at teardown.\n\nfunction ThemeLabel() {\n  const { resolvedTheme } = useTheme(theme)\n  return <span>{resolvedTheme}</span>\n}',
     api: [
       "createShadcnTheme(options): isolated theme with optional persistence.",
@@ -197,7 +197,7 @@ export const packages = [
     name: "shadcn-modals-manager",
     group: "shadcn",
     summary: "Managed shadcn dialogs with a default renderer and optional Base UI or Radix registry components.",
-    code: 'import { createModalManager, ModalRenderer } from "@buildkitgg/shadcn-modals-manager"\nimport "@buildkitgg/shadcn-modals-manager/styles.css"\n\nexport const modals = createModalManager()\n\n<ModalRenderer manager={modals} />\n\nawait modals.alert({ title: "Changes saved" })',
+    code: 'import { createModalManager, ModalRenderer } from "@buildkitgg/shadcn-modals-manager"\n\nexport const modals = createModalManager()\n\n<ModalRenderer manager={modals} />\n\nawait modals.alert({ title: "Changes saved" })',
     api: [
       "createModalManager({ labels?, adapter? }): the same typed contract as the Fluent manager.",
       "ModalRenderer: renders the manager's adapter; requires only manager.",
@@ -205,7 +205,7 @@ export const packages = [
       "surfaceProps: portable className and style options."
     ],
     notes:
-      "The default adapter includes the Base UI component kit. Import styles.css once, or use your existing kit stylesheet. For registry components, pass an adapter to createModalManager using the matching helper. The standard ModalRenderer stays the same. Each manager retains its own adapter, which overrides the package default. React and React DOM are peers. Styles, UI providers and custom form controls remain application setup.",
+      "The default adapter renders the app's @buildkitgg/shadcn, built by shadcn-sync with --base base, so there's no stylesheet to import. For Radix or registry components, pass an adapter to createModalManager using the matching helper. The standard ModalRenderer stays the same. Each manager retains its own adapter, which overrides the package default. React and React DOM are peers. Styles, UI providers and custom form controls remain application setup.",
     example: "shadcn-shadcn-modals-manager--confirmation"
   },
   {

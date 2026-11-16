@@ -11,7 +11,7 @@ import {
   SheetDescription,
   SheetFooter,
   Button
-} from "@buildkitgg/shadcn-baseui-kit"
+} from "@buildkitgg/shadcn"
 import { useSyncExternalStore, type ReactNode } from "react"
 
 export type RoutingScenario = "tabs" | "panel" | "history" | "direct" | "links"

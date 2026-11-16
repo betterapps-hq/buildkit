@@ -1,4 +1,4 @@
-import { Button, Field, FieldLabel, Input } from "@buildkitgg/shadcn-baseui-kit"
+import { Button, Field, FieldLabel, Input } from "@buildkitgg/shadcn"
 import { createModalManager, ModalRenderer } from "@buildkitgg/shadcn-modals-manager"
 import { useId, useState } from "react"
 
