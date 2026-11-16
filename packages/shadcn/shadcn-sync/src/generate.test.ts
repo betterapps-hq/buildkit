@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { describe, expect, it } from "vite-plus/test"
-import { isCurrent, writeEntryPoints, writePackageFiles } from "./generate.js"
+import { compileSources, isCurrent, writeEntryPoints, writePackageFiles } from "./generate.js"
 import type { ComponentModule, SharedModule } from "./sources.js"
 
 const components: ComponentModule[] = [
@@ -58,6 +58,29 @@ describe("writeEntryPoints", () => {
     expect(() => writeEntryPoints(temporary(), components, [clash])).toThrow(
       "button and hooks/use-button both export Button."
     )
+  })
+})
+
+describe("compileSources", () => {
+  it("keeps the stylesheet imports in the JavaScript and leaves them out of the declarations", async () => {
+    const root = temporary()
+    const sourceRoot = join(root, "src")
+
+    mkdirSync(join(sourceRoot, "ui"), { recursive: true })
+    writeFileSync(
+      join(sourceRoot, "ui/box.ts"),
+      '"use client"\nimport "../shared.css"\nimport "./box.css"\nexport const box = 1\n'
+    )
+
+    await compileSources(sourceRoot, join(root, "out"))
+
+    const javascript = readFileSync(join(root, "out/ui/box.js"), "utf8")
+    const declaration = readFileSync(join(root, "out/ui/box.d.ts"), "utf8")
+
+    expect(javascript).toContain('import "../shared.css";')
+    expect(javascript).toContain('import "./box.css";')
+    expect(declaration).not.toContain(".css")
+    expect(declaration).toContain("export declare const box = 1;")
   })
 })
 
