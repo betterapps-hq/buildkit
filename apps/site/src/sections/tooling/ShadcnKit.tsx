@@ -1,4 +1,5 @@
 import {
+  BadgeCheck,
   Bot,
   Boxes,
   Copy,
@@ -179,15 +180,20 @@ function InstalledPanel() {
   )
 }
 
-/** One way to get the component: the command, what it does in order, and where the component ends up */
+/**
+ * One way to get the component: a verdict, the command, what it does in order, and where the component ends up. The
+ * verdict's words, icon and fill, and the wire's line, tell the paths apart without their colors.
+ */
 function Path({
   tone,
+  verdict,
   command,
   label,
   stages,
   children
 }: {
   tone: "copy" | "sync"
+  verdict: ReactNode
   command: string
   label: string
   stages: Stage[]
@@ -196,6 +202,8 @@ function Path({
   return (
     <div className={`kit-path is-${tone}`}>
       <div className="kit-branch">
+        <span className="kit-wire" aria-hidden="true" />
+        <span className="kit-verdict">{verdict}</span>
         <span className="kit-wire" aria-hidden="true" />
         <code className="kit-cmd">
           <span className="kit-prompt">$ </span>
@@ -237,13 +245,30 @@ function Fork() {
       <div className="kit-fork-paths">
         <Path
           tone="copy"
+          verdict={
+            <>
+              <TriangleAlert aria-hidden="true" />
+              shadcn on its own
+            </>
+          }
           command="pnpm dlx shadcn@latest add button"
           label="What shadcn add does"
           stages={SHADCN_STAGES}
         >
           <CopiedPanel />
         </Path>
-        <Path tone="sync" command="pnpm dlx @buildkitgg/shadcn-sync" label="What shadcn-sync does" stages={SYNC_STAGES}>
+        <Path
+          tone="sync"
+          verdict={
+            <>
+              <BadgeCheck aria-hidden="true" />
+              Recommended
+            </>
+          }
+          command="pnpm dlx @buildkitgg/shadcn-sync"
+          label="What shadcn-sync does"
+          stages={SYNC_STAGES}
+        >
           <InstalledPanel />
         </Path>
       </div>

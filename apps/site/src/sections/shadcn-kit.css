@@ -97,7 +97,9 @@
   right: calc(25% - 5px);
   left: calc(25% - 5px);
   height: 2px;
-  background: linear-gradient(90deg, var(--copy-line) 50%, var(--sync-line) 50%);
+  background:
+    repeating-linear-gradient(90deg, var(--copy-line) 0 5px, transparent 5px 9px) left / 50% 100% no-repeat,
+    linear-gradient(var(--sync-line), var(--sync-line)) right / 50% 100% no-repeat;
 }
 
 .kit-path {
@@ -122,12 +124,19 @@
   min-width: 0;
 }
 
-/* Dashes that run down each path, toward the panel it ends in */
+/* The copy path's wire is dashed */
 .kit-wire {
   flex: none;
   width: 2px;
-  height: 20px;
+  height: 18px;
   background: repeating-linear-gradient(to bottom, var(--tone-line) 0 5px, transparent 5px 9px);
+}
+
+/* The recommended path's wire is solid, with bright dashes running down it toward its panel */
+.kit-path.is-sync .kit-wire {
+  background:
+    repeating-linear-gradient(to bottom, var(--tone) 0 4px, transparent 4px 12px),
+    var(--tone-line);
   animation: kit-flow 0.9s linear infinite;
 }
 
@@ -149,8 +158,40 @@
 
 @keyframes kit-flow {
   to {
-    background-position: 0 9px;
+    background-position: 0 12px;
   }
+}
+
+/* What each path is, in words and an icon, filled for the one we recommend */
+.kit-verdict {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 11px 4px 9px;
+  border: 1px dashed var(--tone-line);
+  border-radius: 999px;
+  background: #0b1020;
+  color: var(--text-2);
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.kit-verdict svg {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  color: var(--tone);
+}
+
+.kit-path.is-sync .kit-verdict {
+  border: 1px solid var(--tone);
+  background: var(--tone);
+  color: var(--ink-950);
+}
+
+.kit-path.is-sync .kit-verdict svg {
+  color: var(--ink-950);
 }
 
 .kit-cmd {
@@ -268,6 +309,10 @@
   --panel-accent: var(--blue-soft);
   --panel-line: #3370ff66;
   --panel-tint: #101a36;
+  border-color: #8fb4ff99;
+  box-shadow:
+    0 0 0 1px #8fb4ff33,
+    0 20px 56px #3370ff24;
 }
 
 .kit-panel-head {
