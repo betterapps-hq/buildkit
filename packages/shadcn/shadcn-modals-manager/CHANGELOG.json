@@ -2,6 +2,21 @@
   "name": "@buildkitgg/shadcn-modals-manager",
   "entries": [
     {
+      "date": "Tue, 17 Nov 2026 00:45:49 GMT",
+      "version": "2.0.0",
+      "tag": "@buildkitgg/shadcn-modals-manager_v2.0.0",
+      "comments": {
+        "major": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/shadcn-modals-manager",
+            "commit": "519d2d2a564ba295066241484ab9f5813fef36ff",
+            "comment": "Peer on the app's generated @buildkitgg/shadcn from shadcn-sync instead of @buildkitgg/shadcn-baseui-kit. The styles.css export and the ShadcnLocalizationProvider labels are gone: components bring their own CSS, and labels come from manager or per-modal options"
+          }
+        ]
+      }
+    },
+    {
       "date": "Mon, 09 Nov 2026 00:02:03 GMT",
       "version": "1.1.4",
       "tag": "@buildkitgg/shadcn-modals-manager_v1.1.4",

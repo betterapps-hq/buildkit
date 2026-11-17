@@ -34,7 +34,7 @@
     "test": "vp test run",
     "build": "tsc -p tsconfig.build.json"
   },
-  "version": "0.1.1",
+  "version": "0.2.0",
   "type": "module",
   "devDependencies": {
     "@buildkitgg/shadcn": "link:../../../apps/behavior-storybook/node_modules/.buildkit/shadcn",

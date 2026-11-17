@@ -1,8 +1,18 @@
 # Change Log - @buildkitgg/shadcn-modals-manager
 
-<!-- This log was last generated on Mon, 09 Nov 2026 00:02:03 GMT and should not be manually modified. -->
+<!-- This log was last generated on Tue, 17 Nov 2026 00:45:49 GMT and should not be manually modified. -->
 
 <!-- Start content -->
+
+## 2.0.0
+
+Tue, 17 Nov 2026 00:45:49 GMT
+
+### Major changes
+
+- Peer on the app's generated @buildkitgg/shadcn from shadcn-sync instead of @buildkitgg/shadcn-baseui-kit. The
+  styles.css export and the ShadcnLocalizationProvider labels are gone: components bring their own CSS, and labels come
+  from manager or per-modal options (ajcraswell@gmail.com)
 
 ## 1.1.4
 

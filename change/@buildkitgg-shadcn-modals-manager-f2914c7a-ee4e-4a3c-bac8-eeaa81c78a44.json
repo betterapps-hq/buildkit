@@ -1,7 +1,0 @@
-{
-  "type": "major",
-  "comment": "Peer on the app's generated @buildkitgg/shadcn from shadcn-sync instead of @buildkitgg/shadcn-baseui-kit. The styles.css export and the ShadcnLocalizationProvider labels are gone: components bring their own CSS, and labels come from manager or per-modal options",
-  "packageName": "@buildkitgg/shadcn-modals-manager",
-  "email": "ajcraswell@gmail.com",
-  "dependentChangeType": "patch"
-}
