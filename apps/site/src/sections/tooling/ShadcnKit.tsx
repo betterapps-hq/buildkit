@@ -1,14 +1,99 @@
 import { Bot, FileCode, FolderPen, Lock, PackageCheck, Palette, ShieldCheck, TriangleAlert } from "lucide-react"
+import { useState } from "react"
 import { packageGuide } from "../../links"
 import "../shadcn-kit.css"
 import { GuideLink } from "./parts"
 
-const STYLES = ["vega", "nova", "maia", "lyra", "mira", "luma", "rhea", "sera"] as const
+/** shadcn-sync's options, each with the values its CLI takes; the first is the default this section starts on */
+const OPTIONS = [
+  {
+    flag: "base",
+    label: "Primitives",
+    values: [
+      { id: "base", label: "Base UI" },
+      { id: "radix", label: "Radix" },
+      { id: "aria", label: "React Aria" }
+    ]
+  },
+  {
+    flag: "style",
+    label: "Style",
+    values: ["vega", "nova", "maia", "lyra", "mira", "luma", "rhea", "sera"].map((id) => ({ id, label: id }))
+  },
+  {
+    flag: "theme",
+    label: "Theme",
+    values: ["neutral", "stone", "zinc", "gray", "mauve", "olive", "mist", "taupe"].map((id) => ({ id, label: id }))
+  },
+  {
+    flag: "icons",
+    label: "Icons",
+    values: [
+      ...["lucide", "tabler", "hugeicons", "phosphor", "remixicon"].map((id) => ({ id, label: id })),
+      { id: "@buildkitgg/shadcn-icons-fluent", label: "fluent" }
+    ]
+  }
+] as const
 
-type Style = (typeof STYLES)[number]
+type Flag = (typeof OPTIONS)[number]["flag"]
 
-function StyleToken({ style }: { style: Style }) {
-  return <span className="kit-token">{style}</span>
+type Choices = Record<Flag, string>
+
+/** The site's own settings, which its postinstall passes to shadcn-sync */
+const DEFAULTS: Choices = { base: "base", style: "vega", theme: "neutral", icons: "lucide" }
+
+function InstallCommand({ choices }: { choices: Choices }) {
+  return (
+    <pre className="kit-install">
+      <code>
+        <span className="kit-install-line">
+          <span className="kit-prompt">$ </span>
+          pnpm dlx @buildkitgg/shadcn-sync{" \\"}
+          {OPTIONS.map((option, index) => (
+            <span key={option.flag} className="kit-install-flag">
+              --{option.flag} <span className="kit-token">{choices[option.flag]}</span>
+              {index < OPTIONS.length - 1 ? " \\" : ""}
+            </span>
+          ))}
+        </span>
+        <span className="kit-install-line">
+          <span className="tok-kw">import</span>
+          <span className="tok-punc">{" { Button } "}</span>
+          <span className="tok-kw">from</span>
+          <span className="tok-str"> &quot;@buildkitgg/shadcn&quot;</span>
+        </span>
+      </code>
+    </pre>
+  )
+}
+
+function OptionPicker({ choices, onChoose }: { choices: Choices; onChoose: (flag: Flag, value: string) => void }) {
+  return (
+    <div className="kit-options">
+      {OPTIONS.map((option) => (
+        <fieldset key={option.flag} className="kit-option">
+          <legend className="kit-option-label">
+            {option.label}
+            <code>--{option.flag}</code>
+          </legend>
+          <span className="kit-style-list">
+            {option.values.map((value) => (
+              <label key={value.id} className={choices[option.flag] === value.id ? "is-shown" : undefined}>
+                <input
+                  type="radio"
+                  name={`shadcn-sync-${option.flag}`}
+                  value={value.id}
+                  checked={choices[option.flag] === value.id}
+                  onChange={() => onChoose(option.flag, value.id)}
+                />
+                {value.label}
+              </label>
+            ))}
+          </span>
+        </fieldset>
+      ))}
+    </div>
+  )
 }
 
 function CopiedPanel() {
@@ -115,6 +200,9 @@ function InstalledPanel() {
 }
 
 export function ShadcnKit() {
+  const [choices, setChoices] = useState(DEFAULTS)
+  const choose = (flag: Flag, value: string) => setChoices((current) => ({ ...current, [flag]: value }))
+
   return (
     <div className="tl-sub">
       <div className="kit-head">
@@ -129,39 +217,27 @@ export function ShadcnKit() {
             Customize them with CSS variables and keep the code stock.
           </p>
         </div>
-        <pre className="kit-install kit-wide">
-          <code>
-            <span className="kit-install-line">
-              <span className="kit-prompt">$ </span>
-              pnpm dlx @buildkitgg/shadcn-sync --style <StyleToken style="vega" />
-            </span>
-            <span className="kit-install-line">
-              <span className="tok-kw">import</span>
-              <span className="tok-punc">{" { Button } "}</span>
-              <span className="tok-kw">from</span>
-              <span className="tok-str"> &quot;@buildkitgg/shadcn&quot;</span>
-            </span>
-          </code>
-        </pre>
+        <InstallCommand choices={choices} />
+      </div>
+
+      <div className="kit-styles">
+        <div className="kit-styles-head">
+          <h4 className="tl-part-title">Choose what shadcn builds</h4>
+          <p className="kit-styles-note">
+            Pick an option to see its command. Change any of them later with shadcn-sync set, and imports and managers
+            stay the same.
+          </p>
+        </div>
+        <OptionPicker choices={choices} onChoose={choose} />
+        <p className="kit-styles-note kit-fluent">
+          Building on Fluent UI instead? The theme and the modals and alerts managers come as Fluent UI adapters with
+          the same API, and the fluent icons bring Fluent&apos;s icons to shadcn.
+        </p>
       </div>
 
       <div className="kit-compare">
         <CopiedPanel />
         <InstalledPanel />
-      </div>
-
-      <div className="kit-styles">
-        <div className="kit-styles-head">
-          <h4 className="tl-part-title">Pick one of eight shadcn styles</h4>
-          <p className="kit-styles-note">Switch with shadcn-sync set --style. Imports and managers stay the same.</p>
-        </div>
-        <ul className="kit-style-list" aria-label="shadcn styles">
-          {STYLES.map((style) => (
-            <li key={style} className={style === "vega" ? "is-shown" : undefined}>
-              {style}
-            </li>
-          ))}
-        </ul>
       </div>
 
       <GuideLink href={packageGuide("shadcn-sync")} label="shadcn-sync guide" />

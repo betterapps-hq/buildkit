@@ -43,6 +43,12 @@
   white-space: pre;
 }
 
+/* Each option on its own continued line, so a chip below changes one line */
+.kit-install-flag {
+  display: block;
+  padding-left: 4ch;
+}
+
 .kit-prompt {
   color: var(--blue-soft);
 }
@@ -288,6 +294,41 @@
   gap: 4px;
 }
 
+.kit-options {
+  display: grid;
+  flex-basis: 100%;
+  gap: 12px;
+}
+
+.kit-option {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+/* A legend can't be a grid item, so it floats beside the chips */
+.kit-option-label {
+  float: left;
+  width: 150px;
+  margin-right: 24px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.kit-option-label code {
+  color: var(--text-2);
+  font: 400 12px/1.3 var(--font-mono);
+}
+
+.kit-fluent {
+  flex-basis: 100%;
+}
+
 .kit-styles-note {
   font-size: 14px;
   line-height: 1.4;
@@ -300,7 +341,14 @@
   gap: 8px;
 }
 
-.kit-style-list li {
+.kit-style-list label {
+  position: relative;
+  cursor: pointer;
+  background: transparent;
+  transition:
+    border-color 0.15s,
+    background-color 0.15s,
+    color 0.15s;
   display: flex;
   align-items: center;
   height: 30px;
@@ -311,7 +359,23 @@
   font: 400 12px/1 var(--font-mono);
 }
 
-/* The style the install command above uses */
+.kit-style-list label:hover {
+  color: var(--text);
+}
+
+/* The radio itself is hidden; its chip shows the choice and the keyboard focus */
+.kit-style-list input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.kit-style-list label:has(input:focus-visible) {
+  outline: 2px solid var(--blue-soft);
+  outline-offset: 2px;
+}
+
+/* The choice the install command above uses */
 .kit-style-list .is-shown {
   border-color: #3370ff80;
   background: #3370ff14;
@@ -373,6 +437,16 @@
 }
 
 @media (max-width: 760px) {
+  .kit-option-label {
+    float: none;
+    width: auto;
+    margin: 0 0 8px;
+  }
+
+  .kit-install {
+    font-size: 11.5px;
+  }
+
   .kit-wide {
     display: none;
   }
