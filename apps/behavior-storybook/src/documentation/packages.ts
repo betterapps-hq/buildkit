@@ -1,5 +1,3 @@
-import { shadcnStylePackages } from "./shadcnStyles.js"
-
 export const packages = [
   {
     name: "configuration-core",
@@ -160,7 +158,6 @@ export const packages = [
       "Fluent UI v9, React 19 and React DOM 19 are peers supplied by the app. The provider supplies styling; selection is external. Use Fluent's createLightTheme/createDarkTheme or extend its web themes for custom tokens. Browser preferences restore after mount, so SSR must account for possible appearance changes.",
     example: "fluent-ui-fluentui-theme--system"
   },
-  ...shadcnStylePackages,
   {
     name: "modal-core",
     group: "Core",

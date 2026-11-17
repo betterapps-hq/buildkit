@@ -853,10 +853,10 @@ built-in icon libraries other than Lucide and the themes other than neutral and 
 **Phase 3: move over.** Point the managers, apps, Storybook and scaffolder templates at the generated package, then
 retire the style packages and the old generator.
 
-In progress: `shadcn-modals-manager` 2.0.0 and `shadcn-alerts-manager` 0.2.0 peer on `@buildkitgg/shadcn`, and the
-[shadcn docs](../shadcn/README.md) describe sync. Left: Parity, the other apps, Storybook, the site and the scaffolder
-templates, one at a time, then unpublishing and deleting the style packages, the `shadcn-baseui-kit` alias and the
-generator.
+In progress: `shadcn-modals-manager` 2.0.0 and `shadcn-alerts-manager` 0.2.0 peer on `@buildkitgg/shadcn`, the
+[shadcn docs](../shadcn/README.md) describe sync, and Storybook and the site use it. The style packages, the
+`shadcn-baseui-kit` alias, `shadcn-runtime`, the old generator and `apps/shadcn-catalog` are deleted from the
+repository. Left: Parity, and retiring the old packages on npm.
 
 ## Spike results (2026-11-14)
 

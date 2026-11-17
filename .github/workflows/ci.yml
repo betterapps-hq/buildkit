@@ -6,8 +6,8 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
-# pnpm validate runs as four jobs side by side, and each keeps Vite+'s task cache between runs under a key of its own,
-# so vp run can replay the tasks whose inputs haven't changed. Each also needs a concurrency key of its own, or the four
+# pnpm verify runs as three jobs side by side, and each keeps Vite+'s task cache between runs under a key of its own,
+# so vp run can replay the tasks whose inputs haven't changed. Each also needs a concurrency key of its own, or the three
 # calls share a group and cancel each other. The key replaces the branch in ci-verify's group, so it starts with the
 # branch, or every branch's runs would cancel each other. Filtered commands fail when their filter matches nothing,
 # which pnpm otherwise passes, as it did when a package was renamed.
@@ -43,23 +43,15 @@ jobs:
       vite-task-cache-key: build
       concurrency-key: ${{ github.ref }}-build
       command: pnpm check:api && pnpm build
-  shadcn:
-    uses: betterapps-hq/pipelines/.github/workflows/ci-verify.yml@main
-    with:
-      os: '["ubuntu-latest"]'
-      vite-task-cache: true
-      vite-task-cache-key: shadcn
-      concurrency-key: ${{ github.ref }}-shadcn
-      command: pnpm build:packages && pnpm --fail-if-no-match --filter @buildkitgg/shadcn-generator validate
   # main's ruleset requires a check named verify, and a reusable workflow's checks are named after the calling job, such
-  # as "check / Verify (ubuntu-latest)". This job reports the four jobs' results as verify.
+  # as "check / Verify (ubuntu-latest)". This job reports the three jobs' results as verify.
   verify:
-    needs: [check, test, build, shadcn]
+    needs: [check, test, build]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Require check, test, build and shadcn to pass
+      - name: Require check, test and build to pass
         env:
           RESULTS: ${{ join(needs.*.result, ' ') }}
         run: |

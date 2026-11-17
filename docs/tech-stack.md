@@ -82,8 +82,9 @@ Used by `@buildkitgg/scaffolder` to edit project files without losing your forma
 - **@fluentui/react-datepicker-compat** + **@fluentui/react-timepicker-compat** — date and time inputs for Fluent
   surfaces.
 - **@fluentui/react-charting** or **recharts** — charts / data visualization.
-- **shadcn/ui** — component scaffolding for apps and product surfaces that select the shadcn architecture
-  (`pnpm dlx shadcn@latest init -t <vite|start>`). Use its Tailwind CSS and CSS-variable token model consistently.
+- **shadcn/ui** — components for apps and product surfaces that select the shadcn architecture, installed with
+  **@buildkitgg/shadcn-sync** (`pnpm dlx @buildkitgg/shadcn-sync`), which builds them into an app-local
+  `@buildkitgg/shadcn` package. Use its CSS-variable token model consistently, with Tailwind CSS only in Tailwind mode.
 
 Select Fluent UI or shadcn/ui at the app or product-surface boundary. Neither is a monorepo-wide requirement, and an
 existing surface should keep its established system unless its architecture is deliberately changed.
