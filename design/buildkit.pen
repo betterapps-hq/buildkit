@@ -1,5 +1,5 @@
 {
-  "version": "2.21",
+  "version": "2.22",
   "children": [
     {
       "type": "frame",
@@ -7341,7 +7341,7 @@
                               "id": "n7IxS",
                               "name": "Tok",
                               "fill": "$mint",
-                              "content": " \"@buildkitgg/shadcn-baseui-kit\"",
+                              "content": " \"@buildkitgg/shadcn\"",
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -14756,7 +14756,7 @@
                               "id": "YXbwy",
                               "name": "Seg",
                               "fill": "$text",
-                              "content": "pnpm add @buildkitgg/shadcn-baseui-kit@npm:@buildkitgg/shadcn-baseui-",
+                              "content": "pnpm dlx @buildkitgg/shadcn-sync --style ",
                               "fontFamily": "$font-mono",
                               "fontSize": 12.5,
                               "fontWeight": "normal"
@@ -14833,7 +14833,7 @@
                               "id": "DQ5Rx",
                               "name": "Seg",
                               "fill": "$mint",
-                              "content": " \"@buildkitgg/shadcn-baseui-kit\"",
+                              "content": " \"@buildkitgg/shadcn\"",
                               "fontFamily": "$font-mono",
                               "fontSize": 12.5,
                               "fontWeight": "normal"
@@ -15439,7 +15439,7 @@
                               "fill": "$text",
                               "textGrowth": "fixed-width",
                               "width": "fill_container",
-                              "content": "node_modules/@buildkitgg/shadcn-baseui-kit",
+                              "content": "node_modules/@buildkitgg/shadcn",
                               "fontFamily": "$font-mono",
                               "fontSize": 12.5,
                               "fontWeight": "normal"
@@ -15449,7 +15449,7 @@
                               "id": "j3jbT",
                               "name": "Note",
                               "fill": "$text-3",
-                              "content": "as published",
+                              "content": "as shadcn ships it",
                               "fontFamily": "$font-mono",
                               "fontSize": 11.5,
                               "fontWeight": "normal"
@@ -15496,7 +15496,7 @@
                               "id": "wRWuA",
                               "name": "Note",
                               "fill": "$text-3",
-                              "content": "import { Button } from \"…/shadcn-baseui-kit\"",
+                              "content": "import { Button } from \"@buildkitgg/shadcn\"",
                               "fontFamily": "$font-mono",
                               "fontSize": 11.5,
                               "fontWeight": "normal"
@@ -15692,7 +15692,7 @@
                                   "id": "k3DLC1",
                                   "name": "Package",
                                   "fill": "$text-3",
-                                  "content": "shadcn-baseui-vega",
+                                  "content": "--style vega",
                                   "fontFamily": "$font-mono",
                                   "fontSize": 11,
                                   "fontWeight": "normal"
@@ -16030,7 +16030,7 @@
                                   "id": "yW6xu",
                                   "name": "Package",
                                   "fill": "$text-3",
-                                  "content": "shadcn-baseui-nova",
+                                  "content": "--style nova",
                                   "fontFamily": "$font-mono",
                                   "fontSize": 11,
                                   "fontWeight": "normal"
@@ -16358,7 +16358,7 @@
                                   "id": "sa7mf",
                                   "name": "Package",
                                   "fill": "$text-3",
-                                  "content": "shadcn-baseui-maia",
+                                  "content": "--style maia",
                                   "fontFamily": "$font-mono",
                                   "fontSize": 11,
                                   "fontWeight": "normal"
@@ -16687,7 +16687,7 @@
                                   "id": "dE7Qn",
                                   "name": "Package",
                                   "fill": "$text-3",
-                                  "content": "shadcn-baseui-lyra",
+                                  "content": "--style lyra",
                                   "fontFamily": "$font-mono",
                                   "fontSize": 11,
                                   "fontWeight": "normal"
@@ -17004,7 +17004,7 @@
                                   "id": "SG4kk",
                                   "name": "Package",
                                   "fill": "$text-3",
-                                  "content": "shadcn-baseui-mira",
+                                  "content": "--style mira",
                                   "fontFamily": "$font-mono",
                                   "fontSize": 11,
                                   "fontWeight": "normal"
@@ -17333,7 +17333,7 @@
                                   "id": "Idyby",
                                   "name": "Package",
                                   "fill": "$text-3",
-                                  "content": "shadcn-baseui-luma",
+                                  "content": "--style luma",
                                   "fontFamily": "$font-mono",
                                   "fontSize": 11,
                                   "fontWeight": "normal"
@@ -17672,7 +17672,7 @@
                                   "id": "z7ggi",
                                   "name": "Package",
                                   "fill": "$text-3",
-                                  "content": "shadcn-baseui-rhea",
+                                  "content": "--style rhea",
                                   "fontFamily": "$font-mono",
                                   "fontSize": 11,
                                   "fontWeight": "normal"
@@ -18009,7 +18009,7 @@
                                   "id": "Uubgd",
                                   "name": "Package",
                                   "fill": "$text-3",
-                                  "content": "shadcn-baseui-sera",
+                                  "content": "--style sera",
                                   "fontFamily": "$font-mono",
                                   "fontSize": 11,
                                   "fontWeight": "normal"
@@ -35802,7 +35802,7 @@
                               "id": "HeO1i",
                               "name": "P",
                               "fill": "$text",
-                              "content": "node_modules/@buildkitgg/shadcn-baseui-kit",
+                              "content": "node_modules/@buildkitgg/shadcn",
                               "fontFamily": "$font-mono",
                               "fontSize": 11,
                               "fontWeight": "normal"
@@ -37896,7 +37896,7 @@
                           "id": "Bxari",
                           "name": "S",
                           "fill": "$mint",
-                          "content": "\"@buildkitgg/shadcn-baseui-kit\":",
+                          "content": "\"postinstall\":",
                           "fontFamily": "$font-mono",
                           "fontSize": 11,
                           "fontWeight": "normal"
@@ -37913,7 +37913,7 @@
                           "id": "draVZ",
                           "name": "S",
                           "fill": "$mint",
-                          "content": "  \"npm:@buildkitgg/shadcn-baseui-",
+                          "content": "  \"shadcn-sync sync --style ",
                           "fontFamily": "$font-mono",
                           "fontSize": 11,
                           "fontWeight": "normal"
@@ -41265,7 +41265,7 @@
                               "id": "SHZep",
                               "name": "Tok",
                               "fill": "$mint",
-                              "content": " \"@buildkitgg/shadcn-baseui-kit\"",
+                              "content": " \"@buildkitgg/shadcn\"",
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -45124,7 +45124,7 @@
                               "id": "BDkae",
                               "name": "Tok",
                               "fill": "$mint",
-                              "content": " \"@buildkitgg/shadcn-baseui-kit\"",
+                              "content": " \"@buildkitgg/shadcn\"",
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -49149,7 +49149,7 @@
                               "id": "K7TlPP",
                               "name": "Tok",
                               "fill": "$mint",
-                              "content": " \"@buildkitgg/shadcn-baseui-kit\"",
+                              "content": " \"@buildkitgg/shadcn\"",
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -54286,7 +54286,7 @@
                               "id": "mnGOR",
                               "name": "Tok",
                               "fill": "$mint",
-                              "content": " \"@buildkitgg/shadcn-baseui-kit\"",
+                              "content": " \"@buildkitgg/shadcn\"",
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -64961,7 +64961,7 @@
                                   "id": "SNcVs",
                                   "name": "Tok",
                                   "fill": "$mint",
-                                  "content": " \"@buildkitgg/shadcn-baseui-kit\"",
+                                  "content": " \"@buildkitgg/shadcn\"",
                                   "fontFamily": "$font-mono",
                                   "fontSize": 12,
                                   "fontWeight": "normal"
@@ -68082,7 +68082,7 @@
                           "id": "d4YSUD",
                           "name": "Tok",
                           "fill": "$mint",
-                          "content": " \"@buildkitgg/shadcn-baseui-kit\"",
+                          "content": " \"@buildkitgg/shadcn\"",
                           "fontFamily": "$font-mono",
                           "fontSize": 12,
                           "fontWeight": "normal"
@@ -71224,7 +71224,7 @@
                           "id": "cey6F",
                           "name": "Tok",
                           "fill": "$mint",
-                          "content": " \"@buildkitgg/shadcn-baseui-kit\"",
+                          "content": " \"@buildkitgg/shadcn\"",
                           "fontFamily": "$font-mono",
                           "fontSize": 12,
                           "fontWeight": "normal"
@@ -74409,7 +74409,7 @@
                           "id": "nxs4t",
                           "name": "Tok",
                           "fill": "$mint",
-                          "content": " \"@buildkitgg/shadcn-baseui-kit\"",
+                          "content": " \"@buildkitgg/shadcn\"",
                           "fontFamily": "$font-mono",
                           "fontSize": 12,
                           "fontWeight": "normal"
@@ -79741,7 +79741,7 @@
                           "id": "b6xgGV",
                           "name": "Tok",
                           "fill": "$mint",
-                          "content": " \"@buildkitgg/shadcn-baseui-kit\"",
+                          "content": " \"@buildkitgg/shadcn\"",
                           "fontFamily": "$font-mono",
                           "fontSize": 12,
                           "fontWeight": "normal"
@@ -84651,7 +84651,7 @@
                           "id": "TDe38",
                           "name": "Tok",
                           "fill": "$mint",
-                          "content": " \"@buildkitgg/shadcn-baseui-kit\"",
+                          "content": " \"@buildkitgg/shadcn\"",
                           "fontFamily": "$font-mono",
                           "fontSize": 12,
                           "fontWeight": "normal"
@@ -88968,7 +88968,7 @@
                           "id": "SpFzc",
                           "name": "Tok",
                           "fill": "$mint",
-                          "content": " \"@buildkitgg/shadcn-baseui-kit\"",
+                          "content": " \"@buildkitgg/shadcn\"",
                           "fontFamily": "$font-mono",
                           "fontSize": 12,
                           "fontWeight": "normal"
@@ -93622,7 +93622,7 @@
                           "id": "jfaR0",
                           "name": "Tok",
                           "fill": "$mint",
-                          "content": " \"@buildkitgg/shadcn-baseui-kit\"",
+                          "content": " \"@buildkitgg/shadcn\"",
                           "fontFamily": "$font-mono",
                           "fontSize": 12,
                           "fontWeight": "normal"
@@ -97388,7 +97388,7 @@
                                   "id": "WKvJZ",
                                   "name": "Package",
                                   "fill": "$text-3",
-                                  "content": "@buildkitgg/shadcn-baseui-kit",
+                                  "content": "@buildkitgg/shadcn-sync",
                                   "fontFamily": "$font-mono",
                                   "fontSize": 11,
                                   "fontWeight": "normal"
@@ -99389,7 +99389,7 @@
                                   "id": "G1erx",
                                   "name": "Package",
                                   "fill": "$text-3",
-                                  "content": "@buildkitgg/shadcn-baseui-kit",
+                                  "content": "@buildkitgg/shadcn-sync",
                                   "fontFamily": "$font-mono",
                                   "fontSize": 11,
                                   "fontWeight": "normal"
@@ -102165,7 +102165,7 @@
                                   "id": "fFzIz",
                                   "name": "Package",
                                   "fill": "$text-3",
-                                  "content": "@buildkitgg/shadcn-baseui-kit",
+                                  "content": "@buildkitgg/shadcn-sync",
                                   "fontFamily": "$font-mono",
                                   "fontSize": 11,
                                   "fontWeight": "normal"
@@ -102314,7 +102314,7 @@
                                       "id": "ggF7a",
                                       "name": "Seg",
                                       "fill": "$text",
-                                      "content": "pnpm add @buildkitgg/shadcn-baseui-kit@npm:@buildkitgg/shadcn-baseui-",
+                                      "content": "pnpm dlx @buildkitgg/shadcn-sync --style ",
                                       "fontFamily": "$font-mono",
                                       "fontSize": 12.5,
                                       "fontWeight": "normal"
@@ -102391,7 +102391,7 @@
                                       "id": "NUXaC",
                                       "name": "Seg",
                                       "fill": "$mint",
-                                      "content": " \"@buildkitgg/shadcn-baseui-kit\"",
+                                      "content": " \"@buildkitgg/shadcn\"",
                                       "fontFamily": "$font-mono",
                                       "fontSize": 12.5,
                                       "fontWeight": "normal"
@@ -102997,7 +102997,7 @@
                                       "fill": "$text",
                                       "textGrowth": "fixed-width",
                                       "width": "fill_container",
-                                      "content": "node_modules/@buildkitgg/shadcn-baseui-kit",
+                                      "content": "node_modules/@buildkitgg/shadcn",
                                       "fontFamily": "$font-mono",
                                       "fontSize": 12.5,
                                       "fontWeight": "normal"
@@ -103007,7 +103007,7 @@
                                       "id": "xl0GU",
                                       "name": "Note",
                                       "fill": "$text-3",
-                                      "content": "as published",
+                                      "content": "as shadcn ships it",
                                       "fontFamily": "$font-mono",
                                       "fontSize": 11.5,
                                       "fontWeight": "normal"
@@ -103054,7 +103054,7 @@
                                       "id": "AZSjC",
                                       "name": "Note",
                                       "fill": "$text-3",
-                                      "content": "import { Button } from \"…/shadcn-baseui-kit\"",
+                                      "content": "import { Button } from \"@buildkitgg/shadcn\"",
                                       "fontFamily": "$font-mono",
                                       "fontSize": 11.5,
                                       "fontWeight": "normal"

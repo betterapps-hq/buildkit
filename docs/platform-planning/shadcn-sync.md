@@ -4,7 +4,7 @@ Plan to replace the per-style `@buildkitgg/shadcn-baseui-*` packages with one sy
 components with the shadcn CLI and compiles them into a package inside each app's `node_modules`, for the primitives,
 icon library, style and theme the app picks.
 
-**Status (2026-11-16):** in progress, phase 3. [`@buildkitgg/shadcn-sync`](../../packages/shadcn/shadcn-sync/README.md)
+**Status (2026-11-17):** phase 3 done; every app uses sync. [`@buildkitgg/shadcn-sync`](../../packages/shadcn/shadcn-sync/README.md)
 has the `shadcn-sync` installer and its `sync`, `update` and `set` commands, and
 [`apps/shadcn-sync-example`](../../apps/shadcn-sync-example/README.md) renders its output. See [Phases](#phases) for
 what's left.
@@ -857,7 +857,10 @@ retire the style packages and the old generator.
 In progress: `shadcn-modals-manager` 2.0.0 and `shadcn-alerts-manager` 0.2.0 peer on `@buildkitgg/shadcn`, the
 [shadcn docs](../shadcn/README.md) describe sync, and Storybook and the site use it. The style packages, the
 `shadcn-baseui-kit` alias, `shadcn-runtime`, the old generator and `apps/shadcn-catalog` are deleted from the
-repository. Left: Parity, and retiring the old packages on npm.
+repository. The eight style packages and `shadcn-runtime` are deprecated on npm (2026-11-16), each pointing at
+shadcn-sync; npm doesn't let them be unpublished. Parity's desktop app and its example project use sync (PAR-1198,
+PAR-1271). Better Apps' booking and example apps moved in betterapps-hq/better-apps#43, and ecommerce's copacker in
+betterapps-hq/ecommerce#241, with `--direction rtl` (0.2.0) for its Urdu pages. No app installs a style package now.
 
 ## Spike results (2026-11-14)
 
