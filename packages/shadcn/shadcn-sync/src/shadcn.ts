@@ -56,6 +56,7 @@ export function createWorkspace(directory: string, settings: SyncSettings) {
     tailwind: { config: "", css: "src/index.css", baseColor: settings.theme, cssVariables: true, prefix: "" },
     // Adapters rewrite the CLI's Lucide output, so the CLI always installs a library it knows.
     iconLibrary: isBuiltInIcons(settings.icons) ? settings.icons : "lucide",
+    rtl: settings.direction === "rtl",
     aliases
   })
   writeJsonFile(join(directory, "package.json"), {

@@ -52,7 +52,8 @@ export function addedSyncScript(appDirectory: string, settings: SyncSettings): S
   const call = [
     "shadcn-sync sync",
     ...flags,
-    ...(settings.css === defaultSettings.css ? [] : [`--css ${settings.css}`])
+    ...(settings.css === defaultSettings.css ? [] : [`--css ${settings.css}`]),
+    ...(settings.direction === defaultSettings.direction ? [] : [`--direction ${settings.direction}`])
   ]
 
   return { name: "postinstall", command: existing ? `${existing} && ${call.join(" ")}` : call.join(" ") }
@@ -64,7 +65,7 @@ export function scriptFlags(command: string): SettingFlags {
   const flags: Partial<Record<(typeof settingKeys)[number], string>> = {}
 
   for (const [index, word] of words.entries()) {
-    const match = /^--(base|icons|style|theme|css)(?:=(.+))?$/.exec(word)
+    const match = /^--(base|icons|style|theme|css|direction)(?:=(.+))?$/.exec(word)
     const key = settingKeys.find((entry) => entry === match?.[1])
 
     if (key) {

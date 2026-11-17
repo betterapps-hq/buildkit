@@ -17,6 +17,11 @@ const settingArgs = {
     type: "string",
     description: "CSS mode: compiled, or tailwind for an app that runs Tailwind v4",
     valueHint: "mode"
+  },
+  direction: {
+    type: "string",
+    description: "Text direction: ltr, or rtl for logical classes that follow the page's dir",
+    valueHint: "direction"
   }
 } as const
 

@@ -138,13 +138,14 @@ package is built.
 
 Settings, taken by the installer, `sync` and `set`:
 
-| Option    | Values                                                                                                  | Default    |
-| --------- | ------------------------------------------------------------------------------------------------------- | ---------- |
-| `--base`  | A shadcn base: `base` (Base UI), `radix` or `aria` (React Aria)                                         | `base`     |
-| `--icons` | A shadcn icon library (`lucide`, `tabler`, `hugeicons`, `phosphor`, `remixicon`), or an adapter package | `lucide`   |
-| `--style` | A shadcn style: `nova`, `vega`, `maia`, `lyra`, `mira`, `luma`, `sera`, `rhea`                          | `nova`     |
-| `--theme` | A shadcn base color: `neutral`, `stone`, `zinc`, `gray`, `mauve`, `olive`, `mist`, `taupe`              | `neutral`  |
-| `--css`   | `compiled`, `tailwind` (see [CSS modes](#css-modes))                                                    | `compiled` |
+| Option        | Values                                                                                                  | Default    |
+| ------------- | ------------------------------------------------------------------------------------------------------- | ---------- |
+| `--base`      | A shadcn base: `base` (Base UI), `radix` or `aria` (React Aria)                                         | `base`     |
+| `--icons`     | A shadcn icon library (`lucide`, `tabler`, `hugeicons`, `phosphor`, `remixicon`), or an adapter package | `lucide`   |
+| `--style`     | A shadcn style: `nova`, `vega`, `maia`, `lyra`, `mira`, `luma`, `sera`, `rhea`                          | `nova`     |
+| `--theme`     | A shadcn base color: `neutral`, `stone`, `zinc`, `gray`, `mauve`, `olive`, `mist`, `taupe`              | `neutral`  |
+| `--css`       | `compiled`, `tailwind` (see [CSS modes](#css-modes))                                                    | `compiled` |
+| `--direction` | `ltr`, or `rtl`, which sets `rtl: true` in the CLI's `components.json` so it writes logical classes     | `ltr`      |
 
 The bases, styles, themes and icon libraries are read from the pinned shadcn CLI's own data (`shadcn/preset` and
 `shadcn/icons`), so the lists above follow upstream whenever sync moves to a new shadcn version.
