@@ -654,8 +654,9 @@
   color: var(--text);
 }
 
+/* Matches the selector that sets the animation, so it wins */
 @media (prefers-reduced-motion: reduce) {
-  .kit-wire {
+  .kit-path.is-sync .kit-wire {
     animation: none;
   }
 }
