@@ -134,9 +134,7 @@
 
 /* The recommended path's wire is solid, with bright dashes running down it toward its panel */
 .kit-path.is-sync .kit-wire {
-  background:
-    repeating-linear-gradient(to bottom, var(--tone) 0 4px, transparent 4px 12px),
-    var(--tone-line);
+  background: repeating-linear-gradient(to bottom, var(--tone) 0 4px, transparent 4px 12px), var(--tone-line);
   animation: kit-flow 0.9s linear infinite;
 }
 
