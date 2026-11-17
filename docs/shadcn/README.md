@@ -40,13 +40,14 @@ managers and monorepos.
 
 ## Choices
 
-| Option    | Picks                                                       |
-| --------- | ----------------------------------------------------------- |
-| `--base`  | The primitives: `base` (Base UI), `radix` or `aria`         |
-| `--icons` | A built-in icon library or an icon adapter package          |
-| `--style` | The shadcn style, such as `nova` or `vega`                  |
-| `--theme` | The color theme, such as `neutral` or `zinc`                |
-| `--css`   | `compiled` CSS, or `tailwind` for an app that runs Tailwind |
+| Option        | Picks                                                            |
+| ------------- | ---------------------------------------------------------------- |
+| `--base`      | The primitives: `base` (Base UI), `radix` or `aria`              |
+| `--icons`     | A built-in icon library or an icon adapter package               |
+| `--style`     | The shadcn style, such as `nova` or `vega`                       |
+| `--theme`     | The color theme, such as `neutral` or `zinc`                     |
+| `--css`       | `compiled` CSS, or `tailwind` for an app that runs Tailwind      |
+| `--direction` | `ltr`, or `rtl` for logical classes that follow the page's `dir` |
 
 Imports stay the same when a choice changes. See [choosing components](styles.md).
 

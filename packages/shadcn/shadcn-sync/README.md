@@ -93,6 +93,7 @@ question, and `--yes` skips them all and installs whatever is missing.
 | `--style`     | `nova`, `vega`, `maia`, `lyra`, `mira`, `luma`, `sera`, `rhea`               | `nova`     |
 | `--theme`     | `neutral`, `stone`, `zinc`, `gray`, `mauve`, `olive`, `mist`, `taupe`        | `neutral`  |
 | `--css`       | `compiled`, `tailwind` (see [CSS](#css))                                     | `compiled` |
+| `--direction` | `ltr`, `rtl` (see [Right to left](#right-to-left))                           | `ltr`      |
 | `--yes`, `-y` | Don't ask; install what's missing (installer and `set`)                      | `false`    |
 | `--force`     | Rebuild even when the output is current (`sync` only)                        | `false`    |
 | `--verbose`   | Log each stage                                                               | `false`    |
@@ -164,6 +165,14 @@ It holds what `shadcn init` would add to the app's stylesheet:
 The app's own classes can use all of these too. Preflight and the rest of the theme stay the app's own. Tailwind scans
 the whole generated package, so the app's CSS holds the classes of every component, not just the ones it imports. The
 installer asks for this mode when the app has Tailwind installed.
+
+## Right to left
+
+With `--direction rtl`, the shadcn CLI writes logical classes (`ms-2`, `start-0`, `ps-3`) instead of left and right
+ones, and flips directional icons with `rtl:`, so the components follow the page's `dir`. Set `dir="rtl"` on the page,
+or wrap the app in `DirectionProvider` from `@buildkitgg/shadcn` for the components that read the direction in
+JavaScript. Strings the components write themselves, such as a dialog's "Close", stay English as in stock shadcn: pass
+your own `aria-label` or children where a component takes them.
 
 ## Class merging
 

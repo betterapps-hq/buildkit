@@ -579,12 +579,22 @@ async function askSettings(current: SyncSettings, flags: SettingFlags, appDirect
         )
       : current.css)
 
-  return parseSettings({ base, style, theme, icons, css })
+  // Right to left is only for apps that ask for it with `--direction`, so it isn't asked.
+  return parseSettings({ base, style, theme, icons, css, direction: flags.direction ?? current.direction })
 }
 
-const labels = { base: "Primitives", style: "Style", theme: "Theme", icons: "Icons", css: "CSS" } as const
-const shownKeys = ["base", "style", "theme", "icons", "css"] as const
+const labels = {
+  base: "Primitives",
+  style: "Style",
+  theme: "Theme",
+  icons: "Icons",
+  css: "CSS",
+  direction: "Direction"
+} as const
+
+const shownKeys = ["base", "style", "theme", "icons", "css", "direction"] as const
 const cssTitles = { compiled: "Compiled stylesheets", tailwind: "The app's own Tailwind" } as const
+const directionTitles = { ltr: "Left to right", rtl: "Right to left" } as const
 
 function settingTitle(key: keyof typeof labels, settings: SyncSettings) {
   if (key === "base") {
@@ -593,6 +603,10 @@ function settingTitle(key: keyof typeof labels, settings: SyncSettings) {
 
   if (key === "css") {
     return cssTitles[settings.css]
+  }
+
+  if (key === "direction") {
+    return directionTitles[settings.direction]
   }
 
   return key === "icons" ? iconTitle(settings.icons) : titleCase(settings[key])

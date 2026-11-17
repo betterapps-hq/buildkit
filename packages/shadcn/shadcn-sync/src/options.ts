@@ -7,6 +7,7 @@ export const bases: readonly string[] = PRESET_BASES
 export const styles: readonly string[] = PRESET_STYLES
 export const themes: readonly string[] = PRESET_BASE_COLORS
 export const cssModes = ["compiled", "tailwind"] as const
+export const directions = ["ltr", "rtl"] as const
 
 /** The icon libraries the shadcn CLI applies itself, with their titles and the packages their imports need. */
 export const builtInIcons: ReadonlyMap<string, { readonly title: string; readonly packages: readonly string[] }> =
@@ -37,6 +38,8 @@ export function titleCase(id: string): string {
 
 export type CssMode = (typeof cssModes)[number]
 
+export type Direction = (typeof directions)[number]
+
 /** The settings an app picks in its `postinstall`. */
 export interface SyncSettings {
   /** A shadcn base: `base` (Base UI), `radix` or `aria` (React Aria). */
@@ -46,6 +49,8 @@ export interface SyncSettings {
   readonly style: string
   readonly theme: string
   readonly css: CssMode
+  /** `rtl` has the shadcn CLI write logical classes (`ms-2`, `start-0`) and flip directional icons for right-to-left. */
+  readonly direction: Direction
 }
 
 export const defaultSettings: SyncSettings = {
@@ -53,7 +58,8 @@ export const defaultSettings: SyncSettings = {
   icons: DEFAULT_PRESET_CONFIG.iconLibrary,
   style: DEFAULT_PRESET_CONFIG.style,
   theme: DEFAULT_PRESET_CONFIG.baseColor,
-  css: "compiled"
+  css: "compiled",
+  direction: "ltr"
 }
 
 /** Raw flag values as citty parses them; anything missing takes its default. */
@@ -63,9 +69,10 @@ export interface SettingFlags {
   readonly style?: string | undefined
   readonly theme?: string | undefined
   readonly css?: string | undefined
+  readonly direction?: string | undefined
 }
 
-export const settingKeys = ["base", "icons", "style", "theme", "css"] as const
+export const settingKeys = ["base", "icons", "style", "theme", "css", "direction"] as const
 
 /** Whether any setting flag was given. */
 export function hasSettingFlags(flags: SettingFlags): boolean {
@@ -97,7 +104,8 @@ export function parseSettings(flags: SettingFlags, base: SyncSettings = defaultS
     icons,
     style: pick("style", flags.style ?? base.style, styles),
     theme: pick("theme", flags.theme ?? base.theme, themes),
-    css: pick("css", flags.css ?? base.css, cssModes)
+    css: pick("css", flags.css ?? base.css, cssModes),
+    direction: pick("direction", flags.direction ?? base.direction, directions)
   }
 }
 

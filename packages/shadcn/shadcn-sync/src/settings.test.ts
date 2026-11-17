@@ -23,7 +23,8 @@ describe("parseSettings", () => {
     [{ base: "mui" }, "--base mui isn't valid. Use radix, base, or aria."],
     [{ style: "nope" }, "--style nope isn't valid. Use nova,"],
     [{ theme: "slate" }, "--theme slate isn't valid. Use neutral, stone,"],
-    [{ icons: "../icons" }, "--icons ../icons isn't an icon library id or a package name."]
+    [{ icons: "../icons" }, "--icons ../icons isn't an icon library id or a package name."],
+    [{ direction: "auto" }, "--direction auto isn't valid. Use ltr or rtl."]
   ])("rejects %o", (flags, message) => {
     expect(() => parseSettings(flags)).toThrow(message)
   })
@@ -56,6 +57,16 @@ describe("sync scripts", () => {
     const next = withSettings(command, { ...defaultSettings, icons: "phosphor", theme: "zinc" })
 
     expect(next).toBe("shadcn-sync sync --base base --icons=phosphor --style nova --theme zinc && echo done")
+  })
+
+  it("reads, sets and takes back right to left", () => {
+    const rtl = withSettings(command, { ...defaultSettings, direction: "rtl" })
+
+    expect(rtl).toBe("shadcn-sync sync --base base --icons=lucide --style nova --direction rtl && echo done")
+    expect(scriptFlags(rtl).direction).toBe("rtl")
+    expect(withSettings(rtl, defaultSettings)).toBe(
+      "shadcn-sync sync --base base --icons=lucide --style nova --direction ltr && echo done"
+    )
   })
 
   it("prefers the postinstall, then any script that runs sync", () => {

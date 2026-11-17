@@ -24,7 +24,14 @@ const shared: SharedModule[] = [
 
 const identity = {
   generatorVersion: "0.0.0",
-  settings: { base: "base", icons: "lucide", style: "nova", theme: "neutral", css: "compiled" as const },
+  settings: {
+    base: "base",
+    icons: "lucide",
+    style: "nova",
+    theme: "neutral",
+    css: "compiled" as const,
+    direction: "ltr" as const
+  },
   snapshot: "sha256-snapshot",
   fingerprint: "sha256-fingerprint",
   packages: ["cmdk", "react"]

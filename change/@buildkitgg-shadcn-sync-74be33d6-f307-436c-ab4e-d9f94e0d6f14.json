@@ -1,0 +1,7 @@
+{
+  "type": "minor",
+  "comment": "Add --direction rtl, which has the shadcn CLI write logical classes for right-to-left apps",
+  "packageName": "@buildkitgg/shadcn-sync",
+  "email": "ajcraswell@gmail.com",
+  "dependentChangeType": "patch"
+}
