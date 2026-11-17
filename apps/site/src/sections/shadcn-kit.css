@@ -2,71 +2,253 @@
   display: none;
 }
 
-/* Head and install card */
+/* Head */
 
 .kit-head {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  gap: 64px;
+  gap: 24px 64px;
 }
 
-.kit-heading {
+.kit-head .tl-body {
+  flex: 0 1 600px;
+}
+
+/* Fork: one stock source, taken two ways */
+
+.kit-fork {
+  --copy: #ff8a9b;
+  --copy-dim: #ff8a9b59;
+  --sync: var(--blue-soft);
+  --sync-dim: #8fb4ff59;
+  --copy-line: #ff8a9ba6;
+  --sync-line: #8fb4ffa6;
   display: flex;
-  flex: 0 1 580px;
   flex-direction: column;
-  gap: 18px;
-  min-width: 0;
+  align-items: center;
 }
 
-.kit-install {
-  flex: 0 0 620px;
-  min-width: 0;
-  padding: 15px 17px;
-  border: 1px solid var(--line);
+.kit-source {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px 12px 12px;
+  border: 1px solid var(--line-strong);
   border-radius: 14px;
   background: #0b1020;
-  box-shadow: 0 18px 40px #0b12242e;
-  font: 400 12.5px/16.5px var(--font-mono);
-  color: var(--text);
-  overflow-x: auto;
-  scrollbar-width: none;
+  box-shadow: 0 16px 40px #0b12241a;
 }
 
-.kit-install code {
+.kit-source-icon {
   display: grid;
-  gap: 18px;
+  flex: none;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: var(--ink-700);
+  color: var(--text);
 }
 
-.kit-install-line {
-  display: block;
-  white-space: pre;
+.kit-source-icon svg {
+  width: 16px;
+  height: 16px;
 }
 
-/* Each option on its own continued line, so a chip below changes one line */
-.kit-install-flag {
-  display: block;
-  padding-left: 4ch;
+.kit-source-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
 
-.kit-prompt {
-  color: var(--blue-soft);
+.kit-source-title {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--text);
 }
 
-.kit-token {
-  padding: 0 3px;
-  border-radius: 4px;
-  background: #3370ff33;
-  color: var(--blue-soft);
+.kit-source-file {
+  color: var(--text-2);
+  font: 400 12px/1.3 var(--font-mono);
 }
 
-/* Comparison panels */
+.kit-fork-stem {
+  width: 2px;
+  height: 24px;
+  background: var(--line-strong);
+}
 
-.kit-compare {
+.kit-fork-paths {
+  position: relative;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-self: stretch;
   gap: 20px;
 }
+
+/* The bar both paths hang from, between the middles of the two columns */
+.kit-fork-paths::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: calc(25% - 5px);
+  left: calc(25% - 5px);
+  height: 2px;
+  background: linear-gradient(90deg, var(--copy-line) 50%, var(--sync-line) 50%);
+}
+
+.kit-path {
+  --tone: var(--copy);
+  --tone-dim: var(--copy-dim);
+  --tone-line: var(--copy-line);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.kit-path.is-sync {
+  --tone: var(--sync);
+  --tone-dim: var(--sync-dim);
+  --tone-line: var(--sync-line);
+}
+
+.kit-branch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+}
+
+/* Dashes that run down each path, toward the panel it ends in */
+.kit-wire {
+  flex: none;
+  width: 2px;
+  height: 20px;
+  background: repeating-linear-gradient(to bottom, var(--tone-line) 0 5px, transparent 5px 9px);
+  animation: kit-flow 0.9s linear infinite;
+}
+
+.kit-wire-in {
+  position: relative;
+  height: 24px;
+}
+
+.kit-wire-in::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  translate: -50% 0;
+  border: 5px solid transparent;
+  border-top-color: var(--tone);
+  border-bottom: 0;
+}
+
+@keyframes kit-flow {
+  to {
+    background-position: 0 9px;
+  }
+}
+
+.kit-cmd {
+  max-width: 100%;
+  padding: 7px 13px;
+  overflow: hidden;
+  border: 1px solid var(--tone-dim);
+  border-radius: 999px;
+  background: #0b1020;
+  color: var(--text);
+  font: 400 12px/1.2 var(--font-mono);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.kit-cmd .kit-prompt {
+  color: var(--tone);
+}
+
+.kit-stages {
+  display: flex;
+  justify-content: center;
+  gap: 28px;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.kit-stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 9px 13px;
+  border: 1px solid var(--tone-dim);
+  border-radius: 10px;
+  background: #0b1020;
+}
+
+/* The step both paths share, before they part */
+.kit-stage.is-shared {
+  border-color: var(--line-strong);
+}
+
+/* The arrow from one step to the next */
+.kit-stage + .kit-stage::before,
+.kit-stage + .kit-stage::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 100%;
+  translate: 0 -50%;
+}
+
+.kit-stage + .kit-stage::before {
+  width: 28px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--tone-line), var(--tone));
+}
+
+.kit-stage + .kit-stage::after {
+  border: 4px solid transparent;
+  border-right: 0;
+  border-left-color: var(--tone);
+}
+
+.kit-stage-name {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--text);
+}
+
+.kit-stage-name svg {
+  flex: none;
+  width: 13px;
+  height: 13px;
+  color: var(--tone);
+}
+
+.kit-stage.is-shared .kit-stage-name svg {
+  color: var(--text-2);
+}
+
+.kit-stage-detail {
+  overflow: hidden;
+  color: var(--text-2);
+  font: 400 11.5px/1.3 var(--font-mono);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* The panels at the end of each path */
 
 .kit-panel {
   --panel-accent: #ff8a9b;
@@ -219,7 +401,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  height: 40px;
+  height: 36px;
   padding: 0 22px;
 }
 
@@ -278,25 +460,82 @@
   color: var(--panel-accent);
 }
 
-/* Styles */
+/* Choosing the options, beside the command they make */
 
-.kit-styles {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px 32px;
+.kit-choose {
+  display: grid;
+  grid-template-areas:
+    "head command"
+    "options command"
+    "fluent command";
+  grid-template-columns: minmax(0, 1fr) 420px;
+  align-items: start;
+  gap: 20px 64px;
 }
 
 .kit-styles-head {
   display: flex;
+  grid-area: head;
   flex-direction: column;
   gap: 4px;
 }
 
+.kit-styles-note {
+  max-width: 720px;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--text-2);
+  text-wrap: pretty;
+}
+
+.kit-fluent {
+  grid-area: fluent;
+}
+
+.kit-install {
+  grid-area: command;
+  min-width: 0;
+  padding: 15px 17px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #0b1020;
+  box-shadow: 0 18px 40px #0b12242e;
+  font: 400 12.5px/16.5px var(--font-mono);
+  color: var(--text);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.kit-install code {
+  display: grid;
+  gap: 14px;
+}
+
+.kit-install-line {
+  display: block;
+  white-space: pre;
+}
+
+/* Each option on its own continued line, so a chip changes one line */
+.kit-install-flag {
+  display: block;
+  padding-left: 4ch;
+}
+
+.kit-prompt {
+  color: var(--blue-soft);
+}
+
+.kit-token {
+  padding: 0 3px;
+  border-radius: 4px;
+  background: #3370ff33;
+  color: var(--blue-soft);
+}
+
 .kit-options {
   display: grid;
-  flex-basis: 100%;
+  grid-area: options;
   gap: 12px;
 }
 
@@ -309,13 +548,13 @@
 
 /* A legend can't be a grid item, so it floats beside the chips */
 .kit-option-label {
+  display: flex;
   float: left;
+  flex-direction: column;
+  gap: 2px;
   width: 150px;
   margin-right: 24px;
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
   color: var(--text);
   font-size: 14px;
 }
@@ -323,16 +562,6 @@
 .kit-option-label code {
   color: var(--text-2);
   font: 400 12px/1.3 var(--font-mono);
-}
-
-.kit-fluent {
-  flex-basis: 100%;
-}
-
-.kit-styles-note {
-  font-size: 14px;
-  line-height: 1.4;
-  color: var(--text-2);
 }
 
 .kit-style-list {
@@ -375,63 +604,50 @@
   outline-offset: 2px;
 }
 
-/* The choice the install command above uses */
+/* The choice the command uses */
 .kit-style-list .is-shown {
   border-color: #3370ff80;
   background: #3370ff14;
   color: var(--text);
 }
 
-@media (max-width: 1340px) {
+@media (prefers-reduced-motion: reduce) {
+  .kit-wire {
+    animation: none;
+  }
+}
+
+/* One path above the other, each with its own wire */
+@media (max-width: 1080px) {
   .kit-head {
     flex-direction: column;
     align-items: flex-start;
-    gap: 32px;
   }
 
-  .kit-heading {
+  .kit-head .tl-body {
     flex: none;
     max-width: 640px;
   }
 
-  .kit-install {
-    flex: none;
-    width: min(100%, 620px);
-  }
-}
-
-/* Tablets: the title and lede side by side, with the install card full width below them */
-@media (min-width: 761px) and (max-width: 1340px) {
-  .kit-head {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    align-items: end;
-    gap: 20px 56px;
+  .kit-fork-paths {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 40px;
   }
 
-  .kit-heading {
-    display: contents;
+  .kit-fork-paths::before {
+    display: none;
   }
 
-  .kit-heading .tl-heading {
-    grid-row: 2;
+  .kit-path + .kit-path .kit-wire:first-child {
+    display: none;
   }
 
-  .kit-heading .tl-body {
-    grid-column: 2;
-    grid-row: 1 / 3;
-    justify-self: end;
-  }
-
-  .kit-install {
-    grid-column: 1 / -1;
-    width: auto;
-    margin-top: 12px;
-  }
-}
-
-@media (max-width: 1080px) {
-  .kit-compare {
+  .kit-choose {
+    grid-template-areas:
+      "head"
+      "command"
+      "options"
+      "fluent";
     grid-template-columns: minmax(0, 1fr);
   }
 }
@@ -447,16 +663,40 @@
     font-size: 11.5px;
   }
 
+  /* The steps stack, with the arrows pointing down */
+  .kit-stages {
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .kit-stage + .kit-stage::before,
+  .kit-stage + .kit-stage::after {
+    top: auto;
+    right: auto;
+    bottom: 100%;
+    left: 50%;
+    translate: -50% 0;
+  }
+
+  .kit-stage + .kit-stage::before {
+    width: 2px;
+    height: 20px;
+    background: linear-gradient(var(--tone-line), var(--tone));
+  }
+
+  .kit-stage + .kit-stage::after {
+    border: 4px solid transparent;
+    border-bottom: 0;
+    border-top-color: var(--tone);
+  }
+
   .kit-wide {
     display: none;
   }
 
   .kit-narrow {
     display: revert;
-  }
-
-  .kit-compare {
-    gap: 12px;
   }
 
   .kit-panel {
