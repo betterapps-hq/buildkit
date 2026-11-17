@@ -4,10 +4,10 @@ Plan to replace the per-style `@buildkitgg/shadcn-baseui-*` packages with one sy
 components with the shadcn CLI and compiles them into a package inside each app's `node_modules`, for the primitives,
 icon library, style and theme the app picks.
 
-**Status (2026-11-17):** phase 3 done; every app uses sync. [`@buildkitgg/shadcn-sync`](../../packages/shadcn/shadcn-sync/README.md)
-has the `shadcn-sync` installer and its `sync`, `update` and `set` commands, and
-[`apps/shadcn-sync-example`](../../apps/shadcn-sync-example/README.md) renders its output. See [Phases](#phases) for
-what's left.
+**Status (2026-11-17):** phase 3 done; every app uses sync.
+[`@buildkitgg/shadcn-sync`](../../packages/shadcn/shadcn-sync/README.md) has the `shadcn-sync` installer and its `sync`,
+`update` and `set` commands, and [`apps/shadcn-sync-example`](../../apps/shadcn-sync-example/README.md) renders its
+output. See [Phases](#phases) for what's left.
 
 ## Why
 
