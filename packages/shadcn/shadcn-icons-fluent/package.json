@@ -1,6 +1,6 @@
 {
   "name": "@buildkitgg/shadcn-icons-fluent",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Fluent UI icons for shadcn components built by shadcn-sync.",
   "keywords": [
     "shadcn-sync-icons"

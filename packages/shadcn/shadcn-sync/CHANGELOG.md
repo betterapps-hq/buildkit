@@ -1,8 +1,16 @@
 # Change Log - @buildkitgg/shadcn-sync
 
-<!-- This log was last generated on Mon, 16 Nov 2026 13:35:03 GMT and should not be manually modified. -->
+<!-- This log was last generated on Tue, 17 Nov 2026 06:56:03 GMT and should not be manually modified. -->
 
 <!-- Start content -->
+
+## 0.2.0
+
+Tue, 17 Nov 2026 06:56:03 GMT
+
+### Minor changes
+
+- Add --direction rtl, which has the shadcn CLI write logical classes for right-to-left apps (ajcraswell@gmail.com)
 
 ## 0.1.4
 

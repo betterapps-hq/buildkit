@@ -2,6 +2,21 @@
   "name": "@buildkitgg/shadcn-sync",
   "entries": [
     {
+      "date": "Tue, 17 Nov 2026 06:56:03 GMT",
+      "version": "0.2.0",
+      "tag": "@buildkitgg/shadcn-sync_v0.2.0",
+      "comments": {
+        "minor": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/shadcn-sync",
+            "commit": "57cb7b0cbc778511c84b925f88e87778b56bd2d6",
+            "comment": "Add --direction rtl, which has the shadcn CLI write logical classes for right-to-left apps"
+          }
+        ]
+      }
+    },
+    {
       "date": "Mon, 16 Nov 2026 13:35:03 GMT",
       "version": "0.1.4",
       "tag": "@buildkitgg/shadcn-sync_v0.1.4",
