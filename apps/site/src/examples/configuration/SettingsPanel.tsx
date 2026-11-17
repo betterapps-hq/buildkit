@@ -1,4 +1,4 @@
-import { Badge, Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@buildkitgg/shadcn-baseui-kit"
+import { Badge, Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@buildkitgg/shadcn"
 import { RotateCcwIcon } from "lucide-react"
 import { LANGUAGES, PAGE_SIZES, override, reset, useSetting, type Settings } from "./config"
 

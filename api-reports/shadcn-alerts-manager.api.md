@@ -13,11 +13,11 @@ import { AlertManager } from '@buildkitgg/react-alerts';
 import { AlertManagerOptions } from '@buildkitgg/react-alerts';
 import { AlertOptions } from '@buildkitgg/react-alerts';
 import { AlertPatch } from '@buildkitgg/react-alerts';
+import { AlertRegion } from '@buildkitgg/react-alerts';
 import { AlertRegionProps } from '@buildkitgg/react-alerts';
 import { AlertRendererProps } from '@buildkitgg/react-alerts';
 import type { ComponentType } from 'react';
 import type { HTMLAttributes } from 'react';
-import { JSX } from 'react';
 import type { ReactNode } from 'react';
 import { useAlerts } from '@buildkitgg/react-alerts';
 
@@ -66,8 +66,7 @@ export { AlertOptions }
 
 export { AlertPatch }
 
-// @public (undocumented)
-export function AlertRegion(props: AlertRegionProps): JSX.Element;
+export { AlertRegion }
 
 export { AlertRegionProps }
 

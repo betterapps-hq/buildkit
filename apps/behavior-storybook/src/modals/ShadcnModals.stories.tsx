@@ -1,12 +1,4 @@
-import {
-  Button,
-  Input,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter
-} from "@buildkitgg/shadcn-baseui-kit"
+import { Button, Input, Dialog, DialogContent, DialogTitle, DialogDescription, DialogFooter } from "@buildkitgg/shadcn"
 import { baseUiComponents, createModalManager, ModalRenderer } from "@buildkitgg/shadcn-modals-manager"
 import type { ModalAdapter } from "@buildkitgg/shadcn-modals-manager"
 import type { Meta, StoryObj } from "@storybook/react-vite"
@@ -46,7 +38,7 @@ export const SaveAndRetry: StoryObj<typeof meta> = { ...modalStory("async"), nam
 export const UnsavedChanges: StoryObj<typeof meta> = { ...modalStory("guard"), name: "Unsaved changes" }
 export const ExternalUpdate: StoryObj<typeof meta> = { ...modalStory("external"), name: "External update" }
 
-// The kit provides Base UI-backed shadcn components. App-owned registry components use the same binding.
+// The generated package holds the Base UI shadcn components. App-owned registry components use the same binding.
 const registryAdapter = baseUiComponents({
   Button,
   Dialog,

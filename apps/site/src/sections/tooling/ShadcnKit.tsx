@@ -81,24 +81,24 @@ function InstalledPanel() {
         </span>
         <Lock className="kit-panel-glyph kit-narrow" aria-hidden="true" />
         <span className="kit-panel-titles">
-          <h3 className="kit-panel-title">Installed from npm</h3>
-          <span className="kit-panel-sub kit-wide">Compiled and versioned, installed in node_modules.</span>
+          <h3 className="kit-panel-title">Built into node_modules</h3>
+          <span className="kit-panel-sub kit-wide">Stock shadcn, compiled from a snapshot you commit</span>
         </span>
         <span className="kit-panel-tag kit-wide">
           <Lock aria-hidden="true" />
-          versioned
+          generated
         </span>
       </header>
       <ul className="kit-panel-body kit-files">
         <li className="kit-file is-sealed">
           <Lock aria-hidden="true" />
-          <span className="kit-file-path">node_modules/@buildkitgg/shadcn-baseui-kit</span>
-          <span className="kit-file-note kit-wide">as published</span>
+          <span className="kit-file-path">node_modules/@buildkitgg/shadcn</span>
+          <span className="kit-file-note kit-wide">as shadcn ships it</span>
         </li>
         <li className="kit-file kit-wide">
           <FileCode aria-hidden="true" />
           <span className="kit-file-path">src/app.tsx</span>
-          <span className="kit-file-note">import {"{ Button }"} from &quot;…/shadcn-baseui-kit&quot;</span>
+          <span className="kit-file-note">import {"{ Button }"} from &quot;@buildkitgg/shadcn&quot;</span>
         </li>
         <li className="kit-file is-theme">
           <Palette aria-hidden="true" />
@@ -108,7 +108,7 @@ function InstalledPanel() {
       </ul>
       <p className="kit-panel-foot">
         <ShieldCheck aria-hidden="true" />
-        <span>Customize with CSS variables, and update it like any other dependency</span>
+        <span>Customize with CSS variables, and pull new components with one command</span>
       </p>
     </article>
   )
@@ -124,22 +124,22 @@ export function ShadcnKit() {
             <br className="kit-wide" /> not a folder to edit
           </h3>
           <p className="tl-body">
-            Editing a shared component can affect every screen that uses it. Buildkit packages the shadcn Base UI
-            components as a versioned dependency. Customize them with CSS variables and update the package through npm.
+            Editing a shared component can affect every screen that uses it. shadcn-sync runs the shadcn CLI for the
+            primitives, style, theme and icons you pick, then builds the components into a package in your app.
+            Customize them with CSS variables and keep the code stock.
           </p>
         </div>
         <pre className="kit-install kit-wide">
           <code>
             <span className="kit-install-line">
               <span className="kit-prompt">$ </span>
-              pnpm add @buildkitgg/shadcn-baseui-kit@npm:@buildkitgg/shadcn-baseui-
-              <StyleToken style="vega" />
+              pnpm dlx @buildkitgg/shadcn-sync --style <StyleToken style="vega" />
             </span>
             <span className="kit-install-line">
               <span className="tok-kw">import</span>
               <span className="tok-punc">{" { Button } "}</span>
               <span className="tok-kw">from</span>
-              <span className="tok-str"> &quot;@buildkitgg/shadcn-baseui-kit&quot;</span>
+              <span className="tok-str"> &quot;@buildkitgg/shadcn&quot;</span>
             </span>
           </code>
         </pre>
@@ -152,8 +152,8 @@ export function ShadcnKit() {
 
       <div className="kit-styles">
         <div className="kit-styles-head">
-          <h4 className="tl-part-title">Pick one of eight upstream styles</h4>
-          <p className="kit-styles-note">Swap the alias in package.json. Imports and managers stay the same.</p>
+          <h4 className="tl-part-title">Pick one of eight shadcn styles</h4>
+          <p className="kit-styles-note">Switch with shadcn-sync set --style. Imports and managers stay the same.</p>
         </div>
         <ul className="kit-style-list" aria-label="shadcn styles">
           {STYLES.map((style) => (
@@ -164,7 +164,7 @@ export function ShadcnKit() {
         </ul>
       </div>
 
-      <GuideLink href={packageGuide("shadcn-baseui-vega")} label="shadcn kit guide" />
+      <GuideLink href={packageGuide("shadcn-sync")} label="shadcn-sync guide" />
     </div>
   )
 }

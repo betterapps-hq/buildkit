@@ -6,11 +6,26 @@
   color-scheme: dark;
 }
 
+/* The components style only their own parts, so the examples' own elements get their box model here */
+*,
+::before,
+::after {
+  box-sizing: border-box;
+}
+
 /* Transparent, so the preview panel's own background shows through */
 body {
   margin: 0;
   background: transparent;
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration: inherit;
 }
 
 #root {

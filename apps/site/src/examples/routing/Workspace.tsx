@@ -1,5 +1,5 @@
 import { useRouteTabs } from "@buildkitgg/react-router"
-import { Tabs, TabsList, TabsTrigger } from "@buildkitgg/shadcn-baseui-kit"
+import { Tabs, TabsList, TabsTrigger } from "@buildkitgg/shadcn"
 import { Outlet } from "react-router"
 import { adapter, people, settings } from "./router"
 

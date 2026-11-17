@@ -1,7 +1,7 @@
 import { createPreferences } from "@buildkitgg/preferences-core"
 import { connectPreferencesStorage } from "@buildkitgg/preferences-core/browser"
 import { usePreference } from "@buildkitgg/react-preferences"
-import { Button, Input, Label, Textarea, NativeSelect, NativeSelectOption } from "@buildkitgg/shadcn-baseui-kit"
+import { Button, Input, Label, Textarea, NativeSelect, NativeSelectOption } from "@buildkitgg/shadcn"
 import { ExampleResult } from "@buildkitgg/storybook-config/examples"
 import { useEffect, useState } from "react"
 

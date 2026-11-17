@@ -1,38 +1,34 @@
 import {
   Button,
-  ShadcnLocalizationProvider,
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogTitle,
-  DialogDescription,
   Combobox,
   ComboboxInput,
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+  DirectionProvider,
   Sheet,
-  SheetTrigger,
   SheetContent,
+  SheetDescription,
   SheetTitle,
-  SheetDescription
-} from "@buildkitgg/shadcn-baseui-kit"
+  SheetTrigger,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger
+} from "@buildkitgg/shadcn"
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { useState } from "react"
-import "@buildkitgg/shadcn-baseui-kit/styles.css"
 
-function RuntimeExample() {
+function DirectionExample() {
   const [isRtl, setIsRtl] = useState(false)
   const direction = isRtl ? "rtl" : "ltr"
 
   return (
-    <ShadcnLocalizationProvider
-      direction={direction}
-      strings={isRtl ? { close: "بند کریں", showOptions: "اختیارات دکھائیں", clear: "صاف کریں" } : {}}
-    >
+    <DirectionProvider direction={direction}>
       <main dir={direction} style={{ padding: 24, display: "grid", gap: 20, maxWidth: 640 }}>
-        <Button onClick={() => setIsRtl(!isRtl)}>Switch direction and language</Button>
+        <Button onClick={() => setIsRtl(!isRtl)}>Switch direction</Button>
         <Tabs defaultValue="first">
           <TabsList>
             <TabsTrigger value="first">First</TabsTrigger>
@@ -47,8 +43,8 @@ function RuntimeExample() {
         <Dialog>
           <DialogTrigger render={<Button />}>Open dialog</DialogTrigger>
           <DialogContent dir={direction}>
-            <DialogTitle>Localized controls</DialogTitle>
-            <DialogDescription>Close labels follow the provider.</DialogDescription>
+            <DialogTitle>Direction</DialogTitle>
+            <DialogDescription>The dialog follows the reading direction.</DialogDescription>
           </DialogContent>
         </Dialog>
         <Sheet>
@@ -58,29 +54,24 @@ function RuntimeExample() {
             <SheetDescription>The sheet follows the reading direction.</SheetDescription>
           </SheetContent>
         </Sheet>
-        <div className="dark" style={{ padding: 16 }}>
-          <div className="light" style={{ padding: 16 }}>
-            <Button variant="outline">Light island</Button>
-          </div>
-        </div>
       </main>
-    </ShadcnLocalizationProvider>
+    </DirectionProvider>
   )
 }
 
-const meta = { title: "shadcn/Runtime", component: RuntimeExample } satisfies Meta<typeof RuntimeExample>
+const meta = { title: "shadcn/Direction", component: DirectionExample } satisfies Meta<typeof DirectionExample>
 
 export default meta
 
 type Story = StoryObj<typeof meta>
 
-export const LocalizationAndDirection: Story = {}
+export const ReadingDirection: Story = { name: "Reading direction" }
 
 export const Mobile: Story = {
   render: () => (
     <iframe
-      title="Mobile runtime example"
-      src="./iframe.html?id=shadcn-runtime--localization-and-direction&viewMode=story"
+      title="Mobile direction example"
+      src="./iframe.html?id=shadcn-direction--reading-direction&viewMode=story"
       style={{ width: 375, maxWidth: "100%", height: 720, border: 0 }}
     />
   )

@@ -1,4 +1,5 @@
-import { Alert, AlertDescription, AlertTitle, Button, ShadcnLocalizationProvider } from "@buildkitgg/shadcn-baseui-kit"
+import { Alert, AlertDescription, AlertTitle } from "@buildkitgg/shadcn/alert"
+import { Button } from "@buildkitgg/shadcn/button"
 import { act, cleanup, render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, expect, it, vi } from "vite-plus/test"
@@ -6,27 +7,7 @@ import { AlertRegion, alertComponents, createAlertManager } from "./index.js"
 
 afterEach(cleanup)
 
-it("inherits reactive region and dismissal labels with explicit override precedence", () => {
-  const manager = createAlertManager()
-  manager.info({ title: "Notice" })
-
-  const view = render(
-    <ShadcnLocalizationProvider strings={{ notifications: "Avis", dismiss: "Fermer" }}>
-      <AlertRegion manager={manager} />
-    </ShadcnLocalizationProvider>
-  )
-
-  expect(screen.getByRole("region", { name: "Avis" })).toBeTruthy()
-  expect(screen.getByRole("button", { name: "Fermer" })).toBeTruthy()
-  view.rerender(
-    <ShadcnLocalizationProvider strings={{ dismiss: "Schließen" }}>
-      <AlertRegion manager={manager} dismissLabel="Custom" />
-    </ShadcnLocalizationProvider>
-  )
-  expect(screen.getByRole("button", { name: "Custom" })).toBeTruthy()
-})
-
-it("renders native alerts, actions, intents, and localized dismissal", async () => {
+it("renders native alerts, actions, intents, and a custom dismiss label", async () => {
   const manager = createAlertManager()
   const onAction = vi.fn<() => void>()
   render(<AlertRegion manager={manager} dismissLabel="Close notice" />)
@@ -39,7 +20,7 @@ it("renders native alerts, actions, intents, and localized dismissal", async () 
   const user = userEvent.setup()
   await user.click(screen.getByRole("button", { name: "Retry" }))
   expect(onAction).toHaveBeenCalledOnce()
-  // The default kit dismisses from the alert's corner, with an icon in place of the label
+  // The default components dismiss from the alert's corner, with an icon in place of the label
   expect(screen.getByRole("button", { name: "Close notice" }).textContent).toBe("")
   await user.click(screen.getByRole("button", { name: "Close notice" }))
   expect(manager.getSnapshot()).toHaveLength(1)

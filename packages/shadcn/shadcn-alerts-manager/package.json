@@ -3,19 +3,15 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
-    },
-    "./styles.css": {
-      "types": "./dist/styles.d.ts",
-      "default": "./styles.css"
     }
   },
   "name": "@buildkitgg/shadcn-alerts-manager",
   "description": "Persistent inline alerts with shared behavior and interchangeable UI adapters.",
   "license": "MIT",
   "peerDependencies": {
+    "@buildkitgg/shadcn": "*",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0",
-    "@buildkitgg/shadcn-baseui-kit": ">=0.3.0 <2.0.0"
+    "react-dom": "^19.2.0"
   },
   "sideEffects": [
     "**/*.css"
@@ -27,7 +23,6 @@
   "files": [
     "dist/**/*.js",
     "dist/**/*.d.ts",
-    "styles.css",
     "README.md",
     "docs/*.md",
     "LICENSE",
@@ -42,6 +37,7 @@
   "version": "0.1.1",
   "type": "module",
   "devDependencies": {
+    "@buildkitgg/shadcn": "link:../../../apps/behavior-storybook/node_modules/.buildkit/shadcn",
     "@buildkitgg/typescript-config": "workspace:*",
     "@testing-library/react": "^16.3.3",
     "@testing-library/user-event": "14.6.8",
@@ -53,9 +49,8 @@
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "typescript": "catalog:",
-    "vitest": "catalog:",
-    "@buildkitgg/shadcn-baseui-kit": "workspace:@buildkitgg/shadcn-baseui-nova@*",
-    "vite-plus": "catalog:"
+    "vite-plus": "catalog:",
+    "vitest": "catalog:"
   },
   "types": "./dist/index.d.ts",
   "repository": {

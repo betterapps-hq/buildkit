@@ -66,24 +66,24 @@ For building command-line tools.
 
 ## UI & components
 
-- Use [shadcn/ui](https://github.com/shadcn-ui/ui) with [`@buildkitgg/shadcn-baseui-nova`](https://github.com/betterapps-hq/buildkit/tree/main/packages/shadcn/shadcn-baseui-nova) as the default style. Install it under the `@buildkitgg/shadcn-baseui-kit` alias so app components and BuildKit adapters share the same kit.
+- Use [shadcn/ui](https://github.com/shadcn-ui/ui) through [`@buildkitgg/shadcn-sync`](https://github.com/betterapps-hq/buildkit/tree/main/packages/shadcn/shadcn-sync), which builds the components into a `@buildkitgg/shadcn` package inside the app. BuildKit's shadcn managers use the same package.
 
-  Install Nova under the package name the adapters expect:
+  Run the installer in the app's folder:
 
   ```sh
-  pnpm add @buildkitgg/shadcn-baseui-kit@npm:@buildkitgg/shadcn-baseui-nova
+  pnpm dlx @buildkitgg/shadcn-sync
   ```
 
-  Import components through that same name in app code:
+  Import components from the generated package:
 
   ```tsx
-  import { Button } from "@buildkitgg/shadcn-baseui-kit"
+  import { Button } from "@buildkitgg/shadcn"
 
   export function SaveButton() {
     return <Button type="submit">Save</Button>
   }
   ```
-- Load one reset. With Tailwind 4, import the kit’s `tailwind.css` alongside Tailwind. Without Tailwind, use the kit’s compiled `styles.css`, which includes Preflight. If the app supplies its own reset, use `styles-no-reset.css`. Use [the-new-css-reset](https://github.com/elad2412/the-new-css-reset) only when neither the kit nor the app loads Preflight or another reset.
+- With Tailwind 4, run sync with `--css tailwind` and import `@buildkitgg/shadcn/tailwind.css` after Tailwind. Without Tailwind, the components bring their own CSS and don't reset the page, so use [the-new-css-reset](https://github.com/elad2412/the-new-css-reset) if the app needs a reset.
 - Use [Recharts](https://github.com/recharts/recharts) for charts.
 
 | Need | BuildKit packages |
@@ -94,8 +94,6 @@ For building command-line tools.
 | User preferences | [`@buildkitgg/react-preferences`](https://github.com/betterapps-hq/buildkit/tree/main/packages/react/react-preferences) manages user preferences. |
 | App configuration | [`@buildkitgg/react-configuration`](https://github.com/betterapps-hq/buildkit/tree/main/packages/react/react-configuration) provides typed configuration and developer overrides. |
 | URL-driven tabs and panels | Use [`@buildkitgg/react-routing`](https://github.com/betterapps-hq/buildkit/tree/main/packages/react/react-routing) with the adapter for the app’s router, either [`@buildkitgg/tanstack-router`](https://github.com/betterapps-hq/buildkit/tree/main/packages/react/tanstack-router) or [`@buildkitgg/react-router`](https://github.com/betterapps-hq/buildkit/tree/main/packages/react/react-router). |
-| Shared component runtime | [`@buildkitgg/shadcn-runtime`](https://github.com/betterapps-hq/buildkit/tree/main/packages/shadcn/shadcn-runtime) supplies localization, text direction, and class merging for BuildKit’s shadcn components. |
-
 ## Markdown & rich text
 
 Built on the [unified](https://github.com/unifiedjs/unified) ([remark](https://github.com/remarkjs/remark) + [rehype](https://github.com/rehypejs/rehype)) ecosystem — the standard for parsing and transforming Markdown/HTML.

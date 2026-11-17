@@ -4,8 +4,8 @@ Plan to replace the per-style `@buildkitgg/shadcn-baseui-*` packages with one sy
 components with the shadcn CLI and compiles them into a package inside each app's `node_modules`, for the primitives,
 icon library, style and theme the app picks.
 
-**Status (2026-11-15):** in progress. [`@buildkitgg/shadcn-sync`](../../packages/shadcn/shadcn-sync/README.md) has the
-`shadcn-sync` installer and its `sync`, `update` and `set` commands, and
+**Status (2026-11-16):** in progress, phase 3. [`@buildkitgg/shadcn-sync`](../../packages/shadcn/shadcn-sync/README.md)
+has the `shadcn-sync` installer and its `sync`, `update` and `set` commands, and
 [`apps/shadcn-sync-example`](../../apps/shadcn-sync-example/README.md) renders its output. See [Phases](#phases) for
 what's left.
 
@@ -852,6 +852,11 @@ built-in icon libraries other than Lucide and the themes other than neutral and 
 
 **Phase 3: move over.** Point the managers, apps, Storybook and scaffolder templates at the generated package, then
 retire the style packages and the old generator.
+
+In progress: `shadcn-modals-manager` 2.0.0 and `shadcn-alerts-manager` 0.2.0 peer on `@buildkitgg/shadcn`, and the
+[shadcn docs](../shadcn/README.md) describe sync. Left: Parity, the other apps, Storybook, the site and the scaffolder
+templates, one at a time, then unpublishing and deleting the style packages, the `shadcn-baseui-kit` alias and the
+generator.
 
 ## Spike results (2026-11-14)
 

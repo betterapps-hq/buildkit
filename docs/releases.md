@@ -15,15 +15,9 @@ There are no release pull requests. Once CI passes on a push to main, its `relea
    `chore(release): publish packages`, tags each version and pushes to main. That push runs CI again, which finds no
    change files.
 
-The weekly shadcn pipeline regenerates the styles, checks the public APIs without accepting new baselines, writes patch
-change files and validates. Then it commits straight to main, and main's CI releases the patches. A failed update pushes
-nothing and uploads its diagnostics.
-
 Only public `@buildkitgg/*` packages publish. Private packages remain incubating.
 
-Beachball publishes with npm, so it rewrites `workspace:` ranges itself. Its patch in `patches/beachball.patch` teaches
-it the aliased form the shadcn packages use, so `workspace:@buildkitgg/shadcn-baseui-nova@*` publishes as
-`npm:@buildkitgg/shadcn-baseui-nova@<version>`, as pnpm would. Drop the patch once Beachball handles aliases itself.
+Beachball publishes with npm, so it rewrites `workspace:` ranges itself.
 
 If a release fails before publishing, nothing is pushed and main keeps its change files: rerun the failed `release` job
 while that commit is still main's head, or let the next push's run release them. To publish versions that are on main

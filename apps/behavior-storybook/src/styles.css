@@ -8,6 +8,19 @@
   --primary-foreground: #162238;
   --ring: #8faedc;
 }
+/* The components style only their own parts, so the page's own elements get their box model, font and colors here */
+*,
+::before,
+::after {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+}
 .radix-example-overlay {
   position: fixed;
   inset: 0;

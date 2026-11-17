@@ -86,10 +86,11 @@ as `adapter: { Surface: YourSurface }` when creating a manager. The shared React
 shared renderer uses it for every entry and descendant. No global adapter registry is used. The headless React manager
 can omit an adapter, but its renderer requires one.
 
-The default shadcn renderer uses `shadcn-baseui-kit`, included as a dependency. Its `styles.css` export forwards the kit
-stylesheet without a global reset. Fluent's renderer belongs inside an existing `FluentProvider`. React is a peer in
-both packages; Fluent UI is a peer in the Fluent adapter. App styling, providers and custom UI controls still follow the
-selected design system.
+The default shadcn renderer uses the app's `@buildkitgg/shadcn`, a peer dependency the app builds with
+[shadcn-sync](shadcn/README.md). Its default dialog expects the Base UI build; an app built with `--base radix` passes
+`radixComponents`, described below. Fluent's renderer belongs inside an existing `FluentProvider`. React is a peer in
+both packages, and Fluent UI is a peer in the Fluent adapter. App styling, providers and custom UI controls still follow
+the selected design system.
 
 For registry-installed shadcn components, use `createModalManager({ adapter: baseUiComponents(components) })` or
 `createModalManager({ adapter: radixComponents(components) })`. Supply `Dialog`, `DialogContent`, `DialogTitle`,

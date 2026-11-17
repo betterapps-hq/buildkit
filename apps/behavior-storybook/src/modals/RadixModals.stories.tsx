@@ -1,4 +1,4 @@
-import { Button, Input } from "@buildkitgg/shadcn-baseui-kit"
+import { Button, Input } from "@buildkitgg/shadcn"
 import { createModalManager, ModalRenderer, radixComponents } from "@buildkitgg/shadcn-modals-manager"
 import type { RadixModalComponents } from "@buildkitgg/shadcn-modals-manager"
 import * as Dialog from "@radix-ui/react-dialog"

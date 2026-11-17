@@ -1,57 +1,45 @@
 # Framework integration
 
-[Documentation](README.md)
+[shadcn components](README.md)
 
-## Vite and other client applications
+`@buildkitgg/shadcn` is compiled ES modules with type declarations, and each component imports its own CSS. Any bundler
+that handles CSS imports from packages, such as Vite, can use it without extra configuration. Don't add it to a list of
+packages to transpile.
 
-Import `@buildkitgg/shadcn-baseui-kit/styles.css` once in the app entry before your theme CSS. Import components from
-`@buildkitgg/shadcn-baseui-kit`. No dependency transpilation or registry configuration is needed. Enable your app's
-React Compiler and retain its normal StrictMode and error-boundary shell.
+## Vite and other client apps
 
-For applications already using Tailwind, use the [source CSS setup](theming.md#an-app-that-already-uses-tailwind-4).
+Import components from `@buildkitgg/shadcn` or a component's own path, such as `@buildkitgg/shadcn/select`. There's no
+stylesheet to import in the entry file unless the app uses [Tailwind mode](theming.md#tailwind-apps).
 
-## Next.js App Router
+## Server rendering
 
-Import the CSS in your root layout:
-
-```tsx
-import "@buildkitgg/shadcn-baseui-kit/styles.css"
-import "./theme.css"
-import type { ReactNode } from "react"
-
-export default function RootLayout({ children }: { children: ReactNode }) {
-  return (
-    <html lang="en">
-      <body>{children}</body>
-    </html>
-  )
-}
-```
-
-The package root preserves `"use client"`. A Server Component may render exported components with serializable props:
+Component modules keep shadcn's `"use client"` directives. A Server Component can render a component with serializable
+props:
 
 ```tsx
-import { Button } from "@buildkitgg/shadcn-baseui-kit"
+import { Button } from "@buildkitgg/shadcn"
 
 export default function Page() {
   return <Button>Continue</Button>
 }
 ```
 
-Place state, event handlers, function props, and compositions using `render` inside your own `"use client"` module. Do
-not call exported hooks or `toast` in a Server Component. The package is already compiled; do not add it to
-`transpilePackages` merely to consume it. Configure the React Compiler for your application separately.
+Put state, event handlers, function props and compositions such as a `render` or `asChild` element in your own
+`"use client"` module. Styles are static CSS imports, so they're present for the server-rendered markup.
+
+## Providers
+
+Some components need a provider, as in shadcn. Tooltips need `TooltipProvider`, and toasts need `Toaster` mounted once.
+See each component's page in the [shadcn docs](https://ui.shadcn.com/docs/components).
 
 ## Troubleshooting
 
-| Symptom                               | Check                                                                                            |
-| ------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| Components are unstyled               | Import one of the package's CSS entries at the application root.                                 |
-| Custom utility classes do nothing     | Compile those classes in your application's Tailwind build or write plain CSS.                   |
-| Dialog uses the wrong theme           | Set theme variables and `.dark` on `<html>`, not only an app wrapper.                            |
-| Existing page appearance changes      | Use the no-reset entry and keep the app's base styles. Global utilities still share the cascade. |
-| Server/client serialization error     | Move event handlers and function-valued props into a client component.                           |
-| TypeScript cannot resolve CSS imports | Use a bundler-aware module resolution mode; both CSS exports include declarations.               |
-
-The package does not fetch registry files at runtime. Application-supplied image URLs and other remote resources remain
-the application's responsibility.
+| Symptom                                           | Check                                                                                                                        |
+| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `@buildkitgg/shadcn` can't be resolved            | Run `shadcn-sync sync`, or reinstall so the `postinstall` runs                                                               |
+| An app style changes a component                  | An app class named like a utility, such as `grid`, applies to components too. Rename it or scope it                          |
+| A custom utility class does nothing               | In compiled mode only the components' own classes exist. Write plain CSS, or use [Tailwind mode](theming.md#tailwind-apps)   |
+| A dialog uses the wrong theme                     | Put `.dark` and theme overrides on `<html>`, not an app wrapper                                                              |
+| A class from the app's Tailwind theme is lost     | Pass a merger that knows it to `setCn` (see [class merging](../../packages/shadcn/shadcn-sync/README.md#class-merging))      |
+| Vitest fails with `Unknown file extension ".css"` | Inline the generated package so Vite handles its CSS imports: `test.server.deps.inline: [/[/\\]\.buildkit[/\\]shadcn[/\\]/]` |
+| A server and client serialization error           | Move event handlers and function props into a client component                                                               |
