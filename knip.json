@@ -123,42 +123,6 @@
     "packages/react/react-configuration": {
       "entry": ["src/index.ts"]
     },
-    "packages/tooling/shadcn-generator": {
-      "entry": ["src/*.mjs"],
-      "ignoreDependencies": ["@tailwindcss/cli", "tailwindcss", "tw-animate-css"]
-    },
-    "packages/shadcn/shadcn-baseui-luma": {
-      "entry": [".generated/index.ts"],
-      "ignoreDependencies": ["@buildkitgg/shadcn-generator", "lucide-react", "next-themes"]
-    },
-    "packages/shadcn/shadcn-baseui-lyra": {
-      "entry": [".generated/index.ts"],
-      "ignoreDependencies": ["@buildkitgg/shadcn-generator", "lucide-react", "next-themes"]
-    },
-    "packages/shadcn/shadcn-baseui-maia": {
-      "entry": [".generated/index.ts"],
-      "ignoreDependencies": ["@buildkitgg/shadcn-generator", "lucide-react", "next-themes"]
-    },
-    "packages/shadcn/shadcn-baseui-mira": {
-      "entry": [".generated/index.ts"],
-      "ignoreDependencies": ["@buildkitgg/shadcn-generator", "lucide-react", "next-themes"]
-    },
-    "packages/shadcn/shadcn-baseui-nova": {
-      "entry": [".generated/index.ts"],
-      "ignoreDependencies": ["@buildkitgg/shadcn-generator", "lucide-react", "next-themes"]
-    },
-    "packages/shadcn/shadcn-baseui-rhea": {
-      "entry": [".generated/index.ts"],
-      "ignoreDependencies": ["@buildkitgg/shadcn-generator", "lucide-react", "next-themes"]
-    },
-    "packages/shadcn/shadcn-baseui-sera": {
-      "entry": [".generated/index.ts"],
-      "ignoreDependencies": ["@buildkitgg/shadcn-generator", "lucide-react", "next-themes"]
-    },
-    "packages/shadcn/shadcn-baseui-vega": {
-      "entry": [".generated/index.ts"],
-      "ignoreDependencies": ["@buildkitgg/shadcn-generator", "lucide-react", "next-themes"]
-    },
     "packages/tooling/oxlint-plugin-anti-slop": {
       "entry": ["src/index.ts", "src/recommended.ts", "test/fixture/*.ts"]
     },
