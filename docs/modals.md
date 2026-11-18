@@ -1,17 +1,18 @@
 # Modal packages
 
-Create a manager and mount one renderer inside the app's UI provider. Services, event handlers and components can import
-the manager; opening a modal does not require React context.
+A modal manager opens typed dialogs from anywhere in an app. Services, event handlers, and components import the
+manager, and opening a modal doesn't need React context. Create a manager, then mount one renderer inside the app's UI
+provider.
 
-| Package                   | Responsibility                                                                      |
-| ------------------------- | ----------------------------------------------------------------------------------- |
-| `modal-core`              | Stack, typed results, pending actions, dismissal guards, snapshots and disposal     |
-| `react-modals`            | Typed state, React content, confirm/alert helpers, subscriptions and host lifecycle |
-| `shadcn-modals-manager`   | Default shadcn dialogs and optional Base UI or Radix registry components            |
-| `fluentui-modals-manager` | Fluent dialogs and motion integration                                               |
+| Package                   | Responsibility                                                                                          |
+| ------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `modal-core`              | Stack, typed results, pending actions, dismissal guards, snapshots, and disposal                        |
+| `react-modals`            | Typed state, React content, confirm and alert helpers, subscriptions, and host lifecycle                |
+| `shadcn-modals-manager`   | Dialogs from the app's generated `@buildkitgg/shadcn`, or your own Base UI or Radix registry components |
+| `fluentui-modals-manager` | Fluent dialogs and motion integration                                                                   |
 
-Both adapters use the same manager and renderer. Core has no framework, DOM or timer dependencies. UI libraries own
-portals, focus trapping and accessibility. Form libraries are optional consumer integrations.
+Both adapters use the same manager and renderer. Core has no framework, DOM, or timer dependencies. UI libraries own
+portals, focus trapping, and accessibility. Form libraries are optional consumer integrations.
 
 ## Results and state
 
@@ -59,8 +60,8 @@ An entry transitions from `open` to `closing` to removed. Results settle once, b
 `onClose({ id, result, reason })` observes settlement after subscribers, independently of dismissal guards. See
 [slots and close reasons](modal-updates.md) for callback timing and failure handling. `entry.finishExit()` removes
 closed entries after exit completion. Adapters use Base UI's `onOpenChangeComplete`, Radix's `onCloseAutoFocus` after
-native content unmount, and Fluent's `surfaceMotion.onMotionFinish`. They do not guess animation durations. React also
-removes entries closed before an animation mounted.
+native content unmount, and Fluent's `surfaceMotion.onMotionFinish`. They don't guess animation durations. React also
+removes entries that close before their dialog's exit animation can start.
 
 Closing a parent settles its descendants. Closing a child leaves the parent open. A new root may open while a previous
 root exits. Instance keys are independent of user IDs, so stale handles cannot affect reused IDs. Blank or duplicate IDs
@@ -87,10 +88,11 @@ shared renderer uses it for every entry and descendant. No global adapter regist
 can omit an adapter, but its renderer requires one.
 
 The default shadcn renderer uses the app's `@buildkitgg/shadcn`, a peer dependency the app builds with
-[shadcn-sync](shadcn/README.md). Its default dialog expects the Base UI build; an app built with `--base radix` passes
-`radixComponents`, described below. Fluent's renderer belongs inside an existing `FluentProvider`. React is a peer in
-both packages, and Fluent UI is a peer in the Fluent adapter. App styling, providers and custom UI controls still follow
-the selected design system.
+[shadcn-sync](shadcn/README.md). Its default dialog binds the Base UI lifecycle, so it needs an app on sync's default
+`--base base`. An app built with `--base radix` passes `radixComponents`, described below. No helper binds the React
+Aria dialog, so an app built with `--base aria` passes its own adapter. Fluent's renderer belongs inside an existing
+`FluentProvider`. React is a peer in both packages, and Fluent UI is a peer in the Fluent adapter. App styling,
+providers, and custom UI controls still follow the selected design system.
 
 For registry-installed shadcn components, use `createModalManager({ adapter: baseUiComponents(components) })` or
 `createModalManager({ adapter: radixComponents(components) })`. Supply `Dialog`, `DialogContent`, `DialogTitle`,

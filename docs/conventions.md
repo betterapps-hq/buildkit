@@ -1,73 +1,74 @@
-# Coding Conventions
+# Coding conventions
 
-The agent-facing project summary lives in [`.github/copilot-instructions.md`](../.github/copilot-instructions.md) and
-links here. These conventions apply to all TypeScript/React code in the monorepo. Many are enforced by `oxlint` (see
-[`packages/tooling/oxlint-config/base.ts`](../packages/tooling/oxlint-config/base.ts)).
+These conventions apply to all TypeScript and React code in the monorepo. Oxlint enforces many of them through the
+shared rules in [`packages/tooling/oxlint-config/src/base.ts`](../packages/tooling/oxlint-config/src/base.ts). The
+agent-facing summary in [`.github/copilot-instructions.md`](../.github/copilot-instructions.md) links here through the
+[docs index](README.md).
 
 ## Quality gates
 
-- **Run `pnpm verify` before finishing.** It checks formatting, lint, types, unused code, coverage, and builds.
-- **New code ships with co-located tests** and must keep the relevant app or package's Vitest coverage thresholds green.
-- Git hooks (Vite+) lint and format staged files on commit and run `pnpm check` on push. Don't bypass with
+- Run `pnpm verify` before finishing. It checks formatting, lint, types, unused code, API reports and coverage, then
+  builds everything.
+- New code ships with co-located tests and keeps the app or package's Vitest coverage thresholds green.
+- Vite+ Git hooks lint and format staged files on commit and run `pnpm check` on push. Don't bypass them with
   `--no-verify`.
 
-## TypeScript & type helpers
+## TypeScript and type helpers
 
-See **[typescript.md](typescript.md)** for type conventions (no `any`, avoid `as`, narrowing order, `type` vs
-`interface`, `enum`s) and a full catalog of the type-helper libraries (`ts-extras`, `ts-pattern`, `tiny-invariant`,
-`zod`) — read it before writing a new type helper.
+Read [typescript.md](typescript.md) before writing a new type helper. It covers type conventions (no `any`, avoiding
+`as`, narrowing order, `type` versus `interface`, enums) and catalogs the helper libraries: `ts-extras`, `ts-pattern`,
+`tiny-invariant` and `zod`.
 
 ## Hooks
 
-See **[hooks.md](hooks.md)** for hook conventions and the full `@mantine/hooks` catalog — read it before writing a new
-hook.
+Read [hooks.md](hooks.md) before writing a new hook. It covers hook conventions and catalogs `@mantine/hooks`.
 
 ## React
 
-See **[react.md](react.md)** for component conventions (function declarations, no `React.FC`, prop-type naming, the
-React Compiler), product-level UI-system selection and styling, and the state/error/URL/routing/form libraries.
+[react.md](react.md) covers component conventions (function declarations, no `React.FC`, prop type naming, the React
+Compiler), choosing and styling a UI system per product surface, and the libraries for state, errors, URLs, routing and
+forms.
 
-## Imports & exports
+## Imports and exports
 
-- **Prefer named exports** — they keep renames consistent.
-- **Avoid barrel files** (`index.ts` that only re-exports), except a single leaf folder re-exporting its own
-  component/resource.
-- **Consume shared config via workspace packages** (`@buildkitgg/oxlint-config`, `@buildkitgg/storybook-config`,
-  `@buildkitgg/typescript-config`); extend the shared oxlint/Storybook/TS configs rather than redefining rules per
-  package.
-- **Prefer path/package aliases over deep relative paths** (`../../../`).
+- Prefer named exports, so a rename stays consistent everywhere.
+- Avoid barrel files (an `index.ts` that only re-exports). The exception is a leaf folder re-exporting its own component
+  or resource.
+- Extend the shared configs from `@buildkitgg/oxlint-config`, `@buildkitgg/storybook-config` and
+  `@buildkitgg/typescript-config` instead of redefining their rules in a package.
+- Prefer path or package aliases over deep relative paths such as `../../../`.
 
 ## Logging
 
-- **No `console.*` in product code** (`console.warn`/`console.error` are allowed; lint-enforced). Temporary local
-  debugging aside.
+Product code doesn't call `console.log` or the other `console` methods; lint allows only `console.warn` and
+`console.error`. Temporary local debugging is the exception.
 
 ## Tests
 
-- **Test code is production code** — hold it to the same quality bar.
-- **Co-locate tests** next to source: `*.test.tsx` (jsdom unit tests) and `*.stories.tsx` (rendered as browser tests via
-  `@storybook/addon-vitest` on Playwright).
-- **Drive interactions with `@testing-library/user-event`**; query by role/text, not implementation details.
-- **Mock the minimum.** Favor integration-style tests that exercise real collaborators over fully-mocked units.
+Test code is production code, so hold it to the same bar.
+
+- Co-locate tests with the source: `*.test.tsx` for unit tests in happy-dom, and `*.stories.tsx` for stories, which
+  `@storybook/addon-vitest` runs as browser tests on Playwright.
+- Drive interactions with `@testing-library/user-event`, and query by role or text rather than implementation details.
+- Mock as little as possible. Prefer integration-style tests that exercise real collaborators over fully mocked units.
 
 <a id="files--component-layout"></a>
 
-## Files & component layout
+## Files and component layout
 
-Split a component by concern so the `.tsx` stays focused on rendering:
+Split a component by concern so its `.tsx` file stays focused on rendering:
 
 | File                          | Holds                                                                    |
 | ----------------------------- | ------------------------------------------------------------------------ |
-| `{ComponentName}.tsx`         | The component **and** its `{ComponentName}Props` type                    |
+| `{ComponentName}.tsx`         | The component and its `{ComponentName}Props` type                        |
 | `{ComponentName}.styles.ts`   | Griffel styles for Fluent components; omit when utility classes suffice  |
 | `{ComponentName}.hooks.ts`    | Component-scoped hooks                                                   |
 | `{ComponentName}.utils.ts`    | Non-render helpers and logic                                             |
 | `{ComponentName}.test.tsx`    | Tests (`.tsx` when they render JSX, otherwise `{ComponentName}.test.ts`) |
 | `{ComponentName}.stories.tsx` | Storybook stories                                                        |
 
-- **File naming:** PascalCase for component files (`AppDrawer.tsx`); camelCase for everything else — utils, hooks,
-  services (`toPixelDimension.ts`, `useDisclosure.ts`).
-- **Multi-file components get their own folder** named after the component.
-- **A single-file component** can live as a lone `{ComponentName}.tsx` without a folder.
-- **Component name, file name, and folder name stay in lockstep** — renaming the component renames its file(s) and
-  folder.
+- Name component files in PascalCase (`AppDrawer.tsx`) and everything else, such as utils, hooks and services, in
+  camelCase (`toPixelDimension.ts`, `useDisclosure.ts`).
+- Give a multi-file component its own folder, named after the component. A single-file component can stay a lone
+  `{ComponentName}.tsx`.
+- Keep the component name, file name and folder name in step: renaming the component renames its files and folder.

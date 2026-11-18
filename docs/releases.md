@@ -1,7 +1,12 @@
 # Releases
 
-Beachball manages independent package versions and changelogs. Run `pnpm change` with public package changes and commit
-the generated change file. Pull request CI checks release notes and runs what `pnpm verify` runs, as parallel jobs.
+Beachball manages independent package versions and changelogs. When you change a public package, run `pnpm change` and
+commit the change file it writes. Pull request CI checks that each changed public package has one, and runs what
+`pnpm verify` runs as parallel jobs.
+
+`@buildkitgg/catalog` and `@buildkitgg/cli` form one Beachball group, so they release together at the same version. Each
+`@buildkitgg/scaffolder` bump also rewrites its `src/version.ts`, the engine version every project's lock records. Both
+rules live in [`beachball.config.js`](../beachball.config.js).
 
 ## Release from main
 
@@ -15,7 +20,7 @@ There are no release pull requests. Once CI passes on a push to main, its `relea
    `chore(release): publish packages`, tags each version and pushes to main. That push runs CI again, which finds no
    change files.
 
-Only public `@buildkitgg/*` packages publish. Private packages remain incubating.
+Only public `@buildkitgg/*` packages publish. Private packages stay private while they incubate.
 
 Beachball publishes with npm, so it rewrites `workspace:` ranges itself.
 
@@ -26,10 +31,10 @@ in dependency order. Never bump versions by hand to retry a failed upload.
 
 ## Repository setup
 
-- **Deploy key:** main is in a ruleset that requires pull requests and the CI checks, with deploy keys on its bypass
-  list. A deploy key with write access is the only actor that pushes to main directly. Its private key is the `npm`
-  environment's `RELEASE_DEPLOY_KEY` secret.
-- **The `npm` environment** restricts deployments to `main`, without required reviewers or approval gates.
+Main is in a ruleset that requires pull requests and the CI checks, with deploy keys on its bypass list. A deploy key
+with write access is the only actor that pushes to main directly, and its private key is the `npm` environment's
+`RELEASE_DEPLOY_KEY` secret. The `npm` environment restricts deployments to `main`, without required reviewers or
+approval gates.
 
 ## npm setup
 

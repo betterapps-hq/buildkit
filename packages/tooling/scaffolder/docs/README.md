@@ -1,8 +1,9 @@
 # Architecture and contribution guide
 
-The [package README](../README.md) is the user-facing contract. The design and its decisions are in the Buildkit
-planning docs: `scaffolder-research.md`, `scaffolder-phase-0.md`, and `scaffolder-platform-templates.md` for questions,
-template inheritance, setup steps and add-on packages.
+The [package README](../README.md) is the user-facing contract. The design and its decisions are in the repository's
+`docs/platform-planning/` folder: `scaffolder-research.md` and `scaffolder-phase-0.md` for the engine,
+`scaffolder-template-packages.md` for template packages, and `scaffolder-platform-templates.md` for questions, template
+inheritance, setup steps and add-on packages.
 
 | Module          | Responsibility                                                                                   |
 | --------------- | ------------------------------------------------------------------------------------------------ |
@@ -21,19 +22,19 @@ template inheritance, setup steps and add-on packages.
 
 ## Rules that keep it safe
 
-- **The core never touches the disk.** Everything outside `src/node` and `src/cli` runs in Workers and browsers; a lint
-  rule refuses `node:*` imports there. The planner reads through a synchronous `VirtualTree`, and every read goes into
-  the fingerprint.
-- **Expected problems are data.** The planner returns decisions, conflicts and errors in the plan. It throws `PlanError`
-  internally and `plan()` catches it.
-- **Every decision choice is a complete request.** Applying it plans without asking again, and the envelope adds the
+- The core never touches the disk. Everything outside `src/node` and `src/cli` runs in Workers and browsers, and a lint
+  rule in the root `vite.config.ts` refuses `node:*` imports there. The planner reads through a synchronous
+  `VirtualTree`, and every read goes into the fingerprint.
+- Expected problems are data. The planner returns decisions, conflicts and errors in the plan. It throws `PlanError`
+  internally, and `plan()` catches it.
+- Every decision choice is a complete request. Applying it plans without asking again, and the envelope adds the
   equivalent argv.
-- **Apply re-plans.** A reviewed plan is untrusted: `applyReviewed` plans its request again and applies only on the same
+- Apply plans again. A reviewed plan is untrusted: `applyReviewed` plans its request again and applies only on the same
   fingerprint. `applyPlan` then checks each file against the plan before writing, journals every step, backs up what it
   replaces, and writes the lock last.
-- **Packages are untrusted until confirmed.** A template or add-on package is merged into the catalog and checked before
+- Packages are untrusted until confirmed. A template or add-on package is merged into the catalog and checked before
   planning, and its setup commands run only after the user confirms a plan that names it.
-- **Nothing is sorted by locale.** Keys and paths sort by code unit, so plans are identical on every machine.
+- Nothing is sorted by locale. Keys and paths sort by code unit, so plans are identical on every machine.
 
 ## Tests
 

@@ -3,6 +3,6 @@
 - [Usage](../README.md)
 - [Architecture](../../../../docs/behavior-packages.md)
 
-Run pnpm --filter @buildkitgg/preferences-core test:coverage, then pnpm verify after changes. Preserve key/value
-inference, atomic imports, isolated server snapshots, and disposal behavior. See
+After a change, run `pnpm --filter @buildkitgg/preferences-core test:coverage`, then `pnpm verify`. Keep key and value
+inference, atomic imports, isolated server snapshots, and disposal behavior intact. See the
 [release workflow](../../../../docs/releases.md).

@@ -1,38 +1,57 @@
 # @buildkitgg/fluentui-alerts-manager
 
-Persistent inline alerts with external commands and shared lifecycle behavior.
+Persistent inline alerts rendered as Fluent UI message bars. Any code can raise, update, or dismiss an alert through the
+manager, including code outside React components, and the alert stays until something dismisses it.
+
+```sh
+pnpm add @buildkitgg/fluentui-alerts-manager @fluentui/react-components react react-dom
+```
+
+React 19.2 or later, React DOM, and Fluent UI v9 (`@fluentui/react-components` 9.75 or later) are peer dependencies.
 
 ## Usage
 
+Create a manager, render a region inside your `FluentProvider`, and raise alerts from anywhere:
+
 ```tsx
-import { createAlertManager, AlertRegion } from "@buildkitgg/fluentui-alerts-manager"
+import { AlertRegion, createAlertManager } from "@buildkitgg/fluentui-alerts-manager"
+import { FluentProvider, webLightTheme } from "@fluentui/react-components"
 
 export const alerts = createAlertManager()
-<AlertRegion manager={alerts} />
 
+export function App() {
+  return (
+    <FluentProvider theme={webLightTheme}>
+      <AlertRegion manager={alerts} />
+    </FluentProvider>
+  )
+}
+
+// From an event handler, a service, or any other module:
 alerts.warning({ id: "billing", title: "Update your payment method" })
 ```
 
+Each alert renders as a `MessageBar` with the alert's `intent`, `title`, and `body`. An `action` (`{ label, onClick }`)
+renders as a button, and a dismissible alert gets a dismiss button labeled with `AlertRegion`'s `dismissLabel`. To
+render alerts with your own component, pass `createAlertManager({ adapter: { Alert } })`, where `Alert` takes
+`AlertRendererProps`.
+
+The package re-exports `AlertRegion`, `useAlerts`, and the alert types from
+[`@buildkitgg/react-alerts`](../../react/react-alerts/README.md). Other adapters, such as
+`@buildkitgg/shadcn-alerts-manager`, export the same API, so moving alerts to another component library changes only the
+import.
+
 ## Behavior
 
-- add / info / success / warning / error: return a region-bound handle.
-- handle.update / handle.dismiss / handle.isActive: control that exact alert instance.
-- getSnapshot / subscribe: stable snapshots and region-scoped notifications.
-- dismissAll(region): remove alerts and invoke callbacks; flush(): clear all regions silently.
-- dispose(): clear silently, notify subscribers, and reject future additions.
+The manager has [alert-core](../../core/alert-core/README.md)'s full API and lifecycle: `add`, `info`, `success`,
+`warning`, and `error` return a handle to that alert, and `dismissAll`, `flush`, and `dispose` clear alerts. Alerts
+belong to a region, `"default"` unless you pass another. Every alert in a region renders, with no timeout; for timed
+feedback, use Fluent's toast API.
 
-Alerts are persistent. Use the native toast manager for timed feedback. Reusing an ID replaces in place without invoking
-dismissal; old handles become inactive. Mount once per region. Supply FluentProvider and the React/Fluent peer
-dependencies.
+Reusing an ID replaces the alert in place without running `onDismiss`, and handles to the old alert stop working.
+`dismissible: false` hides the dismiss button but doesn't block `dismiss()`, and clicking an action doesn't dismiss the
+alert. Snapshots are frozen, but React elements in them aren't, so replace content with `update` instead of mutating it.
+The server snapshot is empty, so create a manager per request on the server.
 
-IDs are scoped to a region (default: `default`). All alerts are rendered; there is no hidden backlog or automatic
-timeout. `dismissible: false` hides the dismiss control but does not prevent programmatic dismissal. Actions do not
-automatically dismiss an alert. `onDismiss` runs once after removal, including `dismissAll`; it does not run for
-replacement, `flush`, or `dispose`. Callback errors are collected and re-thrown as an AggregateError after all
-notifications and dismissal callbacks have run.
-
-Snapshots and entry containers are frozen. Generic payloads and React elements are not deep-frozen. Updates produce new
-entries, preserving previous snapshots. Treat payloads as immutable. Server snapshots are empty to avoid leaking request
-data; create stores per request, not as server singletons.
-
-See [alert architecture and native toast guidance](https://github.com/betterapps-hq/buildkit/blob/main/docs/alerts.md).
+See [inline alerts and native toasts](https://github.com/betterapps-hq/buildkit/blob/main/docs/alerts.md) for the
+architecture and toast guidance.

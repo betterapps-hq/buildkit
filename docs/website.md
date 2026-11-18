@@ -13,9 +13,11 @@ terminals. For reference docs, run `pnpm check:api`, `pnpm --filter @buildkitgg/
 
 ## GitHub Pages
 
-The `Publish Buildkit website` workflow verifies the repository, builds the website, reference docs, and Storybook,
-uploads one artifact, and deploys from `main` using the `github-pages` environment. It uses GitHub's Pages OIDC
-deployment, without a personal access token. CI and package publishing also run API checks through `pnpm verify`.
+The `Publish Buildkit website` workflow (`.github/workflows/pages.yml`) runs on every push to `main`. It runs
+`pnpm verify`, which also builds Storybook, then builds the website and reference docs for the configured Pages URL,
+copies Storybook and the docs into the site's `dist`, uploads it as one artifact, and deploys it through the
+`github-pages` environment. Deployment uses GitHub's Pages OIDC token, without a personal access token. CI runs the same
+API check (`pnpm check:api`), and a package release waits for CI to pass.
 
 Before the first deployment, select **GitHub Actions** as the repository's Pages source. Configure **buildkit.gg** as
 the custom domain in Pages settings, verify domain ownership, and apply the DNS records described in
@@ -24,8 +26,7 @@ Enable HTTPS once GitHub has issued the certificate. Custom-workflow deployments
 checked-in CNAME file does not configure it.
 
 The workflow reads the configured Pages base path, so assets and Storybook links also work at the default `/buildkit/`
-project URL. Canonical and social URLs target buildkit.gg. No DNS changes or live deployment are performed by a local
-build.
+project URL. Canonical and social URLs target buildkit.gg. A local build never deploys or changes DNS.
 
 ## Documentation boundaries
 
@@ -43,10 +44,10 @@ navigation definition.
 
 ## Domain and visual identity
 
-GitHub Pages is the host. Cloudflare will manage DNS for the purchased `buildkit.gg` domain once the Pages deployment
-exists. Configure the custom domain in GitHub, then point the apex and `www` records at GitHub Pages using Cloudflare.
-Keep records DNS-only during GitHub domain and certificate verification, then verify HTTPS and the canonical redirect.
-Use the Cloudflare `cf` CLI for configuration in this repository. A local build does not change DNS.
+GitHub Pages hosts the site, and Cloudflare manages DNS for `buildkit.gg`: the apex and `www` records point at GitHub
+Pages as DNS-only records. To set the domain up again, configure the custom domain in GitHub first, then point the
+records at GitHub Pages in Cloudflare. Keep them DNS-only during GitHub's domain and certificate verification, then
+verify HTTPS and the canonical redirect. Use the Cloudflare `cf` CLI for DNS changes.
 
 The marketing page has its own dark blue design, set in Geist and Geist Mono, with the Stack mark as its logo; the
 reference site uses matching blue accents. The page is prerendered to static HTML, animated with GSAP, and keeps its
@@ -57,12 +58,15 @@ by side. Change the design there first, then match the page to it.
 
 ## Interactive examples
 
-Each example on the page runs in its own frame, `apps/site/example.html`, so the shadcn kit's styles, the preferences
-example's root font size and the routing example's router stay out of the page. The frame runs the files in
-`apps/site/src/examples` on the real packages, and the editor beside it shows those same files, so the code and the
-running example can't drift apart. The formatter skips that folder, since its files are wrapped to fit the editor.
+Each example on the page runs in its own frame, `apps/site/example.html`, so the styles of the site's generated shadcn
+components, the preferences example's root font size and the routing example's router stay out of the page. The frame
+runs the files in `apps/site/src/examples` on the real packages, and the editor beside it shows those same files, so the
+code and the running example can't drift apart. The formatter skips that folder, since its files are wrapped to fit the
+editor.
 
 The frame code in `apps/site/src/frame` supplies what the examples assume: an `/api` that answers inside the frame (and
-fails while the preview is offline), the state each example's wire line reports, and two build changes in
-`vite.config.ts`. The routing example's `createBrowserRouter` keeps its history in memory, so it never adds to the
-visitor's Back button, and the configuration example keeps its development-only overrides on in the production build.
+fails while the preview is offline) and the state each example's wire line reports. Three build changes in
+`apps/site/vite.config.ts` keep that plumbing out of the code the editor shows. The routing example's
+`createBrowserRouter` keeps its history in memory, so it never adds to the visitor's Back button. The modals example's
+manager reports each `confirm()` to the wire line. The configuration example keeps its development-only overrides on in
+the production build.

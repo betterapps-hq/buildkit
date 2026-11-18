@@ -24,7 +24,7 @@ export function buildkitOptions(overrides: Partial<CliOptions> = {}): CliOptions
 
 /**
  * Runs one `buildkit` command, such as `["create", "app", "my-app"]`, and returns its exit code: 0 done, 1 needs a
- * decision, 2 usage or internal error, 3 conflict, 4 drift, 5 locked, 130 cancelled.
+ * decision, 2 usage or internal error, 3 conflict, 4 drift, 5 locked, 6 applied but a setup step failed, 130 cancelled.
  */
 export function runBuildkit(argv: readonly string[], overrides: Partial<CliOptions> = {}): Promise<number> {
   return runCli(argv, buildkitOptions(overrides))

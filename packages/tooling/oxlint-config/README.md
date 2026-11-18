@@ -1,7 +1,8 @@
 # @buildkitgg/oxlint-config
 
 Shared [Oxlint](https://oxc.rs/docs/guide/usage/linter) configuration: the rules every Buildkit package lints with,
-including [`@buildkitgg/oxlint-plugin-anti-slop`](../oxlint-plugin-anti-slop/README.md).
+ready to extend from your own lint config. It includes
+[`@buildkitgg/oxlint-plugin-anti-slop`](../oxlint-plugin-anti-slop/README.md).
 
 ```sh
 pnpm add -D @buildkitgg/oxlint-config
@@ -43,10 +44,12 @@ export default defineConfig({
 A `jsPlugins` list in your own config replaces the plugins base registers, so include them when you add one:
 
 ```ts
-lint: {
-  extends: [base],
-  jsPlugins: [...(base.jsPlugins ?? []), { name: "my-plugin", specifier: "my-oxlint-plugin" }]
-}
+export default defineConfig({
+  lint: {
+    extends: [base],
+    jsPlugins: [...(base.jsPlugins ?? []), { name: "my-plugin", specifier: "my-oxlint-plugin" }]
+  }
+})
 ```
 
 To use the anti-slop rules without the base rules, install the plugin on its own.

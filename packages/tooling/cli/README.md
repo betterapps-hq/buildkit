@@ -1,7 +1,8 @@
 # @buildkitgg/cli
 
-The `buildkit` CLI: create, extend and upgrade Buildkit apps. It runs the project commands of
-[`@buildkitgg/scaffolder`](../scaffolder/README.md) on [Buildkit's catalog](../catalog/README.md).
+The `buildkit` CLI creates Buildkit apps and keeps them current: add an add-on, change an option, or move to a newer
+catalog without losing your edits. It runs the project commands of [`@buildkitgg/scaffolder`](../scaffolder/README.md)
+on [Buildkit's catalog](../catalog/README.md).
 
 Requires Node.js 24 or later.
 
@@ -11,8 +12,9 @@ Requires Node.js 24 or later.
 npx @buildkitgg/cli create app my-app
 ```
 
-In a terminal it asks for the mode and localization, shows the plan, and asks once before it writes anything. The same
-answers work as flags:
+In a terminal it asks for the mode and localization, shows the plan, and asks once before it writes anything. Once the
+app is written, it offers to install dependencies, build, and make a first git commit when the folder isn't in a
+repository yet. The same answers work as flags:
 
 ```sh
 npx @buildkitgg/cli create app my-app --mode ssr --with i18n --set i18n.locales=en,fr --yes
@@ -23,7 +25,7 @@ prompting. Without a terminal, a command plans and writes nothing unless you pas
 
 ## Change an app
 
-New apps pin `@buildkitgg/cli` as a dev dependency, so run it through pnpm inside the project:
+Every app pins `@buildkitgg/cli` as a dev dependency, so run it through pnpm inside the project:
 
 | Command                                          | What it does                                                         |
 | ------------------------------------------------ | -------------------------------------------------------------------- |
@@ -35,15 +37,20 @@ New apps pin `@buildkitgg/cli` as a dev dependency, so run it through pnpm insid
 | `pnpm buildkit catalog --json`                   | Every template, question and add-on                                  |
 
 The other commands are `sync`, `plan show`, `schema` and `recover`. Every planning command takes `--dry-run`, `--json`,
-`--out`, `--plan` and `--yes`. Exit codes: 0 done, 1 needs a decision, 2 usage or internal error, 3 conflict, 4 drift, 5
-locked, 130 cancelled.
+`--out`, `--plan` and `--yes`, and the [scaffolder's command reference](../scaffolder/README.md#commands) lists the
+rest. Exit codes: 0 done, 1 needs a decision, 2 usage or internal error, 3 conflict, 4 drift, 5 locked, 6 applied but a
+setup step failed, 130 cancelled.
 
-To upgrade, install the newer CLI, then run `upgrade`:
+To upgrade, cache the catalog version the app was made with, install the newer CLI, then run `upgrade`:
 
 ```sh
+pnpm buildkit catalog fetch <version> # the catalog version in .buildkit/lock.json
 pnpm add -D @buildkitgg/cli@latest
 pnpm buildkit upgrade
 ```
+
+`upgrade` merges template changes into the starter files you've edited by comparing them with that cached version.
+Without it, a starter file you edited that the new catalog also changes is a conflict.
 
 ## Embedding
 

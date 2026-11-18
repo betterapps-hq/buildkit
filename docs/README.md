@@ -1,61 +1,67 @@
 # Engineering docs
 
-- [Conventions](conventions.md)
-- [TypeScript](typescript.md)
-- [React](react.md)
-- [Hooks](hooks.md)
-- [Recommended stack](platform-planning/stack.md)
-- [Build plans: packages, services and pipelines we will build](platform-planning/build-plans.md)
-- [shadcn sync: one configurable component package](platform-planning/shadcn-sync.md)
-- [Preferred tools](tech-stack.md)
-- [Package lifecycle](packages.md)
-- [Releases](releases.md)
-- [Website and documentation deployment](website.md)
-- [Reference site development](../apps/docs/README.md)
-- [Public API baselines and extraction](../api-reports/README.md)
+## Conventions
+
+- [Conventions](conventions.md), with [TypeScript](typescript.md), [React](react.md) and [hooks](hooks.md)
+- [Preferred tools](tech-stack.md) and the [recommended stack](platform-planning/stack.md)
+- [Shared Playbook guidance](playbook.md): syncing rules, best practices and skills
+
+## Behavior packages
+
+- [Shared application behavior](behavior-packages.md), including the plan for extracting existing Fluent UI code
 - [Public behavior APIs](public-apis.md)
-- [Inline alerts and native toast architecture](alerts.md)
-- [Modal architecture and lifecycle](modals.md)
-- [Typed modal forms and inferred state](modal-forms.md)
-- [Updating modal content, state and presentation](modal-updates.md)
-- [Shared behavior packages and Fluent extraction plan](behavior-packages.md)
+- [Modal architecture and lifecycle](modals.md), [typed modal forms](modal-forms.md) and
+  [modal slots and updates](modal-updates.md)
+- [Inline alerts and native toasts](alerts.md)
+- [Route tabs and panels](routing.md): the shared behavior and the React Router and TanStack Router integrations
 
-Theme packages: [core](../packages/core/theme-core/README.md), [React](../packages/react/react-theme/README.md),
-[shadcn](../packages/shadcn/shadcn-theme/README.md), [Fluent UI](../packages/fluentui/fluentui-theme/README.md).
+Package READMEs: preferences ([core](../packages/core/preferences-core/README.md),
+[React](../packages/react/react-preferences/README.md)), themes ([core](../packages/core/theme-core/README.md),
+[React](../packages/react/react-theme/README.md), [shadcn](../packages/shadcn/shadcn-theme/README.md),
+[Fluent UI](../packages/fluentui/fluentui-theme/README.md)) and configuration
+([core and provider contract](../packages/core/configuration-core/README.md),
+[React subscriptions](../packages/react/react-configuration/README.md)).
 
-The unified package documentation and component workshop lives in `apps/behavior-storybook`
-(`pnpm --filter @buildkitgg/behavior-storybook storybook`).
-
-Preferences packages: [core](../packages/core/preferences-core/README.md),
-[React](../packages/react/react-preferences/README.md).
-
-[TypeScript utilities](../packages/core/typescript-utils/README.md): es-toolkit, ts-extras, ts-pattern, type-fest and
-tiny-invariant behind one import, with ts-reset. Shared configs: [Oxlint](../packages/tooling/oxlint-config/README.md),
-with the [anti-slop plugin](../packages/tooling/oxlint-plugin-anti-slop/README.md) as its own package, and
-[Storybook](../packages/tooling/storybook-config/README.md).
-
-Package-specific docs live in each package’s `docs/README.md`. Start with
-[dev-domains](../packages/tooling/dev-domains/docs/README.md).
-
-[API Mocker](../packages/tooling/api-mocker/README.md) registers MSW endpoints for Storybook and tests.
-
-[Scaffolder](../packages/tooling/scaffolder/README.md): the plan-first scaffolding engine behind product CLIs, with its
-[architecture guide](../packages/tooling/scaffolder/docs/README.md). Buildkit's own
-[catalog](../packages/tooling/catalog/README.md) and [`buildkit` CLI](../packages/tooling/cli/README.md) run on it.
-[Template packages](platform-planning/scaffolder-template-packages.md): templates anyone can publish to npm for a
-product's catalog, installed by name. [Templates for platforms](platform-planning/scaffolder-platform-templates.md): the
-planned move to questions, bare add-ons, version ranges and combination add-ons, so a platform can ship many starters.
+## shadcn components
 
 [shadcn components](shadcn/README.md): the [`shadcn-sync`](../packages/shadcn/shadcn-sync/README.md) command builds a
 configurable `@buildkitgg/shadcn` package inside an app. Guides: [choosing components](shadcn/styles.md),
 [theming](shadcn/theming.md), [text direction and labels](shadcn/localization.md) and
-[framework integration](shadcn/integration.md). See also its [example app](../apps/shadcn-sync-example/README.md) and
-[Fluent icon adapter](../packages/shadcn/shadcn-icons-fluent/README.md).
+[framework integration](shadcn/integration.md). See also the [example app](../apps/shadcn-sync-example/README.md), the
+[Fluent icon adapter](../packages/shadcn/shadcn-icons-fluent/README.md) and the
+[plan behind shadcn-sync](platform-planning/shadcn-sync.md).
 
-[Route tabs and panels](routing.md): shared behavior and React Router / TanStack Router integrations.
+## Tools and configuration
 
-Configuration: [core and provider contract](../packages/core/configuration-core/README.md),
-[React subscriptions](../packages/react/react-configuration/README.md).
+- [TypeScript utilities](../packages/core/typescript-utils/README.md): es-toolkit, ts-extras, ts-pattern, type-fest and
+  tiny-invariant behind one import, with ts-reset.
+- Shared configs: [Oxlint](../packages/tooling/oxlint-config/README.md), with the
+  [anti-slop plugin](../packages/tooling/oxlint-plugin-anti-slop/README.md) as its own package, and
+  [Storybook](../packages/tooling/storybook-config/README.md).
+- [API Mocker](../packages/tooling/api-mocker/README.md) registers MSW endpoints for Storybook and tests.
+- [dev-domains](../packages/tooling/dev-domains/docs/README.md): stable local URLs for each server and worktree.
+- [Scaffolder](../packages/tooling/scaffolder/README.md): the plan-first scaffolding engine behind product CLIs, with
+  its [architecture guide](../packages/tooling/scaffolder/docs/README.md). Buildkit's own
+  [catalog](../packages/tooling/catalog/README.md) and [`buildkit` CLI](../packages/tooling/cli/README.md) run on it.
+  [Template packages](platform-planning/scaffolder-template-packages.md) are templates anyone can publish to npm for a
+  product's catalog, installed by name. [Templates for platforms](platform-planning/scaffolder-platform-templates.md)
+  covers the questions, bare add-ons, version ranges and combination add-ons that let a platform ship many starters.
 
-[Better Apps](https://github.com/betterapps-hq/better-apps), the app features the scaffolder's add-ons use, lives in its
-own repository.
+Many packages keep longer documentation in their own `docs/README.md`.
+
+## Releases, docs and the website
+
+- [Package lifecycle](packages.md)
+- [Releases](releases.md)
+- [Public API baselines and extraction](../api-reports/README.md)
+- [Website and documentation deployment](website.md)
+- [Reference site development](../apps/docs/README.md)
+- [Storybook](../apps/behavior-storybook/README.md): package guides and interactive examples, run with
+  `pnpm --filter @buildkitgg/behavior-storybook storybook`
+
+## Plans
+
+- [Build plans](platform-planning/build-plans.md): packages, services and pipelines we plan to build
+
+[Better Apps](https://github.com/betterapps-hq/better-apps), app features with their own tables, actions and events,
+such as comments and mentions, lives in its own repository.

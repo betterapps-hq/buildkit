@@ -11,10 +11,11 @@ pnpm --filter @buildkitgg/shadcn-sync-example dev
 app runs sync from a `sync` script rather than a `postinstall`, because a fresh clone installs before the sync package
 is built.
 
-To try the Fluent icon adapter, run this in the app's folder:
+To try the Fluent icon adapter, run this in the app's folder. The app already has the adapter and
+`@fluentui/react-icons`, and `--yes` applies the change without asking for the other settings:
 
 ```bash
-pnpm exec shadcn-sync set --icons @buildkitgg/shadcn-icons-fluent
+pnpm exec shadcn-sync set --icons @buildkitgg/shadcn-icons-fluent --yes
 ```
 
-`set --icons lucide` switches back. Neither needs the network, because icons aren't part of the snapshot.
+`set --icons lucide --yes` switches back. Neither needs the network, because icons aren't part of the snapshot.

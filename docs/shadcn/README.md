@@ -1,9 +1,10 @@
 # shadcn components
 
-[`@buildkitgg/shadcn-sync`](../../packages/shadcn/shadcn-sync/README.md) builds stock shadcn components into a
-`@buildkitgg/shadcn` package inside each app. The app picks the primitives, icons, style and theme, and imports
-components like any other package. Nothing is copied into the app's source, and the app doesn't run the shadcn CLI or
-keep a `components.json`.
+The shadcn CLI copies each component into your app as source, so anyone can edit it, and an edit to one changes every
+screen that uses it. [`@buildkitgg/shadcn-sync`](../../packages/shadcn/shadcn-sync/README.md) runs that same CLI, then
+builds the stock components into a `@buildkitgg/shadcn` package inside the app. The app picks the primitives, icons,
+style and theme, and imports components like any other package. There's no copied source to maintain and no
+`components.json` to keep.
 
 ## Set up an app
 
@@ -49,17 +50,19 @@ managers and monorepos.
 | `--css`       | `compiled` CSS, or `tailwind` for an app that runs Tailwind      |
 | `--direction` | `ltr`, or `rtl` for logical classes that follow the page's `dir` |
 
-Imports stay the same when a choice changes. See [choosing components](styles.md).
+Imports stay the same when a choice changes. See [choosing what sync builds](styles.md).
 
-## Managers
+## Managers and themes
 
 [`@buildkitgg/shadcn-modals-manager`](../../packages/shadcn/shadcn-modals-manager/README.md) and
 [`@buildkitgg/shadcn-alerts-manager`](../../packages/shadcn/shadcn-alerts-manager/README.md) render with the app's own
 `@buildkitgg/shadcn`, which they list as a peer dependency. Run sync in each app that uses them.
+[`@buildkitgg/shadcn-theme`](../../packages/shadcn/shadcn-theme/README.md) switches between light, dark and system
+themes.
 
 ## More
 
-- [Choosing components](styles.md)
+- [Choosing what sync builds](styles.md)
 - [Theming](theming.md)
 - [Text direction and labels](localization.md)
 - [Framework integration](integration.md)

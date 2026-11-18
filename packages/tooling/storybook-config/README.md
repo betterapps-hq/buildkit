@@ -7,6 +7,9 @@ preview, and frames that give example stories a consistent layout.
 pnpm add -D @buildkitgg/storybook-config storybook @storybook/react-vite
 ```
 
+Your app installs `storybook` for its CLI and `@storybook/react-vite` for story types such as `Meta` and `StoryObj`. It
+needs React 19.2 or later.
+
 ## Main config
 
 `defineMain` merges your config onto the base. Arrays such as `addons` are concatenated and objects are merged deeply,
@@ -22,8 +25,9 @@ export default defineMain({
 ```
 
 The base uses the `@storybook/react-vite` framework, adds `@storybook/addon-a11y` and `@storybook/addon-vitest`, and
-turns off telemetry. The framework and addons are dependencies of this package and are named by path, so your app
-doesn't need to install them. Add app-specific addons, such as Chromatic's, under `addons` yourself.
+turns off telemetry. Your app doesn't install those addons: the base names them by path, from this package's own
+dependencies, because Storybook resolves names from your app's folder, where pnpm doesn't put them. Add app-specific
+addons, such as Chromatic's, under `addons` yourself.
 
 Run the Vitest addon's story tests in CI only. They're too slow to run on every local test pass, so keep them out of the
 test project your app runs locally.
@@ -45,8 +49,8 @@ export default definePreview({
 
 ## Example frames
 
-`ExampleFrame` wraps a story in a heading, an optional description and an optional source disclosure. `ExampleResult`
-labels the outcome of an action next to it:
+`ExampleFrame` wraps a story in a heading made from its `group` and `title`, an optional `description`, and an optional
+disclosure that shows the `code` you pass. `ExampleResult` labels the outcome of an action next to it:
 
 ```tsx
 import { ExampleFrame, ExampleResult } from "@buildkitgg/storybook-config/examples"

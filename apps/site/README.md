@@ -4,6 +4,10 @@ React marketing page for GitHub Pages, built with Vite, the React Compiler, and 
 `pnpm --filter @buildkitgg/site dev` and open the printed URL. Storybook and docs links use the local servers during
 development (`pnpm --filter @buildkitgg/behavior-storybook storybook` and `pnpm --filter @buildkitgg/docs dev`).
 
+The interactive examples in `src/examples` render with `@buildkitgg/shadcn`, which shadcn-sync builds for this app from
+its `postinstall`: Base UI primitives, the `vega` style, the `neutral` theme and Lucide icons. Each runs in its own
+frame; see [interactive examples](../../docs/website.md#interactive-examples).
+
 The design was made in Pen.dev. Each section in `src/sections` matches its desktop frame at 1440px and its phone frame
 at 390px, with its own stylesheet beside the component. `src/styles.css` holds the design tokens, base styles, and the
 shared section, button, command, and code styles.
@@ -11,8 +15,8 @@ shared section, button, command, and code styles.
 ## Rendering
 
 The production build prerenders the page to static HTML, then hydrates it for the interactive parts: the theme picker in
-the hero, the architecture switches, the text size control, the style picker, copy buttons, and the mobile menu. Every
-link and all copy work without JavaScript.
+the hero, the architecture switches, the example tabs and their code editor, the tooling tabs, the shadcn-sync option
+picker, copy buttons, and the mobile menu. Every link and all copy work without JavaScript.
 
 Geist and Geist Mono are bundled from `@fontsource-variable`, so the page loads nothing from third-party hosts.
 

@@ -1,5 +1,5 @@
 # Maintenance
 
-Keep behavior in theme-core/preferences-core and React subscriptions in react-theme. This adapter owns Fluent theme
-mapping and provider lifecycle only. Run `pnpm verify`; exercise the Fluent stories including the portaled dialog and
-custom themes.
+Keep behavior in theme-core and preferences-core, and React subscriptions in react-theme. This adapter owns only the
+Fluent theme mapping and the provider lifecycle. Run `pnpm verify`, then check the "Fluent UI/fluentui-theme" stories,
+including Portaled content and Custom tokens.
