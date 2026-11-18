@@ -18,7 +18,7 @@ const FEATURES = [
   {
     icon: GitCompare,
     title: "Change it later",
-    desc: "Review planned changes before adding, upgrading, or syncing. The engine merges supported changes and asks you to resolve conflicts with your edits."
+    desc: "Review planned changes before adding, upgrading, or syncing. The engine merges template updates into files you've edited, and stops at a conflict until you keep yours, take the new version, or mark it in the file."
   }
 ]
 
