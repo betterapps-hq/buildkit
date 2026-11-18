@@ -1,8 +1,17 @@
 # Change Log - @buildkitgg/dev-domains
 
-<!-- This log was last generated on Tue, 03 Nov 2026 11:33:33 GMT and should not be manually modified. -->
+<!-- This log was last generated on Wed, 18 Nov 2026 02:20:24 GMT and should not be manually modified. -->
 
 <!-- Start content -->
+
+## 0.1.4
+
+Wed, 18 Nov 2026 02:20:24 GMT
+
+### Patches
+
+- Accept a separate --cwd or --config value without a command name, and detect next dev --turbo servers
+  (ajcraswell@gmail.com)
 
 ## 0.1.3
 

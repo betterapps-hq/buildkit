@@ -1,7 +1,0 @@
-{
-  "type": "patch",
-  "comment": "Accept a separate --cwd or --config value without a command name, and detect next dev --turbo servers",
-  "packageName": "@buildkitgg/dev-domains",
-  "email": "ajcraswell@gmail.com",
-  "dependentChangeType": "patch"
-}
