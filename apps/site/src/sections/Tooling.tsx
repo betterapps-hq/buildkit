@@ -2,7 +2,7 @@ import { Blocks, GlobeLock, Palette } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { DevDomains } from "./tooling/DevDomains"
 import { Scaffolder } from "./tooling/Scaffolder"
-import { ShadcnKit } from "./tooling/ShadcnKit"
+import { ShadcnKit } from "./tooling/ShadcnKit/ShadcnKit"
 import "./tooling.css"
 
 const TOOLS = [
