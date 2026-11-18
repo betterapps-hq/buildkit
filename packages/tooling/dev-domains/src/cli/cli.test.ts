@@ -1,12 +1,18 @@
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
+import { mkdir, mkdtemp, readFile, realpath, rm, writeFile } from "node:fs/promises"
 import os from "node:os"
 import path from "node:path"
 import * as prompts from "@clack/prompts"
 import { runCommand } from "citty"
 import { afterEach, expect, it, vi } from "vite-plus/test"
-import { commands } from "./commands.js"
+import { runEndpoint } from "../runtime/portless.js"
+import { cli, commands } from "./commands.js"
 import { initialize } from "./init.js"
 import { answer, chooseEndpoint } from "./terminal.js"
+
+vi.mock("../runtime/portless.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../runtime/portless.js")>()),
+  runEndpoint: vi.fn<typeof runEndpoint>(async () => 0)
+}))
 
 vi.mock("@clack/prompts", () => ({
   intro: vi.fn<typeof prompts.intro>(),
@@ -47,6 +53,31 @@ it("prints detection, resolved URLs, and schema without writing config", async (
   await runCommand(commands.schema, { rawArgs: [] })
   expect(write.mock.calls.map(([value]) => String(value)).join("\n")).toContain("https://demo.localhost")
   await expect(readFile(path.join(root, "dev-domains.json"))).rejects.toThrow(Error)
+})
+
+it("runs the default command with a separate --cwd value", async () => {
+  const root = await fixture()
+  const web = path.join(root, "apps", "web")
+  await mkdir(web, { recursive: true })
+  await writeFile(path.join(web, "package.json"), JSON.stringify({ name: "web", scripts: { dev: "vite" } }))
+  const write = vi.spyOn(process.stdout, "write").mockReturnValue(true)
+  const start = process.cwd()
+  process.chdir(root)
+
+  try {
+    await runCommand(cli, { rawArgs: ["--cwd", "apps/web"] })
+  } finally {
+    process.chdir(start)
+  }
+
+  expect(process.exitCode).toBe(0)
+  process.exitCode = undefined
+  expect(write).toHaveBeenCalledWith("app: https://web.localhost\n")
+  expect(runEndpoint).toHaveBeenCalledWith(
+    expect.objectContaining({ root: await realpath(web) }),
+    expect.objectContaining({ service: "app" }),
+    expect.any(AbortSignal)
+  )
 })
 
 it("supports noninteractive dry runs and refuses overwrite", async () => {

@@ -161,9 +161,10 @@ When no configuration file is found, these conventions determine the candidates:
 Package-manager detection stays at the selected project root. A declaration takes precedence over stale lockfiles.
 Conflicting lockfiles without a declaration require you to choose a manager in `package.json` or an explicit config.
 
-Scripts that contain the word `dev-domains`, `portless`, `turbo`, `run-p`, or `concurrently` are excluded from
-detection, and that includes a `--turbo` flag. Point configuration at the underlying server script when an aggregate or
-wrapper command is involved. A `playwright test` script is never used as the app server.
+Scripts that contain the word `dev-domains`, `portless`, `run-p`, or `concurrently`, or that run the `turbo` command,
+are excluded from detection. A `--turbo` flag doesn't count, so `next dev --turbo` is still detected as a Next.js
+server. Point configuration at the underlying server script when an aggregate or wrapper command is involved. A
+`playwright test` script is never used as the app server.
 
 There is no universally required development script name. `dev` is the default convention; scripts with any other name
 work through an explicit `script` setting. Detection does not guess whether `start`, `serve`, or a custom script is a
@@ -733,8 +734,7 @@ first.
 
 `--cwd` defaults to the current directory. `--config` is a file path relative to `--cwd`. Use `--help` on a command for
 its options. `run` and `tunnel` require an endpoint name in noninteractive sessions when more than one candidate exists;
-`tunnel` only offers endpoints that have a `tunnel` object. Without a command name, pass options with an equals sign,
-such as `--cwd=apps/web`: a separate value is read as a command name.
+`tunnel` only offers endpoints that have a `tunnel` object. Put options after the command name.
 
 The CLI never rewrites package scripts. It propagates server exit codes, exits with 1 on an error and 130 when you
 cancel a prompt, and releases the endpoint's hostname when the server stops normally. The shared proxy stays available

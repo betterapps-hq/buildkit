@@ -8,7 +8,8 @@ import { slug } from "./identity.js"
 import { readManifest, workspaceList } from "./manifest.js"
 import { detectPackageManager } from "./package-manager.js"
 
-const wrappers = /\b(dev-domains|portless|turbo|run-p|concurrently)\b/
+// `turbo` counts only as a command (`turbo dev`, `pnpm turbo dev`); `next dev --turbo` is still an app server.
+const wrappers = /\b(?:dev-domains|portless|run-p|concurrently)\b|(?:^|[\s/;&|(])turbo(?=$|[\s@;&|)])/
 const storybookDev = /\bstorybook\s+dev\b/
 const playwrightTest = /\bplaywright\s+test\b/
 
