@@ -7,10 +7,11 @@ import { gsap } from "gsap"
  */
 export function examplesCarousel() {
   const section = document.querySelector<HTMLElement>(".examples")
-  const stage = section?.querySelector<HTMLElement>(".examples-stage")
+  const pin = section?.querySelector<HTMLElement>(".examples-pin")
+  const stage = pin?.querySelector<HTMLElement>(".examples-stage")
   const slides = gsap.utils.toArray<HTMLElement>(".examples .ex-card")
 
-  if (!section || !stage || slides.length < 2) {
+  if (!section || !pin || !stage || slides.length < 2) {
     return undefined
   }
 
@@ -38,6 +39,9 @@ export function examplesCarousel() {
       start: () => (stage.offsetHeight > window.innerHeight - 32 ? "top 16px" : "center center"),
       end: () => `+=${(slides.length - 1) * window.innerHeight * 0.75}`,
       pin: true,
+      // The stage's own wrapper holds its place. Without one, every refresh lifts the stage out of a spacer and back,
+      // which reloads the example iframes and throws if one is still loading, leaving every trigger unmeasured.
+      pinSpacer: pin,
       // The stage sits in a flex column, where ScrollTrigger leaves out the spacing by default
       pinSpacing: true,
       // Measured after the architecture story's pin above it, which moves where this one starts

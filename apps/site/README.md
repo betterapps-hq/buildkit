@@ -29,6 +29,11 @@ in on scroll with `data-reveal`, or a container whose children rise in sequence 
 single sections, such as the pinned architecture stack and the typing search palette, select that section's class names,
 so rename those classes in `src/motion` too. In development, `?static` skips motion and renders the final state.
 
+Pinned scenes add scroll length to everything below them, so every trigger that isn't pinned uses the `AFTER_PINS`
+refresh priority and is measured after the pins. A pin that holds iframes needs its own wrapper as its `pinSpacer`, as
+the examples carousel has. Without one, ScrollTrigger moves the pin out of a spacer and back on every refresh, which
+reloads the iframes and throws if one is still loading.
+
 The hero and closing call to action share a WebGL background (`src/components/HeroField.tsx`), which lights a target
 element from behind. It pauses off screen, holds one frame for reduced motion, and leaves the CSS gradient in place when
 WebGL is unavailable.

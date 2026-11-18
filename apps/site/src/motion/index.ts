@@ -55,10 +55,16 @@ function workbenchTilt() {
   )
 }
 
+/**
+ * The refresh priority of every trigger that isn't pinned. They're measured after the pinned stories, which add their
+ * scroll length to everything below them. Measured earlier, a trigger below the examples fires a whole carousel early.
+ */
+const AFTER_PINS = -2
+
 /** Plays a one-off timeline when `trigger` is well into view. The builder gets the timeline to fill. */
 function onArrival(trigger: string, build: (timeline: gsap.core.Timeline) => void) {
   if (document.querySelector(trigger)) {
-    build(gsap.timeline({ scrollTrigger: { trigger, start: "top 65%", once: true } }))
+    build(gsap.timeline({ scrollTrigger: { trigger, start: "top 65%", once: true, refreshPriority: AFTER_PINS } }))
   }
 }
 
@@ -93,8 +99,7 @@ function toolSlides() {
         end: "top 50%",
         scrub: 0.6,
         invalidateOnRefresh: true,
-        // Measured after the pinned stories above, which add their scroll length before the tools
-        refreshPriority: -2
+        refreshPriority: AFTER_PINS
       }
     })
   }
@@ -110,7 +115,13 @@ function scaffolderSpine() {
 
   const timeline = gsap.timeline({
     defaults: { ease: "none" },
-    scrollTrigger: { trigger: ".tl-steps", start: "top 70%", end: "bottom 60%", scrub: 0.8 }
+    scrollTrigger: {
+      trigger: ".tl-steps",
+      start: "top 70%",
+      end: "bottom 60%",
+      scrub: 0.8,
+      refreshPriority: AFTER_PINS
+    }
   })
 
   steps.forEach((step, index) => {
@@ -186,7 +197,7 @@ function reveals() {
   for (const element of gsap.utils.toArray<HTMLElement>("[data-reveal]")) {
     gsap.from(element, {
       ...from,
-      scrollTrigger: { trigger: element, start: "top 88%", once: true }
+      scrollTrigger: { trigger: element, start: "top 88%", once: true, refreshPriority: AFTER_PINS }
     })
   }
 
@@ -194,7 +205,7 @@ function reveals() {
     gsap.from(group.children, {
       ...from,
       stagger: 0.08,
-      scrollTrigger: { trigger: group, start: "top 85%", once: true }
+      scrollTrigger: { trigger: group, start: "top 85%", once: true, refreshPriority: AFTER_PINS }
     })
   }
 }
