@@ -130,41 +130,43 @@ export function Examples() {
             layers work together with your components.
           </p>
         </div>
-        <div className="examples-stage">
-          <div className="examples-bar" data-reveal>
-            <div
-              ref={tabs}
-              className="examples-chips"
-              role="tablist"
-              aria-label="Examples"
-              tabIndex={-1}
-              onKeyDown={onTabKey}
-            >
+        <div className="examples-pin">
+          <div className="examples-stage">
+            <div className="examples-bar" data-reveal>
+              <div
+                ref={tabs}
+                className="examples-chips"
+                role="tablist"
+                aria-label="Examples"
+                tabIndex={-1}
+                onKeyDown={onTabKey}
+              >
+                {EXAMPLES.map((example) => (
+                  <button
+                    key={example.id}
+                    id={`example-${example.id}-tab`}
+                    type="button"
+                    role="tab"
+                    className="examples-chip"
+                    aria-selected={example.id === active}
+                    aria-controls={`example-${example.id}`}
+                    tabIndex={example.id === active ? 0 : -1}
+                    onClick={() => select(example.id)}
+                  >
+                    {example.chip}
+                  </button>
+                ))}
+              </div>
+              <Link className="text-link examples-storybook" href={links.storybook}>
+                Open every example in Storybook
+                <ArrowUpRight aria-hidden="true" />
+              </Link>
+            </div>
+            <div className="examples-track" data-reveal>
               {EXAMPLES.map((example) => (
-                <button
-                  key={example.id}
-                  id={`example-${example.id}-tab`}
-                  type="button"
-                  role="tab"
-                  className="examples-chip"
-                  aria-selected={example.id === active}
-                  aria-controls={`example-${example.id}`}
-                  tabIndex={example.id === active ? 0 : -1}
-                  onClick={() => select(example.id)}
-                >
-                  {example.chip}
-                </button>
+                <Slide key={example.id} example={example} active={example.id === active} />
               ))}
             </div>
-            <Link className="text-link examples-storybook" href={links.storybook}>
-              Open every example in Storybook
-              <ArrowUpRight aria-hidden="true" />
-            </Link>
-          </div>
-          <div className="examples-track" data-reveal>
-            {EXAMPLES.map((example) => (
-              <Slide key={example.id} example={example} active={example.id === active} />
-            ))}
           </div>
         </div>
       </div>
