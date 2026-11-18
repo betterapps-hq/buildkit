@@ -102,6 +102,16 @@ describe("project conventions", () => {
     await manifest(root, { scripts: { dev: "dev-domains run app", "dev:raw": "vite" } })
     expect((await detectConfig(root)).endpoints).toEqual({})
   })
+  it("skips the turbo command but keeps servers that pass a --turbo flag", async () => {
+    const root = await directory()
+    await manifest(root, { scripts: { dev: "next dev --turbo" } })
+    expect((await detectConfig(root)).endpoints.app).toMatchObject({ script: "dev", framework: "next" })
+
+    for (const dev of ["turbo run dev", "pnpm turbo dev", "npx turbo@2 run dev", "cd ../.. && turbo dev"]) {
+      await manifest(root, { scripts: { dev } })
+      expect((await detectConfig(root)).endpoints).toEqual({})
+    }
+  })
   it("prefers an explicitly selected package manager over stale lockfiles", async () => {
     const root = await directory()
     await manifest(root, { packageManager: "npm@11.0.0", scripts: { dev: "vite" } })

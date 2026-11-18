@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs"
+import { defineCommand as defineRootCommand } from "citty"
 import { z } from "zod"
 import { loadProject } from "../config/load.js"
 import { configSchema } from "../config/schema.js"
@@ -115,3 +117,16 @@ export const commands = {
     }
   })
 }
+
+const { version } = z
+  .object({ version: z.string() })
+  .parse(JSON.parse(readFileSync(new URL("../../package.json", import.meta.url), "utf8")))
+
+export const cli = defineRootCommand({
+  meta: { name: "dev-domains", version, description: "Stable local domains for every app and checkout" },
+  // Without a command name the CLI runs `run`. Citty only skips an option's separate value (`--cwd apps/web`) when
+  // looking for a command name if the option is declared here.
+  args: location,
+  default: "run",
+  subCommands: commands
+})
