@@ -25,8 +25,8 @@ secrets the wizard asks for.
 
 `tanstack-start` is a React app on TanStack Start with two modes: `ssr` (server-rendered) and `spa` (one prerendered
 shell at `/index.html`). It names no cloud: the app has no Wrangler config, no bindings and no cloud names in its code
-or `buildkit.jsonc`. Its starter files import the generated glue in `src/generated/buildkit/` once, at `create`, so
-adding an add-on only changes generated files.
+or `buildkit.jsonc`. Its starter files import the generated glue in `src/generated/buildkit/` once, at `create`, so an
+add-on wires itself in through those generated files and never edits the starter files.
 
 | Point                      | Kind   | Generated file | Used by                                                                         |
 | -------------------------- | ------ | -------------- | ------------------------------------------------------------------------------- |
@@ -46,16 +46,20 @@ is the exception: it's pinned exactly, because it carries the catalog that made 
 
 ## The `app` template
 
-The wizard asks for the mode (`ssr` or `spa`), then "Add localization?", which defaults to no. `ci` is always included,
-and `--i18n i18n` or `--no-i18n` answers the question from the command line. `catalog --json` describes the template
-with its gallery tags (`react`, `tanstack-start`, `ssr`, `spa`) and links to this README and its source.
+The wizard asks for the mode (`ssr` or `spa`), then "Add localization?", which defaults to no, and the locales when you
+add it. `ci` is always included, and `--i18n i18n` or `--no-i18n` answers the question from the command line.
+`catalog --json` describes the template with its gallery tags (`react`, `tanstack-start`, `ssr`, `spa`) and links to
+this README and its source.
 
 Once the app is applied, `buildkit create` offers the setup steps: `pnpm install`, then `pnpm build`, which writes
 `src/routeTree.gen.ts` for the type check, then a git repository with a first commit. Apps pin pnpm in `packageManager`,
 so setup installs with pnpm whichever package manager ran the CLI. `--setup` runs them without asking, and `--no-setup`
 lists them in the next steps instead.
 
-| Add-on           | What it writes                                                                                                                                                                                            |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `@buildkit/ci`   | `.github/workflows/ci.yml`: `buildkit check`, lint, format, build and type-check on every push and pull request. Steps are keyed by `id`, so add-ons add their own                                        |
-| `@buildkit/i18n` | Lingui 6 as app code in `src/i18n/`: request middleware on `ssr`, browser detection on `spa`, a router wrapper, localized URLs through the router's rewrite, `<html lang dir>`, catalogs in `src/locales` |
+The add-ons:
+
+- `@buildkit/ci` writes `.github/workflows/ci.yml`, which runs `buildkit check`, lint, format, build and type-check on
+  pushes to `main` and pull requests into it. Its steps are keyed by `id`, so other add-ons add their own.
+- `@buildkit/i18n` writes Lingui 6 into `src/i18n/` as app code you own: request middleware on `ssr`, browser detection
+  on `spa`, a router wrapper, localized URLs through the router's rewrite, `<html lang dir>`, and catalogs in
+  `src/locales`. It adds `i18n:extract` and `i18n:check` scripts, and a translation check to CI.

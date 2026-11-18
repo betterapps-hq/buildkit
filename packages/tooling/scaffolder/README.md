@@ -1,8 +1,8 @@
 # @buildkitgg/scaffolder
 
-A plan-first scaffolding engine. A product describes what projects can be made of in a **catalog**: targets, add-ons,
-questions and templates. The engine turns answers into a reviewed **plan**, applies it safely, and later adds to,
-changes or upgrades the project without overwriting your edits.
+A plan-first scaffolding engine. It turns a few answers into a **plan** you review before anything is written, applies
+it, and later adds to, changes or upgrades the project without overwriting your edits. A product describes what its
+projects can be made of in a **catalog**: targets, add-ons, questions and templates.
 
 Requires Node.js 24 or later. Until 1.0, minor versions may change the catalog and manifest types.
 
@@ -33,17 +33,19 @@ as Buildkit build their own CLI on the engine instead, and create projects with 
 
 ## The scaffold command
 
-`scaffold [package][@version][#template] [folder]` fetches the package from npm into your user cache, never the project,
-without running its scripts, and creates a project from it. It takes every option `create` takes: `--mode`, `--preset`,
-`--name`, `--with`, `--without`, `--set`, `--adopt`, `--setup`, `--no-setup`, `--dry-run`, `--json` and `--yes`. npm's
-install scripts never run, but the package's own code does, on your machine and with your permissions, so scaffold only
-from packages you trust.
+`scaffold [package][@version][#template] [folder]` fetches a package from npm into your user cache, never the project,
+and creates a project from it. It takes every option `create` takes: `--mode`, `--preset`, `--name`, `--with`,
+`--without`, `--set`, `--adopt`, `--setup`, `--no-setup`, `--dry-run`, `--json` and `--yes`. npm's install scripts never
+run, but the package's own code does, on your machine and with your permissions, so scaffold only from packages you
+trust.
 
-- **A catalog package** exports its catalog as `catalog` or by default, and its product settings as `settings`. The
-  project gets the product's file names, so the product's own CLI manages it later. Without `settings`, the files are
-  named for scaffold: `scaffold.jsonc` and `.scaffold/`. With several templates, `#<template>` picks one, and in a
+The package is a catalog package or a template package:
+
+- A catalog package exports its catalog as `catalog` or by default, and its product settings as `settings`. The project
+  gets the product's file names, so the product's own CLI manages it later. Without `settings`, the files are named for
+  scaffold: `scaffold.jsonc` and `.scaffold/`. When the catalog has several templates, `#<template>` picks one, and in a
   terminal `scaffold` asks.
-- **A [template package](#template-packages)** brings the catalog version it extends, and `scaffold` fetches that too.
+- A [template package](#template-packages) extends a catalog version, and `scaffold` fetches that catalog too.
 
 A scoped name, or any name after `npm:`, is a package, as `create` reads it. Without one, `scaffold` uses
 `@buildkitgg/catalog`, and its first argument is a template or, when it isn't one, the folder: `scaffold my-app` and
@@ -68,7 +70,7 @@ catalog and template package versions it was made with, and `--plan` loads exact
 | **Target**       | A framework and its modes, such as `web/ssr`. It provides base files and owns extension points     |
 | **Template**     | What `create` offers: a target, required add-ons (never asked about) and questions, in order       |
 | **Question**     | Yes or no unless it's required, then one choice or several, such as "Add a database?"              |
-| **Add-on**       | A manifest whose `contribute()` returns data-only contributions, and the rules true wherever it is |
+| **Add-on**       | A manifest whose `contribute()` returns data-only contributions, with its `requires` and conflicts |
 | **Bare add-on**  | One package at the catalog's pin and nothing else, named in a template as `npm:<package>`          |
 | **Point**        | A typed extension point, rendered into a generated file that your code imports                     |
 | **Plan**         | Operations, decisions and conflicts, with a fingerprint                                            |
@@ -234,17 +236,17 @@ add-ons are never asked about, so their options must all have defaults.
 
 Answers hold each question's add-ons, `[]` for no, and `extra` for add-ons no question offers. A required question with
 no default and more than one available choice is a decision. The config's `declined` records `question:<id>` for each
-no, and the choices a `many` question's answer left out. A config or lock from before questions records `slot:<id>`,
-which is read as `question:<id>` and written in the new form on the next apply.
+no, and the choices a `many` question's answer left out. An entry written as `slot:<id>` reads as `question:<id>`, and
+the next apply writes it that way.
 
 An upgrade doesn't ask the questions a template gains. Its plan has a `new-question` notice for each one the project has
 no answer to, such as "The template now asks: Add telemetry? Run `acme add telemetry` to answer it."
 
-Every question has a flag: `--<question> <add-on>[,<add-on>]`, `--no-<question>`, `--with <add-on>` (added to the
-question that offers it, from its default, or to `extra`), `--without <add-on>`, `--mode`,
-`--set <add-on>.<option>=<value>` and `--preset`. Short names drop the scope: `db-sqlite` is `@acme/db-sqlite`, and a
-bare add-on is its package name, such as `zod`. `catalog --json` describes the whole questionnaire, with each template's
-questions per mode and a gallery `stack`, for dashboards and agents.
+Every question has a flag, `--<question> <add-on>[,<add-on>]`, and `create` also takes `--no-<question>`. The other
+answer flags of `create` are `--with <add-on>` (added to the question that offers it, from its default, or to `extra`),
+`--without <add-on>`, `--mode`, `--set <add-on>.<option>=<value>` and `--preset`. Short names drop the scope:
+`db-sqlite` is `@acme/db-sqlite`, and a bare add-on is its package name, such as `zod`. `catalog --json` describes the
+whole questionnaire, with each template's questions per mode and a gallery `stack`, for dashboards and agents.
 
 ## Setup steps
 
@@ -266,15 +268,16 @@ The product's settings decide the rest: `defineSettings({ product, setup: { inst
 `install` and `git` default to true, and there's no git step when the project is already in a repository.
 `packageManager` defaults to the one that ran the CLI, read from `npm_config_user_agent`, then pnpm.
 
-- **They run one at a time**, each with a spinner, after the secrets file is written. A step that fails stops the rest:
-  the CLI prints its output, lists the steps left in the next steps, and exits with code 6. The project is applied
-  either way.
-- **Without a terminal**, or with `--yes`, they run only with `--setup`, which runs them all without asking.
-  `--no-setup` doesn't ask about them. The steps that didn't run are in the next steps.
-- **`--json` never runs them.** The plan's `commands` mark each setup command with `setup: true`, so another door can
-  offer them.
-- **A template package's commands** are its author's code. They're offered only after you confirm the plan, which says
-  the template comes from the package and runs its author's code.
+The steps run one at a time, each with a spinner, after the secrets file is written. A step that fails stops the rest:
+the CLI prints its output, lists the steps left in the next steps, and exits with code 6. The project is applied either
+way.
+
+Without a terminal, or with `--yes`, the steps run only with `--setup`, which runs them all without asking. `--no-setup`
+skips the question. Steps that don't run are listed in the next steps. `--json` never runs them: the plan's `commands`
+mark each setup command with `setup: true`, so a dashboard or an agent can offer them instead.
+
+A template package's commands are its author's code. They're offered only after you confirm the plan, which says the
+template comes from the package and runs its author's code.
 
 ## File ownership
 
@@ -329,20 +332,38 @@ exclude them. `printJson` and `jsonLayoutFor` in `@buildkitgg/scaffolder/edit` p
 | `schema`                                      | JSON Schemas for the config, the lock and plan requests              |
 | `recover`                                     | Roll back an interrupted apply                                       |
 
-Every planning command takes `--dry-run`, `--json`, `--out [folder]`, `--plan <file>`, `--yes`, `--diff`,
-`--resolve <id>=keep-current|take-incoming|file:<path>` and `--conflict markers`. Without a terminal, a command plans
-and writes nothing unless you pass `--yes` or apply a reviewed plan with `--plan`. A reviewed plan applies only if the
-project hasn't changed since; applying it twice is a no-op. It records the template packages it was made with, and
-applying it loads those exact versions, so a newer release never runs first. `--cwd` sets where the project is for every
-command, and `create`'s folder is relative to it.
+Every planning command takes `--dry-run`, `--json`, `--out [folder]`, `--plan <file>`, `--yes`, `--diff none|user|all`,
+`--resolve <id>=keep-current|take-incoming|file:<path>`, `--conflict markers` and `--catalog-version <version>`, which
+plans with an earlier catalog version from the cache. `add` also takes `--replace <add-on>`, and `config set`, `upgrade`
+and `sync` take `--with <add-on>` to add an add-on with the change, as a decision's choice does.
+
+Without a terminal, a command plans and writes nothing unless you pass `--yes` or apply a reviewed plan with `--plan`. A
+reviewed plan applies only if the project hasn't changed since; applying it twice is a no-op. It records the template
+packages it was made with, and applying it loads those exact versions, so a newer release never runs first. `--cwd` sets
+where the project is for every command, and `create`'s folder is relative to it.
 
 ## The JSON envelope and exit codes
 
 With `--json`, the commands that plan or change the project (`create`, `add`, `config set`, `upgrade`, `sync`, `check`,
-`plan show`, `catalog fetch` and `recover`) print one JSON envelope: `status`, `fingerprint`, `operations` (path,
-action, class and line counts), `decisions` (each choice with its `request` and `argv`), `conflicts`, `packages`, `env`,
-`commands`, `migrations`, `notices`, `nextSteps` and `error`. Files that may hold secrets show no contents or line
-counts.
+`plan show`, `catalog fetch`, `catalog check` and `recover`) print one JSON envelope. A field appears only when it has
+something to say:
+
+| Field                                       | What it holds                                                                    |
+| ------------------------------------------- | -------------------------------------------------------------------------------- |
+| `status`                                    | `planned`, `applied`, `unchanged`, `needs-decision`, `conflict` or `error`       |
+| `fingerprint`, `catalog`                    | The plan's fingerprint, and the catalog id and version it was made with          |
+| `baseline`                                  | Where the plan found what the engine last wrote, to merge against                |
+| `operations`                                | Each file's path, action, class and line counts                                  |
+| `decisions`                                 | Each choice, with its `request` and the `argv` that runs it                      |
+| `conflicts`                                 | Each conflict's id, path, kind, message and resolutions                          |
+| `pulled`, `required`                        | Add-ons pulled in by `requires` or `joins`, and the template's required add-ons  |
+| `packages`, `env`, `commands`, `migrations` | Dependency changes, environment variables, commands to run later, and migrations |
+| `merged`, `upgrade`                         | Files merged with your edits, and the versions an upgrade moves from and to      |
+| `notices`, `nextSteps`                      | What the plan wants you to know, and what to do after it                         |
+| `artifacts`, `setup`                        | The `--out` folder, and the setup steps `create` ran, with the one that failed   |
+| `error`                                     | The error's code, message and paths, and the commands to run next                |
+
+Files that may hold secrets show no contents or line counts.
 
 The commands that only read print their own JSON instead:
 
@@ -352,7 +373,7 @@ The commands that only read print their own JSON instead:
 | `config get` | The add-on's options or the option's value, or `null`                          |
 | `status`     | `{ catalog, files, deleted }`: each file's path, class, state and contributors |
 | `explain`    | An object whose `kind` is `path`, `addon`, `entry` or `unknown`                |
-| `catalog`    | The questionnaire: each template's questions, by mode                          |
+| `catalog`    | Each template's questions by mode, the add-ons and their rules, and presets    |
 | `schema`     | `{ config, lock, request }`, each a JSON Schema                                |
 
 When any command fails, it prints the envelope with `status: "error"`.
@@ -371,12 +392,12 @@ When any command fails, it prints the envelope with `status: "error"`.
 ## Upgrades
 
 `upgrade` renders the old baseline with the catalog version the lock records, renders the new one, and merges: seeds
-three-way, shared files by key, generated files by hash. Run `catalog fetch <version>` to cache an old version for
-offline use; without it, edited seeds need a decision. The cache is in your user cache folder, never in the project, so
-a cloned repository can't supply catalog code for the CLI to run. A product whose catalog isn't published sets
-`seedBases: "stored"` in `defineSettings`, which keeps each seed's generated text in the lock to merge against instead.
-Migrations run when an add-on's version moves past theirs: option rewrites, codemods, package bumps, and agent tasks
-that are only listed.
+three-way, shared files by key, generated files by hash. It reads the old catalog version from the cache and never
+fetches it, so run `catalog fetch <version>` first. Without the old version, a seed you edited that the new version also
+changes is a conflict. The cache is in your user cache folder, never in the project, so a cloned repository can't supply
+catalog code for the CLI to run. A product whose catalog isn't published sets `seedBases: "stored"` in `defineSettings`,
+which keeps each seed's generated text in the lock to merge against instead. Migrations run when an add-on's version
+moves past theirs: option rewrites, codemods, package bumps, and agent tasks that are only listed.
 
 ## Template packages
 
@@ -409,19 +430,19 @@ export default definePack({
 })
 ```
 
-- **It extends one catalog.** Its templates and add-ons use the catalog's targets, questions and points, and the
-  catalog's add-ons stay available to `add`. It can't add targets or points, or replace anything the catalog has.
-- **Templates on the catalog's.** A pack template can `extends` a catalog template, or another template of the same
-  pack, and ask the catalog's questions by id, as a catalog template does.
-- **Questions and pins of its own.** `questions` are shared by the pack's templates. An id can't be a catalog
-  question's, another package's, or one of the CLI's flags, and each is a flag of `create`. `versions` pins packages the
-  catalog doesn't, for the pack's add-ons and bare add-ons. A pack that pins a package the catalog pins is refused, so a
-  pack can't change the platform's versions.
-- **Gallery images** are paths in the pack's package, and `catalog check` confirms each one is there.
-- **Ids.** A template is recorded as `<package>#<id>`, and its add-on ids start with `<package>/`.
-- **Compatibility.** The engine refuses a pack whose `versions` range doesn't include the installed catalog.
-- **Checks.** The engine merges the pack into the catalog and runs `checkCatalog` before planning. Run `catalog check`
-  in the package's folder, after building it, to plan every option set of its templates before you publish.
+- It extends one catalog. Its templates and add-ons use the catalog's targets, questions and points, and the catalog's
+  add-ons stay available to `add`. It can't add targets or points, or replace anything the catalog has.
+- A pack template can `extends` a catalog template or another template of the same pack, and ask the catalog's questions
+  by id, as a catalog template does.
+- `questions` are shared by the pack's templates, and each is a flag of `create`. An id can't be a catalog question's,
+  another package's, or one of the CLI's flags.
+- `versions` pins packages the catalog doesn't, for the pack's add-ons and bare add-ons. A pack that pins a package the
+  catalog pins is refused, so a pack can't change the platform's versions.
+- Gallery images are paths in the pack's package, and `catalog check` confirms each one is there.
+- A template is recorded as `<package>#<id>`, and its add-on ids start with `<package>/`.
+- The engine refuses a pack whose `extends.versions` range doesn't include the installed catalog.
+- The engine merges the pack into the catalog and runs `checkCatalog` before planning. Run `catalog check` in the
+  package's folder, after building it, to plan every option set of its templates before you publish.
 
 npm installs packages into the user cache folder, never the project, without running their scripts. The lock records
 each package's version and integrity, and later commands load that copy and refuse one that doesn't match. Only the
@@ -446,17 +467,17 @@ export default defineAddonPack({
 })
 ```
 
-- **It only adds add-ons.** It can't add targets, points, questions or templates, and the rules template packages follow
-  hold: ids start with `<package>/`, its `versions` can't pin what the catalog pins, and the engine refuses it when its
-  range doesn't include the installed catalog.
-- **Installing.** `add` installs it into the user cache like a template package, merges it into the catalog, checks it,
-  and plans. The plan says "The add-on comes from @acme/turrets@1.0.0 on npm, not from acme. Applying it runs code from
-  its author.", and in a terminal `add` asks before applying.
-- **Later commands.** The lock records it in `packs` with its version and integrity, so `sync`, `check`, `config`,
-  `explain` and `schema` load that copy and refuse one that doesn't match. `upgrade` moves it to its newest version
-  whose `extends` range includes the installed catalog.
-- **Checks.** Run `catalog check` in the package's folder, after building it, to run the catalog's checks on its add-ons
-  before you publish.
+- It only adds add-ons. It can't add targets, points, questions or templates, and the rules for template packages hold:
+  ids start with `<package>/`, its `versions` can't pin what the catalog pins, and the engine refuses it when its
+  `extends.versions` range doesn't include the installed catalog.
+- `add` installs it into the user cache like a template package, merges it into the catalog, checks it, and plans. The
+  plan says "The add-on comes from @acme/turrets@1.0.0 on npm, not from acme. Applying it runs code from its author.",
+  and in a terminal `add` asks before applying.
+- The lock records its version and integrity, so `sync`, `check`, `config`, `explain` and `schema` load that copy and
+  refuse one that doesn't match. `upgrade` moves it to its newest version whose `extends.versions` range includes the
+  installed catalog.
+- Run `catalog check` in the package's folder, after building it, to run the catalog's checks on its add-ons before you
+  publish.
 
 ## Catalog CI
 

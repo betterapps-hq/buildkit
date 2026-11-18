@@ -1,9 +1,9 @@
-> Inherited preference catalog from Agency. Entries describe preferred choices, not dependencies installed in Buildkit.
-> Check each workspace manifest before use.
-
-# Preferred Tech Stack
+# Preferred tech stack
 
 The tools we reach for **first**. Prefer them before introducing an alternative for the same job.
+
+> This catalog is inherited from Agency. Entries describe preferred choices, not dependencies installed in Buildkit, so
+> check each workspace manifest before use.
 
 > **Deviating from this list requires a discussion with a human.** If a task seems to need a library that isn't here (or
 > a different one than what's listed), raise it — in the issue or PR — and get agreement before adding it. Don't
@@ -16,13 +16,15 @@ The tools we reach for **first**. Prefer them before introducing an alternative 
   and a cached task runner.
 - **knip** — unused files / deps / exports.
 - **Dependabot** — dependency update PRs.
-- **beachball** — versioning + changelogs (`pnpm change` to add change files; release automation deferred).
+- **beachball** — versioning, changelogs and npm publishing. Run `pnpm change` to add a change file; CI publishes from
+  main (see [Releases](releases.md)).
 
 ## Library authoring
 
 For building publishable TypeScript libraries.
 
-- **tsdown** — Rolldown-powered library bundler; fits this repo's oxc/rolldown toolchain and a good default.
+- **tsdown** — Rolldown-powered library bundler, on the same oxc and Rolldown toolchain as Vite+. Buildkit's own
+  packages build with `tsc`.
 
 (Versioning + publishing is **beachball** — see [Developer experience](#developer-experience).)
 
@@ -35,7 +37,7 @@ For building command-line tools.
 - **picocolors** — terminal colors (tiny, fast).
 - **ink** — React for the terminal, for rich interactive CLIs.
 - **c12** — Configuration file management.
-- **package-manager-detector** — package-manager discovery and command resolution for dev-domains.
+- **package-manager-detector** — package-manager discovery and command resolution (used by dev-domains and shadcn-sync).
 
 ## Scaffolding
 
@@ -52,7 +54,7 @@ Used by `@buildkitgg/scaffolder` to edit project files without losing your forma
 - **Vitest** — test runner; **happy-dom** — DOM environment; **@vitest/coverage-v8** — coverage.
 - **@testing-library/react**, **user-event**, **jest-dom** — component testing.
 - **@playwright/test** — browser engine (also drives Storybook browser tests).
-- **msw** — API mocking (see the `ApiMock` helper in tests).
+- **msw** — API mocking, through `createApiMock` from `@buildkitgg/api-mocker` in tests and Storybook.
 - **Storybook** + **@storybook/react-vite** — component workshop.
 - **@storybook/addon-vitest** — run stories as tests; **@storybook/addon-a11y** — accessibility checks.
 - **@chromatic-com/storybook** + **chromatic** — visual regression + Storybook publishing.
@@ -70,8 +72,8 @@ Used by `@buildkitgg/scaffolder` to edit project files without losing your forma
 - **@mantine/hooks** — React hooks catalog.
 - **react-error-boundary** — error boundaries; **nuqs** — type-safe URL state.
 - **@tanstack/react-router** — type-safe routing. Preferred setup: **@tanstack/router-plugin** (Vite, file-based
-  routes) + **router-devtools**. _(This repo currently uses code-based routes; move to the plugin when routes grow.)_
-- **react-hook-form** + **@hookform/resolvers** — forms with Zod-backed validation.
+  routes) + **router-devtools**.
+- **@tanstack/react-form** — React forms. Pass Zod schemas directly to form or field validators.
 - **@tanstack/react-hotkeys** — keyboard shortcuts (or `useHotkeys` from `@mantine/hooks`).
 
 ## UI & components
@@ -84,7 +86,8 @@ Used by `@buildkitgg/scaffolder` to edit project files without losing your forma
 - **@fluentui/react-charting** or **recharts** — charts / data visualization.
 - **shadcn/ui** — components for apps and product surfaces that select the shadcn architecture, installed with
   **@buildkitgg/shadcn-sync** (`pnpm dlx @buildkitgg/shadcn-sync`), which builds them into an app-local
-  `@buildkitgg/shadcn` package. Use its CSS-variable token model consistently, with Tailwind CSS only in Tailwind mode.
+  `@buildkitgg/shadcn` package. Use its CSS-variable token model consistently, with Tailwind CSS only in shadcn-sync's
+  Tailwind mode (`--css tailwind`).
 
 Select Fluent UI or shadcn/ui at the app or product-surface boundary. Neither is a monorepo-wide requirement, and an
 existing surface should keep its established system unless its architecture is deliberately changed.

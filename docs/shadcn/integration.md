@@ -29,8 +29,9 @@ Put state, event handlers, function props and compositions such as a `render` or
 
 ## Providers
 
-Some components need a provider, as in shadcn. Tooltips need `TooltipProvider`, and toasts need `Toaster` mounted once.
-See each component's page in the [shadcn docs](https://ui.shadcn.com/docs/components).
+Some components need a provider near the root of the app, as in shadcn: `TooltipProvider` for tooltips, and `Toaster`
+for toasts, or `SonnerToaster` for Sonner's. See each component's page in the
+[shadcn docs](https://ui.shadcn.com/docs/components).
 
 ## Troubleshooting
 

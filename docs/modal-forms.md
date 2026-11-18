@@ -1,7 +1,8 @@
 # Typed modal forms
 
-The same definition API works with the React, shadcn and Fluent managers. The examples below assume the application's
-`modals` manager is imported and its renderer is mounted.
+`createModal` defines a reusable modal whose state type comes from its defaults and whose result is typed when you await
+it. The same definition API works with the React, shadcn, and Fluent managers. The examples below assume the
+application's `modals` manager is imported and its renderer is mounted.
 
 ## Infer state from defaults
 
@@ -37,10 +38,10 @@ handle.update({ title: "Review count" })
 const result = await handle // { count: number } | null
 ```
 
-There is no duplicated state interface. `open()` uses all defaults, partial overrides remain typed, and each opening
+You don't declare a separate state interface. `open()` uses all defaults, partial overrides stay typed, and each opening
 starts fresh. Use explicit generics when defaults cannot express a union, nullable field or empty array's element type.
 Use `update()` on the handle or component controls for both presentation and data. Put custom state patches under
-`data`, alongside top-level title, description, dismissibility or surface styling. See
+`data`, alongside top-level title, description, dismissibility, or surface styling. See
 [updating open modals](modal-updates.md).
 
 ## Separate form values from the returned result
@@ -109,7 +110,7 @@ const result = await editProfile.open() // SavedProfile | null
 ```
 
 `saveProfile` is the application's async function returning `Promise<SavedProfile>`. Submission handles pending state,
-duplicate attempts, failure and successful completion. The result is exactly the value returned by that function; the
+duplicate attempts, failure, and successful completion. The result is exactly the value returned by that function; the
 manager does not collect or serialize fields. Validation and form-library choice remain with the component. A consumer
 using React Hook Form or TanStack Form can call `controls.submit(() => saveProfile(validatedValues))` from its submit
 callback instead.

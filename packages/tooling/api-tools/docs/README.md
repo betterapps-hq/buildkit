@@ -1,11 +1,12 @@
 # API tooling
 
-This private workspace runs Microsoft API Extractor against compiled declarations. Configuration is shared and public
-entry points are discovered from workspace manifests. [API report workflow](../../../../api-reports/README.md).
+This private workspace runs Microsoft API Extractor on the compiled declarations of the packages under `packages/`, with
+one shared configuration. It finds each package's public entry points in its `package.json` exports, and stops if a
+package has no explicit exports. See the [API report workflow](../../../../api-reports/README.md).
 
-The extractor uses its own supported TypeScript compiler to read declarations. Package compilation continues to use the
-repository's native TypeScript version. It does not bundle or rewrite shipped declarations.
+The extractor reads declarations with its own supported TypeScript compiler, while packages keep compiling with the
+repository's TypeScript. It doesn't bundle or rewrite the declarations packages ship.
 
-Redux Toolkit ships `dist/uncheckedindexed.ts` behind a declaration import. The extractor analyzes it normally; only
-that exact dependency file's wrong-input-extension notice is informational. The same warning for our files still fails
-checks. Missing prose remains visible as `(undocumented)` in API reports without blocking initial adoption.
+One warning is allowed. Redux Toolkit ships `dist/uncheckedindexed.ts` behind a declaration import, and the extractor's
+wrong-input-extension notice for that exact file is informational. The same warning for any of our files fails the
+check. Exports without doc comments show as `(undocumented)` in the reports and don't fail it.

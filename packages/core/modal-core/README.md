@@ -1,12 +1,13 @@
 # @buildkitgg/modal-core
 
-Framework-independent modal stacks, typed results, updates, and cleanup.
+A modal stack with typed, awaitable results. Open a modal from any code, `await` what the user chose, and draw the stack
+with any framework or component library: modal-core doesn't import React, touch the DOM, or set animation timers.
 
 ```sh
 pnpm add @buildkitgg/modal-core
 ```
 
-```tsx
+```ts
 import { createModalStore } from "@buildkitgg/modal-core"
 
 const modals = createModalStore<string>()
@@ -16,32 +17,49 @@ const handle = modals.open({
 })
 handle.update(() => "Delete this draft permanently?")
 handle.close(true)
-const confirmed = await handle
+const confirmed = await handle // true
 // A renderer calls entry.finishExit() after its exit animation.
 ```
 
-Core does not import React, access the DOM, or schedule animation timers. Closing a parent dismisses its descendants.
-IDs remain reserved until exit completes. Results are set once. Snapshots are immutable; content is opaque. Server
-snapshots are empty.
+The type argument is the content type, which the store never inspects. `defaultResult` is the result whenever the modal
+closes without `close(result)` or a successful `submit`. `@buildkitgg/react-modals` builds typed React modal definitions
+on this store.
 
 ## API
 
-- `createModalStore<TContent>()`: isolated observable stack.
-- open(): awaitable handle with close, dismiss, submit, update and isActive.
-- handle.update(current => replacement): replaces opaque content and notifies subscribers when the value changes. Return
-  a new object for object content; this is not a partial merge. Closed handles ignore updates.
-- beforeDismiss(): optional cancellation guard; explicit close and teardown bypass it.
-- submit(action): prevents duplicate work, exposes pending/errors and closes with the successful result.
-- closeAll(): dismiss the stack, preserving entries for exit.
-- clear / dispose: settle pending results and remove entries.
+| Member                                 | Behavior                                                                                                                                     |
+| -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `createModalStore<TContent>()`         | Creates an isolated, observable stack.                                                                                                       |
+| `open(options)`                        | Opens a modal and returns a handle you can `await`. A modal opened while another is open becomes its child.                                  |
+| `handle.close(result)`                 | Completes with `result`, skipping `beforeDismiss`.                                                                                           |
+| `handle.dismiss()`                     | Runs `beforeDismiss`, if set, then closes with `defaultResult`. Resolves to whether the modal closed.                                        |
+| `handle.submit(action)`                | Runs one action at a time and exposes `isPending` and `error` on the entry. Success closes with the action's result; failure leaves it open. |
+| `handle.update(current => next)`       | Replaces the content and notifies subscribers if the value changed. It isn't a partial merge, so return a new object for object content.     |
+| `handle.isActive()`                    | Returns whether the modal is still open.                                                                                                     |
+| `closeAll()`                           | Closes every open modal with its default result and keeps the entries for their exit animations.                                             |
+| `clear()`, `dispose()`                 | Settle every pending result and remove all entries. `dispose()` also drops subscribers, and later `open` and `subscribe` calls throw.        |
+| `getSnapshot()`, `subscribe(listener)` | Read the stack and listen for changes.                                                                                                       |
+| `getServerSnapshot()`                  | Returns an empty stack.                                                                                                                      |
 
-Keep the returned handle to update that instance; there is no update-by-ID method.
+## Lifecycle
 
-See [update examples](https://github.com/betterapps-hq/buildkit/blob/main/docs/modal-updates.md),
-[lifecycle and architecture](https://github.com/betterapps-hq/buildkit/blob/main/docs/modals.md) and
-[package guide](docs/README.md).
+An entry moves from `open` to `closing`, and the renderer calls `entry.finishExit()` to remove it when its exit
+animation ends. A blank or duplicate ID throws, and an ID stays reserved until its exit finishes. Each result settles
+once. Closing a modal also closes its descendants with their default results. Closed handles ignore updates. Keep the
+handle to update a modal; there's no update-by-ID method.
 
-Pass `onClose({ id, result, reason })` to `open()` to observe settlement once after snapshot notification. Reasons
-distinguish completion, dismissal, parent closure, close-all, clear and disposal. Observers cannot veto closure.
-Observer failures are aggregated after all observers run; results stay settled. See
-[close event semantics](https://github.com/betterapps-hq/buildkit/blob/main/docs/modal-updates.md#close-telemetry).
+`beforeDismiss` returns a boolean or a promise of one. If the content changes while the guard runs, its approval doesn't
+count and the modal stays open. `close`, `closeAll`, `clear`, `dispose`, and closing a parent skip the guard.
+
+Pass `onClose({ id, result, reason })` to `open` to observe settlement. It runs once, after subscribers see the new
+snapshot, and can't veto the closure. `reason` is `completed`, `dismissed`, `parent-closed`, `close-all`, `cleared`, or
+`disposed`. If an observer throws, the others still run, results stay settled, and the store then throws an
+`AggregateError`.
+
+Snapshots are frozen and the server snapshot is always empty. Create one store per application, or one per request on
+the server.
+
+See [modal slots and updates](https://github.com/betterapps-hq/buildkit/blob/main/docs/modal-updates.md), including
+[close reasons](https://github.com/betterapps-hq/buildkit/blob/main/docs/modal-updates.md#close-telemetry),
+[modal packages](https://github.com/betterapps-hq/buildkit/blob/main/docs/modals.md) for lifecycle and architecture, and
+the [package guide](docs/README.md).

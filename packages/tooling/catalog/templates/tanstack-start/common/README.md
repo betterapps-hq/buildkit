@@ -15,6 +15,7 @@ pnpm dev
 
 ```sh
 pnpm lint
+pnpm format:check
 pnpm build
 pnpm typecheck
 ```
@@ -28,9 +29,20 @@ Commit both.
 
 - `pnpm buildkit add <add-on>` adds an add-on, such as `pnpm buildkit add i18n`.
 - `pnpm buildkit config set <add-on>.<option>=<value>` changes an option.
-- `pnpm buildkit upgrade` moves the app to the Buildkit catalog you installed. It merges template fixes into the files
-  it started, and asks when your edits and its changes overlap.
-- `pnpm buildkit check` fails when generated files are out of date.
+- `pnpm buildkit check` fails when generated files or the lock are out of date.
 
-Files under `src/generated/buildkit/` are generated: your starter files import them, so adding an add-on never edits
-your code.
+Files under `src/generated/buildkit/` are generated. Your starter files import them, so an add-on wires itself in
+through them and never edits your starter files.
+
+## Upgrade
+
+```sh
+pnpm buildkit catalog fetch <version> # the catalog version in .buildkit/lock.json
+pnpm add -D @buildkitgg/cli@latest
+pnpm buildkit upgrade
+```
+
+`upgrade` moves the app to the Buildkit catalog you installed and merges template fixes into the starter files, keeping
+your edits. Where your edits and its changes overlap, it stops and lists each conflict. Answer one with
+`--resolve <id>=keep-current` or `--resolve <id>=take-incoming`, or pass `--conflict markers` to write conflict markers
+into the file and settle it by hand.

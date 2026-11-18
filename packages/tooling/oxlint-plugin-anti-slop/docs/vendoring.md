@@ -29,9 +29,9 @@ package doesn't have.
 `src/index.ts` re-exports the plugin. `src/recommended.ts` registers it by its absolute path and turns on every rule the
 plugin's entry point exports, so a rule upstream adds is on after the next sync. It also turns on
 `oxc/no-accumulating-spread`, which upstream's setup enables alongside its own rules. `src/recommended.test.ts` checks
-that every rule is on, and lints `test/fixture/slop.ts` through the source rule set and through the compiled one, from
-both an `oxlint.config.ts` and a Vite+ `lint` block. It also lints the fixture with the plugin registered by package
-name.
+that every rule is on, and lints `test/fixture/slop.ts` three ways: through the source rule set from an
+`oxlint.config.ts`, and through the compiled one from an `oxlint.config.ts` and from a Vite+ `lint` block. It also lints
+the fixture with the plugin registered by package name.
 
 ## Taking a new upstream revision
 

@@ -1,4 +1,4 @@
 # react-alerts documentation
 
 - [Usage and lifecycle](../README.md)
-- [Architecture, migration, and native toast APIs](https://github.com/betterapps-hq/buildkit/blob/main/docs/alerts.md)
+- [Architecture and native toast guidance](https://github.com/betterapps-hq/buildkit/blob/main/docs/alerts.md)

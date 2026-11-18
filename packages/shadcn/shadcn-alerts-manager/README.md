@@ -1,6 +1,7 @@
 # @buildkitgg/shadcn-alerts-manager
 
-Persistent inline alerts with external commands and shared lifecycle behavior.
+Inline alerts that stay until someone dismisses them, rendered with your app's shadcn components. Any code can raise,
+update or dismiss an alert through the manager, without passing state down the tree.
 
 ## Setup
 
@@ -18,39 +19,70 @@ classes.
 
 ## Usage
 
+Create a manager, mount a region where the alerts should appear, and raise alerts from anywhere:
+
 ```tsx
-import { createAlertManager, AlertRegion } from "@buildkitgg/shadcn-alerts-manager"
+import { AlertRegion, createAlertManager } from "@buildkitgg/shadcn-alerts-manager"
 
 export const alerts = createAlertManager()
-<AlertRegion manager={alerts} />
 
-alerts.warning({ id: "billing", title: "Update your payment method" })
+export function BillingPage() {
+  return <AlertRegion manager={alerts} />
+}
+
+alerts.warning({ id: "billing", title: "Update your payment method", body: "Your card expires this month." })
 ```
 
-## Behavior
+Each alert takes a `title`, a `body`, an `action` (`{ label, onClick }`), `dismissible` and `onDismiss`. `add` takes an
+`intent` of `"info"`, `"success"`, `"warning"` or `"error"`, and `info`, `success`, `warning` and `error` set it for
+you.
 
-- add / info / success / warning / error: return a region-bound handle.
-- handle.update / handle.dismiss / handle.isActive: control that exact alert instance.
-- getSnapshot / subscribe: stable snapshots and region-scoped notifications.
-- dismissAll(region): remove alerts and invoke callbacks; flush(): clear all regions silently.
-- dispose(): clear silently, notify subscribers, and reject future additions.
+## Managing alerts
 
-Alerts are persistent. Use the native toast manager for timed feedback. Reusing an ID replaces in place without invoking
-dismissal; old handles become inactive. Mount once per region. For other registry components, pass
-`adapter: alertComponents({ Alert, AlertTitle, AlertDescription, AlertAction, Button })`; no Base UI or Radix switch is
-needed. Without `AlertAction`, the dismiss control sits beside the alert's action.
+Every call that raises an alert returns a handle for that one alert: `handle.update(patch)`, `handle.dismiss()` and
+`handle.isActive`.
 
-IDs are scoped to a region (default: `default`). All alerts are rendered; there is no hidden backlog or automatic
-timeout. `dismissible: false` hides the dismiss control but does not prevent programmatic dismissal. Actions do not
-automatically dismiss an alert. `onDismiss` runs once after removal, including `dismissAll`; it does not run for
-replacement, `flush`, or `dispose`. Callback errors are collected and re-thrown as an AggregateError after all
-notifications and dismissal callbacks have run.
+| Method                     | What it does                                                                      |
+| -------------------------- | --------------------------------------------------------------------------------- |
+| `dismissAll(region)`       | Removes the region's alerts and runs their `onDismiss` callbacks                  |
+| `flush()`                  | Clears every region without running callbacks                                     |
+| `dispose()`                | Clears everything without callbacks, notifies subscribers, and refuses new alerts |
+| `getSnapshot`, `subscribe` | Read a region's alerts and follow changes, for your own rendering                 |
 
-Snapshots and entry containers are frozen. Generic payloads and React elements are not deep-frozen. Updates produce new
-entries, preserving previous snapshots. Treat payloads as immutable. Server snapshots are empty to avoid leaking request
-data; create stores per request, not as server singletons.
+Alerts belong to a region, `"default"` unless you pass another as the last argument and to `AlertRegion`'s `region`.
+Mount one `AlertRegion` per region. Every alert in a region renders; there's no hidden backlog and no timeout. For timed
+feedback, use a toast instead.
 
-See [alert architecture and native toast guidance](https://github.com/betterapps-hq/buildkit/blob/main/docs/alerts.md).
+Raising an alert with an ID that's already showing replaces it in place, without running its `onDismiss`, and the old
+handle goes inactive. `onDismiss` runs once, after the alert is removed by the user, a handle or `dismissAll`. It
+doesn't run for a replacement, `flush` or `dispose`. If callbacks throw, the manager runs the rest, then throws an
+`AggregateError` with every error.
+
+`dismissible: false` hides the dismiss control, but code can still dismiss the alert. Clicking an action doesn't dismiss
+it.
+
+Snapshots are frozen, and an update makes a new entry, so earlier snapshots don't change. Payloads and React elements
+aren't deep-frozen, so treat them as immutable. On the server, snapshots are empty so one request's alerts can't leak
+into another; create a manager per request rather than sharing one.
+
+See [alert architecture and toast guidance](https://github.com/betterapps-hq/buildkit/blob/main/docs/alerts.md).
+
+## Your own components
+
+To render with components other than the generated ones, pass an adapter:
+
+```tsx
+import { alertComponents, createAlertManager } from "@buildkitgg/shadcn-alerts-manager"
+import { Alert, AlertAction, AlertDescription, AlertTitle } from "./components/ui/alert"
+import { Button } from "./components/ui/button"
+
+export const alerts = createAlertManager({
+  adapter: alertComponents({ Alert, AlertTitle, AlertDescription, AlertAction, Button })
+})
+```
+
+It works with any base, so there's no Base UI or Radix switch. `AlertAction` is optional; without it, the dismiss
+control sits beside the alert's action.
 
 ## Labels and icons
 

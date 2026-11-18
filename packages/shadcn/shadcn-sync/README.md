@@ -24,7 +24,7 @@ To set it up by hand instead, add the package, your icon library, and the `posti
     "lucide-react": "^1.62.0"
   },
   "devDependencies": {
-    "@buildkitgg/shadcn-sync": "^0.1.0"
+    "@buildkitgg/shadcn-sync": "^0.2.0"
   },
   "scripts": {
     "postinstall": "shadcn-sync sync --base base --icons lucide --style nova --theme neutral"
@@ -69,17 +69,19 @@ highlighter's token colors. An app that already runs Tailwind can build the comp
 
 ## Commands
 
-| Command  | What it does                                                       | Network                                                        |
-| -------- | ------------------------------------------------------------------ | -------------------------------------------------------------- |
-| (none)   | Asks for each setting, installs what they need, builds             | For a new base, style or theme, and to find icon adapters      |
-| `sync`   | Builds the package from the snapshot. Runs from the `postinstall`  | Only with no snapshot, or a new `--base`, `--style`, `--theme` |
-| `update` | Records a fresh snapshot from the live registry, then rebuilds     | Yes                                                            |
-| `set`    | Changes settings, rebuilds, and updates the `postinstall` to match | Only for a new base, style or theme                            |
+| Command  | What it does                                                       | Network                                                                |
+| -------- | ------------------------------------------------------------------ | ---------------------------------------------------------------------- |
+| (none)   | Asks for each setting, installs the packages they need, and builds | For a new base, style or theme, to find icon adapters, and to install  |
+| `sync`   | Builds the package from the snapshot. Runs from the `postinstall`  | Only with no snapshot, or a new `--base`, `--style` or `--theme`       |
+| `update` | Records a fresh snapshot from the live registry, then rebuilds     | Yes                                                                    |
+| `set`    | Changes settings, rebuilds, and updates the `postinstall` to match | For a new base, style or theme, and to find icon adapters when it asks |
 
-Run `shadcn-sync` with no command again in a set-up app to rebuild, change settings, or get the latest components. Run
-`update` and `set` by hand, for example `pnpm exec shadcn-sync set --icons phosphor`. They read the other settings from
-the script that runs sync, which is the `postinstall` unless another script runs it. Run `set` with no options to choose
-each setting in turn.
+Run `shadcn-sync` with no command again in a set-up app to rebuild, change settings, or get the latest components. At a
+terminal, `sync` in an app that isn't set up yet runs the installer.
+
+Run `update` and `set` by hand, for example `pnpm exec shadcn-sync set --icons phosphor`. They read the other settings
+from the script that runs sync, which is the `postinstall` unless another script runs it. At a terminal, `set` asks for
+each setting you didn't pass, except direction, and confirms before it applies them.
 
 The CLI asks questions only at a terminal, outside CI, and never during an install. A setting passed as a flag skips its
 question, and `--yes` skips them all and installs whatever is missing.
@@ -101,8 +103,8 @@ question, and `--yes` skips them all and installs whatever is missing.
 The bases, styles, themes and icon libraries come from the shadcn CLI this package pins, so they follow shadcn's own
 lists.
 
-The app installs its icon library, `radix-ui` for `--base radix`, and `react-aria-components` for `--base aria`, along
-with any library only that base uses, such as `vaul` for Radix. The installer offers to install each of them. The
+The app installs its icon library and the base's primitives (`@base-ui/react`, `radix-ui` or `react-aria-components`),
+along with any library only that base uses, such as `vaul` for Radix. The installer offers to install each of them. The
 components' other runtime libraries come with this package, and sync links them into the generated package when your app
 can't resolve them (see [Package managers](#package-managers)).
 
@@ -178,7 +180,8 @@ your own `aria-label` or children where a component takes them.
 
 The components merge `className` overrides with `cn`, which uses shadcn's compiled Tailwind merger by default. If your
 Tailwind theme adds classes that merger doesn't know, such as a `text-2xs` font size, pass your own merger to `setCn`
-before the first render. Every component then merges with it:
+before the first render. Every component then merges with it. Add `cn` to your app's dependencies to import its
+`createCn`:
 
 ```ts
 import { setCn } from "@buildkitgg/shadcn"
@@ -195,15 +198,14 @@ Sync works with npm, pnpm, Yarn and Bun, including frozen-lockfile installs on a
 `pnpm install --config.optimistic-repeat-install=false` once after the first install. pnpm skips an install when
 `package.json` hasn't changed since the last one, and sync adds the generated package during the first.
 
-- **pnpm's isolated layout** needs no hoisting settings. The components import packages that only sync depends on, so
-  sync links any the app can't resolve into the generated package. A package your app has, such as Base UI, is left to
-  your app, so both use one copy.
-- **Yarn** needs version 4.18 or later and `nodeLinker: node-modules`, because the generated package lives in
-  `node_modules`. Under Plug'n'Play, sync stops and says to switch.
-- **Bun** won't install a local folder that doesn't exist yet, so sync adds no `package.json` entry under Bun. Its own
-  `node_modules/@buildkitgg/shadcn` link, which it checks on every run, is the only one.
-- **Types.** Sync type-checks the components with its own copy of React's types, so your app doesn't need
-  `@types/react`.
+| Package manager | What to know                                                                                                                                                                                                                     |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| pnpm            | The isolated layout needs no hoisting settings. Sync links any package the components import that the app can't resolve into the generated package. A package your app has, such as Base UI, is left to it, so both use one copy |
+| Yarn            | Needs `nodeLinker: node-modules`, because the generated package lives in `node_modules`. Under Plug'n'Play, sync stops and says to switch. Tested with Yarn 4.18                                                                 |
+| Bun             | Bun won't install a local folder that doesn't exist yet, so sync adds no `package.json` entry. Its own `node_modules/@buildkitgg/shadcn` link, which it checks on every run, is the only one                                     |
+
+Sync type-checks the components with its own copy of React's types, so its build doesn't depend on your app's
+`@types/react`. Your app still needs `@types/react` to type-check its own code against the components.
 
 In a monorepo, each app that runs sync gets its own generated package. A source-only workspace package that an app
 bundles, and that imports `@buildkitgg/shadcn`, lists that app's generated package as its own dependency:
@@ -218,7 +220,7 @@ bundles, and that imports `@buildkitgg/shadcn`, lists that app's generated packa
 
 ## Failures
 
-Every failure exits nonzero and names its stage. A failure before the new output is in place ends with "Previous output
+Every failure exits nonzero. A failure during the build leaves the last good package in place and says "Previous output
 kept." When `CI` is set, sync never fetches and never edits `package.json`: a missing or mismatched snapshot, or a
 missing dependency entry, fails with what to run locally and commit.
 

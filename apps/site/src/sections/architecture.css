@@ -1203,7 +1203,7 @@
   background: radial-gradient(70% 90% at 50% 100%, #3370ff1f, #3370ff00), #060a16;
 }
 
-/* Each confirm as its renderer draws it in dark mode. The shadcn kit's dialog stacks title, description and footer
+/* Each confirm as its renderer draws it in dark mode. The shadcn dialog stacks title, description and footer
    24px apart with no close button, and its footer pairs an outline cancel with the default button. */
 .arch-story-dialog {
   display: grid;

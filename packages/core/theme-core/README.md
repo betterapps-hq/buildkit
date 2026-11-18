@@ -1,24 +1,35 @@
 # @buildkitgg/theme-core
 
-Framework-independent theme state with stable, immutable snapshots. No React dependency, DOM access, or shared global
-store at the root entry.
+Light, dark, and system theme selection in a plain store, with no React, no DOM access, and no shared global instance.
+Bind it to any framework or component library, and add the optional browser entry point to follow the device setting and
+save the user's choice.
 
-```ts
-import { createThemeStore, type Theme } from "@buildkitgg/theme-core"
-
-const theme = createThemeStore() // defaults to system, with light as the server fallback
-const preference: Theme = "dark"
-theme.setTheme(preference)
-const unsubscribe = theme.subscribe(() => savePreview(theme.getSnapshot()))
+```sh
+pnpm add @buildkitgg/theme-core
 ```
 
-`Theme` is `"system" | "light" | "dark"`; `ResolvedTheme` is `"light" | "dark"`. `getSnapshot()` returns a readonly
-`{ theme, resolvedTheme }` object whose identity changes only when its values change. Every exported API ships ESM and
-TypeScript declarations. `ThemeStore`, `ThemeOptions`, and `ThemeSnapshot` are exported types.
+```ts
+import { createThemeStore } from "@buildkitgg/theme-core"
 
-Set `defaultTheme: "dark"` for apps that prefer dark mode. `systemTheme` supplies the initial system/server fallback.
-`setSystemTheme` updates the system input without overriding an explicit user preference. `getServerSnapshot()` always
-returns the construction-time snapshot; create a separate store per server request when using user-specific defaults.
+const theme = createThemeStore() // "system", resolving to "light" until the device setting is known
+const unsubscribe = theme.subscribe(() => {
+  console.log(theme.getSnapshot()) // { theme: "dark", resolvedTheme: "dark" }
+})
+theme.setTheme("dark")
+unsubscribe()
+```
+
+`Theme` is `"system" | "light" | "dark"`, and `ResolvedTheme` is `"light" | "dark"`. `getSnapshot()` returns a frozen
+`{ theme, resolvedTheme }` object whose identity changes only when a value changes. `isTheme(value)` checks whether an
+unknown value is a `Theme`. The `ThemeStore`, `ThemeOptions`, and `ThemeSnapshot` types are exported too.
+
+`defaultTheme` is the app's default, `"system"` unless you pass another, such as `"dark"` for a dark-first app.
+`systemTheme` is what `"system"` resolves to on the server and before the device setting is known; it defaults to
+`"light"`. `setSystemTheme` updates that input without overriding the user's explicit choice. `getServerSnapshot()`
+always returns the snapshot from construction, so create a store per server request when defaults depend on the user.
+
+`theme.reset()` clears the user's selection and returns to `defaultTheme`. That differs from `setTheme("system")`, which
+records an explicit choice. Persistence is internal; the store exposes only the theme API.
 
 ## Optional browser integration
 
@@ -29,15 +40,14 @@ const disconnect = connectBrowserTheme(theme, { storageKey: "my-app-theme" })
 // Call disconnect() when the app unmounts.
 ```
 
-Call once per store at browser startup. This follows device changes and synchronizes saved preferences across tabs. Omit
-`storageKey` for memory-only preferences. Set `storage: "sessionStorage"` to keep choices within a browser tab instead.
-A valid stored choice wins over the app default. Malformed JSON and basic type mismatches are ignored; removal or clear
-restores the app default. Unknown theme strings resolve to the app default. Storage failures leave the store usable in
-memory. No DOM classes or UI styling are applied by this adapter. It is a no-op without a browser.
+Call it once per store when the app starts in the browser. It follows the device's `prefers-color-scheme` setting. With
+a `storageKey`, it saves the user's choice to local storage and keeps it in sync across tabs; omit `storageKey` to keep
+the choice in memory, or add `storage: "sessionStorage"` to keep it within a browser tab. The store must come from
+`createThemeStore` or a Buildkit theme adapter; any other object throws. Without a browser, it does nothing.
 
-`theme.reset()` removes the user's selection and restores the configured `defaultTheme` (system unless overridden). When
-connected to browser storage, reset removes the saved override and synchronizes to other tabs. Choosing
-`setTheme("system")` is an explicit selection; reset instead returns control to the application's default. Persistence
-is internal and is not exposed through the theme store.
+A valid saved choice wins over the app default. Malformed JSON and values of the wrong type are ignored, and an unknown
+theme string resolves to the app default. When the saved item is removed or storage is cleared, the store returns to the
+app default. `reset()` removes the saved choice, and with local storage, other tabs follow. Storage failures leave the
+store working in memory. The adapter applies no DOM classes or styling.
 
-[Maintenance](docs/README.md)
+See the [maintenance guide](docs/README.md).

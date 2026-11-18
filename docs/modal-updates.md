@@ -1,8 +1,8 @@
 # Modal slots and updates
 
-React, shadcn and Fluent managers expose the same `title`, `body` and `footer` slots. Each accepts a `ReactNode` or
+React, shadcn, and Fluent managers expose the same `title`, `body`, and `footer` slots. Each accepts a `ReactNode` or
 `{ component: Component }`. Use nodes for supplied content and component slots for live data, controls, pending state
-and errors. The manager owns lifecycle; applications own buttons, forms, validation and workflow transitions.
+and errors. The manager owns lifecycle; applications own buttons, forms, validation, and workflow transitions.
 
 ```tsx
 const modal = modals.confirm({
@@ -78,8 +78,8 @@ const modal = modals.confirm({ title: "Publish?", onClose: trackClosed })
 modal.update({ onClose: ({ id, result, reason }) => trackWithContext({ id, result, reason }) })
 ```
 
-The latest `onClose` runs once at settlement, after subscribers receive the committed snapshot, before exit animation
-necessarily finishes. It observes closure and cannot veto it. Use `beforeDismiss` on a custom definition for a guard.
+The latest `onClose` runs once at settlement, after subscribers receive the committed snapshot, without waiting for the
+exit animation. It observes closure and can't veto it. Use `beforeDismiss` on a custom definition for a guard.
 `onClose: null` removes the observer. The awaitable handle returns only the typed result.
 
 | Reason          | Trigger                                                                        |
@@ -104,5 +104,6 @@ slots with current activity. See [typed forms](modal-forms.md) for a complete de
 
 ## Framework-independent core
 
-Core content stays opaque; its `update(updater)` returns replacement content. Returning the same reference avoids a
-notification. Core `open({ onClose, ... })` supports the same close event and reasons, without a React dependency.
+Core content stays opaque: its `update(updater)` takes a function that returns replacement content. Returning the same
+reference avoids a notification. Core `open({ onClose, ... })` supports the same close event and reasons, without a
+React dependency.

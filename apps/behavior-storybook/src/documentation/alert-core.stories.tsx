@@ -43,7 +43,8 @@ export const Overview: StoryObj<typeof meta> = {
       </p>
       <p>
         Toast engines already manage queues, timing, interactions, and announcements. A second queue would duplicate
-        their state. There is no toast-core or toast-manager package. The component kit already exports SonnerToaster.
+        their state. There is no toast-core or toast-manager package. The generated @buildkitgg/shadcn package already
+        exports SonnerToaster.
       </p>
       <h2>Upstream references</h2>
       <ul>

@@ -1,8 +1,8 @@
 # @buildkitgg/api-mocker
 
-API Mocker streamlines MSW setup for unit tests and Storybook. Describe what an endpoint returns and let the real client
-make the request. A test can check how the client handles an empty inbox, and a story can show how that same inbox
-looks, using one shared mock.
+API Mocker registers mock HTTP endpoints on an MSW server or worker, so one mock serves your unit tests and your
+Storybook stories. Describe what an endpoint returns and let the real client make the request. A test can check how the
+client handles an empty inbox, and a story can show how that same inbox looks, using one shared mock.
 
 MSW owns interception and the server or worker lifecycle. `createApiMock(target)` registers handlers on that target and
 returns a handle for each endpoint you mock. Add a spy when a request itself matters, such as saving a message once or
@@ -10,6 +10,7 @@ retrying a failed read.
 
 ## Contents
 
+- [Installation](#installation)
 - [Share an endpoint between tests and stories](#share-an-endpoint-between-tests-and-stories)
 - [Mock an endpoint in a unit test](#mock-an-endpoint-in-a-unit-test)
 - [Mock a connected component in Storybook](#mock-a-connected-component-in-storybook)
@@ -20,11 +21,18 @@ retrying a failed read.
 - [Mock a workflow that requires requests in order](#mock-a-workflow-that-requires-requests-in-order)
 - [Clear history and reset handlers](#clear-history-and-reset-handlers)
 
+## Installation
+
+Install the package with MSW 3, its peer dependency:
+
+```sh
+npm install --save-dev @buildkitgg/api-mocker msw
+```
+
 ## Share an endpoint between tests and stories
 
-Supply MSW 3 as a peer dependency. The examples use a message client configured to call
-`https://api.example.test/messages`. Put its mock beside the feature's shared test fixtures so both environments can
-import it.
+The examples use a message client configured to call `https://api.example.test/messages`. Put its mock beside the
+feature's shared test fixtures so both environments can import it.
 
 ```ts
 // message-mocks.ts
@@ -37,9 +45,10 @@ export function mockInbox(api: ApiMockInstance, messages: { id: string; text: st
 }
 ```
 
-Use `get`, `post`, `put`, `patch`, or `delete` with an MSW path. A static response accepts `data`, `status`, and
-`headers`. Data produces a JSON response with status 200 by default. Omitting data or passing `null` produces an empty
-response with status 204 by default. An explicit status overrides either default.
+Use `get`, `post`, `put`, `patch`, or `delete` with an MSW path; parentheses in the path match literally. A static
+response accepts `data`, `status`, and `headers`. Data produces a JSON response with status 200 by default. Omitting
+data or passing `null` produces an empty response with status 204 by default. An explicit status overrides either
+default.
 
 ## Mock an endpoint in a unit test
 
@@ -217,7 +226,7 @@ observer and endpoint history.
 
 | Operation                                                    | Effect                                                                                                                                                                                       |
 | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `endpoint.clear()`                                           | Clears that handle's calls and hit count. Its response sequence continues from its current position.                                                                                         |
+| `endpoint.clear()`                                           | Clears that handle's `requests` and `hits`. Its response sequence continues from its current position.                                                                                       |
 | Register the same method and path again on the same instance | Reuses the handle, clears its history, and installs the new response or sequence.                                                                                                            |
 | `api.reset()`                                                | Clears that instance's endpoint history and calls `target.resetHandlers()`. This removes runtime overrides from every factory sharing the target and restores the target's initial handlers. |
 | `spy.mockClear()`                                            | Clears a caller-owned Vitest or Jest spy. Its history is independent of endpoint resets.                                                                                                     |

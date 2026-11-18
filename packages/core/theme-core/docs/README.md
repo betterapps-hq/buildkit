@@ -1,8 +1,8 @@
 # Maintenance
 
 - [Usage](../README.md)
-- [Architecture and extraction plan](../../../../docs/behavior-packages.md)
+- [Architecture](../../../../docs/behavior-packages.md)
 
-Build with pnpm --filter @buildkitgg/theme-core build. Run focused tests and pnpm verify after coherent changes. Keep
-stable snapshots, disposal, and server isolation covered. Pack compiled exports and declarations only. See
+Build with `pnpm --filter @buildkitgg/theme-core build`. Run the focused tests, then `pnpm verify`. Keep tests covering
+stable snapshots, disposal, and server isolation, and pack only compiled exports and declarations. See the
 [release workflow](../../../../docs/releases.md).

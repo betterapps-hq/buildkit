@@ -1,9 +1,10 @@
-# Choosing components
+# Choosing what sync builds
 
 [shadcn components](README.md)
 
-Sync builds the whole shadcn catalog for one set of choices. The installer asks for each of them, and the `postinstall`
-records them as flags:
+Sync builds the whole shadcn catalog for one set of choices: primitives, style, theme, icons, CSS and text direction.
+The installer asks for all of them except direction, which you set with `--direction` when you need it. The
+`postinstall` records the choices as flags, leaving out `--css` and `--direction` while they're the defaults:
 
 ```json
 {
@@ -19,9 +20,9 @@ own lists. See the [options table](../../packages/shadcn/shadcn-sync/README.md#o
 ## Primitives
 
 `--base` picks the upstream implementation: `base` (Base UI, the default), `radix` or `aria` (React Aria). The app
-installs `radix-ui` for Radix and `react-aria-components` for React Aria. Each base has its own component APIs, such as
-Base UI's `render` prop and Radix's `asChild`, so changing it can mean changing how the app composes components. Sync
-builds whatever components the chosen base has.
+installs the base's primitives: `@base-ui/react`, `radix-ui` or `react-aria-components`. Each base has its own component
+APIs, such as Base UI's `render` prop and Radix's `asChild`, so changing it can mean changing how the app composes
+components. Sync builds whatever components the chosen base has.
 
 ## Style and theme
 
@@ -41,9 +42,15 @@ library itself. See [icon adapters](../../packages/shadcn/shadcn-sync/README.md#
 runs Tailwind v4 can pass `--css tailwind` and import `@buildkitgg/shadcn/tailwind.css` after Tailwind, so each class is
 built once (see [Tailwind mode](../../packages/shadcn/shadcn-sync/README.md#tailwind-mode)).
 
+## Text direction
+
+`--direction rtl` has the shadcn CLI write logical classes that follow the page's `dir`, for apps in right-to-left
+languages. See [text direction and labels](localization.md).
+
 ## Changing a choice
 
-Run `set` with the new value. It rebuilds the package and updates the `postinstall`:
+Run `set` with the new value. It rebuilds the package and updates the `postinstall`. At a terminal it also asks for the
+settings you didn't pass and confirms; add `--yes` to apply the flags as they are:
 
 ```sh
 pnpm exec shadcn-sync set --icons phosphor

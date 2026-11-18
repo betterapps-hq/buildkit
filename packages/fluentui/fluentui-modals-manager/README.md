@@ -1,18 +1,29 @@
 # @buildkitgg/fluentui-modals-manager
 
-Managed Fluent UI dialogs with typed inputs and results.
+Fluent UI dialogs you can open from any code and `await`, with typed inputs and results. Confirm a deletion from an
+event handler, or define a typed form modal once and open it wherever you need it.
 
 ```sh
 pnpm add @buildkitgg/fluentui-modals-manager @fluentui/react-components react react-dom
 ```
 
+React 19.2 or later, React DOM, and Fluent UI v9 are peer dependencies.
+
 ```tsx
 import { createModalManager, ModalRenderer } from "@buildkitgg/fluentui-modals-manager"
+import { FluentProvider, webLightTheme } from "@fluentui/react-components"
 
 export const modals = createModalManager()
-// Mount inside your existing FluentProvider:
-<ModalRenderer manager={modals} />
 
+export function App() {
+  return (
+    <FluentProvider theme={webLightTheme}>
+      <ModalRenderer manager={modals} />
+    </FluentProvider>
+  )
+}
+
+// From an event handler, a service, or any other module:
 const confirmed = await modals.confirm({
   title: "Delete draft?",
   confirmLabel: "Delete",
@@ -20,35 +31,45 @@ const confirmed = await modals.confirm({
 })
 ```
 
-React, React DOM and Fluent UI v9 are peer dependencies. Mount the renderer inside your FluentProvider for theme and
-portal support. Modal state, results, updates and confirmation semantics are shared with the shadcn adapter.
+Mount the renderer inside your `FluentProvider` so dialogs get its theme and portals. Modal state, results, updates, and
+confirmation behavior come from [`@buildkitgg/react-modals`](../../react/react-modals/README.md), which every Buildkit
+modal adapter shares.
 
 ## API
 
-- createModalManager({ labels?, adapter? }): shared React manager; defaults to Fluent dialogs.
-- ModalRenderer: renders the manager's adapter, including Fluent motion completion by default.
-- labels: application defaults for confirm, cancel and close buttons.
-- ModalManager, ModalManagerOptions, ModalAdapter, ModalRendererProps and ModalSurfaceOptions: shared setup and surface
-  contracts.
+| Export                                      | Behavior                                                                                                                                |
+| ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `createModalManager({ labels?, adapter? })` | Creates a manager whose default adapter renders Fluent dialogs.                                                                         |
+| `labels`                                    | App-wide default text for the confirm, cancel, and close buttons. Per-call `confirmLabel`, `cancelLabel`, and `closeLabel` override it. |
+| `ModalRenderer`                             | Renders the manager's adapter. The default adapter finishes each exit when Fluent's dialog motion ends.                                 |
 
-Pass `adapter: { Surface: YourSurface }` when creating a manager to use a custom React surface. The binding is fixed for
-that manager's lifetime and overrides the package default. `ModalRenderer` still takes only `manager`; no separate
-renderer factory is needed. See the
-[adapter contract](https://github.com/betterapps-hq/buildkit/blob/main/docs/modals.md#adapters) for lifecycle
-responsibilities.
+The package also re-exports `useModals` and the react-modals types, including `ModalManagerOptions`, `ModalAdapter`, and
+`ModalSurfaceOptions`, and exports its own `ModalManager` and `ModalRendererProps` types.
 
-The shadcn adapter exports the same factory, renderer props and shared types. Standard modal code needs only a package
-import change. Its default renderer also takes only manager, with no primitive or components prop. Update application
-styles, providers and UI-specific custom form controls when changing design systems. If you configured a custom adapter,
-update or remove it to use the new design system's components.
+The default dialog shows `description` under the title, marks the dialog busy while an action is pending, and returns
+focus to the element that had focus when it opened. `dismissible: false` stops Escape and backdrop clicks from
+dismissing it. `surfaceProps` (`className` and `style`) go to Fluent's `DialogSurface`.
 
-Keep the returned modal handle to update an open instance. Standard modals use `handle.update()` for opening options;
-custom definitions use the same method with `{ data: partialState, title?, description?, dismissible?, surfaceProps? }`.
-Functional updaters receive the current presentation and `current.data`. Every component slot's `controls.update()`
-works identically. `title`, `body` and `footer` accept React nodes or `{ component: Component }`. A custom footer
-replaces the helper buttons, leaving variants and styling to your components. Use `ariaLabel` when the title has no
-accessible text. The updateable `onClose({ id, result, reason })` callback observes settlement once.
+To render with your own React surface, pass `adapter: { Surface: YourSurface }` to `createModalManager`. It replaces the
+Fluent dialog for that manager's whole lifetime, and `ModalRenderer` still takes only `manager`. See the
+[adapter contract](https://github.com/betterapps-hq/buildkit/blob/main/docs/modals.md#adapters) for what a surface must
+handle.
 
-See [update examples](https://github.com/betterapps-hq/buildkit/blob/main/docs/modal-updates.md),
-[lifecycle and architecture](https://github.com/betterapps-hq/buildkit/blob/main/docs/modals.md) and
-[package guide](docs/README.md).
+Other adapters, such as `@buildkitgg/shadcn-modals-manager`, export the same factory, renderer props, and types, so
+standard modal code moves to another component library with an import change. Update the app's styles, providers, and
+any library-specific form controls at the same time, and update or remove a custom adapter.
+
+## Update an open modal
+
+Keep the handle to update an open modal. Standard modals take their opening options in `handle.update()`; custom
+definitions take `{ data: partialState }` alongside presentation fields such as `title`, `description`, `dismissible`,
+and `surfaceProps`. A function updater receives the current presentation and `current.data`, and a component's
+`controls.update()` works the same way.
+
+`title`, `body`, and `footer` accept React nodes or `{ component: Component }`. A custom footer replaces the standard
+buttons, so its variants and styling are up to your components. Set `ariaLabel` when the title has no accessible text.
+`onClose({ id, result, reason })` observes settlement once, and `update()` can replace it.
+
+See [modal slots and updates](https://github.com/betterapps-hq/buildkit/blob/main/docs/modal-updates.md),
+[modal packages](https://github.com/betterapps-hq/buildkit/blob/main/docs/modals.md) for lifecycle and architecture, and
+the [package guide](docs/README.md).

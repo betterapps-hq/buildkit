@@ -1,6 +1,10 @@
 # @buildkitgg/react-theme
 
-Provider-free React bindings for a Buildkit theme store.
+A React hook for a Buildkit theme store. Components and plain TypeScript share one store, with no context provider.
+
+```sh
+pnpm add @buildkitgg/react-theme react
+```
 
 ```tsx
 import { createThemeStore, useTheme } from "@buildkitgg/react-theme"
@@ -17,15 +21,15 @@ export function ThemeButton() {
 }
 ```
 
-`createThemeStore` comes from `@buildkitgg/theme-core`, re-exported so React apps import from one package. Create the
-store once outside render and pass that same instance to consumers. Non-React code calls `theme.setTheme("dark")`;
-subscribers update through `useSyncExternalStore`. No context or provider is required. The hook has fully inferred types
-and ships declarations. React 19.2+ is a peer dependency.
+`createThemeStore` is re-exported from [`@buildkitgg/theme-core`](../../core/theme-core/README.md), so a React app
+imports from one package. Create the store once, outside render, and pass the same instance to every consumer. Code
+outside React calls `theme.setTheme("dark")`, and components update through `useSyncExternalStore`. `useTheme(store)`
+returns `theme`, `resolvedTheme`, `setTheme`, and `reset()`, which clears the user's selection and restores the
+configured default. React 19.2 or later is a peer dependency.
 
-This package does not start browser listeners, access local storage, or apply CSS. Connect the store at your application
-boundary. Its stable server snapshot supports hydration: use identical initial options on server and client, with a
-store per request for user-specific SSR. Browser-resolved state is reflected after hydration.
+The package doesn't listen to the browser, touch storage, or apply CSS; connect the store at your app's boundary, for
+example with `connectBrowserTheme` from `@buildkitgg/theme-core/browser`. The server snapshot stays stable for
+hydration: use the same options on server and client, and create a store per request for user-specific SSR. State the
+browser resolves appears after hydration.
 
-[Maintenance](docs/README.md)
-
-`useTheme(store)` also returns `reset()`, which clears the user selection and restores the configured default.
+See the [maintenance guide](docs/README.md).

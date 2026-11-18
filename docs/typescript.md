@@ -1,33 +1,40 @@
-# TypeScript & Type Helpers
+# TypeScript and type helpers
 
-Type conventions for all TypeScript in the monorepo, and a catalog of the type-helper libraries we install so you
-**don't reinvent them**. Many rules here are enforced by `oxlint` (see
-[`packages/tooling/oxlint-config/base.ts`](../packages/tooling/oxlint-config/base.ts)).
+Type conventions for all TypeScript in the monorepo, and a catalog of the type helpers we install, so you don't reinvent
+them. Oxlint enforces many of these rules (see
+[`packages/tooling/oxlint-config/src/base.ts`](../packages/tooling/oxlint-config/src/base.ts)).
+
+Import the helpers from [`@buildkitgg/typescript-utils`](../packages/core/typescript-utils/README.md), which re-exports
+ts-extras, ts-pattern, tiny-invariant, es-toolkit, and type-fest from one root import. Don't install or import those
+packages directly.
+
+```ts
+import { invariant, isPresent, match, objectKeys, P } from "@buildkitgg/typescript-utils"
+```
 
 ## Conventions
 
-- **No `any`.** If a value is genuinely unknown, type it `unknown` and narrow it.
-- **Avoid `as` type assertions.** They silence the compiler. To narrow, prefer, in order: a **type guard**
-  (`value is T`) → **`invariant(...)`** (runtime-checked) → **`assertNever`** / **`ts-pattern` `.exhaustive()`** for
-  unions. (`as const` is fine — the ban is on _type assertions_.)
-- **Prefer `type` over `interface`.** Reach for `interface` only when you need a feature it uniquely provides (e.g.
-  declaration merging).
-- **Let return types infer.** Add an explicit return type only to lock a public/shared API contract.
-- **Prefer string-literal unions over `enum`s**; pair them with exhaustive handling.
-- **Prefix boolean variables** with `is`/`has` (`isLoading`, `hasError`).
-- **Validate external data with `zod`** at the boundary (never trust network/env input).
+- Don't use `any`. Type a genuinely unknown value as `unknown` and narrow it.
+- Avoid `as` type assertions, which silence the compiler. `as const` is fine; the rule is about type assertions. To
+  narrow, see the order of preference below.
+- Prefer `type` over `interface`. Reach for `interface` when you need a feature unique to it, such as declaration
+  merging.
+- Let return types infer. Add an explicit return type only to lock a public or shared API contract.
+- Prefer string-literal unions over `enum`s, and pair them with exhaustive handling.
+- Prefix boolean variables with `is` or `has` (`isLoading`, `hasError`).
+- Validate external data with `zod` at the boundary. Never trust network or environment input.
 
-## Type narrowing — order of preference
+## Type narrowing
 
-1. **Type guard** — a `function isThing(x: unknown): x is Thing` predicate.
-2. **`invariant(cond, msg)`** (`tiny-invariant`) — asserts a runtime assumption and narrows afterward.
-3. **`assertNever(x)`** (`ts-extras`) / **`match(x).exhaustive()`** (`ts-pattern`) — for exhaustive unions.
+Narrow types in this order of preference, and don't reach for `as`:
 
-Do **not** reach for `as`.
+1. A type guard: a `function isThing(x: unknown): x is Thing` predicate.
+2. `invariant(cond, msg)`, which asserts a runtime assumption and narrows afterward.
+3. `assertNever(x)` or `match(x).exhaustive()` for exhaustive unions.
 
-## `ts-extras` — type-safe stdlib helpers
+## ts-extras: type-safe built-in helpers
 
-Typed replacements for unsafe built-ins. Import from `ts-extras`. Use these instead of casting.
+Typed replacements for unsafe built-ins. Use these instead of casting.
 
 ### Objects
 
@@ -35,42 +42,44 @@ Typed replacements for unsafe built-ins. Import from `ts-extras`. Use these inst
 - `objectEntries(obj)` — typed `[key, value]` tuples.
 - `objectValues(obj)` — typed values.
 - `objectFromEntries(entries)` — typed inverse of `objectEntries`.
-- `objectHasOwn(obj, key)` — typed `Object.hasOwn`; narrows the key.
-- `objectHasIn(obj, key)` — typed `in` check.
+- `objectHasOwn(obj, key)` — typed `Object.hasOwn` that narrows the object to include the key.
+- `objectHasIn(obj, key)` — the same check including inherited properties, like `key in obj`.
 - `objectAssign(target, ...sources)` — typed `Object.assign`.
 - `objectMapValues(obj, fn)` — map an object's values, preserving keys.
-- `objectUpdate(obj, key, fn)` — immutably update one value.
+- `objectUpdate(target, source)` — apply a type-checked partial update to an object in place.
 
 ### Arrays
 
 - `arrayIncludes(array, item)` — like `Array#includes`, but narrows `item` (works with `readonly` literal tuples).
-- `arrayAt(array, index)` / `arrayFirst(array)` / `arrayLast(array)` — safe element access typed `T | undefined`.
-- `arrayConcat`, `arrayJoin` — typed `concat`/`join`.
+- `arrayAt(array, index)`, `arrayFirst(array)`, `arrayLast(array)` — element access typed `T | undefined` for arrays and
+  exactly for tuples.
+- `arrayConcat`, `arrayJoin` — typed `concat` and `join`; `arrayJoin` keeps literal string types.
 
-### Guards & assertions (narrowing)
+### Guards and assertions
 
-- `isDefined(x)` / `isPresent(x)` — narrow out `undefined` / (`null` **and** `undefined`). Great in `.filter()`.
-- `isPropertyDefined(obj, key)` / `isPropertyPresent(obj, key)` — narrow a property.
-- `isEmpty(x)` — typed emptiness check.
-- `keyIn(key, obj)` — typed `key in obj`.
-- `assertDefined(x)`, `assertPresent(x)`, `assertError(x)`, `assertNever(x)` — throw + narrow.
+- `isDefined(x)` / `isPresent(x)` — narrow out `undefined`, or both `null` and `undefined`. Useful in `.filter()`.
+- `isPropertyDefined(key)` / `isPropertyPresent(key)` — build a predicate that narrows one property, for `.filter()`.
+- `isEmpty(array)` — check whether an array is empty.
+- `keyIn(obj, key)` — check that a key exists in an object and narrow the key.
+- `assertDefined(x)`, `assertPresent(x)`, `assertError(x)`, `assertNever(x)` — throw and narrow.
 - `not(predicate)` — invert a type-guard predicate while keeping narrowing.
 
 ### Numbers
 
 - `isFinite`, `isInfinite`, `isInteger`, `isSafeInteger` — typed numeric checks.
 
-### Misc
+### Miscellaneous
 
-- `safeCastTo<T>()` / `asWritable(x)` — controlled, explicit casts when unavoidable.
-- `isEqualType`, `stringSplit`, `setHas` — type-level equality, typed `split`, typed `Set#has`.
+- `safeCastTo<T>(value)` — constrain a value to a type it already satisfies, without an unsafe assertion.
+- `asWritable(x)` — remove `readonly` from a value's type.
+- `isEqualType`, `stringSplit`, `setHas` — type-level equality, typed `split`, and typed `Set#has`.
 
-## `ts-pattern` — pattern matching
+## ts-pattern: pattern matching
 
-Use for branching on unions/shapes instead of `switch` or nested conditionals.
+Branch on unions and shapes with `match` instead of `switch` or nested conditionals.
 
 ```ts
-import { match, P } from "ts-pattern"
+import { match, P } from "@buildkitgg/typescript-utils"
 
 const label = match(result)
   .with({ status: "ok", data: P.select() }, (data) => `ok: ${data}`)
@@ -81,29 +90,31 @@ const label = match(result)
 
 Key API:
 
-- `match(value)` → `.with(pattern, handler)` → terminate with `.exhaustive()` (enforces all cases) or `.otherwise(fn)`
-  (default). Use `.returnType<T>()` to pin the return type.
-- **Patterns (`P`):** `P._` / `P.any`, `P.string`, `P.number`, `P.boolean`, `P.bigint`, `P.nullish`, `P.array(pattern)`,
+- `match(value)`, then `.with(pattern, handler)`, ending with `.exhaustive()` (enforces every case) or `.otherwise(fn)`
+  (a default). Use `.returnType<T>()` to pin the return type.
+- Patterns from `P`: `P._` / `P.any`, `P.string`, `P.number`, `P.boolean`, `P.bigint`, `P.nullish`, `P.array(pattern)`,
   `P.set`, `P.map`, `P.union(...)`, `P.intersection(...)`, `P.not(pattern)`, `P.optional(pattern)`,
-  `P.instanceOf(Class)`, `P.when(predicate)`, `P.select()` (extract a value), and string/number refinements like
-  `P.string.startsWith(...)`, `P.number.gte(...)`.
+  `P.instanceOf(Class)`, `P.when(predicate)`, `P.select()` (extracts a value), and string and number refinements such as
+  `P.string.startsWith(...)` and `P.number.gte(...)`.
 - `isMatching(pattern)` — a standalone type guard built from a pattern.
 
-## `tiny-invariant` — runtime assertions
+## tiny-invariant: runtime assertions
+
+`@buildkitgg/typescript-utils` exports tiny-invariant's default export as `invariant`.
 
 ```ts
-import invariant from "tiny-invariant"
+import { invariant } from "@buildkitgg/typescript-utils"
 
-invariant(user, "user must be loaded before render") // throws in dev if falsy
+invariant(user, "user must be loaded before render") // throws if falsy
 user.name // narrowed to non-null here
 ```
 
-The message is stripped from production builds. Use it for assumptions that _should_ always hold (loaded data, found DOM
-nodes) rather than for expected/validation errors.
+Production builds strip the message. Use an invariant for assumptions that should always hold, such as loaded data or a
+found DOM node, not for expected or validation errors.
 
-## `zod` — schema validation
+## zod: schema validation
 
-Validate and parse untrusted input; infer static types from schemas.
+Validate and parse untrusted input, and infer static types from the schemas.
 
 ```ts
 import { z } from "zod"
@@ -115,5 +126,5 @@ const user = User.parse(await res.json()) // throws on mismatch
 const result = User.safeParse(input) // { success, data | error }
 ```
 
-The same zod schemas power form validation (`react-hook-form` with `@hookform/resolvers/zod`) and API/env parsing
-(`@t3-oss/env-core`).
+Pass a Zod schema directly to TanStack Form, for example `validators: { onSubmit: User }`. Reuse the schema at the API
+boundary when both inputs have the same contract.

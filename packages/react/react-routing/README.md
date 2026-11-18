@@ -1,22 +1,45 @@
 # @buildkitgg/react-routing
 
-Provider-free React bindings for route tabs and panels.
+React hooks for route tabs and panels, driven by the URL and bound to whatever tabs and drawers your component library
+provides. The hooks work with any router through a small adapter, and need no context provider.
 
-```tsx
-const tabs = useRouteTabs(adapter, {
-  tabs: [{ id: "people", route: peopleRoute }]
-})
-const panel = useRoutePanel(adapter, { route: personRoute, closeTo: peopleRoute })
-// Bind tabs.activeTab / tabs.select to your tabs.
-// Bind panel.isOpen / panel.setOpen to your drawer.
+```sh
+pnpm add @buildkitgg/react-routing react
 ```
 
-Uses useSyncExternalStore and cleans up subscriptions. No local copy of URL state. Applications provide their own tabs
-and panel components. Create adapters per router and per SSR request.
+Router adapters such as `@buildkitgg/react-router` and `@buildkitgg/tanstack-router` create the adapter and route
+targets, and re-export these hooks.
 
-- useRouteTabs(adapter, options): subscribe and derive activeTab/select.
-- useRoutePanel(adapter, options): subscribe and derive isOpen/open/close/setOpen.
-- RouterAdapter: subscribe, getSnapshot, getServerSnapshot.
+```tsx
+import { useRoutePanel, useRouteTabs, type RouterAdapter, type RouteTarget } from "@buildkitgg/react-routing"
 
-See [routing architecture](../../../docs/routing.md) for defaults, SSR, history, matching and integration details.
-Examples with `YourPanel` use an application-owned component.
+type PeopleProps = { adapter: RouterAdapter; people: RouteTarget; person: RouteTarget }
+
+export function People({ adapter, people, person }: PeopleProps) {
+  const tabs = useRouteTabs(adapter, { tabs: [{ id: "people", route: people }] })
+  const panel = useRoutePanel(adapter, { route: person, closeTo: people })
+
+  return (
+    <>
+      <button aria-pressed={tabs.activeTab === "people"} onClick={() => void tabs.select("people")}>
+        People
+      </button>
+      <dialog open={panel.isOpen}>
+        <button onClick={() => void panel.close()}>Close</button>
+      </dialog>
+    </>
+  )
+}
+```
+
+| Export                            | Behavior                                                                                 |
+| --------------------------------- | ---------------------------------------------------------------------------------------- |
+| `useRouteTabs(adapter, options)`  | Subscribes to the URL and returns `activeTab` and `select`.                              |
+| `useRoutePanel(adapter, options)` | Subscribes to the URL and returns `isOpen`, `open`, `close`, and `setOpen`.              |
+| `RouterAdapter`                   | The contract an adapter implements: `subscribe`, `getSnapshot`, and `getServerSnapshot`. |
+
+The hooks use `useSyncExternalStore`, unsubscribe on unmount, and keep no local copy of URL state. The options and the
+`RouteTarget` type come from [`@buildkitgg/router-core`](../../core/router-core/README.md). Create one adapter per
+router, and one per request on the server.
+
+See [route tabs and panels](../../../docs/routing.md) for defaults, SSR, history, matching, and integration details.

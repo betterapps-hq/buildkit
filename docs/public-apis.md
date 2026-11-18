@@ -1,8 +1,8 @@
 # Public behavior APIs
 
-These contracts separate reusable state from framework and UI integration. Package root exports include declarations;
-browser-only connections have explicit entry points. Public APIs do not expose the internal preferences store used by
-theme packages.
+These contracts keep reusable state apart from framework and UI integration, so the same store works in React, in plain
+TypeScript, and behind each UI adapter. Package root exports include type declarations, and browser-only connections
+have their own `/browser` entry points. Public APIs don't expose the internal preferences store that theme packages use.
 
 | Package           | Consumer API                                                                                                                   |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------ |
@@ -10,7 +10,7 @@ theme packages.
 | react-preferences | `createPreferences<T>` from preferences-core, `usePreferences(store)`, `usePreference(store, key)`                             |
 | theme-core        | `createThemeStore`, `setTheme`, `reset`, snapshots, subscriptions, `setSystemTheme` for environment adapters                   |
 | react-theme       | `createThemeStore` from theme-core, `useTheme(store)` returning selection, resolved appearance, `setTheme`, and `reset`        |
-| shadcn-theme      | `createShadcnTheme`, the theme store contract plus reference-counted `start`, and `getThemeInitScript`                         |
+| shadcn-theme      | `createShadcnTheme`, the theme store contract plus reference-counted `start`, `getThemeInitScript`, and `useTheme`             |
 | fluentui-theme    | `createFluentTheme`, the theme store contract plus tokens and reference-counted `start`, `FluentThemeProvider`, and `useTheme` |
 
 ## Preferences
@@ -44,15 +44,17 @@ Changes to released contracts require an appropriate Beachball change file and s
 
 ## Modals
 
-See the [modal API and lifecycle guide](modals.md). `modal-core` owns stack state and results; `react-modals` adds typed
-content, subscriptions and the renderer. `shadcn-modals-manager` and `fluentui-modals-manager` both export
-`createModalManager`, `ModalRenderer`, `ModalManager`, `ModalRendererProps` and `ModalSurfaceOptions`. Shared operations
-and types are identical across adapters, including `ModalManagerOptions` and `ModalAdapter`. Both renderers require only
-`manager`. `createModalManager({ labels?, adapter? })` binds the adapter once, falling back to the package's native
-components when omitted. An explicit adapter always wins. `surfaceProps` contains portable `className` and `style`
-fields. Optional shadcn registry integration uses `adapter: baseUiComponents(...)` or `adapter: radixComponents(...)`;
-there is no primitive prop or renderer factory. Application styles, UI providers and custom form controls remain
-application concerns. The UI adapters do not expose their internal core store.
+See the [modal API and lifecycle guide](modals.md). `modal-core` owns stack state and results, and `react-modals` adds
+typed content, subscriptions, and the renderer.
+
+`shadcn-modals-manager` and `fluentui-modals-manager` both export `createModalManager`, `ModalRenderer`, `ModalManager`,
+`ModalRendererProps`, and `ModalSurfaceOptions`, and their operations and types, including `ModalManagerOptions` and
+`ModalAdapter`, are identical. Both renderers take only `manager`. `createModalManager({ labels?, adapter? })` binds the
+adapter once. Without one, it uses the package's default components: the dialog from the app's generated
+`@buildkitgg/shadcn`, or Fluent's `Dialog`. An explicit adapter always wins. `surfaceProps` holds the portable
+`className` and `style` fields. shadcn registry components plug in through `adapter: baseUiComponents(...)` or
+`adapter: radixComponents(...)`; there's no primitive prop or renderer factory. Application styles, UI providers, and
+custom form controls stay with the application, and the UI adapters don't expose their internal core store.
 
 Custom definitions use `createModal({ initialState, body, defaultResult, beforeDismiss? })`. State is inferred from
 defaults; `open(overrides?)` and object/function updates remain typed. Custom updates use

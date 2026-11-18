@@ -23,10 +23,10 @@ Then turn on ts-reset in `tsconfig.json`, as described in [ts-reset](#ts-reset):
 ```ts
 import { chunk, invariant, isPresent, match, P, type SetRequired } from "@buildkitgg/typescript-utils"
 
-type Shape = { kind: "circle"; radius: number } | { kind: "square"; size: number }
+type Figure = { kind: "circle"; radius: number } | { kind: "square"; size: number }
 
-function area(shape: Shape) {
-  return match(shape)
+function area(figure: Figure) {
+  return match(figure)
     .with({ kind: "circle" }, ({ radius }) => Math.PI * radius ** 2)
     .with({ kind: "square", size: P.number }, ({ size }) => size ** 2)
     .exhaustive()
@@ -38,15 +38,14 @@ function pairs(values: (number | undefined)[], config: SetRequired<{ name?: stri
 }
 ```
 
-Every export keeps its upstream signature and documentation, and its upstream name. The one exception is
-tiny-invariant's default export, which is exported as `invariant`. Bundlers drop what you don't import, since every
-package involved is free of side effects.
+Every export keeps its upstream name, signature, and documentation, except tiny-invariant's default export, which is
+exported as `invariant`. Bundlers drop what you don't import, since every package involved is free of side effects.
 
 ## What's included
 
-Everything each upstream package exports, except the exports this package deliberately leaves out where two packages
-overlap. The [agent guide](./AGENTS.md) lists every export, each exclusion with its reason, and what to use instead. The
-API reference links each export to its upstream source and documentation.
+You get everything each upstream package exports, except where two packages overlap and this package leaves one out. The
+[agent guide](./AGENTS.md) lists every export, each exclusion with its reason, and what to use instead. The API
+reference links each export to its upstream source and documentation.
 
 ## ts-reset
 
@@ -64,8 +63,8 @@ app's code:
 }
 ```
 
-Setting `types` stops TypeScript from loading every `@types` package automatically, so list the ones your project relies
-on alongside it:
+TypeScript loads only the global type packages that `types` lists, so list the `@types` packages your project relies on
+alongside it:
 
 ```json
 {
@@ -94,5 +93,5 @@ imports it applies ts-reset to every app that installs the library.
 
 [`curation.ts`](./curation.ts) lists the upstream packages and every exclusion. Each exclusion names the export, why it
 is left out, and what to use instead. `pnpm --filter @buildkitgg/typescript-utils generate` rebuilds `src/index.ts`,
-`reexports.json` and `AGENTS.md` from it, and `check:types` fails when they are out of date. After an upstream update,
-regenerate and review the change to `api-reports/typescript-utils.api.md`.
+`reexports.json` and `AGENTS.md` from it, and the package's `test` script fails when they are out of date. After an
+upstream update, regenerate and review the change to `api-reports/typescript-utils.api.md`.

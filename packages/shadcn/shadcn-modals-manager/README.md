@@ -1,6 +1,7 @@
 # @buildkitgg/shadcn-modals-manager
 
-Managed shadcn dialogs with a default renderer and optional Base UI or Radix registry components.
+Open dialogs from anywhere in your app with one call, rendered with your app's shadcn components. Every modal call
+returns a handle that's also a promise, so the code that opens a dialog awaits its result on the next line.
 
 ## Setup
 
@@ -17,10 +18,12 @@ import. In [Tailwind mode](../shadcn-sync/README.md#tailwind-mode), the app's Ta
 React and React DOM are peers.
 
 The default renderer binds the Base UI dialog lifecycle, so it needs the app on sync's default `--base base`. With
-`--base radix`, pass `radixComponents` with the generated dialog, as in
-[Use your registry components](#use-your-registry-components).
+`--base radix`, pass `radixComponents` with the generated dialog, as in [Your own components](#your-own-components). No
+helper covers React Aria, so an app on `--base aria` passes its own `adapter`.
 
 ## Usage
+
+Create a manager, mount its renderer once, and open dialogs from anywhere:
 
 ```tsx
 import { createModalManager, ModalRenderer } from "@buildkitgg/shadcn-modals-manager"
@@ -34,24 +37,21 @@ export function App() {
 const confirmed = await modals.confirm({ title: "Delete draft?" })
 ```
 
-## Switching UI libraries
+## Switching component libraries
 
 `@buildkitgg/fluentui-modals-manager` exports the same `createModalManager`, `ModalRenderer`, manager types and renderer
-props. Standard modal code needs only a package import change. Both renderers take `manager`; neither requires a
-primitive or components prop. `surfaceProps` supports the shared `className` and `style` fields. Your app's theme,
-stylesheet, FluentProvider and UI-specific custom form controls remain part of its UI setup.
+props, so standard modal code moves between libraries by changing the import. Both renderers take only `manager`, and
+`surfaceProps` supports the shared `className` and `style` fields. Your theme, stylesheet, `FluentProvider` and
+library-specific form controls stay part of your UI setup.
 
-## Use your registry components
+## Your own components
 
-Pass an optional adapter when creating the manager. Choose the helper matching your components' underlying library; the
-helper owns the native lifecycle integration. There is no runtime inspection of component names or DOM markers.
+Pass an adapter when you create the manager to render with other dialog components, such as the Radix ones sync builds
+with `--base radix` or your own `components/ui` folder. Pick the helper for the components' underlying primitives; it
+binds that library's dialog lifecycle:
 
 ```tsx
-import {
-  createModalManager,
-  ModalRenderer,
-  radixComponents
-} from "@buildkitgg/shadcn-modals-manager"
+import { createModalManager, ModalRenderer, radixComponents } from "@buildkitgg/shadcn-modals-manager"
 import { Button } from "@buildkitgg/shadcn/button"
 import * as dialog from "@buildkitgg/shadcn/dialog"
 
@@ -59,50 +59,44 @@ export const modals = createModalManager({
   adapter: radixComponents({ ...dialog, Button })
 })
 
-// Same renderer props and modal calls:
+// The renderer and modal calls stay the same
 <ModalRenderer manager={modals} />
 ```
 
-For Base UI registry components, use `baseUiComponents` in place of `radixComponents`:
-
-```tsx
-export const modals = createModalManager({
-  adapter: baseUiComponents({ ...dialog, Button })
-})
-```
-
-Import `baseUiComponents` from this package and use your Base UI dialog module. Both helpers expect `Dialog`,
+For Base UI components, use `baseUiComponents` in place of `radixComponents`. Both helpers take `Dialog`,
 `DialogContent`, `DialogTitle`, `DialogDescription`, `DialogFooter` and `Button`.
 
-Components from your own `components/ui` folder work the same way. The adapter is fixed for that manager's lifetime.
-Omit it to use the default components. An explicit adapter takes precedence over the package default, including when
-using the interchangeable Fluent factory or renderer. There is no global registration or separate renderer factory.
-Custom components use your existing styles. Radix is supplied by your app's components; the helpers do not import it,
-and default consumers do not need Radix types.
+The adapter is fixed for the manager's lifetime, and an explicit adapter wins over the package's default, including with
+the Fluent factory or renderer. There's no global registration and no runtime inspection of component names. The helpers
+don't import Radix, so apps on the default components don't need its types.
 
-Wrappers must forward the props passed by the helper, including children, accessibility attributes and lifecycle
-callbacks. Keep native modal behavior and normal unmounting enabled: do not force-mount a closed Radix dialog. Radix CSS
-exit animations finish before its close-focus callback removes the entry; Base UI uses its open-change-complete
-callback. Add native styling or layout customization inside your wrappers rather than to shared modal options.
+Wrappers must forward the props the helper passes, including children, accessibility attributes and lifecycle callbacks.
+Keep native modal behavior and normal unmounting: don't force-mount a closed Radix dialog. The entry is removed after
+the exit animation, from Radix's close-focus callback or Base UI's open-change-complete callback. Put styling and layout
+changes inside your wrappers rather than in shared modal options.
 
 ## API
 
-- `createModalManager({ labels?, adapter? })`: shared open, alert, confirm and typed modal definitions.
-- `ModalRenderer`: renders the manager's adapter; mount once per manager.
-- `baseUiComponents(components)` / `radixComponents(components)`: bind the native dialog lifecycle.
-- `ModalManager`, `ModalManagerOptions`, `ModalRendererProps`, `ModalSurfaceOptions`: shared contracts.
-- `BaseUiModalComponents`, `RadixModalComponents`, `ModalAdapter`: optional integration contracts.
+| Export                                                                             | What it is                                                  |
+| ---------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| `createModalManager({ labels?, adapter? })`                                        | A manager with `open`, `alert`, `confirm` and `createModal` |
+| `ModalRenderer`                                                                    | Renders the manager's dialogs. Mount one per manager        |
+| `baseUiComponents(components)`, `radixComponents(components)`                      | Adapters that bind a library's dialog lifecycle             |
+| `ModalManager`, `ModalManagerOptions`, `ModalRendererProps`, `ModalSurfaceOptions` | Shared types                                                |
+| `BaseUiModalComponents`, `RadixModalComponents`, `ModalAdapter`                    | Types for your own components                               |
 
-Keep the returned modal handle to update an open instance. Standard modals use `handle.update()` for opening options;
-custom definitions use the same method with `{ data: partialState, title?, description?, dismissible?, surfaceProps? }`.
-Functional updaters receive the current presentation and `current.data`. Every component slot's `controls.update()`
-works identically. `title`, `body` and `footer` accept React nodes or `{ component: Component }`. A custom footer
-replaces the helper buttons, leaving variants and styling to your components. Use `ariaLabel` when the title has no
-accessible text. The updateable `onClose({ id, result, reason })` callback observes settlement once.
+Keep the handle a modal call returns to update the open dialog. Standard modals take their opening options in
+`handle.update()`; custom modals take `{ data: partialState, title?, description?, dismissible?, surfaceProps? }`. A
+function updater receives the current presentation and `current.data`, and every component slot's `controls.update()`
+works the same way.
+
+`title`, `body` and `footer` take React nodes or `{ component: Component }`. A custom footer replaces the default
+buttons, leaving variants and styling to your components. Use `ariaLabel` when the title has no accessible text.
+`onClose({ id, result, reason })` runs once when the modal settles, and you can change it with an update.
 
 See [update examples](https://github.com/betterapps-hq/buildkit/blob/main/docs/modal-updates.md),
 [lifecycle and architecture](https://github.com/betterapps-hq/buildkit/blob/main/docs/modals.md),
-[typed forms](https://github.com/betterapps-hq/buildkit/blob/main/docs/modal-forms.md) and
+[typed forms](https://github.com/betterapps-hq/buildkit/blob/main/docs/modal-forms.md) and the
 [package guide](docs/README.md).
 
 ## Labels

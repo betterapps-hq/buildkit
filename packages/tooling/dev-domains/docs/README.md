@@ -39,8 +39,8 @@ using Portless's local CA. Startup suffixes do not restrict exact routing or per
 
 Port reservations are released immediately before the child starts, because framework CLIs generally accept a port
 rather than an inherited socket. Other Buildkit launchers avoid registered ports; an unrelated process can still bind
-during the handoff. The launcher retries at most three times, only for an explicit address-in-use failure. Hostname
-conflicts never trigger a takeover.
+during the handoff. The launcher makes at most three attempts, and retries only after an explicit address-in-use
+failure. Hostname conflicts never trigger a takeover.
 
 Discovery makes one bounded walk for Storybook and Playwright configs. It skips dependencies, generated output, hidden
 directories other than `.storybook`, and symlinks. It stops above 1,000 packages or 10,000 visited directories. c12
@@ -49,50 +49,50 @@ environment merging disabled. These implementation choices belong here, not in c
 
 Runtime dependencies each have one job: Portless for networking, c12 for loading, Zod for contracts, Citty for command
 parsing, Clack for prompts, package-manager-detector for package-manager discovery and script commands, and cross-spawn
-for portable execution. Node supplies HTTP, files, crypto, and terminal colors.
+for portable execution. Node supplies HTTP, sockets, files, child processes, and terminal colors.
 
 ## Verification
 
-Run root `pnpm verify` for formatting, lint, types, unused code, coverage, and builds. Run
+Run root `pnpm verify` for formatting, lint, types, unused code, API reports, coverage, and builds. Run
 `pnpm --filter @buildkitgg/dev-domains test:integration` for real routing, concurrent repositories and linked worktrees,
 takeover refusal, cancellation, and cleanup. These tests use isolated state, unprivileged HTTP, and no hosts/certificate
 changes. They do not stop the developer's shared proxy.
 
-Full verification runs on Linux. Focused runtime tests run on Linux, Windows, and macOS. HTTP tests do not prove OS
+CI runs full verification on Linux and the integration tests on Linux, Windows, and macOS. HTTP tests do not prove OS
 certificate trust or privileged port setup; those remain manual platform checks delegated to Portless.
 
 ## Boundaries
 
-Version `0.1.0` deliberately changes inferred defaults: only `dev` is selected as the app script, and suggested E2E
-endpoints do not invent framework output-directory environment variables. Saved explicit configurations stay valid. The
-pre-1.0 minor version makes the discovery changes visible. Publishing is a maintainer operation; the CLI does not
-publish packages, provision DNS, configure provider credentials, or create cloud resources. Hosted webhook receivers,
-durable delivery, and database/storage isolation are outside the package's scope.
+Inferred defaults stay narrow: only `dev` is selected as the app script, and suggested E2E endpoints do not invent
+framework output-directory environment variables. Publishing is a maintainer operation; the CLI does not publish
+packages, provision DNS, configure provider credentials, or create cloud resources. Hosted webhook receivers, durable
+delivery, and database/storage isolation are outside the package's scope.
 
-## Consumer-independence audit
+## Consumer independence
 
-Review scope: every production module, public export, CLI workflow, configuration default, README example, package
-metadata, and contributor documentation. The baseline was the published 0.0.2 release.
+The package must work for any consumer without assuming one project's names, providers, or layout. These rules apply to
+every production module, public export, CLI workflow, configuration default, README example, package metadata, and
+contributor document.
 
-| Area                         | Finding and disposition                                                                                                                                                                                                                                                                     |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| App detection                | Removed preference for repository-specific `dev:app` and `dev:raw` names. `dev` is a documented convention, not a required universal standard. Any script can be selected explicitly.                                                                                                       |
-| E2E output                   | Removed automatically injected `DEV_DOMAINS_OUTPUT_DIR`: the package does not configure any framework to read it. Output and resource isolation belong to the application.                                                                                                                  |
-| Wizard E2E command           | Fixed the assumption that a manually configured server has a `dev` script. A suggested test endpoint preserves the actual server command.                                                                                                                                                   |
-| Examples and fixtures        | Replaced real consumer domains with neutral example/test domains. The root README no longer describes its private template provenance.                                                                                                                                                      |
-| Consumer documentation       | Moved route registration, reservation handoff, retry counts, discovery walk limits, and configuration-loader internals here. Kept observable constraints and supported configuration in the README.                                                                                         |
-| CLI guidance                 | Setup completion now prints the public npm invocation instead of assuming the binary is globally available.                                                                                                                                                                                 |
-| Providers                    | No application-specific auth provider, OAuth client, cloud account, storage, database, deployment, or DNS provisioning is implemented. `auth` describes paths; tunnel commands are supplied by users. Cloudflared is an optional example, not a dependency or default.                      |
-| Frameworks                   | Next.js, Vite, and Storybook have explicit adapters. Other servers must accept the assigned port/host through environment variables or configured arguments. Framework-specific allowed hosts and caches remain application settings.                                                       |
-| Playwright                   | Detection is evidence that tests exist, not knowledge of their server topology. Suggested E2E endpoints reuse the package's dev server; no Playwright config is executed or its `webServer` imported. Cross-package, production-build, and remote test targets need explicit configuration. |
-| Monorepos                    | Workspace declarations control discovery; no `apps/` or `packages/` folder layout is hard-coded. Without workspace declarations, discovery searches nested packages; use explicit configuration to exclude unrelated projects.                                                              |
-| Project root                 | Git checkout boundaries and the selected non-Git directory are deliberate discovery rules. Nested standalone applications can use their own config. Saved endpoint directories must remain within the config root.                                                                          |
-| Package managers             | npm, pnpm, Yarn, and Bun use package-manager-detector. Zero-config and the wizard detect the manager. A manually authored config currently defaults to npm when omitted; other managers must be explicit. This is a documented API limitation, not provider coupling.                       |
-| Naming                       | Project/service/worktree templates are configurable. `.localhost`, HTTPS, and port 443 are defaults, not real consumer domains. The 32-character discovered-label cap and normalization can produce collisions; the README documents overrides and collision errors.                        |
-| Process and network defaults | IPv4 loopback, one server per invocation, shared proxy settings, normal-exit cleanup, and inherited environment are supported runtime boundaries. No fixed application port or preferred checkout name is used.                                                                             |
-| Webhooks                     | POST-only exact paths, 1 MiB requests, and a 15-second upstream timeout are current capability limits. GET verification, custom limits, hosted reception, delivery persistence, and replay are not implemented. Do not describe this as a general hosted webhook service.                   |
-| Wizard scope                 | The wizard selects detected endpoints and adds callbacks, test servers, and tunnels. Arbitrary extra API/worker/other service endpoints can be configured manually; a broader preset checklist is not implemented.                                                                          |
-| Technical prerequisites      | Node 24+, Windows OpenSSL, certificate trust, and framework/tunnel installations are actual prerequisites and remain in consumer documentation. Repository tools and contributor architecture stay in engineering docs.                                                                     |
+| Area                         | Rule                                                                                                                                                                                                                                                                                                                                          |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| App detection                | No repository-specific script name, such as `dev:app` or `dev:raw`, gets special treatment. `dev` is a documented convention, not a required universal standard. Any script can be selected explicitly.                                                                                                                                       |
+| E2E output                   | Suggested E2E endpoints set no output-directory variable such as `DEV_DOMAINS_OUTPUT_DIR`, because no framework is configured to read one. Output and resource isolation belong to the application.                                                                                                                                           |
+| Wizard E2E command           | A test server added in the wizard copies the app endpoint's actual command or script; it does not assume a `dev` script.                                                                                                                                                                                                                      |
+| Examples and fixtures        | Examples and tests use neutral example and test domains, never real consumer domains.                                                                                                                                                                                                                                                         |
+| Consumer documentation       | Route registration, the reservation handoff, retry counts, discovery walk limits, and configuration-loader internals are documented here. The README keeps observable constraints and supported configuration.                                                                                                                                |
+| CLI guidance                 | Messages print the `npx @buildkitgg/dev-domains` invocation, such as the next steps after `init`, instead of assuming a globally installed binary.                                                                                                                                                                                            |
+| Providers                    | No application-specific auth provider, OAuth client, cloud account, storage, database, deployment, or DNS provisioning is implemented. `auth` describes paths; tunnel commands are supplied by users. Cloudflared is an optional example, not a dependency or default.                                                                        |
+| Frameworks                   | Next.js, Vite, and Storybook have explicit adapters. Other servers must accept the assigned port/host through environment variables or configured arguments. Framework-specific allowed hosts and caches remain application settings; the one exception is the hostname list passed to Vite through `__VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS`. |
+| Playwright                   | Detection is evidence that tests exist, not knowledge of their server topology. Suggested E2E endpoints reuse the package's dev server; no Playwright config is executed or its `webServer` imported. Cross-package, production-build, and remote test targets need explicit configuration.                                                   |
+| Monorepos                    | Workspace declarations control discovery; no `apps/` or `packages/` folder layout is hard-coded. Without workspace declarations, discovery searches nested packages; use explicit configuration to exclude unrelated projects.                                                                                                                |
+| Project root                 | Git checkout boundaries and the selected non-Git directory are deliberate discovery rules. Nested standalone applications can use their own config. Saved endpoint directories must remain within the config root.                                                                                                                            |
+| Package managers             | npm, pnpm, Yarn, and Bun use package-manager-detector. Zero-config and the wizard detect the manager. A manually authored config defaults to npm when omitted; other managers must be explicit. This is a documented API limitation, not provider coupling.                                                                                   |
+| Naming                       | Project/service/worktree templates are configurable. `.localhost`, HTTPS, and port 443 are defaults, not real consumer domains. The 32-character discovered-label cap and normalization can produce collisions; the README documents overrides and collision errors.                                                                          |
+| Process and network defaults | IPv4 loopback, one server per invocation, shared proxy settings, normal-exit cleanup, and inherited environment are supported runtime boundaries. No fixed application port or preferred checkout name is used.                                                                                                                               |
+| Webhooks                     | POST-only exact paths, 1 MiB requests, and a 15-second upstream timeout are the gateway's limits. GET verification, custom limits, hosted reception, delivery persistence, and replay are not implemented. Do not describe this as a general hosted webhook service.                                                                          |
+| Wizard scope                 | The wizard selects detected endpoints and adds callbacks, test servers, and tunnels. Arbitrary extra API/worker/other service endpoints can be configured manually; a broader preset checklist is not implemented.                                                                                                                            |
+| Technical prerequisites      | Node 24+, Windows OpenSSL, certificate trust, and framework/tunnel installations are actual prerequisites and remain in consumer documentation. Repository tools and contributor architecture stay in engineering docs.                                                                                                                       |
 
 Regression tests cover conventional and nonconventional scripts, declared and nonstandard workspace layouts, custom
-commands, optional test-server suggestions, and independent domains. Do not add prose assertion tests for this audit.
+commands, optional test-server suggestions, and independent domains. Do not add prose assertion tests for these rules.

@@ -3,8 +3,8 @@
 Published as `@buildkitgg/storybook-config`, and used by this repository's own Storybook. Run root `pnpm verify` after
 changes.
 
-Knip exclusions cover addons loaded dynamically by Storybook name. The shared merge behavior has Vitest coverage.
+Knip's exclusions cover the addons Storybook loads by name at runtime. Vitest covers the shared configuration merge.
 
-ExampleFrame provides consistent story headings, bounded previews, and optional source disclosures. Keep one behavior
-per story, use descriptive story names, and show results next to the relevant action. Overview pages explain APIs;
-examples demonstrate them.
+`ExampleFrame` gives stories consistent headings, bounded previews and optional source disclosures. Keep one behavior
+per story, name stories for what they show, and put each result next to the action that causes it. Overview pages
+explain APIs; examples demonstrate them.

@@ -2,8 +2,10 @@
 
 [shadcn components](README.md)
 
-The components read shadcn's CSS variables. Sync puts the chosen theme's values on `:root` and `.dark`, inside a cascade
-layer, so the app's own unlayered CSS overrides them wherever it's imported:
+The components read shadcn's CSS variables. In compiled mode, sync puts the chosen theme's values on `:root` and `.dark`
+inside a cascade layer, so the app's own unlayered CSS overrides them wherever it's imported. In
+[Tailwind mode](#tailwind-apps), override them after the generated stylesheet's import. To brand an app, set the
+variables you want to change:
 
 ```css
 :root {
@@ -37,9 +39,11 @@ colors.
 
 ## Dark mode
 
-Put the `dark` class on `<html>`, for example with `document.documentElement.classList.toggle("dark", isDark)`. Dialogs
-and other portaled content render outside the app's wrapper, so a class on the wrapper doesn't reach them. Apply a
-stored preference before first paint to avoid a flash of the wrong theme.
+Put the `dark` class on `<html>`. Dialogs and other portaled content render outside the app's wrapper, so a class on the
+wrapper doesn't reach them. Apply a stored preference before first paint to avoid a flash of the wrong theme.
+
+[`@buildkitgg/shadcn-theme`](../../packages/shadcn/shadcn-theme/README.md) does all of this: it keeps the user's light,
+dark or system choice, sets `.dark` and `color-scheme` on `<html>`, and gives you a script for first paint.
 
 ## Fonts and page styles
 
