@@ -4,30 +4,51 @@
 
 ```ts
 
+import { ColorScheme } from '@buildkitgg/theme-core';
 import { createThemeStore } from '@buildkitgg/theme-core';
+import { DefaultThemes } from '@buildkitgg/theme-core';
 import { ResolvedTheme } from '@buildkitgg/theme-core';
+import { SystemThemes } from '@buildkitgg/theme-core';
 import { Theme } from '@buildkitgg/theme-core';
+import { ThemeDefinition } from '@buildkitgg/theme-core';
+import { ThemeDefinitions } from '@buildkitgg/theme-core';
+import { ThemeName } from '@buildkitgg/theme-core';
 import { ThemeOptions } from '@buildkitgg/theme-core';
 import { ThemeSnapshot } from '@buildkitgg/theme-core';
+import { ThemesOfScheme } from '@buildkitgg/theme-core';
 import { ThemeStore } from '@buildkitgg/theme-core';
+
+export { ColorScheme }
 
 export { createThemeStore }
 
+export { DefaultThemes }
+
 export { ResolvedTheme }
 
+export { SystemThemes }
+
 export { Theme }
+
+export { ThemeDefinition }
+
+export { ThemeDefinitions }
+
+export { ThemeName }
 
 export { ThemeOptions }
 
 export { ThemeSnapshot }
 
+export { ThemesOfScheme }
+
 export { ThemeStore }
 
 // @public (undocumented)
-export function useTheme(store: ThemeStore): UseThemeResult;
+export function useTheme<T extends ThemeDefinitions>(store: ThemeStore<T>): UseThemeResult<T>;
 
 // @public
-export type UseThemeResult = ThemeSnapshot & Pick<ThemeStore, "setTheme" | "reset">;
+export type UseThemeResult<T extends ThemeDefinitions = DefaultThemes> = ThemeSnapshot<T> & Pick<ThemeStore<T>, "setTheme" | "setSystemThemes" | "reset" | "isTheme">;
 
 // (No @packageDocumentation comment for this package)
 

@@ -4,39 +4,86 @@
 
 ```ts
 
-import { BrowserThemeOptions } from '@buildkitgg/theme-core/browser';
+import { ColorScheme } from '@buildkitgg/theme-core';
 import { ResolvedTheme } from '@buildkitgg/theme-core';
+import { SystemThemes } from '@buildkitgg/theme-core';
 import { Theme } from '@buildkitgg/theme-core';
+import { ThemeDefinition } from '@buildkitgg/theme-core';
+import { ThemeElementTarget } from '@buildkitgg/theme-core/browser';
+import { ThemeName } from '@buildkitgg/theme-core';
 import { ThemeOptions } from '@buildkitgg/theme-core';
 import { ThemeSnapshot } from '@buildkitgg/theme-core';
+import { ThemesOfScheme } from '@buildkitgg/theme-core';
 import { ThemeStorageOptions } from '@buildkitgg/theme-core/browser';
 import { ThemeStore } from '@buildkitgg/theme-core';
 import { useTheme } from '@buildkitgg/react-theme';
+import { UseThemeResult } from '@buildkitgg/react-theme';
+
+export { ColorScheme }
 
 // @public
-export function createShadcnTheme(options?: ShadcnThemeOptions): ShadcnThemeStore;
+export function createShadcnTheme<const T extends ShadcnThemeDefinitions = DefaultShadcnThemes>(options?: ShadcnThemeOptions<T>): ShadcnThemeStore<T>;
 
 // @public
-export function getThemeInitScript(input?: ThemeInitScriptOptions): string;
+export type DefaultShadcnThemes = {
+    readonly light: {
+        readonly scheme: "light";
+        readonly classes: readonly [];
+    };
+    readonly dark: {
+        readonly scheme: "dark";
+        readonly classes: readonly ["dark"];
+    };
+};
+
+// @public
+export function getThemeInitScript<const T extends ShadcnThemeDefinitions = DefaultShadcnThemes>(options?: ThemeInitScriptOptions<T>): string;
 
 export { ResolvedTheme }
 
-// @public (undocumented)
-export type ShadcnThemeOptions = ThemeOptions & BrowserThemeOptions;
+// @public
+export type ShadcnThemeDefinition = ThemeDefinition & {
+    readonly classes: readonly string[];
+};
 
 // @public (undocumented)
-export type ShadcnThemeStore = ThemeStore & {
+export type ShadcnThemeDefinitions = {
+    readonly [name: string]: ShadcnThemeDefinition;
+};
+
+// @public
+export type ShadcnThemeElementOptions = {
+    target?: ThemeElementTarget;
+    attribute?: string;
+    colorScheme?: boolean;
+};
+
+// @public (undocumented)
+export type ShadcnThemeOptions<T extends ShadcnThemeDefinitions = DefaultShadcnThemes> = ThemeOptions<T> & ThemeStorageOptions & ShadcnThemeElementOptions & {
+    window?: Window;
+};
+
+// @public (undocumented)
+export type ShadcnThemeStore<T extends ShadcnThemeDefinitions = DefaultShadcnThemes> = ThemeStore<T> & {
     start(): () => void;
 };
+
+export { SystemThemes }
 
 export { Theme }
 
 // @public (undocumented)
-export type ThemeInitScriptOptions = Pick<ThemeOptions, "defaultTheme"> & ThemeStorageOptions;
+export type ThemeInitScriptOptions<T extends ShadcnThemeDefinitions = DefaultShadcnThemes> = Omit<ThemeOptions<T>, "systemTheme"> & ThemeStorageOptions & ShadcnThemeElementOptions;
+
+export { ThemeName }
 
 export { ThemeSnapshot }
 
+export { ThemesOfScheme }
+
 export { useTheme }
+
+export { UseThemeResult }
 
 // (No @packageDocumentation comment for this package)
 

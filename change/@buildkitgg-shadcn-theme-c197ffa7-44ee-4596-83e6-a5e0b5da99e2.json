@@ -1,0 +1,7 @@
+{
+  "type": "minor",
+  "comment": "Follow .dark when code outside React changes it, and declare your own themes with the classes that switch their CSS variables",
+  "packageName": "@buildkitgg/shadcn-theme",
+  "email": "ajcraswell@gmail.com",
+  "dependentChangeType": "patch"
+}

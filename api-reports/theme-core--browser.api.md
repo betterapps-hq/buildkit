@@ -4,15 +4,68 @@
 
 ```ts
 
+// Warning: (ae-forgotten-export) The symbol "ThemeDefinitions" needs to be exported by the entry point browser.d.ts
+// Warning: (ae-forgotten-export) The symbol "DefaultThemes" needs to be exported by the entry point browser.d.ts
+//
 // @public (undocumented)
-export type BrowserThemeOptions = {
+export type BrowserThemeOptions<T extends ThemeDefinitions = DefaultThemes> = {
     window?: Window;
+    element?: ThemeElementOptions<T>;
 } & ThemeStorageOptions;
 
 // Warning: (ae-forgotten-export) The symbol "ThemeStore" needs to be exported by the entry point browser.d.ts
 //
 // @public
-export function connectBrowserTheme(store: ThemeStore, options?: BrowserThemeOptions): () => void;
+export function connectBrowserTheme<T extends ThemeDefinitions>(store: ThemeStore<T>, options?: BrowserThemeOptions<T>): () => void;
+
+// @public
+export function connectThemeElement<T extends ThemeDefinitions>(store: ThemeStore<T>, options: ThemeElementOptions<T> & {
+    window?: Window;
+}): () => void;
+
+// @public
+export function getThemeInitScript<const T extends ThemeDefinitions = DefaultThemes>(options?: ThemeInitScriptOptions<T>): string;
+
+// Warning: (ae-forgotten-export) The symbol "ThemeName" needs to be exported by the entry point browser.d.ts
+//
+// @public
+export type ThemeClasses<T extends ThemeDefinitions = DefaultThemes> = {
+    readonly [K in ThemeName<T>]: readonly string[];
+};
+
+// Warning: (ae-forgotten-export) The symbol "HasOnlyDefaultThemes" needs to be exported by the entry point browser.d.ts
+//
+// @public
+export type ThemeElementMarkers<T extends ThemeDefinitions = DefaultThemes> = HasOnlyDefaultThemes<T> extends true ? {
+    classes?: ThemeClasses<T>;
+    attribute?: string;
+} : {
+    classes: ThemeClasses<T>;
+    attribute?: string;
+} | {
+    classes?: ThemeClasses<T>;
+    attribute: string;
+};
+
+// @public (undocumented)
+export type ThemeElementOptions<T extends ThemeDefinitions = DefaultThemes> = ThemeElementMarkers<T> & {
+    target?: ThemeElementTarget;
+    colorScheme?: boolean;
+    read?: boolean;
+    write?: boolean;
+};
+
+// @public
+export type ThemeElementTarget = "html" | "body";
+
+// Warning: (ae-forgotten-export) The symbol "ThemeOptions" needs to be exported by the entry point browser.d.ts
+//
+// @public
+export type ThemeInitScriptOptions<T extends ThemeDefinitions = DefaultThemes> = Omit<ThemeOptions<T>, "systemTheme"> & ThemeStorageOptions & (HasOnlyDefaultThemes<T> extends true ? {
+    element?: ThemeElementOptions<T>;
+} : {
+    element: ThemeElementOptions<T>;
+});
 
 // @public (undocumented)
 export type ThemeStorageOptions = {

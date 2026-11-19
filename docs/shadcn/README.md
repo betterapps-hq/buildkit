@@ -58,7 +58,7 @@ Imports stay the same when a choice changes. See [choosing what sync builds](sty
 [`@buildkitgg/shadcn-alerts-manager`](../../packages/shadcn/shadcn-alerts-manager/README.md) render with the app's own
 `@buildkitgg/shadcn`, which they list as a peer dependency. Run sync in each app that uses them.
 [`@buildkitgg/shadcn-theme`](../../packages/shadcn/shadcn-theme/README.md) switches between light, dark and system
-themes.
+themes, or themes you declare.
 
 ## More
 

@@ -5,37 +5,85 @@
 ```ts
 
 // @public
-export function createThemeStore(input?: ThemeOptions): ThemeStore;
+export type ColorScheme = "light" | "dark";
 
-// @public (undocumented)
+// @public
+export function createThemeStore<const T extends ThemeDefinitions = DefaultThemes>(options?: ThemeOptions<T>): ThemeStore<T>;
+
+// @public
+export type DefaultThemes = {
+    readonly light: {
+        readonly scheme: "light";
+    };
+    readonly dark: {
+        readonly scheme: "dark";
+    };
+};
+
+// @public
 export function isTheme(value: unknown): value is Theme;
 
-// @public (undocumented)
-export type ResolvedTheme = Exclude<Theme, "system">;
+// @public
+export type ResolvedTheme<T extends ThemeDefinitions = DefaultThemes> = ThemeName<T>;
 
-// @public (undocumented)
-export type Theme = "light" | "dark" | "system";
+// @public
+export type SystemThemes<T extends ThemeDefinitions = DefaultThemes> = Readonly<{
+    light: ThemesOfScheme<T, "light">;
+    dark: ThemesOfScheme<T, "dark">;
+}>;
 
-// @public (undocumented)
-export type ThemeOptions = {
-    defaultTheme?: Theme;
-    systemTheme?: ResolvedTheme;
+// @public
+export type Theme<T extends ThemeDefinitions = DefaultThemes> = ThemeName<T> | "system";
+
+// @public
+export type ThemeDefinition = {
+    readonly scheme: ColorScheme;
 };
 
 // @public (undocumented)
-export type ThemeSnapshot = Readonly<{
-    theme: Theme;
-    resolvedTheme: ResolvedTheme;
-}>;
+export type ThemeDefinitions = {
+    readonly [name: string]: ThemeDefinition;
+};
 
 // @public (undocumented)
-export type ThemeStore = {
+export type ThemeName<T extends ThemeDefinitions = DefaultThemes> = Extract<keyof T, string>;
+
+// Warning: (ae-forgotten-export) The symbol "HasDefaultPair" needs to be exported by the entry point index.d.ts
+//
+// @public (undocumented)
+export type ThemeOptions<T extends ThemeDefinitions = DefaultThemes> = {
+    themes?: T;
+    defaultTheme?: NoInfer<Theme<T>>;
+    systemTheme?: ColorScheme;
+} & (HasDefaultPair<T> extends true ? {
+    system?: NoInfer<SystemThemes<T>>;
+} : {
+    system: NoInfer<SystemThemes<T>>;
+});
+
+// @public (undocumented)
+export type ThemeSnapshot<T extends ThemeDefinitions = DefaultThemes> = Readonly<{
+    theme: Theme<T>;
+    resolvedTheme: ResolvedTheme<T>;
+    colorScheme: ColorScheme;
+    systemThemes: SystemThemes<T>;
+}>;
+
+// @public
+export type ThemesOfScheme<T extends ThemeDefinitions, S extends ColorScheme> = {
+    [K in ThemeName<T>]: S extends T[K]["scheme"] ? K : never;
+}[ThemeName<T>];
+
+// @public (undocumented)
+export type ThemeStore<T extends ThemeDefinitions = DefaultThemes> = {
     reset(): void;
-    getSnapshot(): ThemeSnapshot;
-    getServerSnapshot(): ThemeSnapshot;
+    getSnapshot(): ThemeSnapshot<T>;
+    getServerSnapshot(): ThemeSnapshot<T>;
     subscribe(listener: () => void): () => void;
-    setTheme(theme: Theme): void;
-    setSystemTheme(theme: ResolvedTheme): void;
+    setTheme(theme: Theme<T>): void;
+    setSystemThemes(themes: SystemThemes<T>): void;
+    setSystemTheme(scheme: ColorScheme): void;
+    isTheme(value: unknown): value is Theme<T>;
 };
 
 // (No @packageDocumentation comment for this package)

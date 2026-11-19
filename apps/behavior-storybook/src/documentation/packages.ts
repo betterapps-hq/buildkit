@@ -95,16 +95,18 @@ export const packages = [
   {
     name: "theme-core",
     group: "Core",
-    summary: "System, light, and dark selection with an explicit application default.",
+    summary: "System, light, and dark selection, or themes you declare, with an explicit application default.",
     code: 'import { createThemeStore } from "@buildkitgg/theme-core"\nimport { connectBrowserTheme } from "@buildkitgg/theme-core/browser"\n\nconst theme = createThemeStore({ defaultTheme: "system" })\nconst stop = connectBrowserTheme(theme, { storageKey: "my-app-theme" })\ntheme.setTheme("dark")\ntheme.reset() // Restore the app default.\nstop() // Disconnect browser effects.',
     api: [
       "createThemeStore(options): create isolated theme state.",
       "setTheme / reset: select a theme or remove the override.",
       "getSnapshot / subscribe: observe selection and resolved appearance.",
-      "connectBrowserTheme: optional device and storage integration."
+      "setSystemThemes: choose the light and dark themes that system follows.",
+      "connectBrowserTheme: optional device, storage, and element integration.",
+      "getThemeInitScript(options): first-paint script for an element binding."
     ],
     notes:
-      "Core does not apply styling. Persistence is internal. Use a UI adapter for rendering. Create stores per server request; systemTheme supplies the initial server resolution.",
+      "Core does not apply styling. Pass element to keep a class or attribute on the page in step with the store. Persistence is internal. Use a UI adapter for rendering. Create stores per server request; systemTheme supplies the initial server resolution.",
     example: "fluent-ui-fluentui-theme--system"
   },
   {
@@ -122,7 +124,9 @@ export const packages = [
     group: "React",
     summary: "Provider-free React bindings for Buildkit theme stores.",
     code: 'import { useTheme } from "@buildkitgg/react-theme"\nimport { theme } from "./theme"\n\nfunction Appearance() {\n  const { theme: selected, resolvedTheme, setTheme, reset } = useTheme(theme)\n  return <button onClick={reset}>Reset {selected} theme</button>\n}',
-    api: ["useTheme(store): returns theme, resolvedTheme, setTheme and reset."],
+    api: [
+      "useTheme(store): returns theme, resolvedTheme, colorScheme, systemThemes, setTheme, setSystemThemes, isTheme and reset."
+    ],
     notes:
       "React 19 is a peer dependency. The hook subscribes but does not start browser effects. Use the adapter lifecycle. Fluent UI still needs its native styling provider.",
     example: "shadcn-shadcn-theme--appearance"
@@ -135,12 +139,12 @@ export const packages = [
     api: [
       "createShadcnTheme(options): isolated theme with optional persistence.",
       "useTheme(store): read the current theme and update it from a React component.",
-      "start(): apply .dark and color-scheme; returns cleanup.",
+      "start(): apply each theme's classes and color-scheme, and follow class changes outside React; returns cleanup.",
       "setTheme / reset: choose appearance or restore the default.",
       "getThemeInitScript(options): first-paint script; use matching options and a CSP nonce."
     ],
     notes:
-      "React is a peer dependency. Supply your own CSS and tokens using the .dark convention. Use one instance per document. Construction has no browser effects.",
+      "React is a peer dependency. Supply your own CSS and tokens using the .dark convention, or declare themes with their own classes. Use one instance per document. Construction has no browser effects.",
     example: "shadcn-shadcn-theme--appearance"
   },
   {
@@ -149,9 +153,10 @@ export const packages = [
     summary: "Fluent UI v9 themes with external state, custom tokens, and native portal support.",
     code: 'import { createFluentTheme, FluentThemeProvider } from "@buildkitgg/fluentui-theme"\n\nexport const theme = createFluentTheme({\n  defaultTheme: "system", // Or "dark" for a dark-first app.\n  storageKey: "my-app-theme",\n  storage: "localStorage"\n})\n\nexport function App() {\n  return <FluentThemeProvider store={theme}><YourApp /></FluentThemeProvider>\n}\n\ntheme.setTheme("dark") // Works outside React too.\ntheme.reset() // Restore the app default.',
     api: [
-      "createFluentTheme(options): accepts complete lightTheme and darkTheme token objects.",
+      "createFluentTheme(options): accepts complete lightTheme and darkTheme token objects, or declared themes with their own.",
       "FluentThemeProvider: native Fluent context with automatic connection cleanup.",
       "useTheme(store): theme, resolvedTheme, setTheme and reset.",
+      "element option: keep .dark or another marker on the page in step, for CSS-first code.",
       "start(): optional manual lifecycle outside React."
     ],
     notes:

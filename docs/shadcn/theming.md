@@ -43,7 +43,28 @@ Put the `dark` class on `<html>`. Dialogs and other portaled content render outs
 wrapper doesn't reach them. Apply a stored preference before first paint to avoid a flash of the wrong theme.
 
 [`@buildkitgg/shadcn-theme`](../../packages/shadcn/shadcn-theme/README.md) does all of this: it keeps the user's light,
-dark or system choice, sets `.dark` and `color-scheme` on `<html>`, and gives you a script for first paint.
+dark or system choice, sets `.dark` and `color-scheme` on `<html>`, and gives you a script for first paint. It also
+follows `.dark` when code outside React changes it.
+
+## More themes
+
+For themes beyond light and dark, such as a brand family or high contrast, give each theme its own class and set its
+variables in your CSS. Keep `.dark` on every dark theme, so your dark values apply underneath and each theme overrides
+only what differs:
+
+```css
+.teams {
+  --primary: oklch(0.51 0.13 277);
+}
+
+.teams.dark {
+  --primary: oklch(0.68 0.12 277);
+}
+```
+
+Declare the themes and their classes in
+[`createShadcnTheme`](../../packages/shadcn/shadcn-theme/README.md#your-own-themes), which switches the classes and
+keeps the user's choice.
 
 ## Fonts and page styles
 

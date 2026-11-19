@@ -5,49 +5,94 @@
 ```ts
 
 import { BrowserThemeOptions } from '@buildkitgg/theme-core/browser';
+import { ColorScheme } from '@buildkitgg/theme-core';
 import { FluentProviderProps } from '@fluentui/react-components';
 import { JSX } from 'react';
 import { ResolvedTheme } from '@buildkitgg/theme-core';
+import { SystemThemes } from '@buildkitgg/theme-core';
 import { Theme } from '@fluentui/react-components';
+import { ThemeClasses } from '@buildkitgg/theme-core/browser';
+import { ThemeDefinition } from '@buildkitgg/theme-core';
+import { ThemeElementOptions } from '@buildkitgg/theme-core/browser';
+import { ThemeElementTarget } from '@buildkitgg/theme-core/browser';
+import { ThemeName } from '@buildkitgg/theme-core';
 import { ThemeOptions } from '@buildkitgg/theme-core';
 import { Theme as ThemeSelection } from '@buildkitgg/theme-core';
 import { ThemeSnapshot } from '@buildkitgg/theme-core';
+import { ThemesOfScheme } from '@buildkitgg/theme-core';
 import { ThemeStore } from '@buildkitgg/theme-core';
 import { useTheme } from '@buildkitgg/react-theme';
+import { UseThemeResult } from '@buildkitgg/react-theme';
+
+export { ColorScheme }
 
 // @public
-export function createFluentTheme(options?: FluentThemeOptions): FluentThemeStore;
+export function createFluentTheme<const T extends FluentThemeDefinitions = DefaultFluentThemes>(options?: FluentThemeOptions<T>): FluentThemeStore<T>;
 
 // @public (undocumented)
-export type FluentThemeOptions = ThemeOptions & BrowserThemeOptions & {
-    lightTheme?: Theme;
-    darkTheme?: Theme;
+export type DefaultFluentThemes = {
+    readonly light: {
+        readonly scheme: "light";
+        readonly theme: Theme;
+    };
+    readonly dark: {
+        readonly scheme: "dark";
+        readonly theme: Theme;
+    };
 };
 
 // @public
-export function FluentThemeProvider(input: FluentThemeProviderProps): JSX.Element;
-
-// @public (undocumented)
-export type FluentThemeProviderProps = Omit<FluentProviderProps, "theme"> & {
-    store: FluentThemeStore;
+export type FluentThemeDefinition = ThemeDefinition & {
+    readonly theme: Theme;
 };
 
 // @public (undocumented)
-export type FluentThemeStore = ThemeStore & {
+export type FluentThemeDefinitions = {
+    readonly [name: string]: FluentThemeDefinition;
+};
+
+// Warning: (ae-forgotten-export) The symbol "FluentThemeSources" needs to be exported by the entry point index.d.ts
+//
+// @public (undocumented)
+export type FluentThemeOptions<T extends FluentThemeDefinitions = DefaultFluentThemes> = ThemeOptions<T> & BrowserThemeOptions<T> & FluentThemeSources<T>;
+
+// @public
+export function FluentThemeProvider<T extends FluentThemeDefinitions>(input: FluentThemeProviderProps<T>): JSX.Element;
+
+// @public (undocumented)
+export type FluentThemeProviderProps<T extends FluentThemeDefinitions = DefaultFluentThemes> = Omit<FluentProviderProps, "theme"> & {
+    store: FluentThemeStore<T>;
+};
+
+// @public (undocumented)
+export type FluentThemeStore<T extends FluentThemeDefinitions = DefaultFluentThemes> = ThemeStore<T> & {
     readonly themes: Readonly<{
-        light: Theme;
-        dark: Theme;
+        [K in ThemeName<T>]: Theme;
     }>;
     start(): () => void;
 };
 
 export { ResolvedTheme }
 
+export { SystemThemes }
+
+export { ThemeClasses }
+
+export { ThemeElementOptions }
+
+export { ThemeElementTarget }
+
+export { ThemeName }
+
 export { ThemeSelection }
 
 export { ThemeSnapshot }
 
+export { ThemesOfScheme }
+
 export { useTheme }
+
+export { UseThemeResult }
 
 // (No @packageDocumentation comment for this package)
 
