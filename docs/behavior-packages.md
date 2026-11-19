@@ -10,19 +10,23 @@ router.
 - `@buildkitgg/preferences-core`: generic defaults and overrides, immutable snapshots, JSON import and export, optional
   local or session storage, and disposal. Its explicit `/browser` entry point also connects browser persistence.
 - `@buildkitgg/react-preferences`: hooks for the whole store and for individual typed keys, with no provider.
-- `@buildkitgg/theme-core`: keeps overrides in preferences-core, then adds system resolution and theme validation. Its
-  optional `/browser` entry point connects device settings and local storage without applying a UI theme.
+- `@buildkitgg/theme-core`: keeps overrides in preferences-core, then adds declared themes, the light and dark pair that
+  `"system"` follows, and validation. Its optional `/browser` entry point connects device settings and local storage,
+  and, only when asked, binds a class or attribute on `<html>` or `<body>` to the store in both directions, with a
+  matching first-paint script.
 - `@buildkitgg/react-theme`: `useTheme(store)` through `useSyncExternalStore`, with no context provider.
-- `@buildkitgg/shadcn-theme`: document classes, `color-scheme`, connection lifecycle, and a first-paint script.
-- `@buildkitgg/fluentui-theme`: Fluent theme tokens, native provider integration, and the shared browser connection
-  lifecycle.
+- `@buildkitgg/shadcn-theme`: each theme's classes on the document, always bound in both directions, `color-scheme`,
+  connection lifecycle, and a first-paint script.
+- `@buildkitgg/fluentui-theme`: a Fluent theme per declared theme, native provider integration, the shared browser
+  connection lifecycle, and an opt-in element binding for CSS-first code.
 - `apps/behavior-storybook`: shadcn, Fluent UI, and preferences examples with persistence and portaled UI.
 
-Theme storage uses the same JSON override object as preferences (`{"theme":"dark"}`). The general preferences API can't
-infer enum constraints from types, so theme-core checks the stored value itself, and an invalid theme falls back to the
-app default when resolving appearance. System is the default theme. An app can change the default, and a valid persisted
-user choice takes precedence over it. Browser effects are explicit and disposable. Each package ships TypeScript
-declarations with its compiled exports.
+Theme storage uses the same JSON override object as preferences (`{"theme":"dark"}`, plus `systemLight` and `systemDark`
+once the user changes the pair). The general preferences API can't infer enum constraints from types, so theme-core
+checks stored values against the declared themes itself, and an invalid theme falls back to the app default when
+resolving appearance. System is the default theme. An app can change the default, and a valid persisted user choice
+takes precedence over it. Browser effects are explicit and disposable. Each package ships TypeScript declarations with
+its compiled exports.
 
 ## Behavior extracted from Fluent UI packages
 
