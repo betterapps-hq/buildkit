@@ -2,6 +2,33 @@
   "name": "@buildkitgg/shadcn-theme",
   "entries": [
     {
+      "date": "Thu, 19 Nov 2026 06:37:25 GMT",
+      "version": "0.3.0",
+      "tag": "@buildkitgg/shadcn-theme_v0.3.0",
+      "comments": {
+        "minor": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/shadcn-theme",
+            "commit": "d461468a0e01397f726b6af461779d91701f0871",
+            "comment": "Follow .dark when code outside React changes it, and declare your own themes with the classes that switch their CSS variables"
+          },
+          {
+            "author": "beachball",
+            "package": "@buildkitgg/shadcn-theme",
+            "comment": "Bump @buildkitgg/theme-core to v0.2.0",
+            "commit": "not available"
+          },
+          {
+            "author": "beachball",
+            "package": "@buildkitgg/shadcn-theme",
+            "comment": "Bump @buildkitgg/react-theme to v0.3.0",
+            "commit": "not available"
+          }
+        ]
+      }
+    },
+    {
       "date": "Tue, 03 Nov 2026 11:50:50 GMT",
       "version": "0.2.0",
       "tag": "@buildkitgg/shadcn-theme_v0.2.0",

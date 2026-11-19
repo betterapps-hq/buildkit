@@ -1,7 +1,0 @@
-{
-  "type": "minor",
-  "comment": "Declare your own themes, each with its color scheme, and the light and dark pair that system follows. The browser entry point can bind a class or attribute on html or body to the store in both directions, and getThemeInitScript applies it before first paint",
-  "packageName": "@buildkitgg/theme-core",
-  "email": "ajcraswell@gmail.com",
-  "dependentChangeType": "patch"
-}

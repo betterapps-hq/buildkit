@@ -1,8 +1,19 @@
 # Change Log - @buildkitgg/fluentui-theme
 
-<!-- This log was last generated on Tue, 03 Nov 2026 11:33:33 GMT and should not be manually modified. -->
+<!-- This log was last generated on Thu, 19 Nov 2026 06:37:25 GMT and should not be manually modified. -->
 
 <!-- Start content -->
+
+## 0.2.0
+
+Thu, 19 Nov 2026 06:37:25 GMT
+
+### Minor changes
+
+- Declare your own themes with their Fluent themes, opt into an element binding that keeps .dark or another marker in
+  step for CSS-first code, and import a first-paint script from @buildkitgg/fluentui-theme/script (ajcraswell@gmail.com)
+- Bump @buildkitgg/theme-core to v0.2.0
+- Bump @buildkitgg/react-theme to v0.3.0
 
 ## 0.1.5
 

@@ -1,8 +1,19 @@
 # Change Log - @buildkitgg/shadcn-theme
 
-<!-- This log was last generated on Tue, 03 Nov 2026 11:50:50 GMT and should not be manually modified. -->
+<!-- This log was last generated on Thu, 19 Nov 2026 06:37:25 GMT and should not be manually modified. -->
 
 <!-- Start content -->
+
+## 0.3.0
+
+Thu, 19 Nov 2026 06:37:25 GMT
+
+### Minor changes
+
+- Follow .dark when code outside React changes it, and declare your own themes with the classes that switch their CSS
+  variables (ajcraswell@gmail.com)
+- Bump @buildkitgg/theme-core to v0.2.0
+- Bump @buildkitgg/react-theme to v0.3.0
 
 ## 0.2.0
 

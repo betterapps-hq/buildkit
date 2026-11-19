@@ -1,7 +1,0 @@
-{
-  "type": "minor",
-  "comment": "Declare your own themes with their Fluent themes, opt into an element binding that keeps .dark or another marker in step for CSS-first code, and import a first-paint script from @buildkitgg/fluentui-theme/script",
-  "packageName": "@buildkitgg/fluentui-theme",
-  "email": "ajcraswell@gmail.com",
-  "dependentChangeType": "patch"
-}

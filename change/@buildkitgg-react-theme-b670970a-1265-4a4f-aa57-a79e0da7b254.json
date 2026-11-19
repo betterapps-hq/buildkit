@@ -1,7 +1,0 @@
-{
-  "type": "minor",
-  "comment": "useTheme keeps the types of declared themes and returns colorScheme, systemThemes, setSystemThemes and isTheme",
-  "packageName": "@buildkitgg/react-theme",
-  "email": "ajcraswell@gmail.com",
-  "dependentChangeType": "patch"
-}

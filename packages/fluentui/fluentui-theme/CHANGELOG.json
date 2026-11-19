@@ -2,6 +2,33 @@
   "name": "@buildkitgg/fluentui-theme",
   "entries": [
     {
+      "date": "Thu, 19 Nov 2026 06:37:25 GMT",
+      "version": "0.2.0",
+      "tag": "@buildkitgg/fluentui-theme_v0.2.0",
+      "comments": {
+        "minor": [
+          {
+            "author": "ajcraswell@gmail.com",
+            "package": "@buildkitgg/fluentui-theme",
+            "commit": "d461468a0e01397f726b6af461779d91701f0871",
+            "comment": "Declare your own themes with their Fluent themes, opt into an element binding that keeps .dark or another marker in step for CSS-first code, and import a first-paint script from @buildkitgg/fluentui-theme/script"
+          },
+          {
+            "author": "beachball",
+            "package": "@buildkitgg/fluentui-theme",
+            "comment": "Bump @buildkitgg/theme-core to v0.2.0",
+            "commit": "not available"
+          },
+          {
+            "author": "beachball",
+            "package": "@buildkitgg/fluentui-theme",
+            "comment": "Bump @buildkitgg/react-theme to v0.3.0",
+            "commit": "not available"
+          }
+        ]
+      }
+    },
+    {
       "date": "Tue, 03 Nov 2026 11:33:33 GMT",
       "version": "0.1.5",
       "tag": "@buildkitgg/fluentui-theme_v0.1.5",

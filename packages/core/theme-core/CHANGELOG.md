@@ -1,8 +1,18 @@
 # Change Log - @buildkitgg/theme-core
 
-<!-- This log was last generated on Tue, 03 Nov 2026 11:33:32 GMT and should not be manually modified. -->
+<!-- This log was last generated on Thu, 19 Nov 2026 06:37:25 GMT and should not be manually modified. -->
 
 <!-- Start content -->
+
+## 0.2.0
+
+Thu, 19 Nov 2026 06:37:25 GMT
+
+### Minor changes
+
+- Declare your own themes, each with its color scheme, and the light and dark pair that system follows. The browser
+  entry point can bind a class or attribute on html or body to the store in both directions, and getThemeInitScript
+  applies it before first paint (ajcraswell@gmail.com)
 
 ## 0.1.3
 
