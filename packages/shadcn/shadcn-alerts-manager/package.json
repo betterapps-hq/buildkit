@@ -18,7 +18,7 @@
   ],
   "dependencies": {
     "@buildkitgg/react-alerts": "workspace:*",
-    "lucide-react": "^1.62.0"
+    "lucide-react": "^1.78.0"
   },
   "files": [
     "dist/**/*.js",
@@ -40,7 +40,7 @@
     "@buildkitgg/shadcn": "link:../../../apps/behavior-storybook/node_modules/.buildkit/shadcn",
     "@buildkitgg/typescript-config": "workspace:*",
     "@testing-library/react": "^16.3.3",
-    "@testing-library/user-event": "14.6.8",
+    "@testing-library/user-event": "14.6.13",
     "@types/node": "^24.19.2",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
